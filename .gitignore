@@ -1,0 +1,29 @@
+# Packaging
+node_modules/
+.pnpm-store/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build
+out/
+dist/
+*.vsix
+
+# Test
+.nyc_output/
+coverage/
+**/.test-fixtures/
+.vscode-test/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/tasks.json
+
+# OS
+.DS_Store
+Thumbs.db
+*.db

@@ -1,0 +1,155 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "SAP HANA SQL",
+  "scopeName": "source.hanasql",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#quoted-identifiers" },
+    { "include": "#entity-definitions" },
+    { "include": "#numbers" },
+    { "include": "#sqlscript-variables" },
+    { "include": "#functions" },
+    { "include": "#types" },
+    { "include": "#constants" },
+    { "include": "#logical-operators" },
+    { "include": "#keywords" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.hanasql",
+          "match": "--.*$"
+        },
+        {
+          "name": "comment.block.hanasql",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.single.hanasql",
+      "begin": "(?i)(?:\\b[NX])?'",
+      "end": "'(?!')",
+      "patterns": [
+        { "name": "constant.character.escape.hanasql", "match": "''" }
+      ]
+    },
+    "quoted-identifiers": {
+      "name": "variable.other.quoted-identifier.hanasql",
+      "match": "\"(?:[^\"]|\"\")*\""
+    },
+    "entity-definitions": {
+      "patterns": [
+        {
+          "comment": "CREATE [OR REPLACE] <object> <name>",
+          "match": "(?i)\\b(CREATE(?:\\s+OR\\s+REPLACE)?)\\s+((?:(?:COLUMN|ROW|GLOBAL\\s+TEMPORARY|LOCAL\\s+TEMPORARY|TEMPORARY|VIRTUAL|PUBLIC|UNIQUE|HISTORY|COLLECTION)\\s+)*(?:TABLE|VIEW|PROCEDURE|FUNCTION|SCHEMA|SEQUENCE|SYNONYM|TRIGGER|TYPE|INDEX|ROLE|USER|PROJECTION\\s+VIEW|FULLTEXT\\s+INDEX))\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(\"(?:[^\"]|\"\")+\"(?:\\.\"(?:[^\"]|\"\")+\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
+          "captures": {
+            "1": { "name": "keyword.control.ddl.hanasql" },
+            "2": { "name": "keyword.control.ddl.hanasql" },
+            "3": { "name": "entity.name.type.hanasql" }
+          }
+        },
+        {
+          "comment": "HDI design-time artifacts (no CREATE): PROCEDURE \"name\", COLUMN TABLE \"name\", VIEW \"name\" ...",
+          "match": "(?i)^\\s*((?:COLUMN|ROW)\\s+TABLE|TABLE\\s+TYPE|VIRTUAL\\s+TABLE|PROCEDURE|FUNCTION|VIEW)\\s+(\"(?:[^\"]|\"\")+\"(?:\\.\"(?:[^\"]|\"\")+\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
+          "captures": {
+            "1": { "name": "keyword.control.ddl.hanasql" },
+            "2": { "name": "entity.name.type.hanasql" }
+          }
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.hanasql",
+      "match": "\\b\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b|\\.\\d+(?:[eE][+-]?\\d+)?\\b"
+    },
+    "sqlscript-variables": {
+      "patterns": [
+        {
+          "name": "support.variable.system.hanasql",
+          "match": "(?i)::[A-Za-z_][A-Za-z0-9_]*"
+        },
+        {
+          "name": "variable.other.readwrite.hanasql",
+          "match": "(?<![:\\w]):[A-Za-z_#$][\\w#$]*"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "support.function.aggregate.hanasql",
+          "match": "(?i)\\b(?:AUTO_CORR|AVG|CORR|CORR_SPEARMAN|COUNT|CROSS_CORR|DFT|FIRST_VALUE|LAST_VALUE|MAX|MEDIAN|MIN|NTH_VALUE|STDDEV|STDDEV_POP|STDDEV_SAMP|STRING_AGG|SUM|VAR|VAR_POP|VAR_SAMP|ARRAY_AGG)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.window.hanasql",
+          "match": "(?i)\\b(?:BINNING|CUBIC_SPLINE_APPROX|CUME_DIST|DENSE_RANK|LAG|LEAD|LINEAR_APPROX|NTILE|PERCENT_RANK|PERCENTILE_CONT|PERCENTILE_DISC|RANDOM_PARTITION|RANK|ROW_NUMBER|SERIES_FILTER|WEIGHTED_AVG)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.string.hanasql",
+          "match": "(?i)\\b(?:ABAP_ALPHANUM|ABAP_DF16RAW_TO_SMALLDECIMAL|ABAP_DF34RAW_TO_DECIMAL|ABAP_LOWER|ABAP_NUMC|ABAP_UPPER|ASCII|BINTOHEX|BINTONHEX|BINTOSTR|CHAR|CONCAT|CONCAT_NAZ|HAMMING_DISTANCE|HEXTOBIN|HEXTONUM|INITCAP|LCASE|LEFT|LENGTH|LOCATE|LOCATE_REGEXPR|LOWER|LPAD|LTRIM|NCHAR|NORMALIZE|NUMTOHEX|OCCURRENCES_REGEXPR|REPLACE|REPLACE_REGEXPR|RIGHT|RPAD|RTRIM|SOUNDEX|STRTOBIN|SUBSTR|SUBSTR_AFTER|SUBSTR_BEFORE|SUBSTRING|SUBSTRING_REGEXPR|TRIM|UCASE|UNICODE|UPPER|XMLTABLE)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.numeric.hanasql",
+          "match": "(?i)\\b(?:ABS|ACOS|ASIN|ATAN|ATAN2|BITAND|BITCOUNT|BITNOT|BITOR|BITSET|BITUNSET|BITXOR|CEIL|COS|COSH|COT|EXP|FLOOR|LN|LOG|MOD|NDIV0|POWER|RAND|RAND_SECURE|ROUND|SIGN|SIN|SINH|SQRT|TAN|TANH|UMINUS)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.datetime.hanasql",
+          "match": "(?i)\\b(?:ADD_DAYS|ADD_MONTHS|ADD_MONTHS_LAST|ADD_NANO100|ADD_SECONDS|ADD_WORKDAYS|ADD_YEARS|CURRENT_DATE|CURRENT_MVCC_SNAPSHOT_TIMESTAMP|CURRENT_TIME|CURRENT_TIMESTAMP|CURRENT_UTCDATE|CURRENT_UTCTIME|CURRENT_UTCTIMESTAMP|DAYNAME|DAYOFMONTH|DAYOFYEAR|DAYS_BETWEEN|EXTRACT|HOUR|ISOWEEK|LAST_DAY|LOCALTOUTC|MINUTE|MONTH|MONTHNAME|MONTHS_BETWEEN|NANO100_BETWEEN|NEXT_DAY|NOW|QUARTER|SECOND|SECONDS_BETWEEN|UTCTOLOCAL|WEEK|WEEKDAY|WORKDAYS_BETWEEN|YEAR|YEARS_BETWEEN)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.conversion.hanasql",
+          "match": "(?i)\\b(?:CAST|TO_ALPHANUM|TO_BIGINT|TO_BINARY|TO_BLOB|TO_BOOLEAN|TO_CLOB|TO_DATE|TO_DATS|TO_DECIMAL|TO_DOUBLE|TO_FIXEDCHAR|TO_INT|TO_INTEGER|TO_JSON_BOOLEAN|TO_NCLOB|TO_NVARCHAR|TO_REAL|TO_SECONDDATE|TO_SMALLDECIMAL|TO_SMALLINT|TO_TIME|TO_TIMESTAMP|TO_TINYINT|TO_VARCHAR)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.hanasql",
+          "match": "(?i)\\b(?:CARDINALITY|MEMBER_AT|SUBARRAY|TRIM_ARRAY|ARRAY|UNNEST|GROUP_SCORE|INDEXING_ERROR_CODE|INDEXING_ERROR_MESSAGE|INDEXING_STATUS|LANGUAGE|MIMETYPE|PLAINTEXT|SCORE|HIERARCHY|HIERARCHY_LEVELED|HIERARCHY_SPANTREE|HIERARCHY_TEMPORAL|HIERARCHY_ANCESTORS|HIERARCHY_ANCESTORS_AGGREGATE|HIERARCHY_DESCENDANTS|HIERARCHY_DESCENDANTS_AGGREGATE|HIERARCHY_SIBLINGS|HIERARCHY_COMPOSITE_ID|JSON_QUERY|JSON_TABLE|JSON_VALUE|ALLOW_PRECISION_LOSS|COALESCE|CONVERT_CURRENCY|CONVERT_UNIT|CURRENT_CONNECTION|CURRENT_IDENTITY_VALUE|CURRENT_OBJECT_SCHEMA|CURRENT_SCHEMA|CURRENT_SITE_ID|CURRENT_TRANSACTION_ISOLATION_LEVEL|CURRENT_UPDATE_STATEMENT_SEQUENCE|CURRENT_UPDATE_TRANSACTION|CURRENT_USER|CURRENT_USER_ID|EXPRESSION_MACRO|GREATEST|GROUPING|GROUPING_ID|HASH_MD5|HASH_SHA256|IFNULL|LEAST|MAP|NEWUID|NULLIF|RECORD_COMMIT_TIMESTAMP|RECORD_ID|RESULT_CACHE_ID|RESULT_CACHE_REFRESH_TIME|SESSION_CONTEXT|SESSION_USER|SYSUUID|WIDTH_BUCKET|XMLEXTRACT|XMLEXTRACTVALUE|ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS|ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD|ESCAPE_DOUBLE_QUOTES|ESCAPE_SINGLE_QUOTES|GENERATE_PASSWORD|IS_SQL_INJECTION_SAFE|VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS|VALIDATE_USERGROUP_CONNECT_RESTRICTION|SERIES_DISAGGREGATE|SERIES_ELEMENT_TO_PERIOD|SERIES_GENERATE|SERIES_PERIOD_TO_ELEMENT|SERIES_ROUND)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+    "types": {
+      "name": "storage.type.hanasql",
+      "match": "(?i)\\b(?:TINYINT|SMALLINT|INTEGER|INT|BIGINT|DECIMAL|DEC|SMALLDECIMAL|REAL|DOUBLE|FLOAT|BOOLEAN|VARCHAR|NVARCHAR|ALPHANUM|SHORTTEXT|VARBINARY|BLOB|CLOB|NCLOB|TEXT|BINTEXT|DATE|TIME|SECONDDATE|TIMESTAMP|DAYDATE|LONGDATE|CHAR|NCHAR|ARRAY|ST_POINT|ST_GEOMETRY|ST_CIRCULARSTRING|ST_GEOMETRYCOLLECTION|ST_LINESTRING|ST_MULTILINESTRING|ST_MULTIPOINT|ST_MULTIPOLYGON|ST_POLYGON)\\b"
+    },
+    "constants": {
+      "patterns": [
+        {
+          "name": "constant.language.hanasql",
+          "match": "(?i)\\b(?:TRUE|FALSE|NULL|UNKNOWN)\\b"
+        },
+        {
+          "name": "support.constant.hanasql",
+          "match": "(?i)\\b(?:CURRENT_(?:CONNECTION|DATE|SCHEMA|TIME|TIMESTAMP|TRANSACTION_ISOLATION_LEVEL|USER|UTCDATE|UTCTIME|UTCTIMESTAMP)|SESSION_USER|SYSUUID|UTCTIMESTAMP|SQLSCRIPT)\\b"
+        }
+      ]
+    },
+    "logical-operators": {
+      "name": "keyword.operator.logical.hanasql",
+      "match": "(?i)\\b(?:AND|OR|NOT|IN|IS|LIKE|LIKE_REGEXPR|BETWEEN|EXISTS|ANY|SOME)\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.flow.hanasql",
+          "match": "(?i)\\b(?:BEGIN|END|IF|ELSE|ELSEIF|THEN|CASE|WHEN|WHILE|FOR|FOREACH|LOOP|RETURN|RETURNS|EXIT|BREAK|CONTINUE|HANDLER|SIGNAL|RESIGNAL|EXCEPTION|CONDITION|DECLARE|OPEN|CLOSE|FETCH|CURSOR|CALL|DO|EXEC|EXECUTE|AUTONOMOUS|TRANSACTION)\\b"
+        },
+        {
+          "name": "keyword.other.dml.hanasql",
+          "match": "(?i)\\b(?:SELECT|FROM|WHERE|GROUP|HAVING|ORDER|BY|LIMIT|OFFSET|TOP|DISTINCT|ALL|AS|INTO|VALUES|INSERT|UPDATE|UPSERT|REPLACE|DELETE|MERGE|TRUNCATE|LOAD|UNLOAD|EXPLAIN|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|NATURAL|LATERAL|ON|USING|UNION|INTERSECT|EXCEPT|MINUS|WITH|OVER|PARTITION|ROLLUP|CUBE|TABLESAMPLE|ASC|DESC|PRIOR|START|CONNECT|NEXTVAL|CURRVAL|ROWID|SET|BOTH|LEADING|TRAILING|REVERSE|COMMIT|ROLLBACK|SAVEPOINT)\\b"
+        },
+        {
+          "name": "keyword.other.ddl.hanasql",
+          "match": "(?i)\\b(?:CREATE|ALTER|DROP|RENAME|GRANT|REVOKE|COMMENT|ANNOTATE|REFRESH|TABLE|VIEW|COLUMN|ROW|PROCEDURE|FUNCTION|SCHEMA|SEQUENCE|SYNONYM|TRIGGER|TYPE|INDEX|ROLE|USER|PRIMARY|FOREIGN|KEY|REFERENCES|UNIQUE|CHECK|CONSTRAINT|DEFAULT|ADD|CASCADE|BEFORE|TEMPORARY|GLOBAL|LOCAL|VIRTUAL|LANGUAGE|SQL|SECURITY|DEFINER|INVOKER|READS|MODIFIES|IN|OUT|INOUT|PARAMETERS|GENERATED|ALWAYS|IDENTITY|AUTO|MERGE|PRIORITY|NOWAIT)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "name": "keyword.operator.hanasql",
+      "match": "\\|\\||:=|=>|<>|!=|<=|>=|[-+*/%=<>]"
+    }
+  }
+}

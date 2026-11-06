@@ -1,0 +1,27 @@
+{
+  "name": "sap-hana-sql",
+  "displayName": "SAP HANA SQL Highlighting",
+  "description": "Syntax highlighting for SAP HANA SQL and SQLScript (.sql, .hdbprocedure, .hdbfunction, .hdbtable, .hdbview)",
+  "version": "0.1.0",
+  "publisher": "l1asis",
+  "license": "MIT",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Programming Languages"],
+  "contributes": {
+    "languages": [
+      {
+        "id": "hanasql",
+        "aliases": ["SAP HANA SQL", "HANA SQL", "hanasql"],
+        "extensions": [".sql", ".hdbprocedure", ".hdbfunction", ".hdbtable", ".hdbview"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "hanasql",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      }
+    ]
+  }
+}
