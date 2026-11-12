@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="1.75">
+  <circle cx="5.5" cy="9.5" r="2" />
+  <polygon points="10 6 20 3 20 16 10 13" fill="#EA580C" fill-opacity="0.15" />
+  <path d="M3 20H21M14 18V22" />
+</svg>
