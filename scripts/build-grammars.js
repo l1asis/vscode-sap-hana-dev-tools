@@ -664,4 +664,83 @@ write('hdbcds', {
   });
 }
 
+
+// ---------------------------------------------------------------------------
+// More HDI JSON artifacts (HDI Reference)
+// ---------------------------------------------------------------------------
+jsonGrammar('hdblogicalschema', 'SAP HANA HDI Logical Schema (.hdblogicalschema)', TARGET_KEYS);
+jsonGrammar('hdbsysbicsynonym', 'SAP HANA HDI _SYS_BIC Synonym (.hdbsysbicsynonym)', ['target', 'object']);
+jsonGrammar('hdbvirtualprocedureconfig', 'SAP HANA HDI Virtual Procedure Configuration (.hdbvirtualprocedureconfig)', TARGET_KEYS);
+jsonGrammar('hdbvirtualfunctionconfig', 'SAP HANA HDI Virtual Function Configuration (.hdbvirtualfunctionconfig)', TARGET_KEYS);
+jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafllangprocedure)', ['procedure', 'area', 'function', 'parameters', 'type', 'direction']);
+
+// ---------------------------------------------------------------------------
+// Text analysis extraction rules (CGUL): .hdbtextrule / .hdbtextinclude / .hdbtextlexicon
+// Only the directives are documented in the Text Analysis Developer Guide; the rule body
+// (CGUL) is covered with a basic grammar.
+// ---------------------------------------------------------------------------
+{
+  const ns = 'hdbtextrule';
+  write('hdbtextrule', {
+    name: 'SAP HANA Text Analysis Rules (CGUL)',
+    scopeName: 'source.hdbtextrule',
+    patterns: [
+      { include: '#comments' },
+      { include: '#import' },
+      { include: '#definition' },
+      { include: '#string' },
+      { include: '#token' },
+      { include: '#group-reference' },
+      { include: '#attribute' },
+      { include: '#number' },
+      { include: '#operators' },
+    ],
+    repository: {
+      comments: comments(ns),
+      string: dqString(ns),
+      number: number(ns),
+      import: {
+        match: R(/^\s*(#(?:include|lexicon))\s+(?:([A-Za-z_]\w*)\s+)?(<)([^>\n]*)(>)/),
+        captures: {
+          1: { name: `keyword.control.import.${ns}` },
+          2: { name: `entity.name.type.${ns}` },
+          3: { name: `punctuation.definition.string.begin.${ns}` },
+          4: { name: `string.unquoted.path.${ns}` },
+          5: { name: `punctuation.definition.string.end.${ns}` },
+        },
+      },
+      definition: {
+        match: R(/^\s*(#(?:define|subgroup|group))\s+([A-Za-z_][\w]*)?/),
+        captures: { 1: { name: `keyword.control.directive.${ns}` }, 2: { name: `entity.name.type.${ns}` } },
+      },
+      attribute: { match: R(/\b([A-Za-z_]\w*)(?=\s*=\s*")/), name: `variable.parameter.attribute.${ns}` },
+      token: {
+        begin: R(/</),
+        end: R(/>/),
+        beginCaptures: { 0: { name: `punctuation.definition.token.begin.${ns}` } },
+        endCaptures: { 0: { name: `punctuation.definition.token.end.${ns}` } },
+        contentName: `meta.token.${ns}`,
+        patterns: [
+          { include: '#string' },
+          { name: `support.type.property-name.${ns}`, match: R(/\b[A-Z][A-Z_]+(?=\s*:)/) },
+          { name: `punctuation.separator.${ns}`, match: R(/[:,]/) },
+          { name: `keyword.operator.${ns}`, match: R(/[|+*?]/) },
+        ],
+      },
+      'group-reference': {
+        match: R(/(%)(\()([A-Za-z_]\w*)(\))/),
+        captures: {
+          1: { name: `keyword.operator.${ns}` },
+          2: { name: `punctuation.section.parens.${ns}` },
+          3: { name: `variable.other.group.${ns}` },
+          4: { name: `punctuation.section.parens.${ns}` },
+        },
+      },
+      operators: { name: `keyword.operator.${ns}`, match: R(/[|+*?^$:]|\{\d+(?:,\d*)?\}/) },
+    },
+  });
+  write('hdbtextinclude', { name: 'SAP HANA Text Analysis Rules Include', scopeName: 'source.hdbtextinclude', patterns: [{ include: 'source.hdbtextrule' }] });
+  write('hdbtextlexicon', { name: 'SAP HANA Text Analysis Lexicon', scopeName: 'source.hdbtextlexicon', patterns: [{ include: 'source.hdbtextrule' }] });
+}
+
 console.log('grammars written to', OUT);
