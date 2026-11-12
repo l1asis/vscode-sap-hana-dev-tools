@@ -1,0 +1,94 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+ <!-- Light-Mode Rounded Tile Background -->
+ <defs>
+  <!-- Background Tile Gradients -->
+  <linearGradient id="bg_fill" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#FFFFFF" />
+   <stop offset="60%" stop-color="#F1F5F9" />
+   <stop offset="100%" stop-color="#DDE5F0" />
+  </linearGradient>
+  <linearGradient id="bg_stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#F1F5F9" />
+   <stop offset="100%" stop-color="#CBD5E1" />
+  </linearGradient>
+
+  <!-- Database Gradients (Unified userSpaceOnUse Stroke + Luminous Azure Fills) -->
+  <linearGradient id="db_stroke" gradientUnits="userSpaceOnUse" x1="23" y1="33" x2="71" y2="101">
+   <stop offset="0%" stop-color="#0077FF" />
+   <stop offset="50%" stop-color="#0047E0" />
+   <stop offset="100%" stop-color="#00227A" />
+  </linearGradient>
+  <linearGradient id="db_body_fill" gradientUnits="userSpaceOnUse" x1="23" y1="42" x2="71" y2="101">
+   <stop offset="0%" stop-color="#BAE6FD" />
+   <stop offset="50%" stop-color="#60B5FF" />
+   <stop offset="100%" stop-color="#1D7AFC" />
+  </linearGradient>
+  <linearGradient id="db_top_fill" gradientUnits="userSpaceOnUse" x1="23" y1="33" x2="71" y2="51">
+   <stop offset="0%" stop-color="#E0F2FE" />
+   <stop offset="100%" stop-color="#60B5FF" />
+  </linearGradient>
+
+  <!-- Lightning Bolt Gradients (Warm Gold Fill + Deep Orange Stroke) -->
+  <linearGradient id="bolt_fill" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#FEF08A" />
+   <stop offset="50%" stop-color="#FBBF24" />
+   <stop offset="100%" stop-color="#F97316" />
+  </linearGradient>
+  <linearGradient id="bolt_stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#F59E0B" />
+   <stop offset="50%" stop-color="#EA580C" />
+   <stop offset="100%" stop-color="#B91C1C" />
+  </linearGradient>
+
+  <!-- Sparkle Gradients (Luminous Lavender Fill + Deep Violet Stroke) -->
+  <linearGradient id="sparkle_fill" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#F3E8FF" />
+   <stop offset="50%" stop-color="#C084FC" />
+   <stop offset="100%" stop-color="#7E22CE" />
+  </linearGradient>
+  <linearGradient id="sparkle_stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#9333EA" />
+   <stop offset="50%" stop-color="#6D28D9" />
+   <stop offset="100%" stop-color="#3B0764" />
+  </linearGradient>
+
+  <!-- Flame Gradients (Soft Coral Fill + Rich Crimson Stroke & Core) -->
+  <linearGradient id="flame_fill" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#FFE4E6" />
+   <stop offset="55%" stop-color="#FDA4AF" />
+   <stop offset="100%" stop-color="#FB7185" />
+  </linearGradient>
+  <linearGradient id="flame_stroke" x1="0%" y1="0%" x2="100%" y2="100%">
+   <stop offset="0%" stop-color="#F43F5E" />
+   <stop offset="50%" stop-color="#DC2626" />
+   <stop offset="100%" stop-color="#881337" />
+  </linearGradient>
+ </defs>
+ <!-- Foreground Icon Geometry (Strictly mapped to exact 0..512px bounds) -->
+ <g class="layer" display="inline">
+  <title>Layer 1</title>
+  <g id="svg_19" transform="matrix(4, 0, 0, 4, 0, 0)">
+   <g id="svg_20" transform="matrix(0.97338403, 0, 0, 0.97338403, 1.70342205, 1.70342205)">
+    <!-- Background Tile -->
+    <rect x="0.75" y="0.75" width="126.5" height="126.5" rx="24" fill="url(#bg_fill)" stroke="url(#bg_stroke)" stroke-width="5" id="svg_1" />
+    <!-- In-Memory Speed Lightning Bolt -->
+    <path d="m88,6.5l-17,26l11,0l-5,25l20,-28l-11,0l2,-23z" fill="url(#bolt_fill)" fill-opacity="1" stroke="url(#bolt_stroke)" id="svg_8" stroke-width="4" stroke-linejoin="round" />
+    <!-- Four-Point Sparkle -->
+    <path d="m101.5,54l5.07,9.43l9.43,5.07l-9.43,5.08l-5.07,9.42l-5.08,-9.42l-9.42,-5.08l9.42,-5.07l5.08,-9.43z" fill="url(#sparkle_fill)" fill-opacity="1" stroke="url(#sparkle_stroke)" id="svg_9" stroke-width="4" stroke-linejoin="round" />
+    <!-- Flame Icon -->
+    <g id="svg_14" transform="matrix(0.768566, 0, 0, 0.768566, 59.5212, 79.9538)">
+     <!-- Outer Flame -->
+     <path d="m34,8c0,0 15,12 15,29c0,9.94 -8.06,18 -18,18c-9.94,0 -17,-8.06 -17,-18c0,-8 5,-15 8,-18c0,6 4,8 5,8c-2,-8 1,-15 7,-19z" fill="url(#flame_fill)" stroke="url(#flame_stroke)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" id="svg_15" />
+     <!-- Inner Core -->
+     <path d="m31,55c4.5,0 8,-3.5 8,-8.5c0,-5 -6,-10.5 -6,-10.5c0,0 -8,5.5 -8,10.5c0,5 2.5,8.5 6,8.5z" fill="url(#flame_stroke)" id="svg_16" />
+    </g>
+    <!-- Database Cylinder -->
+    <g id="svg_18" transform="matrix(1, 0, 0, 1, -7, 0)">
+     <path d="m23,42a24,9 0 0 0 48,0l0,50a24,9 0 0 1 -48,0l0,-50z" fill="url(#db_body_fill)" fill-opacity="1" stroke="url(#db_stroke)" id="svg_3" stroke-width="4" />
+     <ellipse cx="47" cy="42" rx="24" ry="9" fill="url(#db_top_fill)" fill-opacity="1" stroke="url(#db_stroke)" id="svg_4" stroke-width="4" />
+     <path d="m23,67a24,9 0 0 0 48,0" stroke="url(#db_stroke)" id="svg_5" fill-opacity="0" fill="#000000" stroke-width="3" />
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>
