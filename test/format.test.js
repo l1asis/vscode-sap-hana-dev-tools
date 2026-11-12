@@ -98,3 +98,10 @@ test('XS Classic key=value artifacts are detected (formatter must skip them)', (
   assert.ok(!isKeyValueArtifact('PROCEDURE "P" () AS BEGIN END'));
   assert.ok(!isKeyValueArtifact(''));
 });
+
+test('SQLScript library calls and ALTER SYSTEM statements (Administration Guide samples)', () => {
+  assert.match(f('begin using sqlscript_string as lib; x = lib:split_to_table(:a, char(10)); end'), /x = lib:split_to_table\(:a, CHAR\(10\)\);/);
+  assert.strictEqual(f("alter system create waitgraph at location 'h:30003' into file 'w.trc'"), "ALTER SYSTEM CREATE WAITGRAPH AT LOCATION 'h:30003' INTO FILE 'w.trc'\n");
+  assert.match(f('alter system clear traces;'), /^ALTER SYSTEM CLEAR TRACES;/);
+  assert.match(f('select source, service from t'), /source,\n {4}service/); // identifiers keep their case
+});

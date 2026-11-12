@@ -173,8 +173,11 @@ test('hanasql: SQLScript additions from the SQLScript reference', () => {
   check(t, 'SQLEXCEPTION', 'keyword.control.sqlscript');
   check(t, '::SQL_ERROR_CODE', 'support.variable.system');
   check(t, 'PROCEDURE', 'keyword.control.ddl');
-  const lib = tokenize('source.hanasql', 'SELECT SQLSCRIPT_STRING:SPLIT(a) FROM t');
+  const lib = tokenize('source.hanasql', 'USING SQLSCRIPT_STRING AS lib;\nx = lib:split_to_table(:a, CHAR(10));');
   check(lib, 'SQLSCRIPT_STRING', 'support.class.library');
+  check(lib, 'lib', 'variable.other.library');
+  check(lib, 'split_to_table', 'support.function.library-member');
+  check(lib, ':a', 'variable.other.readwrite');
 });
 
 
@@ -249,6 +252,62 @@ test('hdbcds (XS Advanced)', () => {
 test('xsaccess keys from the Developer Guide', () => {
   const t = tokenize('source.xsaccess', '{ "default_connection": "x", "cors": { "enabled": true }, "headers": { "customHeaders": [{ "name": "a", "value": "b" }] } }');
   for (const k of ['default_connection', 'cors', 'headers', 'customHeaders', 'enabled']) check(t, `"${k}"`, 'property-name.json.xsaccess');
+});
+
+test('hanasql: ALTER SYSTEM and object DDL statement phrases, vector types, new functions', () => {
+  let t = tokenize('source.hanasql', "ALTER SYSTEM START KERNEL PROFILER AT 'h:30003' TRACEPROFILE 'P';");
+  check(t, 'ALTER SYSTEM START KERNEL PROFILER', 'keyword.other.statement');
+  t = tokenize('source.hanasql', 'ALTER SYSTEM CLEAR TRACES;\nCREATE JWT PROVIDER p;\nCREATE TABLE t (v REAL_VECTOR(3));\nSELECT COSINE_SIMILARITY(a, b), SUBSTR_REGEXPR(x IN y OCCURRENCE 1) FROM t;');
+  check(t, 'ALTER SYSTEM CLEAR TRACES', 'keyword.other.statement');
+  check(t, 'CREATE JWT PROVIDER', 'keyword.other.statement');
+  check(t, 'REAL_VECTOR', 'storage.type.hanasql');
+  check(t, 'COSINE_SIMILARITY', 'support.function');
+  check(t, 'SUBSTR_REGEXPR', 'support.function');
+  check(t, 'OCCURRENCE', 'keyword.other.dml');
+  t = tokenize('source.hanasql', 'APPLICATION TIME "CUSTOMERS"(validfrom, validto)\nGRAPH WORKSPACE G SOURCE COLUMN S\nVIRTUAL PROCEDURE "p" ()');
+  check(t, 'APPLICATION TIME', 'keyword.control.ddl');
+  check(t, 'GRAPH WORKSPACE', 'keyword.control.ddl');
+  check(t, 'VIRTUAL PROCEDURE', 'keyword.control.ddl');
+});
+
+
+test('HDI: more JSON artifacts', () => {
+  let t = tokenize('source.hdbafllangprocedure', sample('hdi/qa1_f3.hdbafllangprocedure'));
+  for (const k of ['procedure', 'area', 'function', 'parameters', 'type', 'direction']) check(t, `"${k}"`, 'property-name.json.hdbafllangprocedure');
+  t = tokenize('source.hdblogicalschema', sample('hdi/logicalschemas.hdblogicalschema'));
+  for (const k of ['target', 'remote', 'database', 'schema']) check(t, `"${k}"`, 'property-name.json.hdblogicalschema');
+  t = tokenize('source.hdbsysbicsynonym', sample('hdi/a.hdbsysbicsynonym'));
+  check(t, '"object"', 'property-name.json.hdbsysbicsynonym');
+  t = tokenize('source.hdbvirtualprocedureconfig', sample('hdi/remote_procedure.hdbvirtualprocedureconfig'));
+  check(t, '"remote"', 'property-name.json.hdbvirtualprocedureconfig');
+});
+
+test('HDI: text analysis rules (CGUL), include and lexicon', () => {
+  const t = tokenize('source.hdbtextrule', sample('hdi/rules.hdbtextrule'));
+  check(t, '#include', 'keyword.control.import');
+  check(t, '#lexicon', 'keyword.control.import');
+  check(t, 'my.ta.rules::common-rules.hdbtextinclude', 'string.unquoted.path');
+  check(t, '#define', 'keyword.control.directive');
+  check(t, '#group', 'keyword.control.directive');
+  check(t, 'PHONE', 'entity.name.type.hdbtextrule');
+  check(t, 'scope', 'variable.parameter.attribute');
+  check(t, '// phone numbers', 'comment.line.double-slash');
+  check(t, 'STEM', 'support.type.property-name');
+  check(t, 'Digit', 'variable.other.group');
+  const inc = tokenize('source.hdbtextinclude', '#define A: [0-9]');
+  check(inc, '#define', 'keyword.control.directive');
+  const lex = tokenize('source.hdbtextlexicon', '#lexicon X <a::b.hdbtextlexicon>');
+  check(lex, '#lexicon', 'keyword.control.import');
+});
+
+test('HDI: SQL-style artifacts (application time, graph workspace, virtual function)', () => {
+  let t = tokenize('source.hanasql', sample('hdi/CUSTOMERS.hdbapplicationtime'));
+  check(t, 'APPLICATION TIME', 'keyword.control.ddl');
+  check(t, '"CUSTOMERS"', 'entity.name.type.hanasql');
+  t = tokenize('source.hanasql', sample('hdi/my_graph.hdbgraphworkspace'));
+  check(t, 'GRAPH WORKSPACE', 'keyword.control.ddl');
+  t = tokenize('source.hanasql', sample('hdi/remote_function.hdbvirtualfunction'));
+  check(t, 'VIRTUAL FUNCTION', 'keyword.control.ddl');
 });
 
 test('every grammar tokenizes its sample without throwing', () => {
