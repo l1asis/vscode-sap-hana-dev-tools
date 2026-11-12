@@ -1,0 +1,5 @@
+#include <my.ta.rules::common-rules.hdbtextinclude>
+#lexicon CITIES <my.ta.rules::common-words.hdbtextlexicon>
+// phone numbers
+#define Digit: [0-9]
+#group PHONE (scope="sentence"): <STEM:call> <.*>{0,3} %(Digit)+

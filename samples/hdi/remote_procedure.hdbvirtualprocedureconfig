@@ -1,0 +1,1 @@
+{ "com.sap.hana.example::REMOTE_PROCEDURE" : { "target" : { "remote" : "REMOTE_SYSTEM_A" } } }

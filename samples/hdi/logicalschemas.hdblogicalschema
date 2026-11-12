@@ -1,0 +1,5 @@
+{
+  "LS1" : {
+    "target": { "remote": "REMOTE_A", "database": "DB1", "schema": "TARGET" }
+  }
+}

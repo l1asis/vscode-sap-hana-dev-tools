@@ -1,0 +1,8 @@
+{
+    "procedure" : "com.sap.hana.example::QA1_F3_PROC",
+    "area" : "QA",
+    "function" : "QA1_F3",
+    "parameters" : [
+      { "type" : "com.sap.hana.example::INPUT_TABLE_TYPE", "direction" : "IN" }
+    ]
+}
