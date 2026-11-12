@@ -1,0 +1,8 @@
+VIEW "com.mycompany.apps::active_products_view" AS 
+SELECT 
+    "ID",
+    "NAME",
+    "PRICE"
+FROM "com.mycompany.apps::sample_table"
+WHERE "IS_ACTIVE" = TRUE
+WITH READ ONLY;

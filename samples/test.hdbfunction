@@ -1,0 +1,22 @@
+FUNCTION "com.mycompany.apps::get_total_price" (
+    IN im_tax_rate DECIMAL(3, 2),
+    IN im_min_price DECIMAL(15, 2)
+)
+RETURNS TABLE (
+    "ITEM_NAME" NVARCHAR(100),
+    "NET_PRICE" DECIMAL(15, 2),
+    "GROSS_PRICE" DECIMAL(15, 2)
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+AS
+BEGIN
+    -- Berechne den Bruttopreis basierend auf der Steuer
+    RETURN SELECT 
+        "NAME" AS "ITEM_NAME",
+        "PRICE" AS "NET_PRICE",
+        "PRICE" * (1.0 + :im_tax_rate) AS "GROSS_PRICE"
+    FROM "com.mycompany.apps::sample_table"
+    WHERE "PRICE" >= :im_min_price
+      AND "IS_ACTIVE" = TRUE;
+END;

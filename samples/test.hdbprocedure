@@ -1,0 +1,21 @@
+-- Beispiel zum Testen des Highlightings
+PROCEDURE "my.app::get_orders" (
+    IN iv_customer NVARCHAR(10),
+    OUT et_orders TABLE (ORDER_ID INTEGER, AMOUNT DECIMAL(15,2))
+)
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+READS SQL DATA AS
+BEGIN
+    DECLARE lv_count INTEGER := 0;
+    /* Block-Kommentar */
+    et_orders = SELECT o.ORDER_ID, ROUND(o.AMOUNT, 2) AS AMOUNT
+                FROM "ORDERS" AS o
+                WHERE o.CUSTOMER = :iv_customer
+                  AND o.CREATED > ADD_DAYS(CURRENT_DATE, -30)
+                ORDER BY o.ORDER_ID DESC;
+    lv_count = ::ROWCOUNT;
+    IF :lv_count = 0 THEN
+        SIGNAL SQL_ERROR_CODE 10001 SET MESSAGE_TEXT = 'Keine Daten ''gefunden''';
+    END IF;
+END;

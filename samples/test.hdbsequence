@@ -1,0 +1,7 @@
+SEQUENCE "com.mycompany.apps::product_seq"
+START WITH 1000
+INCREMENT BY 1
+MINVALUE 1
+MAXVALUE 99999999
+NO CYCLE
+RESET BY SELECT IFNULL(MAX("ID"), 0) + 1 FROM "com.mycompany.apps::sample_table";
