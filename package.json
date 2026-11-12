@@ -9,7 +9,21 @@
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Formatters",
+    "Linters"
+  ],
+  "keywords": [
+    "SAP",
+    "HANA",
+    "SQLScript",
+    "XSC",
+    "XS Classic",
+    "XSA",
+    "XS Advanced",
+    "HDI",
+    "CDS",
+    "XSJS"
   ],
   "contributes": {
     "languages": [
