@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Public Synonym (.hdbpublicsynonym)",
+  "scopeName": "source.hdbpublicsynonym",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbpublicsynonym",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbpublicsynonym",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbpublicsynonym",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbpublicsynonym",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbpublicsynonym",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbpublicsynonym",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbpublicsynonym",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbpublicsynonym",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbpublicsynonym",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbpublicsynonym",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbpublicsynonym",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

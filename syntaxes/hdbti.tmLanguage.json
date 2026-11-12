@@ -1,0 +1,148 @@
+{
+  "name": "SAP HANA Table Import (XS Classic)",
+  "scopeName": "source.hdbti",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#import"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbti",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbti",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbti",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbti",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbti",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbti",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbti",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbti",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbti",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbti",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "import": {
+      "begin": "\\b(import)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.import.hdbti"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbti"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbti"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#struct"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbti",
+          "match": "[\\[\\],]"
+        }
+      ]
+    },
+    "struct": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.begin.hdbti"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.end.hdbti"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "begin": "\\b(table|cdstable|hdbtable|schema|file|header|useHeaderNames|delimField|delimEnclosing|distinguishEmptyFromNull|keys)\\b\\s*(=)",
+          "beginCaptures": {
+            "1": {
+              "name": "support.type.property-name.hdbti"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.hdbti"
+            }
+          },
+          "end": "(;)",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.terminator.statement.hdbti"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#values"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

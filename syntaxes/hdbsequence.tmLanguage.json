@@ -1,0 +1,167 @@
+{
+  "name": "SAP HANA HDBSequence (XS Classic)",
+  "scopeName": "source.hdbsequence",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#reset-by"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "source.hanasql"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbsequence",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbsequence",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbsequence",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbsequence",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbsequence",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbsequence",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbsequence",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbsequence",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbsequence",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbsequence",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "reset-by": {
+      "begin": "\\b(reset_by)\\b\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbsequence"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbsequence"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.hdbsequence"
+        }
+      },
+      "end": "(\")",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end.hdbsequence"
+        }
+      },
+      "contentName": "meta.embedded.block.sql.hdbsequence",
+      "patterns": [
+        {
+          "name": "variable.other.quoted-identifier.hanasql",
+          "match": "\\\\\"(?:(?!\\\\\").)*\\\\\""
+        },
+        {
+          "name": "constant.character.escape.hdbsequence",
+          "match": "\\\\."
+        },
+        {
+          "include": "source.hanasql#strings"
+        },
+        {
+          "include": "source.hanasql#numbers"
+        },
+        {
+          "include": "source.hanasql#sqlscript-variables"
+        },
+        {
+          "include": "source.hanasql#functions"
+        },
+        {
+          "include": "source.hanasql#sqlscript-builtins"
+        },
+        {
+          "include": "source.hanasql#types"
+        },
+        {
+          "include": "source.hanasql#constants"
+        },
+        {
+          "include": "source.hanasql#logical-operators"
+        },
+        {
+          "include": "source.hanasql#keywords"
+        },
+        {
+          "include": "source.hanasql#operators"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(schema|increment_by|start_with|maxvalue|nomaxvalue|minvalue|nominvalue|cycles|public|depends_on|depends_on_table|depends_on_view)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbsequence"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbsequence"
+        }
+      },
+      "end": "(;)|(?=^\\s*[A-Za-z_]\\w*\\s*=)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbsequence"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    }
+  }
+}

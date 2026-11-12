@@ -1,0 +1,57 @@
+{
+  "name": "SAP HANA CDS (.hdbcds, XS Advanced)",
+  "scopeName": "source.hdbcds",
+  "patterns": [
+    {
+      "include": "#xsa"
+    },
+    {
+      "include": "source.hdbdd"
+    }
+  ],
+  "repository": {
+    "xsa": {
+      "patterns": [
+        {
+          "name": "variable.language.session.hdbcds",
+          "match": "\\$(?:user|env)\\b"
+        },
+        {
+          "match": "(?i)\\b(accesspolicy|role|aspect)\\s+([A-Za-z_][\\w.]*)",
+          "captures": {
+            "1": {
+              "name": "storage.type.class.hdbcds"
+            },
+            "2": {
+              "name": "entity.name.type.hdbcds"
+            }
+          }
+        },
+        {
+          "match": "(?i)\\b(package)\\s+([\\w.:]+)(?:\\s+(depends)\\s+(on)\\s+([\\w.:]+(?:\\s*,\\s*[\\w.:]+)*))?",
+          "captures": {
+            "1": {
+              "name": "keyword.other.package.hdbcds"
+            },
+            "2": {
+              "name": "entity.name.namespace.hdbcds"
+            },
+            "3": {
+              "name": "keyword.other.package.hdbcds"
+            },
+            "4": {
+              "name": "keyword.other.package.hdbcds"
+            },
+            "5": {
+              "name": "entity.name.namespace.hdbcds"
+            }
+          }
+        },
+        {
+          "name": "keyword.control.hdbcds",
+          "match": "(?i)\\b(?:extend|grant|in\\s+package|with\\s+structured\\s+privilege\\s+check|from)\\b"
+        }
+      ]
+    }
+  }
+}

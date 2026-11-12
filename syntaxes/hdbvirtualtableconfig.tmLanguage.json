@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Virtual Table Configuration (.hdbvirtualtableconfig)",
+  "scopeName": "source.hdbvirtualtableconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbvirtualtableconfig",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbvirtualtableconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbvirtualtableconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbvirtualtableconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbvirtualtableconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbvirtualtableconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbvirtualtableconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbvirtualtableconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbvirtualtableconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbvirtualtableconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbvirtualtableconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

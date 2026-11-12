@@ -1,0 +1,77 @@
+{
+  "name": "SAP HANA Synonym (.hdbsynonym)",
+  "scopeName": "source.hdbsynonym",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "entity.name.type.hdbsynonym",
+      "match": "\"[^\"\\\\\\n]*::[^\"\\\\\\n]*\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json.hdbsynonym",
+      "match": "\"(?:target|schema|object|revalidate|logical_schema|remote|database)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbsynonym",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbsynonym",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbsynonym",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbsynonym",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbsynonym",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbsynonym",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbsynonym",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbsynonym",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbsynonym",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbsynonym",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

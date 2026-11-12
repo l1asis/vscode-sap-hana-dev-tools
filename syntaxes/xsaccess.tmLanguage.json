@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS Access (.xsaccess)",
+  "scopeName": "source.xsaccess",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsaccess",
+      "match": "\"(?:exposed|authentication|method|authorization|anonymous_connection|default_connection|cache_control|cors|enabled|allowMethods|allowOrigin|allowHeaders|exposeHeaders|maxAge|default_file|enable_etags|force_ssl|mime_mapping|extension|mimetype|prevent_xsrf|rewrite_rules|source|target|headers|customHeaders|name|value)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsaccess",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsaccess",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsaccess",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsaccess",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsaccess",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsaccess",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsaccess",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsaccess",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsaccess",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsaccess",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

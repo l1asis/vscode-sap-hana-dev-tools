@@ -1,0 +1,77 @@
+{
+  "name": "SAP HANA HDI Container Configuration (.hdiconfig)",
+  "scopeName": "source.hdiconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "entity.name.type.hdiconfig",
+      "match": "\"hdb[a-z]+\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json.hdiconfig",
+      "match": "\"(?:plugin_name|plugin_version|minimum_feature_version|file_suffixes)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdiconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdiconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdiconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdiconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdiconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdiconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdiconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdiconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdiconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdiconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

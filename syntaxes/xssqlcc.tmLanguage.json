@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS SQL Connection (.xssqlcc)",
+  "scopeName": "source.xssqlcc",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xssqlcc",
+      "match": "\"(?:description|role_for_auto_user)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xssqlcc",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xssqlcc",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xssqlcc",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xssqlcc",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xssqlcc",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xssqlcc",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xssqlcc",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xssqlcc",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xssqlcc",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xssqlcc",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

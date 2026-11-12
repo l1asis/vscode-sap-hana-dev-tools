@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Role Configuration (.hdbroleconfig)",
+  "scopeName": "source.hdbroleconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbroleconfig",
+      "match": "\"(?:role|name|privileges|privileges_with_grant_option|schema_reference|type|names|object_privileges|pattern_mode|schema|pattern_escape_character|global_roles|schema_roles|system_privileges|schema_privileges|reference|global_object_privileges|schema_analytic_privileges|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbroleconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbroleconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbroleconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbroleconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbroleconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbroleconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbroleconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbroleconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbroleconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbroleconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

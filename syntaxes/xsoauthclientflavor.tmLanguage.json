@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS OAuth Client Flavor",
+  "scopeName": "source.xsoauthclientflavor",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsoauthclientflavor",
+      "match": "\"(?:description|flavorStep|paramLocation|paramName|paramValue|valueType|paramMandatory|modifies|parameters)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsoauthclientflavor",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsoauthclientflavor",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsoauthclientflavor",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsoauthclientflavor",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsoauthclientflavor",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsoauthclientflavor",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsoauthclientflavor",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsoauthclientflavor",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsoauthclientflavor",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsoauthclientflavor",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

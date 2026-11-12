@@ -1,0 +1,77 @@
+{
+  "name": "SAP HANA HDI Enterprise Search Configuration (.hdbeshconfig)",
+  "scopeName": "source.hdbeshconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "entity.name.tag.annotation.hdbeshconfig",
+      "match": "\"@[A-Za-z][\\w.]*\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json.hdbeshconfig",
+      "match": "\"(?:Fullname|EntityType|Properties|Name|position)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbeshconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbeshconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbeshconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbeshconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbeshconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbeshconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbeshconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbeshconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbeshconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbeshconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

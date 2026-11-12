@@ -1,0 +1,167 @@
+{
+  "name": "SAP HANA HDBView (XS Classic)",
+  "scopeName": "source.hdbview",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#query"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "source.hanasql"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbview",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbview",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbview",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbview",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbview",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbview",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbview",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbview",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbview",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbview",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "query": {
+      "begin": "\\b(query)\\b\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbview"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbview"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.hdbview"
+        }
+      },
+      "end": "(\")",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end.hdbview"
+        }
+      },
+      "contentName": "meta.embedded.block.sql.hdbview",
+      "patterns": [
+        {
+          "name": "variable.other.quoted-identifier.hanasql",
+          "match": "\\\\\"(?:(?!\\\\\").)*\\\\\""
+        },
+        {
+          "name": "constant.character.escape.hdbview",
+          "match": "\\\\."
+        },
+        {
+          "include": "source.hanasql#strings"
+        },
+        {
+          "include": "source.hanasql#numbers"
+        },
+        {
+          "include": "source.hanasql#sqlscript-variables"
+        },
+        {
+          "include": "source.hanasql#functions"
+        },
+        {
+          "include": "source.hanasql#sqlscript-builtins"
+        },
+        {
+          "include": "source.hanasql#types"
+        },
+        {
+          "include": "source.hanasql#constants"
+        },
+        {
+          "include": "source.hanasql#logical-operators"
+        },
+        {
+          "include": "source.hanasql#keywords"
+        },
+        {
+          "include": "source.hanasql#operators"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(schema|public|depends_on|depends_on_table|depends_on_view)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbview"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbview"
+        }
+      },
+      "end": "(;)|(?=^\\s*[A-Za-z_]\\w*\\s*=)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbview"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    }
+  }
+}

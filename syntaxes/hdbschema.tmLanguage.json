@@ -1,0 +1,100 @@
+{
+  "name": "SAP HANA HDBSchema (XS Classic)",
+  "scopeName": "source.hdbschema",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#assignment"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbschema",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbschema",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbschema",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbschema",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbschema",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbschema",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbschema",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbschema",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbschema",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbschema",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(schema_name)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbschema"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbschema"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbschema"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    }
+  }
+}

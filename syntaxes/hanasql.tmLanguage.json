@@ -3,18 +3,45 @@
   "name": "SAP HANA SQL",
   "scopeName": "source.hanasql",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#strings" },
-    { "include": "#quoted-identifiers" },
-    { "include": "#entity-definitions" },
-    { "include": "#numbers" },
-    { "include": "#sqlscript-variables" },
-    { "include": "#functions" },
-    { "include": "#types" },
-    { "include": "#constants" },
-    { "include": "#logical-operators" },
-    { "include": "#keywords" },
-    { "include": "#operators" }
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#quoted-identifiers"
+    },
+    {
+      "include": "#entity-definitions"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#sqlscript-variables"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#sqlscript-builtins"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#logical-operators"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#operators"
+    }
   ],
   "repository": {
     "comments": {
@@ -35,7 +62,10 @@
       "begin": "(?i)(?:\\b[NX])?'",
       "end": "'(?!')",
       "patterns": [
-        { "name": "constant.character.escape.hanasql", "match": "''" }
+        {
+          "name": "constant.character.escape.hanasql",
+          "match": "''"
+        }
       ]
     },
     "quoted-identifiers": {
@@ -48,17 +78,27 @@
           "comment": "CREATE [OR REPLACE] <object> <name>",
           "match": "(?i)\\b(CREATE(?:\\s+OR\\s+REPLACE)?)\\s+((?:(?:COLUMN|ROW|GLOBAL\\s+TEMPORARY|LOCAL\\s+TEMPORARY|TEMPORARY|VIRTUAL|PUBLIC|UNIQUE|HISTORY|COLLECTION)\\s+)*(?:TABLE|VIEW|PROCEDURE|FUNCTION|SCHEMA|SEQUENCE|SYNONYM|TRIGGER|TYPE|INDEX|ROLE|USER|PROJECTION\\s+VIEW|FULLTEXT\\s+INDEX))\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(\"(?:[^\"]|\"\")+\"(?:\\.\"(?:[^\"]|\"\")+\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
           "captures": {
-            "1": { "name": "keyword.control.ddl.hanasql" },
-            "2": { "name": "keyword.control.ddl.hanasql" },
-            "3": { "name": "entity.name.type.hanasql" }
+            "1": {
+              "name": "keyword.control.ddl.hanasql"
+            },
+            "2": {
+              "name": "keyword.control.ddl.hanasql"
+            },
+            "3": {
+              "name": "entity.name.type.hanasql"
+            }
           }
         },
         {
-          "comment": "HDI design-time artifacts (no CREATE): PROCEDURE \"name\", COLUMN TABLE \"name\", VIEW \"name\" ...",
-          "match": "(?i)^\\s*((?:COLUMN|ROW)\\s+TABLE|TABLE\\s+TYPE|VIRTUAL\\s+TABLE|PROCEDURE|FUNCTION|VIEW)\\s+(\"(?:[^\"]|\"\")+\"(?:\\.\"(?:[^\"]|\"\")+\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
+          "comment": "HDI design-time artifacts (no CREATE): PROCEDURE \"name\", COLUMN TABLE \"name\", STRUCTURED PRIVILEGE \"name\", RESULT CACHE \"name\", ...",
+          "match": "(?i)^\\s*((?:COLUMN|ROW)\\s+TABLE|TABLE\\s+TYPE|VIRTUAL\\s+(?:TABLE|FUNCTION)|PROJECTION\\s+VIEW|STRUCTURED\\s+(?:PRIVILEGE|FILTER)|RESULT\\s+CACHE|SYSTEM\\s+VERSIONING|SCHEDULER\\s+JOB|REMOTE\\s+TABLE\\s+REPLICA|(?:FUZZY\\s+SEARCH|FULLTEXT|UNIQUE|HASH|INVERTED\\s+(?:HASH|VALUE))\\s+INDEX|INDEX|COLLECTION|LIBRARY|STATISTICS|SEQUENCE|TRIGGER|PROCEDURE|FUNCTION|VIEW|TABLE)\\s+(\\\"(?:[^\\\"]|\\\"\\\")+\\\"(?:\\.\\\"(?:[^\\\"]|\\\"\\\")+\\\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
           "captures": {
-            "1": { "name": "keyword.control.ddl.hanasql" },
-            "2": { "name": "entity.name.type.hanasql" }
+            "1": {
+              "name": "keyword.control.ddl.hanasql"
+            },
+            "2": {
+              "name": "entity.name.type.hanasql"
+            }
           }
         }
       ]
@@ -150,6 +190,30 @@
     "operators": {
       "name": "keyword.operator.hanasql",
       "match": "\\|\\||:=|=>|<>|!=|<=|>=|[-+*/%=<>]"
+    },
+    "sqlscript-builtins": {
+      "patterns": [
+        {
+          "name": "support.function.sqlscript.hanasql",
+          "match": "(?i)\\b(?:CE_[A-Z_]+|MAP_MERGE|MAP_REDUCE|APPLY_FILTER|BIND_AS_PARAMETER|BIND_AS_VALUE)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.class.library.hanasql",
+          "match": "(?i)\\bSQLSCRIPT_[A-Z_]+\\b"
+        },
+        {
+          "name": "support.variable.system.hanasql",
+          "match": "(?i)\\b(?:SQL_ERROR_CODE|SQL_ERROR_MESSAGE)\\b"
+        },
+        {
+          "name": "support.constant.hint.hanasql",
+          "match": "(?i)\\b(?:NO_INLINE|INLINE|ROUTE_TO)\\b"
+        },
+        {
+          "name": "keyword.control.sqlscript.hanasql",
+          "match": "(?i)\\b(?:SQLEXCEPTION|SQLWARNING|SEQUENTIAL|PARALLEL|EXECUTION|CONSTANT|DETERMINISTIC|LIBRARY|ENCRYPTION)\\b"
+        }
+      ]
     }
   }
 }

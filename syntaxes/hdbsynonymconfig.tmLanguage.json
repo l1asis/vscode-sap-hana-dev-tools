@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Synonym Configuration (.hdbsynonymconfig)",
+  "scopeName": "source.hdbsynonymconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbsynonymconfig",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbsynonymconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbsynonymconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbsynonymconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbsynonymconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbsynonymconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbsynonymconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbsynonymconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbsynonymconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbsynonymconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbsynonymconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

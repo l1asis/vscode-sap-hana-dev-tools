@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Revokes (.hdbrevokes)",
+  "scopeName": "source.hdbrevokes",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbrevokes",
+      "match": "\"(?:object_owner|application_user|object_privileges|schema_privileges|system_privileges|global_roles|schema_roles|schema|name|privileges|privileges_with_grant_option|global_object_privileges|schema_analytic_privileges)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbrevokes",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbrevokes",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbrevokes",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbrevokes",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbrevokes",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbrevokes",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbrevokes",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbrevokes",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbrevokes",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbrevokes",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

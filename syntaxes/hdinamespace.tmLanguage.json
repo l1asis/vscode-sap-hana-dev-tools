@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Namespace Rules (.hdinamespace)",
+  "scopeName": "source.hdinamespace",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdinamespace",
+      "match": "\"(?:name|subfolder)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdinamespace",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdinamespace",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdinamespace",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdinamespace",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdinamespace",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdinamespace",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdinamespace",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdinamespace",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdinamespace",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdinamespace",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

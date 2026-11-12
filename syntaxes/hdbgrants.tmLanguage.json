@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Grants (.hdbgrants)",
+  "scopeName": "source.hdbgrants",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbgrants",
+      "match": "\"(?:object_owner|application_user|object_privileges|schema_privileges|system_privileges|global_roles|schema_roles|schema|name|privileges|privileges_with_grant_option|global_object_privileges|schema_analytic_privileges)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbgrants",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbgrants",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbgrants",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbgrants",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbgrants",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbgrants",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbgrants",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbgrants",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbgrants",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbgrants",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

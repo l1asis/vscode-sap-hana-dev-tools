@@ -1,0 +1,205 @@
+{
+  "name": "SAP HANA CDS (.hdbdd, XS Classic)",
+  "scopeName": "source.hdbdd",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#annotation"
+    },
+    {
+      "include": "#namespace"
+    },
+    {
+      "include": "#using"
+    },
+    {
+      "include": "#definition"
+    },
+    {
+      "include": "#technical-configuration"
+    },
+    {
+      "include": "#generated"
+    },
+    {
+      "include": "#association"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#delimited-identifier"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#enum-symbol"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "source.hanasql#functions"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbdd",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbdd",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.single.hdbdd",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbdd",
+          "match": "\\\\.|''"
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbdd",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "delimited-identifier": {
+      "name": "variable.other.quoted-identifier.hdbdd",
+      "match": "!\\[[^\\]]*\\]|\"(?:[^\"]|\"\")*\""
+    },
+    "annotation": {
+      "match": "(@)([A-Za-z_][\\w]*(?:\\.[A-Za-z_][\\w]*)*)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.annotation.hdbdd"
+        },
+        "2": {
+          "name": "storage.type.annotation.hdbdd"
+        }
+      }
+    },
+    "enum-symbol": {
+      "name": "constant.other.enum-symbol.hdbdd",
+      "match": "#[A-Za-z_]\\w*"
+    },
+    "namespace": {
+      "match": "\\b(namespace)\\s+([A-Za-z_][\\w]*(?:\\.[A-Za-z_][\\w]*)*)",
+      "captures": {
+        "1": {
+          "name": "keyword.other.namespace.hdbdd"
+        },
+        "2": {
+          "name": "entity.name.namespace.hdbdd"
+        }
+      }
+    },
+    "using": {
+      "match": "\\b(using)\\s+([\\w.:]+)(?:\\s+(as)\\s+([A-Za-z_]\\w*))?",
+      "captures": {
+        "1": {
+          "name": "keyword.control.import.hdbdd"
+        },
+        "2": {
+          "name": "entity.name.namespace.hdbdd"
+        },
+        "3": {
+          "name": "keyword.control.import.hdbdd"
+        },
+        "4": {
+          "name": "entity.name.type.alias.hdbdd"
+        }
+      }
+    },
+    "definition": {
+      "match": "\\b(?:(define|abstract)\\s+)?(context|entity|type|view|aspect|annotation|enum|service)\\s+([A-Za-z_]\\w*)",
+      "captures": {
+        "1": {
+          "name": "storage.modifier.hdbdd"
+        },
+        "2": {
+          "name": "storage.type.class.hdbdd"
+        },
+        "3": {
+          "name": "entity.name.type.hdbdd"
+        }
+      }
+    },
+    "technical-configuration": {
+      "name": "keyword.other.technical-configuration.hdbdd",
+      "match": "(?i)\\b(?:technical\\s+configuration|column\\s+store|row\\s+store|partition\\s+by\\s+(?:hash|range|roundrobin)|partitions|fuzzy\\s+search\\s+index|fulltext\\s+index|group\\s+type|group\\s+subtype|group\\s+name|group\\s+set|unload\\s+priority|(?:no\\s+)?auto\\s+merge|inverted\\s+(?:hash|value)\\s+index|unique\\s+index|index|unique)\\b"
+    },
+    "generated": {
+      "name": "keyword.other.generated.hdbdd",
+      "match": "(?i)\\bgenerated\\s+(?:always|by\\s+default)\\s+as(?:\\s+identity)?\\b|\\bwith\\s+structured\\s+privilege\\s+check\\b|\\btype\\s+of\\b|\\bseries\\s+key\\b|\\bperiod\\s+for\\s+series\\b|\\bequidistant(?:\\s+piecewise)?\\b|\\bmissing\\s+elements\\s+(?:not\\s+)?allowed\\b|\\bincrement\\s+by\\b|\\bstart\\s+with\\b|\\b(?:no\\s+)?cycle\\b|\\bseries\\b"
+    },
+    "association": {
+      "match": "(?i)\\b(association|composition)\\b(\\s*\\[[^\\]]*\\])?(?:\\s+(to)\\s+([\\w.:]+))?",
+      "captures": {
+        "1": {
+          "name": "keyword.other.association.hdbdd"
+        },
+        "2": {
+          "name": "constant.other.cardinality.hdbdd"
+        },
+        "3": {
+          "name": "keyword.other.association.hdbdd"
+        },
+        "4": {
+          "name": "entity.name.type.hdbdd"
+        }
+      }
+    },
+    "types": {
+      "patterns": [
+        {
+          "name": "storage.type.hdbdd",
+          "match": "\\bhana\\.[A-Za-z_][\\w]*"
+        },
+        {
+          "name": "storage.type.hdbdd",
+          "match": "\\b(?:String|LargeString|Binary|LargeBinary|Integer|Integer64|Decimal|DecimalFloat|BinaryFloat|LocalDate|LocalTime|UTCDateTime|UTCTimestamp|Boolean)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "name": "constant.language.hdbdd",
+      "match": "(?i)\\b(?:true|false|null)\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.hdbdd",
+          "match": "(?i)\\b(?:select|from|where|group\\s+by|having|order\\s+by|union(?:\\s+all)?|distinct|as|on|limit|offset|with\\s+parameters|excluding|extend|projection|cast|case|when|then|else|end|and|or|not|like|in|is|between|exists|asc|desc|inner|left|right|full|outer|cross|join|many|one|of|to|using)\\b"
+        },
+        {
+          "name": "storage.modifier.hdbdd",
+          "match": "(?i)\\b(?:key|virtual|const|element|default|not\\s+null|null)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "name": "keyword.operator.hdbdd",
+      "match": "::|:|\\|\\||<>|!=|<=|>=|[-+*\\/%=<>]"
+    }
+  }
+}

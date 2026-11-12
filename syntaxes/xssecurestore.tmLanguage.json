@@ -1,0 +1,69 @@
+{
+  "name": "SAP HANA XS Secure Store (.xssecurestore)",
+  "scopeName": "source.xssecurestore",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xssecurestore",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xssecurestore",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xssecurestore",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xssecurestore",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xssecurestore",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xssecurestore",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xssecurestore",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xssecurestore",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xssecurestore",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xssecurestore",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

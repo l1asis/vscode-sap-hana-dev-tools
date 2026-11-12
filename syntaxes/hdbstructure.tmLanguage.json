@@ -1,0 +1,9 @@
+{
+  "name": "SAP HANA HDBStructure (XS Classic)",
+  "scopeName": "source.hdbstructure",
+  "patterns": [
+    {
+      "include": "source.hdbtable"
+    }
+  ]
+}

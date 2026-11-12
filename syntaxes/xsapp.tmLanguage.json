@@ -1,0 +1,69 @@
+{
+  "name": "SAP HANA XS Application Descriptor (.xsapp)",
+  "scopeName": "source.xsapp",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsapp",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsapp",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsapp",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsapp",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsapp",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsapp",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsapp",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsapp",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsapp",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsapp",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

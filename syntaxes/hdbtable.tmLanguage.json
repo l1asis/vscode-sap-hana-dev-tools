@@ -1,0 +1,228 @@
+{
+  "name": "SAP HANA HDBTable (XS Classic)",
+  "scopeName": "source.hdbtable",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#table-key"
+    },
+    {
+      "include": "#primary-key"
+    },
+    {
+      "include": "#list-key"
+    },
+    {
+      "include": "source.hanasql"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbtable",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbtable",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbtable",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtable",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbtable",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbtable",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbtable",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbtable",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbtable",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbtable",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "table-key": {
+      "begin": "\\b(table)(\\.)(schemaName|temporary|tableType|public|loggingType|tableLoggingType|description)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.language.hdbtable"
+        },
+        "2": {
+          "name": "punctuation.accessor.hdbtable"
+        },
+        "3": {
+          "name": "support.type.property-name.hdbtable"
+        },
+        "4": {
+          "name": "keyword.operator.assignment.hdbtable"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbtable"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    },
+    "primary-key": {
+      "begin": "\\b(table)(\\.)(primaryKey)(\\.)(pkcolumns|indexType)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.language.hdbtable"
+        },
+        "2": {
+          "name": "punctuation.accessor.hdbtable"
+        },
+        "3": {
+          "name": "support.type.property-name.hdbtable"
+        },
+        "4": {
+          "name": "punctuation.accessor.hdbtable"
+        },
+        "5": {
+          "name": "support.type.property-name.hdbtable"
+        },
+        "6": {
+          "name": "keyword.operator.assignment.hdbtable"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbtable"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    },
+    "list-key": {
+      "begin": "\\b(table)(\\.)(columns|indexes)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "variable.language.hdbtable"
+        },
+        "2": {
+          "name": "punctuation.accessor.hdbtable"
+        },
+        "3": {
+          "name": "support.type.property-name.hdbtable"
+        },
+        "4": {
+          "name": "keyword.operator.assignment.hdbtable"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbtable"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#struct"
+        },
+        {
+          "include": "#values"
+        }
+      ]
+    },
+    "struct": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.begin.hdbtable"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.end.hdbtable"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "match": "\\b(sqlType)\\b\\s*(=)\\s*([A-Za-z_]\\w*)",
+          "captures": {
+            "1": {
+              "name": "support.type.property-name.hdbtable"
+            },
+            "2": {
+              "name": "keyword.operator.assignment.hdbtable"
+            },
+            "3": {
+              "name": "storage.type.hdbtable"
+            }
+          }
+        },
+        {
+          "name": "support.type.property-name.hdbtable",
+          "match": "\\b(?:name|sqlType|nullable|unique|length|scale|precision|defaultValue|comment|order|indexType|indexColumns)\\b(?=\\s*=)"
+        },
+        {
+          "name": "keyword.operator.assignment.hdbtable",
+          "match": "="
+        },
+        {
+          "name": "punctuation.terminator.statement.hdbtable",
+          "match": ";"
+        },
+        {
+          "include": "#values"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "SAP HANA HDI Migration Table (.hdbmigrationtable)",
+  "scopeName": "source.hdbmigrationtable",
+  "patterns": [
+    {
+      "include": "#marker"
+    },
+    {
+      "include": "source.hanasql"
+    }
+  ],
+  "repository": {
+    "marker": {
+      "match": "^\\s*(==)\\s*(version|dev-version|migration)\\s*(=)\\s*(\\d+)",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.marker.hdbmigrationtable"
+        },
+        "2": {
+          "name": "keyword.control.migration.hdbmigrationtable"
+        },
+        "3": {
+          "name": "keyword.operator.assignment.hdbmigrationtable"
+        },
+        "4": {
+          "name": "constant.numeric.hdbmigrationtable"
+        }
+      }
+    }
+  }
+}

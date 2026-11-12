@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS Privileges (.xsprivileges)",
+  "scopeName": "source.xsprivileges",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsprivileges",
+      "match": "\"(?:privileges|name|description)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsprivileges",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsprivileges",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsprivileges",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsprivileges",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsprivileges",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsprivileges",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsprivileges",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsprivileges",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsprivileges",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsprivileges",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

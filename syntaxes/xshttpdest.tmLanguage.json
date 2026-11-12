@@ -1,0 +1,100 @@
+{
+  "name": "SAP HANA XS HTTP Destination",
+  "scopeName": "source.xshttpdest",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#assignment"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xshttpdest",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xshttpdest",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xshttpdest",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xshttpdest",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xshttpdest",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.xshttpdest",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.xshttpdest",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.xshttpdest",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.xshttpdest",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.xshttpdest",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(host|port|description|useSSL|pathPrefix|authType|useProxy|proxyHost|proxyPort|proxyType|timeout|sslAuth|sslHostCheck)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.xshttpdest"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.xshttpdest"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.xshttpdest"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#values"
+        }
+      ]
+    }
+  }
+}

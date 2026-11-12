@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS OAuth Application Configuration",
+  "scopeName": "source.xsoauthappconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsoauthappconfig",
+      "match": "\"(?:clientConfig|mandatoryScopes|optionalScopes|description)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsoauthappconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsoauthappconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsoauthappconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsoauthappconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsoauthappconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsoauthappconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsoauthappconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsoauthappconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsoauthappconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsoauthappconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

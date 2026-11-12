@@ -1,0 +1,116 @@
+{
+  "name": "SAP HANA OData Service (.xsodata)",
+  "scopeName": "source.xsodata",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#service"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsodata",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsodata",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "variable.other.quoted-identifier.xsodata",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.xsodata",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.xsodata",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.xsodata",
+              "match": "\\\\.|''"
+            }
+          ]
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsodata",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "service": {
+      "match": "\\b(service)\\s+(namespace)\\b",
+      "captures": {
+        "1": {
+          "name": "storage.type.service.xsodata"
+        },
+        "2": {
+          "name": "keyword.other.xsodata"
+        }
+      }
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "constant.language.xsodata",
+          "match": "\\b(?:true|false|null)\\b"
+        },
+        {
+          "name": "keyword.control.xsodata",
+          "match": "(?i)\\b(?:service|namespace|as|keys|key|generate|local|navigates|create|update|delete|read|link|events|before|after|using|with|without|forbidden|parameters|via|entity|results|property|aggregates|always|of|association|principal|dependent|multiplicity|over|referential|constraint|annotations|enable|disable|settings|support|null|limits|max_records|max_expanded_records|omitting|omit|hints|etag|concurrencytoken|metadata|content|cache-control|use|and|join|on|default)\\b"
+        },
+        {
+          "name": "support.constant.odata4sap.xsodata",
+          "match": "(?i)\\bOData4SAP\\b"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.statement.xsodata",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.separator.comma.xsodata",
+          "match": ","
+        },
+        {
+          "name": "punctuation.accessor.xsodata",
+          "match": "\\."
+        },
+        {
+          "name": "keyword.operator.assignment.xsodata",
+          "match": "="
+        }
+      ]
+    }
+  }
+}

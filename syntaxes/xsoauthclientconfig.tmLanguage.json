@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS OAuth Client Configuration",
+  "scopeName": "source.xsoauthclientconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsoauthclientconfig",
+      "match": "\"(?:clientFlavor|clientID|clientAuthType|authorizationEndpointURL|tokenEndpointURL|revocationEndpointURL|redirectURL|description)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsoauthclientconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsoauthclientconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsoauthclientconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsoauthclientconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsoauthclientconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsoauthclientconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsoauthclientconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsoauthclientconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsoauthclientconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsoauthclientconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

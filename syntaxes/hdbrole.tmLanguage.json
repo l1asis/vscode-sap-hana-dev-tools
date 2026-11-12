@@ -1,0 +1,161 @@
+{
+  "name": "SAP HANA Role (.hdbrole)",
+  "scopeName": "source.hdbrole",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#role"
+    },
+    {
+      "include": "#extends"
+    },
+    {
+      "include": "#privilege"
+    },
+    {
+      "include": "#hdi-json"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbrole",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbrole",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbrole",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbrole",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbrole",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "hdi-json": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "name": "support.type.property-name.json.hdbrole",
+          "match": "\"(?:role|name|privileges|privileges_with_grant_option|schema_reference|type|names|object_privileges|pattern_mode|schema|pattern_escape_character|global_roles|schema_roles|system_privileges|schema_privileges|reference|global_object_privileges|schema_analytic_privileges|logical_schema)\"(?=\\s*:)"
+        },
+        {
+          "name": "support.type.property-name.json",
+          "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "name": "constant.language.json.hdbrole",
+          "match": "\\b(?:true|false|null)\\b"
+        },
+        {
+          "name": "punctuation.separator.key-value.hdbrole",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbrole",
+          "match": ","
+        },
+        {
+          "name": "punctuation.section.braces.hdbrole",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbrole",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "role": {
+      "match": "^\\s*(role)\\s+([\\w.:]+)",
+      "captures": {
+        "1": {
+          "name": "storage.type.role.hdbrole"
+        },
+        "2": {
+          "name": "entity.name.type.role.hdbrole"
+        }
+      }
+    },
+    "extends": {
+      "match": "\\b(extends)\\s+(catalog\\s+role|role)\\b",
+      "captures": {
+        "1": {
+          "name": "keyword.other.extends.hdbrole"
+        },
+        "2": {
+          "name": "keyword.other.hdbrole"
+        }
+      }
+    },
+    "privilege": {
+      "begin": "^\\s*((?:catalog\\s+)?(?:schema|sql\\s+object|analytic\\s+privilege|package)|application\\s+privilege|system\\s+privilege|analytic\\s+privilege)\\b",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.privilege.hdbrole"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbrole"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "name": "variable.other.quoted-identifier.hdbrole",
+          "match": "\"(?:[^\"]|\"\")*\""
+        },
+        {
+          "name": "entity.name.type.hdbrole",
+          "match": "[A-Za-z_][\\w.]*::[\\w.]+"
+        },
+        {
+          "name": "punctuation.separator.colon.hdbrole",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbrole",
+          "match": ","
+        },
+        {
+          "name": "keyword.other.grant-option.hdbrole",
+          "match": "(?i)\\bWITH\\s+GRANT\\s+OPTION\\b"
+        },
+        {
+          "name": "constant.other.privilege.hdbrole",
+          "match": "\\b[A-Z][A-Z_]*(?:\\.[A-Z_]+)*\\b"
+        },
+        {
+          "name": "entity.name.package.hdbrole",
+          "match": "[A-Za-z_][\\w.]*"
+        }
+      ]
+    }
+  }
+}

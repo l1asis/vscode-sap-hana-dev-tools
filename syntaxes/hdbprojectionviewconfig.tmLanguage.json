@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Projection View Configuration (.hdbprojectionviewconfig)",
+  "scopeName": "source.hdbprojectionviewconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbprojectionviewconfig",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbprojectionviewconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbprojectionviewconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbprojectionviewconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbprojectionviewconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbprojectionviewconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbprojectionviewconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbprojectionviewconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbprojectionviewconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbprojectionviewconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbprojectionviewconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

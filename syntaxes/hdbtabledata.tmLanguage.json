@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Table Data (.hdbtabledata)",
+  "scopeName": "source.hdbtabledata",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbtabledata",
+      "match": "\"(?:format_version|imports|target_table|source_data|data_type|file_name|has_header|delimiter|dialect|no_data_import|import_settings|import_columns|include_filter|exclude_filter|column_mappings|type_config|multi_key_separator|delete_existing_foreign_data|is_collection_table|column_name|name|type|parameters|value|plugin_name|increment_by|start_with)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbtabledata",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbtabledata",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbtabledata",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbtabledata",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbtabledata",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbtabledata",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbtabledata",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbtabledata",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtabledata",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbtabledata",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}
