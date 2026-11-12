@@ -1,0 +1,4 @@
+{
+    "description" : "Admin SQL connection"
+    "role_for_auto_user" : "com.acme.roles::JobAdministrator"
+}

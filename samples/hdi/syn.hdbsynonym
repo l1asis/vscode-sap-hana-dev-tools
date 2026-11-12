@@ -1,0 +1,6 @@
+{
+  "acme.com.app1::MySynonym": {
+    // optional configuration
+    "target": { "object": "MY_ERP_TABLE_1", "schema": "ERP" }
+  }
+}

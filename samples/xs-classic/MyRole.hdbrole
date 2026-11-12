@@ -1,0 +1,7 @@
+role acme.com.roles::JobAdministrator extends role acme.com.roles::Base {
+    application privilege: acme.com.app1::Execute;
+    catalog schema "MYSCHEMA": SELECT, INSERT;
+    catalog sql object "MYSCHEMA"."MYTABLE": SELECT WITH GRANT OPTION;
+    system privilege: DATA ADMIN;
+    package acme.com.app1: REPO.READ;
+}

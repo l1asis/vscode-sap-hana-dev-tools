@@ -1,0 +1,1 @@
+STRUCTURED PRIVILEGE "acme.com.app1::SalesFilter" FOR SELECT ON "acme.com.app1::SalesView" WHERE "REGION" = 'EU'

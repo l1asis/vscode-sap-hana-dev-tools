@@ -1,0 +1,9 @@
+{
+  "role": {
+    "name": "acme.com.app1::MyRole",
+    "schema_privileges": [
+      { "privileges": ["SELECT", "INSERT"], "schema_reference": "MYSCHEMA", "privileges_with_grant_option": ["SELECT"] }
+    ],
+    "global_roles": ["PUBLIC"]
+  }
+}

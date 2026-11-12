@@ -1,0 +1,18 @@
+namespace acme.com.app1;
+
+@Schema: 'MYSCHEMA'
+context Model {
+    @Catalog.tableType: #COLUMN
+    entity Employee {
+        key id  : Integer generated always as identity;
+        name    : String(100) not null;
+        manager : Association[0..1] to Employee on manager.id = id;
+    } technical configuration {
+        column store;
+        fulltext index idx_name on (name) fast preprocess off;
+    };
+
+    AccessPolicy AllEmployees {
+        grant select on Employee where name = $user;
+    };
+};

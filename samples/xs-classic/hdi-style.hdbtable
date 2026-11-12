@@ -1,0 +1,6 @@
+-- HDI flavour of the same extension: plain SQL DDL
+COLUMN TABLE "MYTABLE" (
+  "ID" INTEGER NOT NULL,
+  "NAME" NVARCHAR(100) DEFAULT 'x',
+  PRIMARY KEY ("ID")
+)

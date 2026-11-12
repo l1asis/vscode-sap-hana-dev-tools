@@ -1,0 +1,5 @@
+table.schemaName = "MYSCHEMA";
+table.columns = [
+    {name = "Col1"; sqlType = VARCHAR; nullable = false; length = 20; comment = "dummy comment";},
+    {name = "Col4"; sqlType = DECIMAL; nullable = false; precision = 12; scale = 3;}];
+table.primaryKey.pkcolumns = ["Col1"];

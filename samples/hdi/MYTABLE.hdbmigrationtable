@@ -1,0 +1,8 @@
+== version = 2
+COLUMN TABLE "acme.com.app1::MYTABLE" (
+  "ID" INTEGER NOT NULL,
+  "NAME" NVARCHAR(100)
+)
+
+== migration = 2
+ALTER TABLE "acme.com.app1::MYTABLE" ADD ("NAME" NVARCHAR(100));

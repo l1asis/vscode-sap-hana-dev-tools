@@ -1,0 +1,7 @@
+service namespace "acme.com.app1" {
+    "MYSCHEMA"."acme.com.app1::Employee" as "Employee" navigates ("Manager" as "ManagerNav")
+        create using "acme.com.app1:lib.xsjslib::create";
+    association "Manager" principal "Employee"("id") multiplicity "1"
+        dependent "Employee"("managerId") multiplicity "*";
+    settings { support null; limits max_records = 1000; }
+}

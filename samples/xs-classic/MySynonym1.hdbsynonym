@@ -1,0 +1,8 @@
+{ "acme.com.app1::MySynonym1" : {
+    "target" : {
+        "schema": "DEFAULT_SCHEMA",
+        "object": "MY_ERP_TABLE_1"
+    },
+    "schema": "SCHEMA_2"
+  }
+}

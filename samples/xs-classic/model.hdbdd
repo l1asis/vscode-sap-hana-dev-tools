@@ -1,0 +1,28 @@
+namespace acme.com.app1;
+using acme.com.common::Types.Money as Money;
+
+@Schema: 'MYSCHEMA'
+context Model {
+    type StreetType : String(80);
+    type Address {
+        street : StreetType;
+        zip    : Integer;
+    };
+
+    @Catalog.tableType: #COLUMN
+    entity Employee {
+        key id   : Integer;
+        name     : String(100) not null default 'n/a';
+        salary   : Decimal(15, 2);
+        address  : Address;
+        manager  : Association[0..1] to Employee on manager.id = id;
+        virtual score : Integer;
+    } technical configuration {
+        column store;
+        partition by hash(id) partitions 2;
+    };
+
+    view EmployeeView as select from Employee {
+        id, name as employeeName, upper(name) as upperName
+    } where salary > 1000;
+};
