@@ -107,6 +107,16 @@ function tokenize(text) {
     if (WORD_START.test(ch)) {
       let j = i + 1;
       while (j < n && WORD_PART.test(text[j])) j++;
+      // SQLScript library call: lib:member( ... )
+      if (text[j] === ':' && WORD_START.test(text[j + 1] || '') && text[j + 1] !== ':') {
+        let k = j + 2;
+        while (k < n && WORD_PART.test(text[k])) k++;
+        if (text[k] === '(') {
+          push('word', i, k);
+          i = k;
+          continue;
+        }
+      }
       if (j - i === 1 && /[NXnx]/.test(ch) && text[j] === "'") {
         const k = scanString(text, j);
         push('string', i, k);

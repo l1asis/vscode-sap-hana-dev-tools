@@ -14,7 +14,8 @@ const BEGIN_MODS = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL
 const END_SUFFIX = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
 const SET_OPS = new Set(['UNION', 'INTERSECT', 'EXCEPT', 'MINUS']);
 const OBJ_TYPES = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
-const HDI_FIRST = new Set(['PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
+const STMT_VERBS = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
+const HDI_FIRST = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
 const HEADER_WORDS = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
 // keywords after which a following + - * is unary / a wildcard, not a binary operator
 const NON_VALUE = new Set([
@@ -131,6 +132,11 @@ class Layout {
       else if (isF && nextParen && !typeCtx) cls = 'function';
       else if (isT) cls = 'type';
       else if (K.KEYWORDS.has(up)) cls = 'keyword';
+    }
+    if (cls === 'ident' && !dotAdj && this.stmt) {
+      const st = this.stmt;
+      if (st.alterSystem && (up === 'SYSTEM' || K.SYSTEM_WORDS.has(up))) cls = 'keyword';
+      else if (st.count <= 6 && STMT_VERBS.has(st.first) && K.STATEMENT_NOUNS.has(up)) cls = 'keyword';
     }
     const mode = cls === 'keyword' ? this.o.keywordCase : cls === 'function' ? this.o.functionCase : cls === 'type' ? this.o.dataTypeCase : this.o.identifierCase;
     return { t: this.caseOf(tok.text, mode), k: 'word', cls, up, srcSp: tok.wsBefore };
@@ -291,6 +297,8 @@ class Layout {
     this.stmt = {
       kind: this.stmtKind(tok, up, i),
       count: 0,
+      first: up,
+      alterSystem: false,
       createKind: null,
       hdiRoot: HDI_FIRST.has(up) && this.blocks.length === 0,
       paramsSeen: false,
@@ -615,6 +623,7 @@ class Layout {
     const stmtLevel = f.type === 'stmt' && this.frames.length === 1;
     const topBlock = this.blocks[this.blocks.length - 1] || null;
 
+    if (up === 'SYSTEM' && st.first === 'ALTER' && st.count === 1) st.alterSystem = true;
     if (st.kind === 'create' && !st.createKind && OBJ_TYPES.has(up)) st.createKind = up;
 
     // BETWEEN a AND b: that AND is not a logical operator
