@@ -7,7 +7,37 @@ const { isKeyValueArtifact } = require('./formatter/detect');
 
 // Languages whose files can contain SQL. For .hdbtable/.hdbview/.hdbsequence/.hdbstructure the same
 // extension is XS Classic `key = value;` syntax in some projects; those files are detected and skipped.
-const SQL_LANGUAGES = ['hanasql', 'hdbtable', 'hdbstructure', 'hdbview', 'hdbsequence'];
+const SQL_LANGUAGES = [
+  'hanasql',
+  'hdbprocedure',
+  'hdbfunction',
+  'hdbtablefunction',
+  'hdbtrigger',
+  'hdbindex',
+  'hdbfulltextindex',
+  'hdbconstraint',
+  'hdbvirtualtable',
+  'hdbtabletype',
+  'hdbprojectionview',
+  'hdbstructuredprivilege',
+  'hdbstructuredfilter',
+  'hdbresultcache',
+  'hdbstatistics',
+  'hdbsystemversioning',
+  'hdbschedulerjob',
+  'hdbremotetablereplica',
+  'hdbcollection',
+  'hdblibrary',
+  'hdbdropcreatetable',
+  'hdbapplicationtime',
+  'hdbgraphworkspace',
+  'hdbvirtualprocedure',
+  'hdbvirtualfunction',
+  'hdbtable',
+  'hdbstructure',
+  'hdbview',
+  'hdbsequence',
+];
 let output;
 
 function readSettings(document) {

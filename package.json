@@ -22,34 +22,350 @@
           "hanasql"
         ],
         "extensions": [
-          ".sql",
-          ".hdbprocedure",
-          ".hdbfunction",
-          ".hdbtablefunction",
-          ".hdbtrigger",
-          ".hdbindex",
-          ".hdbfulltextindex",
-          ".hdbconstraint",
-          ".hdbvirtualtable",
-          ".hdbtabletype",
-          ".hdbprojectionview",
-          ".hdbstructuredprivilege",
-          ".hdbstructuredfilter",
-          ".hdbresultcache",
-          ".hdbstatistics",
-          ".hdbsystemversioning",
-          ".hdbschedulerjob",
-          ".hdbremotetablereplica",
+          ".sql"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/sql.svg",
+          "dark": "./images/icons/sql.svg"
+        }
+      },
+      {
+        "id": "hdbprocedure",
+        "aliases": [
+          "SAP HANA Procedure"
+        ],
+        "extensions": [
+          ".hdbprocedure"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbprocedure.svg",
+          "dark": "./images/icons/hdbprocedure.svg"
+        }
+      },
+      {
+        "id": "hdbfunction",
+        "aliases": [
+          "SAP HANA Function"
+        ],
+        "extensions": [
+          ".hdbfunction"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbfunction.svg",
+          "dark": "./images/icons/hdbfunction.svg"
+        }
+      },
+      {
+        "id": "hdbtablefunction",
+        "aliases": [
+          "SAP HANA Table Function"
+        ],
+        "extensions": [
+          ".hdbtablefunction"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbtablefunction.svg",
+          "dark": "./images/icons/hdbtablefunction.svg"
+        }
+      },
+      {
+        "id": "hdbtrigger",
+        "aliases": [
+          "SAP HANA Trigger"
+        ],
+        "extensions": [
+          ".hdbtrigger"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbtrigger.svg",
+          "dark": "./images/icons/hdbtrigger.svg"
+        }
+      },
+      {
+        "id": "hdbindex",
+        "aliases": [
+          "SAP HANA Index"
+        ],
+        "extensions": [
+          ".hdbindex"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbindex.svg",
+          "dark": "./images/icons/hdbindex.svg"
+        }
+      },
+      {
+        "id": "hdbfulltextindex",
+        "aliases": [
+          "SAP HANA Fulltext Index"
+        ],
+        "extensions": [
+          ".hdbfulltextindex"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbfulltextindex.svg",
+          "dark": "./images/icons/hdbfulltextindex.svg"
+        }
+      },
+      {
+        "id": "hdbconstraint",
+        "aliases": [
+          "SAP HANA Constraint"
+        ],
+        "extensions": [
+          ".hdbconstraint"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbconstraint.svg",
+          "dark": "./images/icons/hdbconstraint.svg"
+        }
+      },
+      {
+        "id": "hdbvirtualtable",
+        "aliases": [
+          "SAP HANA Virtual Table"
+        ],
+        "extensions": [
+          ".hdbvirtualtable"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualtable.svg",
+          "dark": "./images/icons/hdbvirtualtable.svg"
+        }
+      },
+      {
+        "id": "hdbtabletype",
+        "aliases": [
+          "SAP HANA Table Type"
+        ],
+        "extensions": [
+          ".hdbtabletype"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbtabletype.svg",
+          "dark": "./images/icons/hdbtabletype.svg"
+        }
+      },
+      {
+        "id": "hdbprojectionview",
+        "aliases": [
+          "SAP HANA Projection View"
+        ],
+        "extensions": [
+          ".hdbprojectionview"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbprojectionview.svg",
+          "dark": "./images/icons/hdbprojectionview.svg"
+        }
+      },
+      {
+        "id": "hdbstructuredprivilege",
+        "aliases": [
+          "SAP HANA Structured Privilege"
+        ],
+        "extensions": [
+          ".hdbstructuredprivilege"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbstructuredprivilege.svg",
+          "dark": "./images/icons/hdbstructuredprivilege.svg"
+        }
+      },
+      {
+        "id": "hdbstructuredfilter",
+        "aliases": [
+          "SAP HANA Structured Filter"
+        ],
+        "extensions": [
+          ".hdbstructuredfilter"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbstructuredfilter.svg",
+          "dark": "./images/icons/hdbstructuredfilter.svg"
+        }
+      },
+      {
+        "id": "hdbresultcache",
+        "aliases": [
+          "SAP HANA Result Cache"
+        ],
+        "extensions": [
+          ".hdbresultcache"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbresultcache.svg",
+          "dark": "./images/icons/hdbresultcache.svg"
+        }
+      },
+      {
+        "id": "hdbstatistics",
+        "aliases": [
+          "SAP HANA Statistics"
+        ],
+        "extensions": [
+          ".hdbstatistics"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbstatistics.svg",
+          "dark": "./images/icons/hdbstatistics.svg"
+        }
+      },
+      {
+        "id": "hdbsystemversioning",
+        "aliases": [
+          "SAP HANA System Versioning"
+        ],
+        "extensions": [
+          ".hdbsystemversioning"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbsystemversioning.svg",
+          "dark": "./images/icons/hdbsystemversioning.svg"
+        }
+      },
+      {
+        "id": "hdbschedulerjob",
+        "aliases": [
+          "SAP HANA Scheduler Job"
+        ],
+        "extensions": [
+          ".hdbschedulerjob"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbschedulerjob.svg",
+          "dark": "./images/icons/hdbschedulerjob.svg"
+        }
+      },
+      {
+        "id": "hdbremotetablereplica",
+        "aliases": [
+          "SAP HANA Remote Table Replica"
+        ],
+        "extensions": [
+          ".hdbremotetablereplica"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbremotetablereplica.svg",
+          "dark": "./images/icons/hdbremotetablereplica.svg"
+        }
+      },
+      {
+        "id": "hdbcollection",
+        "aliases": [
+          "SAP HANA Collection"
+        ],
+        "extensions": [
           ".hdbcollection",
-          ".hdbcollectionindex",
-          ".hdblibrary",
-          ".hdbdropcreatetable",
-          ".hdbapplicationtime",
-          ".hdbgraphworkspace",
-          ".hdbvirtualprocedure",
+          ".hdbcollectionindex"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbcollection.svg",
+          "dark": "./images/icons/hdbcollection.svg"
+        }
+      },
+      {
+        "id": "hdblibrary",
+        "aliases": [
+          "SAP HANA SQLScript Library"
+        ],
+        "extensions": [
+          ".hdblibrary"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdblibrary.svg",
+          "dark": "./images/icons/hdblibrary.svg"
+        }
+      },
+      {
+        "id": "hdbdropcreatetable",
+        "aliases": [
+          "SAP HANA Drop/Create Table"
+        ],
+        "extensions": [
+          ".hdbdropcreatetable"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbdropcreatetable.svg",
+          "dark": "./images/icons/hdbdropcreatetable.svg"
+        }
+      },
+      {
+        "id": "hdbapplicationtime",
+        "aliases": [
+          "SAP HANA Application Time"
+        ],
+        "extensions": [
+          ".hdbapplicationtime"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbapplicationtime.svg",
+          "dark": "./images/icons/hdbapplicationtime.svg"
+        }
+      },
+      {
+        "id": "hdbgraphworkspace",
+        "aliases": [
+          "SAP HANA Graph Workspace"
+        ],
+        "extensions": [
+          ".hdbgraphworkspace"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbgraphworkspace.svg",
+          "dark": "./images/icons/hdbgraphworkspace.svg"
+        }
+      },
+      {
+        "id": "hdbvirtualprocedure",
+        "aliases": [
+          "SAP HANA Virtual Procedure"
+        ],
+        "extensions": [
+          ".hdbvirtualprocedure"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualprocedure.svg",
+          "dark": "./images/icons/hdbvirtualprocedure.svg"
+        }
+      },
+      {
+        "id": "hdbvirtualfunction",
+        "aliases": [
+          "SAP HANA Virtual Function"
+        ],
+        "extensions": [
           ".hdbvirtualfunction"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualfunction.svg",
+          "dark": "./images/icons/hdbvirtualfunction.svg"
+        }
       },
       {
         "id": "hdbtable",
@@ -59,7 +375,11 @@
         "extensions": [
           ".hdbtable"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbtable.svg",
+          "dark": "./images/icons/hdbtable.svg"
+        }
       },
       {
         "id": "hdbstructure",
@@ -69,7 +389,11 @@
         "extensions": [
           ".hdbstructure"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbstructure.svg",
+          "dark": "./images/icons/hdbstructure.svg"
+        }
       },
       {
         "id": "hdbview",
@@ -79,7 +403,11 @@
         "extensions": [
           ".hdbview"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbview.svg",
+          "dark": "./images/icons/hdbview.svg"
+        }
       },
       {
         "id": "hdbsequence",
@@ -89,7 +417,11 @@
         "extensions": [
           ".hdbsequence"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbsequence.svg",
+          "dark": "./images/icons/hdbsequence.svg"
+        }
       },
       {
         "id": "hdbschema",
@@ -99,7 +431,11 @@
         "extensions": [
           ".hdbschema"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbschema.svg",
+          "dark": "./images/icons/hdbschema.svg"
+        }
       },
       {
         "id": "hdbti",
@@ -109,7 +445,11 @@
         "extensions": [
           ".hdbti"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbti.svg",
+          "dark": "./images/icons/hdbti.svg"
+        }
       },
       {
         "id": "hdbdd",
@@ -120,7 +460,11 @@
         "extensions": [
           ".hdbdd"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbdd.svg",
+          "dark": "./images/icons/hdbdd.svg"
+        }
       },
       {
         "id": "hdbrole",
@@ -130,7 +474,11 @@
         "extensions": [
           ".hdbrole"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbrole.svg",
+          "dark": "./images/icons/hdbrole.svg"
+        }
       },
       {
         "id": "hdbsynonym",
@@ -140,7 +488,11 @@
         "extensions": [
           ".hdbsynonym"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbsynonym.svg",
+          "dark": "./images/icons/hdbsynonym.svg"
+        }
       },
       {
         "id": "xsodata",
@@ -151,7 +503,11 @@
         "extensions": [
           ".xsodata"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/xsodata.svg",
+          "dark": "./images/icons/xsodata.svg"
+        }
       },
       {
         "id": "xshttpdest",
@@ -161,7 +517,11 @@
         "extensions": [
           ".xshttpdest"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/xshttpdest.svg",
+          "dark": "./images/icons/xshttpdest.svg"
+        }
       },
       {
         "id": "xsaccess",
@@ -174,7 +534,11 @@
         "configuration": "./language-configuration-xsjson.json",
         "filenames": [
           ".xsaccess"
-        ]
+        ],
+        "icon": {
+          "light": "./images/icons/xsaccess.svg",
+          "dark": "./images/icons/xsaccess.svg"
+        }
       },
       {
         "id": "xsapp",
@@ -187,7 +551,11 @@
         "configuration": "./language-configuration-xsjson.json",
         "filenames": [
           ".xsapp"
-        ]
+        ],
+        "icon": {
+          "light": "./images/icons/xsapp.svg",
+          "dark": "./images/icons/xsapp.svg"
+        }
       },
       {
         "id": "xsjob",
@@ -197,7 +565,11 @@
         "extensions": [
           ".xsjob"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xsjob.svg",
+          "dark": "./images/icons/xsjob.svg"
+        }
       },
       {
         "id": "xssqlcc",
@@ -207,7 +579,11 @@
         "extensions": [
           ".xssqlcc"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xssqlcc.svg",
+          "dark": "./images/icons/xssqlcc.svg"
+        }
       },
       {
         "id": "xsprivileges",
@@ -220,7 +596,11 @@
         "configuration": "./language-configuration-xsjson.json",
         "filenames": [
           ".xsprivileges"
-        ]
+        ],
+        "icon": {
+          "light": "./images/icons/xsprivileges.svg",
+          "dark": "./images/icons/xsprivileges.svg"
+        }
       },
       {
         "id": "xssecurestore",
@@ -230,24 +610,179 @@
         "extensions": [
           ".xssecurestore"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xssecurestore.svg",
+          "dark": "./images/icons/xssecurestore.svg"
+        }
       },
       {
-        "id": "xml",
+        "id": "analyticprivilege",
+        "aliases": [
+          "SAP HANA Analytic Privilege"
+        ],
         "extensions": [
-          ".analyticprivilege",
-          ".analyticview",
-          ".attributeview",
-          ".calculationview",
-          ".hdbanalyticprivilege",
-          ".hdbcalculationview",
-          ".hdbflowgraph",
-          ".hdbreptask",
-          ".hdbsearchruleset",
-          ".hdbtextconfig",
-          ".hdbtextdict",
+          ".analyticprivilege"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/analyticprivilege.svg",
+          "dark": "./images/icons/analyticprivilege.svg"
+        }
+      },
+      {
+        "id": "analyticview",
+        "aliases": [
+          "SAP HANA Analytic View"
+        ],
+        "extensions": [
+          ".analyticview"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/analyticview.svg",
+          "dark": "./images/icons/analyticview.svg"
+        }
+      },
+      {
+        "id": "attributeview",
+        "aliases": [
+          "SAP HANA Attribute View"
+        ],
+        "extensions": [
+          ".attributeview"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/attributeview.svg",
+          "dark": "./images/icons/attributeview.svg"
+        }
+      },
+      {
+        "id": "calculationview",
+        "aliases": [
+          "SAP HANA Calculation View"
+        ],
+        "extensions": [
+          ".calculationview"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/calculationview.svg",
+          "dark": "./images/icons/calculationview.svg"
+        }
+      },
+      {
+        "id": "hdbanalyticprivilege",
+        "aliases": [
+          "SAP HANA HDI Analytic Privilege"
+        ],
+        "extensions": [
+          ".hdbanalyticprivilege"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbanalyticprivilege.svg",
+          "dark": "./images/icons/hdbanalyticprivilege.svg"
+        }
+      },
+      {
+        "id": "hdbcalculationview",
+        "aliases": [
+          "SAP HANA HDI Calculation View"
+        ],
+        "extensions": [
+          ".hdbcalculationview"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbcalculationview.svg",
+          "dark": "./images/icons/hdbcalculationview.svg"
+        }
+      },
+      {
+        "id": "hdbflowgraph",
+        "aliases": [
+          "SAP HANA Flowgraph"
+        ],
+        "extensions": [
+          ".hdbflowgraph"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbflowgraph.svg",
+          "dark": "./images/icons/hdbflowgraph.svg"
+        }
+      },
+      {
+        "id": "hdbreptask",
+        "aliases": [
+          "SAP HANA Replication Task"
+        ],
+        "extensions": [
+          ".hdbreptask"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbreptask.svg",
+          "dark": "./images/icons/hdbreptask.svg"
+        }
+      },
+      {
+        "id": "hdbsearchruleset",
+        "aliases": [
+          "SAP HANA Search Rule Set"
+        ],
+        "extensions": [
+          ".hdbsearchruleset"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbsearchruleset.svg",
+          "dark": "./images/icons/hdbsearchruleset.svg"
+        }
+      },
+      {
+        "id": "hdbtextconfig",
+        "aliases": [
+          "SAP HANA Text Analysis Configuration"
+        ],
+        "extensions": [
+          ".hdbtextconfig"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbtextconfig.svg",
+          "dark": "./images/icons/hdbtextconfig.svg"
+        }
+      },
+      {
+        "id": "hdbtextdict",
+        "aliases": [
+          "SAP HANA Text Analysis Dictionary"
+        ],
+        "extensions": [
+          ".hdbtextdict"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbtextdict.svg",
+          "dark": "./images/icons/hdbtextdict.svg"
+        }
+      },
+      {
+        "id": "hdbtextminingconfig",
+        "aliases": [
+          "SAP HANA Text Mining Configuration"
+        ],
+        "extensions": [
           ".hdbtextminingconfig"
-        ]
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbtextminingconfig.svg",
+          "dark": "./images/icons/hdbtextminingconfig.svg"
+        }
       },
       {
         "id": "hdbmigrationtable",
@@ -257,7 +792,11 @@
         "extensions": [
           ".hdbmigrationtable"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbmigrationtable.svg",
+          "dark": "./images/icons/hdbmigrationtable.svg"
+        }
       },
       {
         "id": "hdbcds",
@@ -268,7 +807,11 @@
         "extensions": [
           ".hdbcds"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbcds.svg",
+          "dark": "./images/icons/hdbcds.svg"
+        }
       },
       {
         "id": "xsjs",
@@ -277,10 +820,28 @@
           "XSJS"
         ],
         "extensions": [
-          ".xsjs",
+          ".xsjs"
+        ],
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/xsjs.svg",
+          "dark": "./images/icons/xsjs.svg"
+        }
+      },
+      {
+        "id": "xsjslib",
+        "aliases": [
+          "SAP HANA XS JavaScript Library",
+          "XSJSLIB"
+        ],
+        "extensions": [
           ".xsjslib"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/xsjslib.svg",
+          "dark": "./images/icons/xsjslib.svg"
+        }
       },
       {
         "id": "hdbgrants",
@@ -290,7 +851,11 @@
         "extensions": [
           ".hdbgrants"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbgrants.svg",
+          "dark": "./images/icons/hdbgrants.svg"
+        }
       },
       {
         "id": "hdbrevokes",
@@ -300,7 +865,11 @@
         "extensions": [
           ".hdbrevokes"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbrevokes.svg",
+          "dark": "./images/icons/hdbrevokes.svg"
+        }
       },
       {
         "id": "hdbroleconfig",
@@ -310,7 +879,11 @@
         "extensions": [
           ".hdbroleconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbroleconfig.svg",
+          "dark": "./images/icons/hdbroleconfig.svg"
+        }
       },
       {
         "id": "hdbsynonymconfig",
@@ -320,7 +893,11 @@
         "extensions": [
           ".hdbsynonymconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbsynonymconfig.svg",
+          "dark": "./images/icons/hdbsynonymconfig.svg"
+        }
       },
       {
         "id": "hdbpublicsynonym",
@@ -330,7 +907,11 @@
         "extensions": [
           ".hdbpublicsynonym"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbpublicsynonym.svg",
+          "dark": "./images/icons/hdbpublicsynonym.svg"
+        }
       },
       {
         "id": "hdbvirtualtableconfig",
@@ -340,7 +921,11 @@
         "extensions": [
           ".hdbvirtualtableconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualtableconfig.svg",
+          "dark": "./images/icons/hdbvirtualtableconfig.svg"
+        }
       },
       {
         "id": "hdblogicalschemaconfig",
@@ -350,7 +935,11 @@
         "extensions": [
           ".hdblogicalschemaconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdblogicalschemaconfig.svg",
+          "dark": "./images/icons/hdblogicalschemaconfig.svg"
+        }
       },
       {
         "id": "hdbprojectionviewconfig",
@@ -360,7 +949,11 @@
         "extensions": [
           ".hdbprojectionviewconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbprojectionviewconfig.svg",
+          "dark": "./images/icons/hdbprojectionviewconfig.svg"
+        }
       },
       {
         "id": "hdbtabledata",
@@ -370,7 +963,11 @@
         "extensions": [
           ".hdbtabledata"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbtabledata.svg",
+          "dark": "./images/icons/hdbtabledata.svg"
+        }
       },
       {
         "id": "hdbeshconfig",
@@ -380,7 +977,11 @@
         "extensions": [
           ".hdbeshconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbeshconfig.svg",
+          "dark": "./images/icons/hdbeshconfig.svg"
+        }
       },
       {
         "id": "hdiconfig",
@@ -393,7 +994,11 @@
         "configuration": "./language-configuration-xsjson.json",
         "filenames": [
           ".hdiconfig"
-        ]
+        ],
+        "icon": {
+          "light": "./images/icons/hdiconfig.svg",
+          "dark": "./images/icons/hdiconfig.svg"
+        }
       },
       {
         "id": "hdinamespace",
@@ -406,7 +1011,11 @@
         "configuration": "./language-configuration-xsjson.json",
         "filenames": [
           ".hdinamespace"
-        ]
+        ],
+        "icon": {
+          "light": "./images/icons/hdinamespace.svg",
+          "dark": "./images/icons/hdinamespace.svg"
+        }
       },
       {
         "id": "xsoauthappconfig",
@@ -416,7 +1025,11 @@
         "extensions": [
           ".xsoauthappconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xsoauthappconfig.svg",
+          "dark": "./images/icons/xsoauthappconfig.svg"
+        }
       },
       {
         "id": "xsoauthclientconfig",
@@ -426,7 +1039,11 @@
         "extensions": [
           ".xsoauthclientconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xsoauthclientconfig.svg",
+          "dark": "./images/icons/xsoauthclientconfig.svg"
+        }
       },
       {
         "id": "xsoauthclientflavor",
@@ -436,7 +1053,11 @@
         "extensions": [
           ".xsoauthclientflavor"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xsoauthclientflavor.svg",
+          "dark": "./images/icons/xsoauthclientflavor.svg"
+        }
       },
       {
         "id": "hdbtextrule",
@@ -446,7 +1067,11 @@
         "extensions": [
           ".hdbtextrule"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbtextrule.svg",
+          "dark": "./images/icons/hdbtextrule.svg"
+        }
       },
       {
         "id": "hdbtextinclude",
@@ -456,7 +1081,11 @@
         "extensions": [
           ".hdbtextinclude"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbtextinclude.svg",
+          "dark": "./images/icons/hdbtextinclude.svg"
+        }
       },
       {
         "id": "hdbtextlexicon",
@@ -466,7 +1095,11 @@
         "extensions": [
           ".hdbtextlexicon"
         ],
-        "configuration": "./language-configuration-xs.json"
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbtextlexicon.svg",
+          "dark": "./images/icons/hdbtextlexicon.svg"
+        }
       },
       {
         "id": "hdblogicalschema",
@@ -476,7 +1109,11 @@
         "extensions": [
           ".hdblogicalschema"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdblogicalschema.svg",
+          "dark": "./images/icons/hdblogicalschema.svg"
+        }
       },
       {
         "id": "hdbsysbicsynonym",
@@ -486,7 +1123,11 @@
         "extensions": [
           ".hdbsysbicsynonym"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbsysbicsynonym.svg",
+          "dark": "./images/icons/hdbsysbicsynonym.svg"
+        }
       },
       {
         "id": "hdbvirtualprocedureconfig",
@@ -496,7 +1137,11 @@
         "extensions": [
           ".hdbvirtualprocedureconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualprocedureconfig.svg",
+          "dark": "./images/icons/hdbvirtualprocedureconfig.svg"
+        }
       },
       {
         "id": "hdbvirtualfunctionconfig",
@@ -506,7 +1151,11 @@
         "extensions": [
           ".hdbvirtualfunctionconfig"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualfunctionconfig.svg",
+          "dark": "./images/icons/hdbvirtualfunctionconfig.svg"
+        }
       },
       {
         "id": "hdbafllangprocedure",
@@ -516,12 +1165,136 @@
         "extensions": [
           ".hdbafllangprocedure"
         ],
-        "configuration": "./language-configuration-xsjson.json"
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbafllangprocedure.svg",
+          "dark": "./images/icons/hdbafllangprocedure.svg"
+        }
       }
     ],
     "grammars": [
       {
         "language": "hanasql",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbprocedure",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbfunction",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbtablefunction",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbtrigger",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbindex",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbfulltextindex",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbconstraint",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualtable",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbtabletype",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbprojectionview",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbstructuredprivilege",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbstructuredfilter",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbresultcache",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbstatistics",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbsystemversioning",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbschedulerjob",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbremotetablereplica",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbcollection",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdblibrary",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbdropcreatetable",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbapplicationtime",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbgraphworkspace",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualprocedure",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualfunction",
         "scopeName": "source.hanasql",
         "path": "./syntaxes/hanasql.tmLanguage.json"
       },
@@ -622,6 +1395,11 @@
       },
       {
         "language": "xsjs",
+        "scopeName": "source.xsjs",
+        "path": "./syntaxes/xsjs.tmLanguage.json"
+      },
+      {
+        "language": "xsjslib",
         "scopeName": "source.xsjs",
         "path": "./syntaxes/xsjs.tmLanguage.json"
       },
@@ -739,6 +1517,66 @@
         "language": "hdbafllangprocedure",
         "scopeName": "source.hdbafllangprocedure",
         "path": "./syntaxes/hdbafllangprocedure.tmLanguage.json"
+      },
+      {
+        "language": "analyticprivilege",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "analyticview",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "attributeview",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "calculationview",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbanalyticprivilege",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbcalculationview",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbflowgraph",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbreptask",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbsearchruleset",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextconfig",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextdict",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextminingconfig",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
       }
     ],
     "commands": [
@@ -749,6 +1587,78 @@
     ],
     "configurationDefaults": {
       "[hanasql]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbprocedure]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbfunction]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtablefunction]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtrigger]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbindex]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbfulltextindex]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbconstraint]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualtable]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtabletype]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbprojectionview]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbstructuredprivilege]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbstructuredfilter]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbresultcache]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbstatistics]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsystemversioning]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbschedulerjob]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbremotetablereplica]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbcollection]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdblibrary]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbdropcreatetable]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbapplicationtime]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbgraphworkspace]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualprocedure]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualfunction]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       }
     },
@@ -765,7 +1675,7 @@
           "default": 0,
           "minimum": 0,
           "maximum": 16,
-          "markdownDescription": "Spaces per indentation level. `0` uses the editor's `editor.tabSize`."
+          "markdownDescription": "Spaces per indentation level. `0` uses the editor\u0027s `editor.tabSize`."
         },
         "hanasql.format.indentStyle": {
           "type": "string",
@@ -970,7 +1880,7 @@
             "crlf"
           ],
           "default": "auto",
-          "markdownDescription": "Line ending. `auto` keeps the document's."
+          "markdownDescription": "Line ending. `auto` keeps the document\u0027s."
         },
         "hanasql.format.identifierQuotes": {
           "type": "string",
@@ -1002,6 +1912,30 @@
   "main": "./src/extension.js",
   "activationEvents": [
     "onLanguage:hanasql",
+    "onLanguage:hdbprocedure",
+    "onLanguage:hdbfunction",
+    "onLanguage:hdbtablefunction",
+    "onLanguage:hdbtrigger",
+    "onLanguage:hdbindex",
+    "onLanguage:hdbfulltextindex",
+    "onLanguage:hdbconstraint",
+    "onLanguage:hdbvirtualtable",
+    "onLanguage:hdbtabletype",
+    "onLanguage:hdbprojectionview",
+    "onLanguage:hdbstructuredprivilege",
+    "onLanguage:hdbstructuredfilter",
+    "onLanguage:hdbresultcache",
+    "onLanguage:hdbstatistics",
+    "onLanguage:hdbsystemversioning",
+    "onLanguage:hdbschedulerjob",
+    "onLanguage:hdbremotetablereplica",
+    "onLanguage:hdbcollection",
+    "onLanguage:hdblibrary",
+    "onLanguage:hdbdropcreatetable",
+    "onLanguage:hdbapplicationtime",
+    "onLanguage:hdbgraphworkspace",
+    "onLanguage:hdbvirtualprocedure",
+    "onLanguage:hdbvirtualfunction",
     "onLanguage:hdbtable",
     "onLanguage:hdbstructure",
     "onLanguage:hdbview",
@@ -1019,9 +1953,22 @@
     "onLanguage:xssqlcc",
     "onLanguage:xsprivileges",
     "onLanguage:xssecurestore",
+    "onLanguage:analyticprivilege",
+    "onLanguage:analyticview",
+    "onLanguage:attributeview",
+    "onLanguage:calculationview",
+    "onLanguage:hdbanalyticprivilege",
+    "onLanguage:hdbcalculationview",
+    "onLanguage:hdbflowgraph",
+    "onLanguage:hdbreptask",
+    "onLanguage:hdbsearchruleset",
+    "onLanguage:hdbtextconfig",
+    "onLanguage:hdbtextdict",
+    "onLanguage:hdbtextminingconfig",
     "onLanguage:hdbmigrationtable",
     "onLanguage:hdbcds",
     "onLanguage:xsjs",
+    "onLanguage:xsjslib",
     "onLanguage:hdbgrants",
     "onLanguage:hdbrevokes",
     "onLanguage:hdbroleconfig",

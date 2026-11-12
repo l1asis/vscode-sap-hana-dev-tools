@@ -1,0 +1,9 @@
+{
+  "name": "SAP HANA XML",
+  "scopeName": "text.xml.hana",
+  "patterns": [
+    {
+      "include": "text.xml"
+    }
+  ]
+}
