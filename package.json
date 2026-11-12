@@ -5,14 +5,28 @@
   "version": "0.1.0",
   "publisher": "l1asis",
   "license": "MIT",
-  "engines": { "vscode": "^1.75.0" },
-  "categories": ["Programming Languages"],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "hanasql",
-        "aliases": ["SAP HANA SQL", "HANA SQL", "hanasql"],
-        "extensions": [".sql", ".hdbprocedure", ".hdbfunction", ".hdbtable", ".hdbview"],
+        "aliases": [
+          "SAP HANA SQL",
+          "HANA SQL",
+          "hanasql"
+        ],
+        "extensions": [
+          ".sql",
+          ".hdbprocedure",
+          ".hdbfunction",
+          ".hdbtable",
+          ".hdbview"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
@@ -22,6 +36,270 @@
         "scopeName": "source.hanasql",
         "path": "./syntaxes/hanasql.tmLanguage.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "hanasql.openFormatterSettings",
+        "title": "SAP HANA SQL: Open Formatter Settings"
+      }
+    ],
+    "configurationDefaults": {
+      "[hanasql]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-sql"
+      }
+    },
+    "configuration": {
+      "title": "SAP HANA SQL Formatter",
+      "properties": {
+        "hanasql.format.enable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable the SAP HANA SQL formatter."
+        },
+        "hanasql.format.indentSize": {
+          "type": "integer",
+          "default": 0,
+          "minimum": 0,
+          "maximum": 16,
+          "markdownDescription": "Spaces per indentation level. `0` uses the editor's `editor.tabSize`."
+        },
+        "hanasql.format.indentStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "spaces",
+            "tabs"
+          ],
+          "default": "auto",
+          "markdownDescription": "Indent with spaces or tabs. `auto` follows `editor.insertSpaces`."
+        },
+        "hanasql.format.keywordCase": {
+          "type": "string",
+          "enum": [
+            "upper",
+            "lower",
+            "preserve"
+          ],
+          "default": "upper",
+          "markdownDescription": "Letter case of keywords (`SELECT`, `FROM`, `BEGIN`, ...)."
+        },
+        "hanasql.format.functionCase": {
+          "type": "string",
+          "enum": [
+            "upper",
+            "lower",
+            "preserve"
+          ],
+          "default": "upper",
+          "markdownDescription": "Letter case of built-in function names (`COALESCE`, `ADD_DAYS`, ...)."
+        },
+        "hanasql.format.dataTypeCase": {
+          "type": "string",
+          "enum": [
+            "upper",
+            "lower",
+            "preserve"
+          ],
+          "default": "upper",
+          "markdownDescription": "Letter case of data types (`NVARCHAR`, `DECIMAL`, ...)."
+        },
+        "hanasql.format.identifierCase": {
+          "type": "string",
+          "enum": [
+            "upper",
+            "lower",
+            "preserve"
+          ],
+          "default": "preserve",
+          "markdownDescription": "Letter case of **unquoted** identifiers and `:variables`. Quoted identifiers and string literals are never changed. Unquoted identifiers are case-insensitive in SAP HANA, so changing them is safe."
+        },
+        "hanasql.format.maxLineLength": {
+          "type": "integer",
+          "default": 120,
+          "minimum": 0,
+          "maximum": 1000,
+          "markdownDescription": "Wrap lines longer than this (after commas, before `AND`/`OR` and binary operators). `0` disables wrapping."
+        },
+        "hanasql.format.spacesAroundOperators": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Spaces around binary operators (`=`, `<>`, `+`, `||`, `:=`, `=>`, ...). Unary signs and `*` wildcards are handled correctly."
+        },
+        "hanasql.format.spaceAfterComma": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Space after commas that do not end a line."
+        },
+        "hanasql.format.spacesInsideParentheses": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Spaces inside parentheses: `( a, b )`."
+        },
+        "hanasql.format.spaceBeforeListParenthesis": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Space between a name and the opening parenthesis in `CREATE TABLE t (`, `CREATE PROCEDURE p (`, `INSERT INTO t (`."
+        },
+        "hanasql.format.commaPosition": {
+          "type": "string",
+          "enum": [
+            "trailing",
+            "leading"
+          ],
+          "default": "trailing",
+          "markdownDescription": "Commas at the end of a line or at the start of the next one."
+        },
+        "hanasql.format.oneItemPerLine": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "select",
+              "from",
+              "groupBy",
+              "orderBy",
+              "set",
+              "columnDefinitions",
+              "parameters",
+              "insertColumns",
+              "values"
+            ]
+          },
+          "uniqueItems": true,
+          "default": [
+            "select",
+            "set",
+            "columnDefinitions",
+            "parameters"
+          ],
+          "markdownDescription": "List contexts that are broken into one item per line when they contain more than one item."
+        },
+        "hanasql.format.beginOnNewLine": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Put `BEGIN` on its own line. `DO BEGIN` always stays together."
+        },
+        "hanasql.format.procedureHeaderOnSeparateLines": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Put `RETURNS`, `LANGUAGE`, `SQL SECURITY`, `READS SQL DATA`, `AS`, ... of `CREATE PROCEDURE/FUNCTION` on separate lines."
+        },
+        "hanasql.format.joinOnNewLine": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Put the `ON` condition of a join on a new, indented line."
+        },
+        "hanasql.format.breakLogicalOperators": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "New line for each top-level `AND`/`OR` in `WHERE`, `HAVING` and `ON`."
+        },
+        "hanasql.format.logicalOperatorPosition": {
+          "type": "string",
+          "enum": [
+            "before",
+            "after"
+          ],
+          "default": "before",
+          "markdownDescription": "`AND`/`OR` at the start or at the end of the line."
+        },
+        "hanasql.format.caseLayout": {
+          "type": "string",
+          "enum": [
+            "multiline",
+            "inline"
+          ],
+          "default": "multiline",
+          "markdownDescription": "Layout of `CASE` expressions. SQLScript `CASE` statements are always multi-line."
+        },
+        "hanasql.format.trailingSemicolon": {
+          "type": "string",
+          "enum": [
+            "preserve",
+            "add",
+            "remove"
+          ],
+          "default": "preserve",
+          "markdownDescription": "`add`: terminate unterminated statements (also before `END`/`ELSE`), except the root statement of HDI design-time files (`.hdbprocedure`, ...). `remove`: strip the final `;` of the document and collapse `;;`.",
+          "enumDescriptions": [
+            "Leave semicolons as they are.",
+            "Add missing semicolons.",
+            "Remove the semicolon after the last statement."
+          ]
+        },
+        "hanasql.format.maxConsecutiveBlankLines": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 20,
+          "markdownDescription": "Maximum number of consecutive blank lines to keep."
+        },
+        "hanasql.format.blankLinesBetweenTopLevelStatements": {
+          "type": "integer",
+          "default": 1,
+          "minimum": -1,
+          "maximum": 20,
+          "markdownDescription": "Blank lines between top-level statements. `-1` keeps the source spacing."
+        },
+        "hanasql.format.blankLinesBetweenStatements": {
+          "type": "integer",
+          "default": -1,
+          "minimum": -1,
+          "maximum": 20,
+          "markdownDescription": "Blank lines between statements inside `BEGIN ... END`, `IF`, loops, ... `-1` keeps the source spacing."
+        },
+        "hanasql.format.removeBlankLinesAtBlockEdges": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Remove blank lines directly after `BEGIN`/`THEN`/`ELSE`/`DO` and directly before `END`."
+        },
+        "hanasql.format.insertFinalNewline": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "End the file with exactly one line break."
+        },
+        "hanasql.format.endOfLine": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "lf",
+            "crlf"
+          ],
+          "default": "auto",
+          "markdownDescription": "Line ending. `auto` keeps the document's."
+        },
+        "hanasql.format.identifierQuotes": {
+          "type": "string",
+          "enum": [
+            "preserve",
+            "removeUnnecessary"
+          ],
+          "default": "preserve",
+          "markdownDescription": "`removeUnnecessary` drops the double quotes from `\"UPPER_CASE_NAMES\"` that are not reserved words (semantically identical). Everything else stays quoted."
+        },
+        "hanasql.format.notEqualOperator": {
+          "type": "string",
+          "enum": [
+            "preserve",
+            "<>",
+            "!="
+          ],
+          "default": "preserve",
+          "markdownDescription": "Normalize the not-equal operator."
+        },
+        "hanasql.format.spaceAfterCommentMarker": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Turn `--comment` into `-- comment`."
+        }
+      }
+    }
+  },
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onLanguage:hanasql"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
   }
 }
