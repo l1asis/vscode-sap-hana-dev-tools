@@ -27,3 +27,7 @@ coverage/
 .DS_Store
 Thumbs.db
 *.db
+
+# Specs
+docs/specs/
+!docs/specs/*.md
