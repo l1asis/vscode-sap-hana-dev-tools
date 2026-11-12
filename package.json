@@ -1,7 +1,7 @@
 {
   "name": "sap-hana-sql",
-  "displayName": "SAP HANA SQL Highlighting",
-  "description": "Syntax highlighting for SAP HANA SQL and SQLScript (.sql, .hdbprocedure, .hdbfunction, .hdbtable, .hdbview)",
+  "displayName": "SAP HANA SQL & XS Classic",
+  "description": "SAP HANA SQL / SQLScript, XS Classic (.hdbtable, .hdbdd, .xsjs, ...) and HDI / XS Advanced artifacts (.hdbcds, .hdbgrants, .hdbtabledata, ...): syntax highlighting plus a configurable SQL formatter",
   "version": "0.1.0",
   "publisher": "l1asis",
   "license": "MIT",
@@ -24,10 +24,407 @@
           ".sql",
           ".hdbprocedure",
           ".hdbfunction",
-          ".hdbtable",
-          ".hdbview"
+          ".hdbtablefunction",
+          ".hdbtrigger",
+          ".hdbindex",
+          ".hdbfulltextindex",
+          ".hdbconstraint",
+          ".hdbvirtualtable",
+          ".hdbtabletype",
+          ".hdbprojectionview",
+          ".hdbstructuredprivilege",
+          ".hdbstructuredfilter",
+          ".hdbresultcache",
+          ".hdbstatistics",
+          ".hdbsystemversioning",
+          ".hdbschedulerjob",
+          ".hdbremotetablereplica",
+          ".hdbcollection",
+          ".hdbcollectionindex",
+          ".hdblibrary"
         ],
         "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "hdbtable",
+        "aliases": [
+          "SAP HANA HDBTable"
+        ],
+        "extensions": [
+          ".hdbtable"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbstructure",
+        "aliases": [
+          "SAP HANA HDBStructure"
+        ],
+        "extensions": [
+          ".hdbstructure"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbview",
+        "aliases": [
+          "SAP HANA HDBView"
+        ],
+        "extensions": [
+          ".hdbview"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbsequence",
+        "aliases": [
+          "SAP HANA HDBSequence"
+        ],
+        "extensions": [
+          ".hdbsequence"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbschema",
+        "aliases": [
+          "SAP HANA HDBSchema"
+        ],
+        "extensions": [
+          ".hdbschema"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbti",
+        "aliases": [
+          "SAP HANA Table Import"
+        ],
+        "extensions": [
+          ".hdbti"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbdd",
+        "aliases": [
+          "SAP HANA CDS",
+          "HDBDD"
+        ],
+        "extensions": [
+          ".hdbdd"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbrole",
+        "aliases": [
+          "SAP HANA Role"
+        ],
+        "extensions": [
+          ".hdbrole"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbsynonym",
+        "aliases": [
+          "SAP HANA Synonym"
+        ],
+        "extensions": [
+          ".hdbsynonym"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xsodata",
+        "aliases": [
+          "SAP HANA OData Service",
+          "XSOData"
+        ],
+        "extensions": [
+          ".xsodata"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "xshttpdest",
+        "aliases": [
+          "SAP HANA XS HTTP Destination"
+        ],
+        "extensions": [
+          ".xshttpdest"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "xsaccess",
+        "aliases": [
+          "SAP HANA XS Access"
+        ],
+        "extensions": [
+          ".xsaccess"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "filenames": [
+          ".xsaccess"
+        ]
+      },
+      {
+        "id": "xsapp",
+        "aliases": [
+          "SAP HANA XS Application Descriptor"
+        ],
+        "extensions": [
+          ".xsapp"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "filenames": [
+          ".xsapp"
+        ]
+      },
+      {
+        "id": "xsjob",
+        "aliases": [
+          "SAP HANA XS Job"
+        ],
+        "extensions": [
+          ".xsjob"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xssqlcc",
+        "aliases": [
+          "SAP HANA XS SQL Connection"
+        ],
+        "extensions": [
+          ".xssqlcc"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xsprivileges",
+        "aliases": [
+          "SAP HANA XS Privileges"
+        ],
+        "extensions": [
+          ".xsprivileges"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "filenames": [
+          ".xsprivileges"
+        ]
+      },
+      {
+        "id": "xssecurestore",
+        "aliases": [
+          "SAP HANA XS Secure Store"
+        ],
+        "extensions": [
+          ".xssecurestore"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xml",
+        "extensions": [
+          ".calculationview",
+          ".attributeview",
+          ".analyticview",
+          ".analyticprivilege",
+          ".hdbcalculationview",
+          ".hdbanalyticprivilege"
+        ]
+      },
+      {
+        "id": "hdbmigrationtable",
+        "aliases": [
+          "SAP HANA HDI Migration Table"
+        ],
+        "extensions": [
+          ".hdbmigrationtable"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "hdbcds",
+        "aliases": [
+          "SAP HANA CDS (XS Advanced)",
+          "HDBCDS"
+        ],
+        "extensions": [
+          ".hdbcds"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "xsjs",
+        "aliases": [
+          "SAP HANA XS JavaScript",
+          "XSJS"
+        ],
+        "extensions": [
+          ".xsjs",
+          ".xsjslib"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbgrants",
+        "aliases": [
+          "SAP HANA HDI Grants"
+        ],
+        "extensions": [
+          ".hdbgrants"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbrevokes",
+        "aliases": [
+          "SAP HANA HDI Revokes"
+        ],
+        "extensions": [
+          ".hdbrevokes"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbroleconfig",
+        "aliases": [
+          "SAP HANA HDI Role Configuration"
+        ],
+        "extensions": [
+          ".hdbroleconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbsynonymconfig",
+        "aliases": [
+          "SAP HANA HDI Synonym Configuration"
+        ],
+        "extensions": [
+          ".hdbsynonymconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbpublicsynonym",
+        "aliases": [
+          "SAP HANA HDI Public Synonym"
+        ],
+        "extensions": [
+          ".hdbpublicsynonym"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbvirtualtableconfig",
+        "aliases": [
+          "SAP HANA HDI Virtual Table Configuration"
+        ],
+        "extensions": [
+          ".hdbvirtualtableconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdblogicalschemaconfig",
+        "aliases": [
+          "SAP HANA HDI Logical Schema Configuration"
+        ],
+        "extensions": [
+          ".hdblogicalschemaconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbprojectionviewconfig",
+        "aliases": [
+          "SAP HANA HDI Projection View Configuration"
+        ],
+        "extensions": [
+          ".hdbprojectionviewconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbtabledata",
+        "aliases": [
+          "SAP HANA HDI Table Data"
+        ],
+        "extensions": [
+          ".hdbtabledata"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbeshconfig",
+        "aliases": [
+          "SAP HANA HDI Enterprise Search Configuration"
+        ],
+        "extensions": [
+          ".hdbeshconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdiconfig",
+        "aliases": [
+          "SAP HANA HDI Container Configuration"
+        ],
+        "extensions": [
+          ".hdiconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "filenames": [
+          ".hdiconfig"
+        ]
+      },
+      {
+        "id": "hdinamespace",
+        "aliases": [
+          "SAP HANA HDI Namespace Rules"
+        ],
+        "extensions": [
+          ".hdinamespace"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "filenames": [
+          ".hdinamespace"
+        ]
+      },
+      {
+        "id": "xsoauthappconfig",
+        "aliases": [
+          "SAP HANA XS OAuth Application Configuration"
+        ],
+        "extensions": [
+          ".xsoauthappconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xsoauthclientconfig",
+        "aliases": [
+          "SAP HANA XS OAuth Client Configuration"
+        ],
+        "extensions": [
+          ".xsoauthclientconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "xsoauthclientflavor",
+        "aliases": [
+          "SAP HANA XS OAuth Client Flavor"
+        ],
+        "extensions": [
+          ".xsoauthclientflavor"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
       }
     ],
     "grammars": [
@@ -35,6 +432,181 @@
         "language": "hanasql",
         "scopeName": "source.hanasql",
         "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbtable",
+        "scopeName": "source.hdbtable",
+        "path": "./syntaxes/hdbtable.tmLanguage.json"
+      },
+      {
+        "language": "hdbstructure",
+        "scopeName": "source.hdbstructure",
+        "path": "./syntaxes/hdbstructure.tmLanguage.json"
+      },
+      {
+        "language": "hdbview",
+        "scopeName": "source.hdbview",
+        "path": "./syntaxes/hdbview.tmLanguage.json"
+      },
+      {
+        "language": "hdbsequence",
+        "scopeName": "source.hdbsequence",
+        "path": "./syntaxes/hdbsequence.tmLanguage.json"
+      },
+      {
+        "language": "hdbschema",
+        "scopeName": "source.hdbschema",
+        "path": "./syntaxes/hdbschema.tmLanguage.json"
+      },
+      {
+        "language": "hdbti",
+        "scopeName": "source.hdbti",
+        "path": "./syntaxes/hdbti.tmLanguage.json"
+      },
+      {
+        "language": "hdbdd",
+        "scopeName": "source.hdbdd",
+        "path": "./syntaxes/hdbdd.tmLanguage.json"
+      },
+      {
+        "language": "hdbrole",
+        "scopeName": "source.hdbrole",
+        "path": "./syntaxes/hdbrole.tmLanguage.json"
+      },
+      {
+        "language": "hdbsynonym",
+        "scopeName": "source.hdbsynonym",
+        "path": "./syntaxes/hdbsynonym.tmLanguage.json"
+      },
+      {
+        "language": "xsodata",
+        "scopeName": "source.xsodata",
+        "path": "./syntaxes/xsodata.tmLanguage.json"
+      },
+      {
+        "language": "xshttpdest",
+        "scopeName": "source.xshttpdest",
+        "path": "./syntaxes/xshttpdest.tmLanguage.json"
+      },
+      {
+        "language": "xsaccess",
+        "scopeName": "source.xsaccess",
+        "path": "./syntaxes/xsaccess.tmLanguage.json"
+      },
+      {
+        "language": "xsapp",
+        "scopeName": "source.xsapp",
+        "path": "./syntaxes/xsapp.tmLanguage.json"
+      },
+      {
+        "language": "xsjob",
+        "scopeName": "source.xsjob",
+        "path": "./syntaxes/xsjob.tmLanguage.json"
+      },
+      {
+        "language": "xssqlcc",
+        "scopeName": "source.xssqlcc",
+        "path": "./syntaxes/xssqlcc.tmLanguage.json"
+      },
+      {
+        "language": "xsprivileges",
+        "scopeName": "source.xsprivileges",
+        "path": "./syntaxes/xsprivileges.tmLanguage.json"
+      },
+      {
+        "language": "xssecurestore",
+        "scopeName": "source.xssecurestore",
+        "path": "./syntaxes/xssecurestore.tmLanguage.json"
+      },
+      {
+        "language": "hdbmigrationtable",
+        "scopeName": "source.hdbmigrationtable",
+        "path": "./syntaxes/hdbmigrationtable.tmLanguage.json"
+      },
+      {
+        "language": "hdbcds",
+        "scopeName": "source.hdbcds",
+        "path": "./syntaxes/hdbcds.tmLanguage.json"
+      },
+      {
+        "language": "xsjs",
+        "scopeName": "source.xsjs",
+        "path": "./syntaxes/xsjs.tmLanguage.json"
+      },
+      {
+        "language": "hdbgrants",
+        "scopeName": "source.hdbgrants",
+        "path": "./syntaxes/hdbgrants.tmLanguage.json"
+      },
+      {
+        "language": "hdbrevokes",
+        "scopeName": "source.hdbrevokes",
+        "path": "./syntaxes/hdbrevokes.tmLanguage.json"
+      },
+      {
+        "language": "hdbroleconfig",
+        "scopeName": "source.hdbroleconfig",
+        "path": "./syntaxes/hdbroleconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbsynonymconfig",
+        "scopeName": "source.hdbsynonymconfig",
+        "path": "./syntaxes/hdbsynonymconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbpublicsynonym",
+        "scopeName": "source.hdbpublicsynonym",
+        "path": "./syntaxes/hdbpublicsynonym.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualtableconfig",
+        "scopeName": "source.hdbvirtualtableconfig",
+        "path": "./syntaxes/hdbvirtualtableconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdblogicalschemaconfig",
+        "scopeName": "source.hdblogicalschemaconfig",
+        "path": "./syntaxes/hdblogicalschemaconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbprojectionviewconfig",
+        "scopeName": "source.hdbprojectionviewconfig",
+        "path": "./syntaxes/hdbprojectionviewconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbtabledata",
+        "scopeName": "source.hdbtabledata",
+        "path": "./syntaxes/hdbtabledata.tmLanguage.json"
+      },
+      {
+        "language": "hdbeshconfig",
+        "scopeName": "source.hdbeshconfig",
+        "path": "./syntaxes/hdbeshconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdiconfig",
+        "scopeName": "source.hdiconfig",
+        "path": "./syntaxes/hdiconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdinamespace",
+        "scopeName": "source.hdinamespace",
+        "path": "./syntaxes/hdinamespace.tmLanguage.json"
+      },
+      {
+        "language": "xsoauthappconfig",
+        "scopeName": "source.xsoauthappconfig",
+        "path": "./syntaxes/xsoauthappconfig.tmLanguage.json"
+      },
+      {
+        "language": "xsoauthclientconfig",
+        "scopeName": "source.xsoauthclientconfig",
+        "path": "./syntaxes/xsoauthclientconfig.tmLanguage.json"
+      },
+      {
+        "language": "xsoauthclientflavor",
+        "scopeName": "source.xsoauthclientflavor",
+        "path": "./syntaxes/xsoauthclientflavor.tmLanguage.json"
       }
     ],
     "commands": [
@@ -297,9 +869,45 @@
   },
   "main": "./src/extension.js",
   "activationEvents": [
-    "onLanguage:hanasql"
+    "onLanguage:hanasql",
+    "onLanguage:hdbtable",
+    "onLanguage:hdbstructure",
+    "onLanguage:hdbview",
+    "onLanguage:hdbsequence",
+    "onLanguage:hdbschema",
+    "onLanguage:hdbti",
+    "onLanguage:hdbdd",
+    "onLanguage:hdbrole",
+    "onLanguage:hdbsynonym",
+    "onLanguage:xsodata",
+    "onLanguage:xshttpdest",
+    "onLanguage:xsaccess",
+    "onLanguage:xsapp",
+    "onLanguage:xsjob",
+    "onLanguage:xssqlcc",
+    "onLanguage:xsprivileges",
+    "onLanguage:xssecurestore",
+    "onLanguage:hdbmigrationtable",
+    "onLanguage:hdbcds",
+    "onLanguage:xsjs",
+    "onLanguage:hdbgrants",
+    "onLanguage:hdbrevokes",
+    "onLanguage:hdbroleconfig",
+    "onLanguage:hdbsynonymconfig",
+    "onLanguage:hdbpublicsynonym",
+    "onLanguage:hdbvirtualtableconfig",
+    "onLanguage:hdblogicalschemaconfig",
+    "onLanguage:hdbprojectionviewconfig",
+    "onLanguage:hdbtabledata",
+    "onLanguage:hdbeshconfig",
+    "onLanguage:hdiconfig",
+    "onLanguage:hdinamespace",
+    "onLanguage:xsoauthappconfig",
+    "onLanguage:xsoauthclientconfig",
+    "onLanguage:xsoauthclientflavor"
   ],
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "build:grammars": "node scripts/build-grammars.js"
   }
 }
