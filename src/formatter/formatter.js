@@ -14,7 +14,7 @@ const BEGIN_MODS = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL
 const END_SUFFIX = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
 const SET_OPS = new Set(['UNION', 'INTERSECT', 'EXCEPT', 'MINUS']);
 const OBJ_TYPES = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
-const HDI_FIRST = new Set(['PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL']);
+const HDI_FIRST = new Set(['PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
 const HEADER_WORDS = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
 // keywords after which a following + - * is unary / a wildcard, not a binary operator
 const NON_VALUE = new Set([

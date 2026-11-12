@@ -3,8 +3,11 @@
 const vscode = require('vscode');
 const { format } = require('./formatter/formatter');
 const { DEFAULTS, resolveOptions } = require('./formatter/options');
+const { isKeyValueArtifact } = require('./formatter/detect');
 
-const LANGUAGE = 'hanasql';
+// Languages whose files can contain SQL. For .hdbtable/.hdbview/.hdbsequence/.hdbstructure the same
+// extension is XS Classic `key = value;` syntax in some projects; those files are detected and skipped.
+const SQL_LANGUAGES = ['hanasql', 'hdbtable', 'hdbstructure', 'hdbview', 'hdbsequence'];
 let output;
 
 function readSettings(document) {
@@ -43,6 +46,7 @@ const provider = {
     if (raw.enable === false) return [];
     return safe(() => {
       const text = document.getText();
+      if (isKeyValueArtifact(text)) return [];
       const result = format(text, raw, editorInfo(document, options));
       return result === text ? [] : [vscode.TextEdit.replace(fullRange(document), result)];
     });
@@ -52,6 +56,7 @@ const provider = {
     const raw = readSettings(document);
     if (raw.enable === false) return [];
     return safe(() => {
+      if (isKeyValueArtifact(document.getText())) return [];
       // work on whole lines
       const endLine = range.end.character === 0 && range.end.line > range.start.line ? range.end.line - 1 : range.end.line;
       const lineRange = new vscode.Range(range.start.line, 0, endLine, document.lineAt(endLine).text.length);
@@ -71,7 +76,7 @@ const provider = {
 
 function activate(context) {
   output = vscode.window.createOutputChannel('SAP HANA SQL');
-  const selector = { language: LANGUAGE };
+  const selector = SQL_LANGUAGES.map((language) => ({ language }));
   context.subscriptions.push(
     output,
     vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
