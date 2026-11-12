@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI _SYS_BIC Synonym (.hdbsysbicsynonym)",
+  "scopeName": "source.hdbsysbicsynonym",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbsysbicsynonym",
+      "match": "\"(?:target|object)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbsysbicsynonym",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbsysbicsynonym",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbsysbicsynonym",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbsysbicsynonym",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbsysbicsynonym",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbsysbicsynonym",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbsysbicsynonym",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbsysbicsynonym",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbsysbicsynonym",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbsysbicsynonym",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

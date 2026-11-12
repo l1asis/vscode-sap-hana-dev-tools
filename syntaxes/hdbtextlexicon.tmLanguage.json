@@ -1,0 +1,9 @@
+{
+  "name": "SAP HANA Text Analysis Lexicon",
+  "scopeName": "source.hdbtextlexicon",
+  "patterns": [
+    {
+      "include": "source.hdbtextrule"
+    }
+  ]
+}

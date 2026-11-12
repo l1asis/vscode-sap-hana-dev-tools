@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Virtual Procedure Configuration (.hdbvirtualprocedureconfig)",
+  "scopeName": "source.hdbvirtualprocedureconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbvirtualprocedureconfig",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbvirtualprocedureconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbvirtualprocedureconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbvirtualprocedureconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbvirtualprocedureconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbvirtualprocedureconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbvirtualprocedureconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbvirtualprocedureconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbvirtualprocedureconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbvirtualprocedureconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbvirtualprocedureconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

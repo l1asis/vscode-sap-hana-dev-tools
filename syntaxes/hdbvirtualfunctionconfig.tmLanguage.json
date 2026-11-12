@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Virtual Function Configuration (.hdbvirtualfunctionconfig)",
+  "scopeName": "source.hdbvirtualfunctionconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbvirtualfunctionconfig",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbvirtualfunctionconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbvirtualfunctionconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbvirtualfunctionconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbvirtualfunctionconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbvirtualfunctionconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbvirtualfunctionconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbvirtualfunctionconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbvirtualfunctionconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbvirtualfunctionconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbvirtualfunctionconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

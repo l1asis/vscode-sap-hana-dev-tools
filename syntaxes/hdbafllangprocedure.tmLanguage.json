@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI AFL Language Procedure (.hdbafllangprocedure)",
+  "scopeName": "source.hdbafllangprocedure",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbafllangprocedure",
+      "match": "\"(?:procedure|area|function|parameters|type|direction)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbafllangprocedure",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbafllangprocedure",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbafllangprocedure",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbafllangprocedure",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbafllangprocedure",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbafllangprocedure",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbafllangprocedure",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbafllangprocedure",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbafllangprocedure",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbafllangprocedure",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Logical Schema (.hdblogicalschema)",
+  "scopeName": "source.hdblogicalschema",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdblogicalschema",
+      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdblogicalschema",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdblogicalschema",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdblogicalschema",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdblogicalschema",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdblogicalschema",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdblogicalschema",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdblogicalschema",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdblogicalschema",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdblogicalschema",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdblogicalschema",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

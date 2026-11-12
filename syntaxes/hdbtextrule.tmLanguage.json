@@ -1,0 +1,151 @@
+{
+  "name": "SAP HANA Text Analysis Rules (CGUL)",
+  "scopeName": "source.hdbtextrule",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#import"
+    },
+    {
+      "include": "#definition"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#token"
+    },
+    {
+      "include": "#group-reference"
+    },
+    {
+      "include": "#attribute"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbtextrule",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbtextrule",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbtextrule",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtextrule",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbtextrule",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "import": {
+      "match": "^\\s*(#(?:include|lexicon))\\s+(?:([A-Za-z_]\\w*)\\s+)?(<)([^>\\n]*)(>)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.import.hdbtextrule"
+        },
+        "2": {
+          "name": "entity.name.type.hdbtextrule"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.hdbtextrule"
+        },
+        "4": {
+          "name": "string.unquoted.path.hdbtextrule"
+        },
+        "5": {
+          "name": "punctuation.definition.string.end.hdbtextrule"
+        }
+      }
+    },
+    "definition": {
+      "match": "^\\s*(#(?:define|subgroup|group))\\s+([A-Za-z_][\\w]*)?",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.hdbtextrule"
+        },
+        "2": {
+          "name": "entity.name.type.hdbtextrule"
+        }
+      }
+    },
+    "attribute": {
+      "match": "\\b([A-Za-z_]\\w*)(?=\\s*=\\s*\")",
+      "name": "variable.parameter.attribute.hdbtextrule"
+    },
+    "token": {
+      "begin": "<",
+      "end": ">",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.token.begin.hdbtextrule"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.token.end.hdbtextrule"
+        }
+      },
+      "contentName": "meta.token.hdbtextrule",
+      "patterns": [
+        {
+          "include": "#string"
+        },
+        {
+          "name": "support.type.property-name.hdbtextrule",
+          "match": "\\b[A-Z][A-Z_]+(?=\\s*:)"
+        },
+        {
+          "name": "punctuation.separator.hdbtextrule",
+          "match": "[:,]"
+        },
+        {
+          "name": "keyword.operator.hdbtextrule",
+          "match": "[|+*?]"
+        }
+      ]
+    },
+    "group-reference": {
+      "match": "(%)(\\()([A-Za-z_]\\w*)(\\))",
+      "captures": {
+        "1": {
+          "name": "keyword.operator.hdbtextrule"
+        },
+        "2": {
+          "name": "punctuation.section.parens.hdbtextrule"
+        },
+        "3": {
+          "name": "variable.other.group.hdbtextrule"
+        },
+        "4": {
+          "name": "punctuation.section.parens.hdbtextrule"
+        }
+      }
+    },
+    "operators": {
+      "name": "keyword.operator.hdbtextrule",
+      "match": "[|+*?^$:]|\\{\\d+(?:,\\d*)?\\}"
+    }
+  }
+}

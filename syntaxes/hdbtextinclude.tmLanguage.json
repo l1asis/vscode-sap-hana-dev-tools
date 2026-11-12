@@ -1,0 +1,9 @@
+{
+  "name": "SAP HANA Text Analysis Rules Include",
+  "scopeName": "source.hdbtextinclude",
+  "patterns": [
+    {
+      "include": "source.hdbtextrule"
+    }
+  ]
+}
