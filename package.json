@@ -1,5 +1,5 @@
 {
-  "name": "sap-hana-sql",
+  "name": "sap-hana-dev-tools",
   "displayName": "SAP HANA Developer Tools",
   "description": "Complete language support for SAP HANA (XS Classic, XS Advanced & HDI). Includes syntax highlighting and configurable formatting for SQLScript, CDS, and all HANA repository/design-time artifacts (.hdbtable, .hdbcds, .xsjs, .hdbgrants, and more).",
   "version": "0.1.0",
@@ -749,7 +749,7 @@
     ],
     "configurationDefaults": {
       "[hanasql]": {
-        "editor.defaultFormatter": "l1asis.sap-hana-sql"
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       }
     },
     "configuration": {

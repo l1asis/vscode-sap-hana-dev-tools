@@ -82,7 +82,7 @@ function activate(context) {
     vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
     vscode.languages.registerDocumentRangeFormattingEditProvider(selector, provider),
     vscode.commands.registerCommand('hanasql.openFormatterSettings', () =>
-      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-sql hanasql.format')
+      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql.format')
     )
   );
 }
