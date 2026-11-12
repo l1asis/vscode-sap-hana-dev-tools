@@ -87,3 +87,14 @@ test('control flow indentation', () => {
 });
 
 test('empty input', () => assert.strictEqual(f(''), ''));
+
+test('XS Classic key=value artifacts are detected (formatter must skip them)', () => {
+  const { isKeyValueArtifact } = require('../src/formatter/detect');
+  assert.ok(isKeyValueArtifact('table.schemaName = "S";\ntable.tableType = COLUMNSTORE;'));
+  assert.ok(isKeyValueArtifact('// comment\nschema="MYSCHEMA";\nquery="SELECT 1";'));
+  assert.ok(isKeyValueArtifact('schema_name="X";'));
+  assert.ok(!isKeyValueArtifact('COLUMN TABLE "T" ("A" INT)'));
+  assert.ok(!isKeyValueArtifact('-- c\nVIEW "V" AS SELECT 1 FROM DUMMY'));
+  assert.ok(!isKeyValueArtifact('PROCEDURE "P" () AS BEGIN END'));
+  assert.ok(!isKeyValueArtifact(''));
+});
