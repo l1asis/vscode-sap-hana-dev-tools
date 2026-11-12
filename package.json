@@ -1,7 +1,7 @@
 {
   "name": "sap-hana-sql",
-  "displayName": "SAP HANA SQL & XS Classic",
-  "description": "SAP HANA SQL / SQLScript, XS Classic (.hdbtable, .hdbdd, .xsjs, ...) and HDI / XS Advanced artifacts (.hdbcds, .hdbgrants, .hdbtabledata, ...): syntax highlighting plus a configurable SQL formatter",
+  "displayName": "SAP HANA Developer Tools",
+  "description": "Complete language support for SAP HANA (XS Classic, XS Advanced & HDI). Includes syntax highlighting and configurable formatting for SQLScript, CDS, and all HANA repository/design-time artifacts (.hdbtable, .hdbcds, .xsjs, .hdbgrants, and more).",
   "version": "0.1.0",
   "publisher": "l1asis",
   "license": "MIT",
@@ -10,20 +10,7 @@
   },
   "categories": [
     "Programming Languages",
-    "Formatters",
-    "Linters"
-  ],
-  "keywords": [
-    "SAP",
-    "HANA",
-    "SQLScript",
-    "XSC",
-    "XS Classic",
-    "XSA",
-    "XS Advanced",
-    "HDI",
-    "CDS",
-    "XSJS"
+    "Formatters"
   ],
   "contributes": {
     "languages": [
@@ -55,7 +42,12 @@
           ".hdbremotetablereplica",
           ".hdbcollection",
           ".hdbcollectionindex",
-          ".hdblibrary"
+          ".hdblibrary",
+          ".hdbdropcreatetable",
+          ".hdbapplicationtime",
+          ".hdbgraphworkspace",
+          ".hdbvirtualprocedure",
+          ".hdbvirtualfunction"
         ],
         "configuration": "./language-configuration.json"
       },
@@ -243,12 +235,18 @@
       {
         "id": "xml",
         "extensions": [
-          ".calculationview",
-          ".attributeview",
-          ".analyticview",
           ".analyticprivilege",
+          ".analyticview",
+          ".attributeview",
+          ".calculationview",
+          ".hdbanalyticprivilege",
           ".hdbcalculationview",
-          ".hdbanalyticprivilege"
+          ".hdbflowgraph",
+          ".hdbreptask",
+          ".hdbsearchruleset",
+          ".hdbtextconfig",
+          ".hdbtextdict",
+          ".hdbtextminingconfig"
         ]
       },
       {
@@ -439,6 +437,86 @@
           ".xsoauthclientflavor"
         ],
         "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbtextrule",
+        "aliases": [
+          "SAP HANA Text Analysis Rules"
+        ],
+        "extensions": [
+          ".hdbtextrule"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbtextinclude",
+        "aliases": [
+          "SAP HANA Text Analysis Rules Include"
+        ],
+        "extensions": [
+          ".hdbtextinclude"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdbtextlexicon",
+        "aliases": [
+          "SAP HANA Text Analysis Lexicon"
+        ],
+        "extensions": [
+          ".hdbtextlexicon"
+        ],
+        "configuration": "./language-configuration-xs.json"
+      },
+      {
+        "id": "hdblogicalschema",
+        "aliases": [
+          "SAP HANA HDI Logical Schema"
+        ],
+        "extensions": [
+          ".hdblogicalschema"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbsysbicsynonym",
+        "aliases": [
+          "SAP HANA HDI _SYS_BIC Synonym"
+        ],
+        "extensions": [
+          ".hdbsysbicsynonym"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbvirtualprocedureconfig",
+        "aliases": [
+          "SAP HANA HDI Virtual Procedure Configuration"
+        ],
+        "extensions": [
+          ".hdbvirtualprocedureconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbvirtualfunctionconfig",
+        "aliases": [
+          "SAP HANA HDI Virtual Function Configuration"
+        ],
+        "extensions": [
+          ".hdbvirtualfunctionconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
+      },
+      {
+        "id": "hdbafllangprocedure",
+        "aliases": [
+          "SAP HANA HDI AFL Language Procedure"
+        ],
+        "extensions": [
+          ".hdbafllangprocedure"
+        ],
+        "configuration": "./language-configuration-xsjson.json"
       }
     ],
     "grammars": [
@@ -621,6 +699,46 @@
         "language": "xsoauthclientflavor",
         "scopeName": "source.xsoauthclientflavor",
         "path": "./syntaxes/xsoauthclientflavor.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextrule",
+        "scopeName": "source.hdbtextrule",
+        "path": "./syntaxes/hdbtextrule.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextinclude",
+        "scopeName": "source.hdbtextinclude",
+        "path": "./syntaxes/hdbtextinclude.tmLanguage.json"
+      },
+      {
+        "language": "hdbtextlexicon",
+        "scopeName": "source.hdbtextlexicon",
+        "path": "./syntaxes/hdbtextlexicon.tmLanguage.json"
+      },
+      {
+        "language": "hdblogicalschema",
+        "scopeName": "source.hdblogicalschema",
+        "path": "./syntaxes/hdblogicalschema.tmLanguage.json"
+      },
+      {
+        "language": "hdbsysbicsynonym",
+        "scopeName": "source.hdbsysbicsynonym",
+        "path": "./syntaxes/hdbsysbicsynonym.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualprocedureconfig",
+        "scopeName": "source.hdbvirtualprocedureconfig",
+        "path": "./syntaxes/hdbvirtualprocedureconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualfunctionconfig",
+        "scopeName": "source.hdbvirtualfunctionconfig",
+        "path": "./syntaxes/hdbvirtualfunctionconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbafllangprocedure",
+        "scopeName": "source.hdbafllangprocedure",
+        "path": "./syntaxes/hdbafllangprocedure.tmLanguage.json"
       }
     ],
     "commands": [
@@ -918,10 +1036,33 @@
     "onLanguage:hdinamespace",
     "onLanguage:xsoauthappconfig",
     "onLanguage:xsoauthclientconfig",
-    "onLanguage:xsoauthclientflavor"
+    "onLanguage:xsoauthclientflavor",
+    "onLanguage:hdbtextrule",
+    "onLanguage:hdbtextinclude",
+    "onLanguage:hdbtextlexicon",
+    "onLanguage:hdblogicalschema",
+    "onLanguage:hdbsysbicsynonym",
+    "onLanguage:hdbvirtualprocedureconfig",
+    "onLanguage:hdbvirtualfunctionconfig",
+    "onLanguage:hdbafllangprocedure"
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
-    "build:grammars": "node scripts/build-grammars.js"
-  }
+    "build:grammars": "node scripts/build-grammars.js",
+    "build:keywords": "node scripts/build-keywords.js"
+  },
+  "keywords": [
+    "SAP HANA",
+    "HANA",
+    "SQLScript",
+    "XS Classic",
+    "XS Advanced",
+    "HDI",
+    "CDS",
+    "XSJS",
+    "hdbtable",
+    "hdbcds",
+    "hdbprocedure",
+    "formatter"
+  ]
 }
