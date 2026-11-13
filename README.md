@@ -36,7 +36,7 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
 ```jsonc
 {
   "[hanasql]": {
-    "editor. defaultFormatter": "your-publisher-name.sap-hana-tools",
+    "editor.defaultFormatter": "l1asis.sap-hana-dev-tools",
     "editor.formatOnSave": true,
     "editor.tabSize": 2
   },
