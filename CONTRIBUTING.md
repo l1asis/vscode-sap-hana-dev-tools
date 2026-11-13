@@ -1,4 +1,4 @@
-# Contributing to SAP HANA Developer Tools
+# Contributing to Developer Tools for SAP HANA
 
 Thank you for helping improve SAP HANA language support in VS Code! This document covers how to build grammars, update keyword dictionaries, run tests, and debug the extension locally.
 

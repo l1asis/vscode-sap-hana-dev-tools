@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the **SAP HANA Developer Tools** extension will be documented in this file.
+All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
 ## [0.1.0] - Released
 

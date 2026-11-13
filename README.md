@@ -1,4 +1,4 @@
-# SAP HANA Developer Tools for VS Code
+# Developer Tools for SAP HANA
 
 Rich language support for **SAP HANA XS Classic (XSC)**, **XS Advanced (XSA)**, and **SAP HANA Cloud (HDI)**. 
 
@@ -114,6 +114,6 @@ Distributed under the MIT License. See [LICENSE](./LICENSE) for more information
 
 ### Disclaimer & Trademark Notice
 
-This extension is an independent, community-driven open-source project and is **not affiliated with, endorsed by, sponsored by, or supported by SAP SE** or any of its affiliates. 
+This extension is an independent, community-driven open-source project and is **not affiliated with, endorsed by, sponsored by, or supported by SAP SE** or any of its affiliates.
 
 **SAP**, **SAP HANA**, **SAP HANA Cloud**, **XS Classic**, **XS Advanced**, and **SQLScript** are the trademarks or registered trademarks of **SAP SE** or its affiliates in Germany and in several other countries. All other product and service names mentioned are the trademarks of their respective companies. They are used in this project strictly for descriptive and nominative purposes to indicate compatibility and interoperability.

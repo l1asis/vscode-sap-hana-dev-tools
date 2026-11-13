@@ -1,6 +1,6 @@
 {
   "name": "sap-hana-dev-tools",
-  "displayName": "SAP HANA Developer Tools",
+  "displayName": "Developer Tools for SAP HANA",
   "description": "Complete language support for SAP HANA (XS Classic, XS Advanced & HDI). Includes syntax highlighting and configurable formatting for SQLScript, CDS, and all HANA repository/design-time artifacts (.hdbtable, .hdbcds, .xsjs, .hdbgrants, and more).",
   "version": "0.1.0",
   "icon": "images/icon.png",
