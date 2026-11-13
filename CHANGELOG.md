@@ -2,7 +2,14 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
-## [0.1.0] - Released
+## [0.1.1] - 2026-11-13
+
+### Changed
+
+- Renamed extension display name and documentation references from **SAP HANA Developer Tools** to **Developer Tools for SAP HANA**.
+- Added legal disclaimer and trademark notice to `README.md`.
+
+## [0.1.0] - 2026-11-13
 
 ### Added
 
