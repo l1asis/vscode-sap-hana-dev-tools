@@ -28,6 +28,5 @@ coverage/
 Thumbs.db
 *.db
 
-# Specs
-docs/specs/
-!docs/specs/*.md
+# Research
+research/
