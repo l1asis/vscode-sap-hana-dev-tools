@@ -84,7 +84,7 @@
       ]
     },
     "table-key": {
-      "begin": "\\b(table)(\\.)(schemaName|temporary|tableType|public|loggingType|tableLoggingType|description)\\b\\s*(=)",
+      "begin": "\\b(table)(\\.)(schemaName|SchemaName|temporary|tableType|public|loggingType|tableLoggingType|description)\\b\\s*(=)",
       "beginCaptures": {
         "1": {
           "name": "variable.language.hdbtable"
@@ -146,7 +146,7 @@
       ]
     },
     "list-key": {
-      "begin": "\\b(table)(\\.)(columns|indexes)\\b\\s*(=)",
+      "begin": "\\b(table)(\\.)(columns|indexes|primaryKey)\\b\\s*(=)",
       "beginCaptures": {
         "1": {
           "name": "variable.language.hdbtable"
@@ -209,7 +209,7 @@
         },
         {
           "name": "support.type.property-name.hdbtable",
-          "match": "\\b(?:name|sqlType|nullable|unique|length|scale|precision|defaultValue|comment|order|indexType|indexColumns)\\b(?=\\s*=)"
+          "match": "\\b(?:name|sqlType|nullable|unique|length|scale|precision|defaultValue|comment|order|indexType|indexColumns|pkcolumns)\\b(?=\\s*=)"
         },
         {
           "name": "keyword.operator.assignment.hdbtable",

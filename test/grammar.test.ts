@@ -344,6 +344,177 @@ test('every grammar tokenizes its sample without throwing', () => {
   }
 });
 
+test('Phase 1 CGUL: complete directives, token specifiers, POS tags, slots, character classes, and negative cases', () => {
+  const cgul = [
+    '-- dash comment',
+    '#include "my.ta::common.hdbtextinclude"',
+    '#lexicon CompanyLex <my.ta::companies.hdbtextlexicon> (type="COMPANY")',
+    '#category "ENTITY"',
+    '#priority "HIGH"',
+    '#define Digit: [0-9]',
+    '#group ORG (scope="sentence", type="ORGANIZATION"):',
+    '  [org]:(<STEM:"work", POS:VB|VBD, ORTH != "upper", !POS:NNP, REGEXP:".*Corp">+ %(my.ta::Suffix)? [A-Za-z]{1,3}) => { norm = $org, first = ${org}, idx = $1 };',
+  ].join('\n');
+  const t = tokenize('source.hdbtextrule', cgul);
+  check(t, '-- dash comment', 'comment.line.double-dash.hdbtextrule');
+  check(t, '#include', 'keyword.control.import.hdbtextrule');
+  check(t, 'my.ta::common.hdbtextinclude', 'string.quoted.double.path.hdbtextrule');
+  check(t, '#lexicon', 'keyword.control.import.hdbtextrule');
+  check(t, 'CompanyLex', 'entity.name.type.hdbtextrule');
+  check(t, '#category', 'keyword.control.directive.hdbtextrule');
+  check(t, '#priority', 'keyword.control.directive.hdbtextrule');
+  check(t, '0-9', 'constant.character.set.hdbtextrule');
+  check(t, 'A-Z', 'constant.character.set.hdbtextrule');
+  check(t, 'org', 'entity.name.tag.label.hdbtextrule');
+  check(t, 'STEM', 'support.type.property-name.hdbtextrule');
+  check(t, 'POS', 'support.type.property-name.hdbtextrule');
+  check(t, 'ORTH', 'support.type.property-name.hdbtextrule');
+  check(t, 'REGEXP', 'support.type.property-name.hdbtextrule');
+  check(t, 'VB', 'constant.language.pos-tag.hdbtextrule');
+  check(t, 'VBD', 'constant.language.pos-tag.hdbtextrule');
+  check(t, 'NNP', 'constant.language.pos-tag.hdbtextrule');
+  check(t, '!=', 'keyword.operator.comparison.hdbtextrule');
+  check(t, '!', 'keyword.operator.negation.hdbtextrule');
+  check(t, 'my.ta::Suffix', 'variable.other.group.hdbtextrule');
+  check(t, '{1,3}', 'keyword.operator.hdbtextrule');
+  check(t, '=>', 'keyword.operator.action.hdbtextrule');
+  check(t, '$org', 'variable.other.slot.hdbtextrule');
+  check(t, '${org}', 'variable.other.slot.hdbtextrule');
+  check(t, '$1', 'variable.other.slot.hdbtextrule');
+  // Negative case: POS tag outside <...> token specifier must not be scoped as pos-tag
+  const outside = tokenize('source.hdbtextrule', '#group NN:\n  <TOKEN:"test">');
+  assert.ok(!has(outside, 'NN', 'constant.language.pos-tag.hdbtextrule'));
+});
+
+test('Phase 1 XS OData: aggregates, multiplicity literals, storage, precommit/postcommit exits, and negative cases', () => {
+  const odata = [
+    'service namespace "my.srv" {',
+    '  "my.pkg::SalesView" as "Sales"',
+    '    keys generate local "ID"',
+    '    aggregates always (SUM of "Amount", AVG of "Price", MIN of "Low", MAX of "High")',
+    '    navigates ("Sales_Items" as "Items" from principal)',
+    '    parameters via key and entity "SalesParams" results property "Execute"',
+    '    create events (before "my.pkg:exit.xsjslib::beforeCreate", precommit "my.pkg:exit.xsjslib::preCommit", postcommit "my.pkg:exit.xsjslib::postCommit" for "Sales")',
+    '    delete forbidden;',
+    '  association "Sales_Items"',
+    '    principal "Sales"("ID") multiplicity "1"',
+    '    dependent "Items"("SalesID") multiplicity "1..*"',
+    '    over "my.pkg::LinkTable" principal ("SID") dependent ("IID")',
+    '    storage on principal;',
+    '  association "Unstored_Assoc" principal "Sales"("ID") multiplicity "0..1" dependent "Items"("SalesID") multiplicity "*" no storage;',
+    '}',
+    'annotations { enable OData4SAP; }',
+    'settings { support null; content cache-control "no-store"; metadata cache-control "max-age=3600"; limits { max_records = 5000; max_expanded_records = 10000; } }',
+  ].join('\n');
+  const t = tokenize('source.xsodata', odata);
+  for (const fn of ['SUM', 'AVG', 'MIN', 'MAX']) {
+    check(t, fn, 'support.function.aggregate.xsodata');
+  }
+  for (const mult of ['"1"', '"1..*"', '"0..1"', '"*"']) {
+    check(t, mult, 'constant.other.multiplicity.xsodata');
+  }
+  for (const kw of ['from', 'precommit', 'postcommit', 'for', 'storage', 'no', 'aggregates', 'always', 'forbidden', 'OData4SAP']) {
+    check(t, kw, kw === 'OData4SAP' ? 'support.constant.odata4sap.xsodata' : 'keyword.control.xsodata');
+  }
+  // Negative case: normal entity alias string must not be scoped as multiplicity, and SUM without 'of' is not an aggregate
+  assert.ok(!has(t, '"Sales"', 'constant.other.multiplicity.xsodata'));
+  const neg = tokenize('source.xsodata', '"my.pkg::SUM" as "SUM";');
+  assert.ok(!has(neg, 'SUM', 'support.function.aggregate.xsodata'));
+});
+
+test('Phase 1 Classic Key-Value & CDS: SchemaName, struct primaryKey, synonym package, CDS types/clauses, and negative cases', () => {
+  const tbl = 'table.SchemaName = "MYSCHEMA";\ntable.primaryKey = { pkcolumns = ["ID"]; indexType = B_TREE; };\ntable.unknownProp = "X";';
+  const tTbl = tokenize('source.hdbtable', tbl);
+  check(tTbl, 'SchemaName', 'support.type.property-name.hdbtable');
+  check(tTbl, 'primaryKey', 'support.type.property-name.hdbtable');
+  check(tTbl, 'pkcolumns', 'support.type.property-name.hdbtable');
+  check(tTbl, 'B_TREE', 'constant.other.enum.hdbtable');
+  assert.ok(!has(tTbl, 'unknownProp', 'support.type.property-name.hdbtable'));
+
+  const syn = '{ "ns::Syn": { "target": { "object": "T", "schema": "S", "package": "my.pkg" } } }';
+  const tSyn = tokenize('source.hdbsynonym', syn);
+  check(tSyn, '"package"', 'property-name.json.hdbsynonym');
+
+  const cds = [
+    'namespace my.cds;',
+    'using my.common::Types.* ;',
+    'context Model {',
+    '  table type TT_Out { id : Integer32; amount : Double; dt : Date; ts : Timestamp; };',
+    '  temporary entity TempItem { key id : UUID; link : Association[*] to Target via entity LinkTab; }',
+    '    technical configuration { row store migration disabled; using extended storage; no group; };',
+    '  view V with parameters p1 : String(10) as select from TempItem mixin { toT : Association[1] to Target on $projection.id = $parameters.p1; } into { id };',
+    '}',
+  ].join('\n');
+  const tCds = tokenize('source.hdbcds', cds);
+  check(tCds, 'table type', 'storage.type.class.hdbdd');
+  check(tCds, 'TT_Out', 'entity.name.type.hdbdd');
+  check(tCds, 'temporary', 'storage.modifier.hdbdd');
+  check(tCds, 'Integer32', 'storage.type.hdbdd');
+  check(tCds, 'Double', 'storage.type.hdbdd');
+  check(tCds, 'UUID', 'storage.type.hdbdd');
+  check(tCds, 'via entity', 'keyword.control.hdbdd');
+  check(tCds, 'mixin', 'keyword.control.hdbdd');
+  check(tCds, '$projection', 'variable.language.cds.hdbdd');
+  check(tCds, '$parameters', 'variable.language.cds.hdbdd');
+  check(tCds, 'migration disabled', 'keyword.other.technical-configuration.hdbdd');
+  check(tCds, 'using extended storage', 'keyword.other.technical-configuration.hdbdd');
+  check(tCds, 'no group', 'keyword.other.technical-configuration.hdbdd');
+});
+
+test('Phase 1 SQL, SQLScript, Vector, Spatial, Graph, Hierarchy, JSON & Catalogs verification', () => {
+  const sql = [
+    'CREATE HNSW VECTOR INDEX idx_vec ON docs (embedding) SIMILARITY FUNCTION COSINE_SIMILARITY BUILD CONFIGURATION \'{"M": 64}\' ONLINE;',
+    'CREATE ADJACENCY INDEX idx_adj ON graph_col (ID id, SOURCE src, TARGET tgt, TYPE type);',
+    'CREATE STRUCTURED COLUMN MASK m_mask;',
+    'EXPORT INTO RDF FILE \'out.ttl\';',
+    '#[NO_INLINE]',
+    '@AnalyzerSuppress(\'Rule1\')',
+    '@Test()',
+    'SELECT CROSS_ENCODE(a, b, \'model\') OVER (ORDER BY id), ST_AsGeoJSON(geom), ST_Distance(p1, p2), log:LEVEL_INFO',
+    'FROM OPENCYPHER_TABLE(GRAPH WORKSPACE ws QUERY \'MATCH (n) RETURN n\'), SPARQL_TABLE(\'SELECT * WHERE { ?s ?p ?o }\')',
+    'WHERE a MEMBER OF arr AND CONTAINS(txt, \'hana\');',
+    'WITH SQL STATISTICS INTO lv_stats DO SELECT * FROM HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE h MEASURES (SUM(v) AS s) WITH SUBTOTAL WITH BALANCE);',
+  ].join('\n');
+  const t = tokenize('source.hanasql', sql);
+  check(t, 'CREATE HNSW VECTOR INDEX', 'keyword.other.statement.hanasql');
+  check(t, 'SIMILARITY FUNCTION', 'keyword.other.clause.hanasql');
+  check(t, 'BUILD CONFIGURATION', 'keyword.other.clause.hanasql');
+  check(t, 'CREATE ADJACENCY INDEX', 'keyword.other.statement.hanasql');
+  check(t, 'CREATE STRUCTURED COLUMN MASK', 'keyword.other.statement.hanasql');
+  check(t, 'EXPORT INTO RDF FILE', 'keyword.other.clause.hanasql');
+  check(t, '#[NO_INLINE]', 'keyword.control.directive.pragma.hanasql');
+  check(t, '@AnalyzerSuppress', 'storage.type.annotation.pragma.hanasql');
+  check(t, '@Test', 'storage.type.annotation.pragma.hanasql');
+  check(t, 'CROSS_ENCODE', 'support.function.window.hanasql');
+  check(t, 'ST_AsGeoJSON', 'support.function.spatial.hanasql');
+  check(t, 'ST_Distance', 'support.function.spatial.hanasql');
+  check(t, 'LEVEL_INFO', 'support.constant.library-member.hanasql');
+  check(t, 'OPENCYPHER_TABLE', 'support.function.hanasql');
+  check(t, 'SPARQL_TABLE', 'support.function.hanasql');
+  check(t, 'MEMBER OF', 'keyword.other.clause.hanasql');
+  check(t, 'CONTAINS', 'keyword.operator.logical.hanasql');
+  check(t, 'WITH SQL STATISTICS INTO', 'keyword.other.clause.hanasql');
+  check(t, 'HIERARCHY_DESCENDANTS_AGGREGATE', 'support.function.hanasql');
+  check(t, 'WITH SUBTOTAL', 'keyword.other.clause.hanasql');
+  check(t, 'WITH BALANCE', 'keyword.other.clause.hanasql');
+
+  // Verify catalog JSON schemas
+  const kwCatalog = JSON.parse(fs.readFileSync(path.join(rootDir, 'docs', 'specs', 'catalogs', 'sql-keywords.json'), 'utf8')) as {
+    keywords: Array<{ name: string; category: string; scope: string; platforms: string[] }>;
+  };
+  assert.ok(Array.isArray(kwCatalog.keywords) && kwCatalog.keywords.length >= 400);
+  assert.ok(kwCatalog.keywords.some((k) => k.name === 'SELECT' && k.category === 'reserved'));
+  assert.ok(kwCatalog.keywords.some((k) => k.name === 'REAL_VECTOR' && k.platforms.includes('CLOUD')));
+
+  const fnCatalog = JSON.parse(fs.readFileSync(path.join(rootDir, 'docs', 'specs', 'catalogs', 'builtin-functions.json'), 'utf8')) as {
+    functions: Array<{ name: string; library: string; signatures: string[]; returnType: string; description: string }>;
+  };
+  assert.ok(Array.isArray(fnCatalog.functions) && fnCatalog.functions.length >= 500);
+  for (const lib of ['SYS', 'SQLSCRIPT_SYNC', 'SQLSCRIPT_STRING', 'SQLSCRIPT_PRINT', 'SQLSCRIPT_LOGGING', 'SQLSCRIPT_TEST']) {
+    assert.ok(fnCatalog.functions.some((f) => f.library === lib), `Missing library ${lib} in builtin-functions.json`);
+  }
+});
+
 if (process.env.DUMP && process.env.FILE) {
   const dumpScope = process.env.DUMP;
   const dumpFile = process.env.FILE;

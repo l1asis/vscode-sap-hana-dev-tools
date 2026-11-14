@@ -18,10 +18,10 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 | **Classic & HDI Tables/Views** (`.hdbtable`, `.hdbview`, `.hdbsequence`) | 🟢 Complete | 🟡 HDI SQL only | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
 | **CDS Models** (`.hdbdd`, `.hdbcds`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
 | **XS JavaScript** (`.xsjs`, `.xsjslib`) | 🟢 Complete | 🔵 Planned | 🔵 Planned (`.d.ts`) | 🔵 Planned | ⚪ Phase 4 |
-| **XS OData** (`.xsodata`) | 🟡 Basic / Edge cases | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **XS OData** (`.xsodata`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
 | **Roles & Grants** (`.hdbrole`, `.hdbgrants`, `.xsaccess`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **Text Analysis (CGUL)** (`.hdbtextrule`, `.hdbtextlexicon`) | 🟡 Directives | ⚪ Backlog | ⚪ Backlog | ⚪ Backlog | ⚪ Phase 4 |
-| **Calculation Views & XML** (`.calculationview`, `.hdbcalculationview`) | 🟡 XML assoc. | ⚪ Backlog | 🔵 Schema XSD | 🔵 Planned | ⚪ Phase 4 |
+| **Text Analysis (CGUL)** (`.hdbtextrule`, `.hdbtextlexicon`) | 🟢 Complete | ⚪ Backlog | ⚪ Backlog | ⚪ Backlog | ⚪ Phase 4 |
+| **Calculation Views & XML** (`.calculationview`, `.hdbcalculationview`) | 🟢 Complete | ⚪ Backlog | 🔵 Schema XSD | 🔵 Planned | ⚪ Phase 4 |
 
 ---
 
@@ -32,7 +32,7 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 * [x] TextMate grammars for 60+ XS Classic and XS Advanced / HDI file extensions.
 * [x] Embedded SQL highlighting inside classic `.hdbview` and `.hdbsequence` files.
 * [x] HANA Cloud SQL keywords, vector types (`REAL_VECTOR`, `HALF_VECTOR`), and `SQLSCRIPT_*` libraries.
-* [ ] Refine edge-case grammar rules for CGUL rule bodies (`.hdbtextrule`) and complex `.xsodata` annotations.
+* [x] Refine edge-case grammar rules for CGUL rule bodies (`.hdbtextrule`) and complex `.xsodata` annotations.
 
 ### Phase 2: Formatters Across All Design-Time Artifacts (In Progress)
 

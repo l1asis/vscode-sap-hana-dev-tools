@@ -38,6 +38,10 @@
     "string": {
       "patterns": [
         {
+          "name": "constant.other.multiplicity.xsodata",
+          "match": "\"(?:1|0\\.\\.1|1\\.\\.\\*|\\*)\""
+        },
+        {
           "name": "variable.other.quoted-identifier.xsodata",
           "begin": "\"",
           "end": "\"",
@@ -83,8 +87,12 @@
           "match": "\\b(?:true|false|null)\\b"
         },
         {
+          "name": "support.function.aggregate.xsodata",
+          "match": "(?i)\\b(?:SUM|AVG|MIN|MAX)\\b(?=\\s+of\\b)"
+        },
+        {
           "name": "keyword.control.xsodata",
-          "match": "(?i)\\b(?:service|namespace|as|keys|key|generate|local|navigates|create|update|delete|read|link|events|before|after|using|with|without|forbidden|parameters|via|entity|results|property|aggregates|always|of|association|principal|dependent|multiplicity|over|referential|constraint|annotations|enable|disable|settings|support|null|limits|max_records|max_expanded_records|omitting|omit|hints|etag|concurrencytoken|metadata|content|cache-control|use|and|join|on|default)\\b"
+          "match": "(?i)\\b(?:service|namespace|as|keys|key|generate|local|navigates|from|create|update|delete|read|link|events|before|after|precommit|postcommit|for|using|with|without|forbidden|parameters|via|entity|results|property|aggregates|always|of|association|principal|dependent|multiplicity|over|referential|constraint|storage|no|annotations|enable|disable|settings|support|null|limits|max_records|max_expanded_records|omitting|omit|hints|etag|concurrencytoken|metadata|content|cache-control|use|and|join|on|default)\\b"
         },
         {
           "name": "support.constant.odata4sap.xsodata",
@@ -101,6 +109,18 @@
         {
           "name": "punctuation.separator.comma.xsodata",
           "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.xsodata",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.braces.xsodata",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.parens.xsodata",
+          "match": "[()]"
         },
         {
           "name": "punctuation.accessor.xsodata",

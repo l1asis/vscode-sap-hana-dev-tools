@@ -11,7 +11,7 @@
     },
     {
       "name": "support.type.property-name.json.hdbsynonym",
-      "match": "\"(?:target|schema|object|revalidate|logical_schema|remote|database)\"(?=\\s*:)"
+      "match": "\"(?:target|schema|object|package|revalidate|logical_schema|remote|database)\"(?=\\s*:)"
     },
     {
       "name": "support.type.property-name.json",

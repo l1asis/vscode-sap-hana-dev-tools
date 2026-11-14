@@ -115,7 +115,7 @@ function embeddedSqlString(ns, keys) {
 // ---------------------------------------------------------------------------
 {
   const ns = 'hdbtable';
-  const fields = ['name', 'sqlType', 'nullable', 'unique', 'length', 'scale', 'precision', 'defaultValue', 'comment', 'order', 'indexType', 'indexColumns'];
+  const fields = ['name', 'sqlType', 'nullable', 'unique', 'length', 'scale', 'precision', 'defaultValue', 'comment', 'order', 'indexType', 'indexColumns', 'pkcolumns'];
   write('hdbtable', {
     name: 'SAP HANA HDBTable (XS Classic)',
     scopeName: 'source.hdbtable',
@@ -123,7 +123,7 @@ function embeddedSqlString(ns, keys) {
     repository: {
       ...baseRepo(ns),
       'table-key': {
-        begin: R(/\b(table)(\.)(schemaName|temporary|tableType|public|loggingType|tableLoggingType|description)\b\s*(=)/),
+        begin: R(/\b(table)(\.)(schemaName|SchemaName|temporary|tableType|public|loggingType|tableLoggingType|description)\b\s*(=)/),
         beginCaptures: {
           1: { name: `variable.language.${ns}` },
           2: { name: `punctuation.accessor.${ns}` },
@@ -149,7 +149,7 @@ function embeddedSqlString(ns, keys) {
         patterns: [{ include: '#values' }],
       },
       'list-key': {
-        begin: R(/\b(table)(\.)(columns|indexes)\b\s*(=)/),
+        begin: R(/\b(table)(\.)(columns|indexes|primaryKey)\b\s*(=)/),
         beginCaptures: {
           1: { name: `variable.language.${ns}` },
           2: { name: `punctuation.accessor.${ns}` },
@@ -316,7 +316,7 @@ jsonGrammar('xsapp', 'SAP HANA XS Application Descriptor (.xsapp)', []);
 jsonGrammar('xssecurestore', 'SAP HANA XS Secure Store (.xssecurestore)', []);
 jsonGrammar('xsprivileges', 'SAP HANA XS Privileges (.xsprivileges)', ['privileges', 'name', 'description']);
 jsonGrammar('xssqlcc', 'SAP HANA XS SQL Connection (.xssqlcc)', ['description', 'role_for_auto_user']);
-jsonGrammar('hdbsynonym', 'SAP HANA Synonym (.hdbsynonym)', ['target', 'schema', 'object', 'revalidate', 'logical_schema', 'remote', 'database'], {
+jsonGrammar('hdbsynonym', 'SAP HANA Synonym (.hdbsynonym)', ['target', 'schema', 'object', 'package', 'revalidate', 'logical_schema', 'remote', 'database'], {
   rules: [{ name: `entity.name.type.hdbsynonym`, match: R(/"[^"\\\n]*::[^"\\\n]*"(?=\s*:)/) }],
 });
 jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'schedules', 'xscron', 'parameter', 'signature_version'], {
@@ -347,7 +347,7 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
 // ---------------------------------------------------------------------------
 {
   const ns = 'hdbdd';
-  const cdsTypes = ['String', 'LargeString', 'Binary', 'LargeBinary', 'Integer', 'Integer64', 'Decimal', 'DecimalFloat', 'BinaryFloat', 'LocalDate', 'LocalTime', 'UTCDateTime', 'UTCTimestamp', 'Boolean'];
+  const cdsTypes = ['String', 'LargeString', 'Binary', 'LargeBinary', 'Integer', 'Integer32', 'Integer64', 'Decimal', 'DecimalFloat', 'BinaryFloat', 'Double', 'LocalDate', 'Date', 'LocalTime', 'Time', 'UTCDateTime', 'DateTime', 'UTCTimestamp', 'Timestamp', 'Boolean', 'UUID'];
   write('hdbdd', {
     name: 'SAP HANA CDS (.hdbdd, XS Classic)',
     scopeName: 'source.hdbdd',
@@ -364,6 +364,7 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
       { include: '#delimited-identifier' },
       { include: '#number' },
       { include: '#enum-symbol' },
+      { include: '#session-variable' },
       { include: '#types' },
       { include: '#constants' },
       { include: '#keywords' },
@@ -380,12 +381,13 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
         captures: { 1: { name: `punctuation.definition.annotation.${ns}` }, 2: { name: `storage.type.annotation.${ns}` } },
       },
       'enum-symbol': { name: `constant.other.enum-symbol.${ns}`, match: R(/#[A-Za-z_]\w*/) },
+      'session-variable': { name: `variable.language.cds.${ns}`, match: R(/\$(?:parameters|projection|user|env)\b/) },
       namespace: {
         match: R(/\b(namespace)\s+([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)/),
         captures: { 1: { name: `keyword.other.namespace.${ns}` }, 2: { name: `entity.name.namespace.${ns}` } },
       },
       using: {
-        match: R(/\b(using)\s+([\w.:]+)(?:\s+(as)\s+([A-Za-z_]\w*))?/),
+        match: R(/\b(using)(?!\s+(?:default|extended)\s+storage\b)\s+([\w.:*]+)(?:\s+(as)\s+([A-Za-z_]\w*))?/),
         captures: {
           1: { name: `keyword.control.import.${ns}` },
           2: { name: `entity.name.namespace.${ns}` },
@@ -394,7 +396,7 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
         },
       },
       definition: {
-        match: R(/\b(?:(define|abstract)\s+)?(context|entity|type|view|aspect|annotation|enum|service)\s+([A-Za-z_]\w*)/),
+        match: RI(/\b(?:(define|abstract|temporary)\s+)*(context|entity|table\s+type|type|view|aspect|annotation|enum|service)\s+([A-Za-z_]\w*)/),
         captures: {
           1: { name: `storage.modifier.${ns}` },
           2: { name: `storage.type.class.${ns}` },
@@ -403,11 +405,11 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
       },
       'technical-configuration': {
         name: `keyword.other.technical-configuration.${ns}`,
-        match: RI(/\b(?:technical\s+configuration|column\s+store|row\s+store|partition\s+by\s+(?:hash|range|roundrobin)|partitions|fuzzy\s+search\s+index|fulltext\s+index|group\s+type|group\s+subtype|group\s+name|group\s+set|unload\s+priority|(?:no\s+)?auto\s+merge|inverted\s+(?:hash|value)\s+index|unique\s+index|index|unique)\b/),
+        match: RI(/\b(?:technical\s+configuration|column\s+store|row\s+store|migration\s+disabled|using\s+(?:default|extended)\s+storage|partition\s+by\s+(?:hash|range|roundrobin)|partitions|fuzzy\s+search\s+index|fulltext\s+index|language\s+column|language\s+detection|mime\s+type(?:\s+column)?|phrase\s+index\s+ratio|search\s+only|fast\s+preprocess|text\s+mining(?:\s+configuration(?:\s+overlay)?)?|text\s+analysis|token\s+separators|async|flush(?:\s+queue)?|sync|group\s+type|group\s+subtype|group\s+name|group\s+set|no\s+group|unload\s+priority|(?:no\s+)?auto\s+merge|inverted\s+(?:hash|value)\s+index|unique\s+index|index|unique|get_num_servers)\b/),
       },
       generated: {
         name: `keyword.other.generated.${ns}`,
-        match: RI(/\bgenerated\s+(?:always|by\s+default)\s+as(?:\s+identity)?\b|\bwith\s+structured\s+privilege\s+check\b|\btype\s+of\b|\bseries\s+key\b|\bperiod\s+for\s+series\b|\bequidistant(?:\s+piecewise)?\b|\bmissing\s+elements\s+(?:not\s+)?allowed\b|\bincrement\s+by\b|\bstart\s+with\b|\b(?:no\s+)?cycle\b|\bseries\b/),
+        match: RI(/\bgenerated\s+(?:always|by\s+default)\s+as(?:\s+identity)?\b|\bwith\s+structured\s+privilege\s+check\b|\btype\s+of\b|\bseries\s+key\b|\bperiod\s+for\s+series\b|\b(?:not\s+)?equidistant(?:\s+piecewise)?\b|\bmissing\s+elements\s+(?:not\s+)?allowed\b|\bincrement\s+by\b|\bstart\s+with\b|\b(?:no\s+)?(?:cycle|maxvalue|minvalue)\b|\breset\s+by\b|\bseries\b|\binterval\b/),
       },
       association: {
         match: RI(/\b(association|composition)\b(\s*\[[^\]]*\])?(?:\s+(to)\s+([\w.:]+))?/),
@@ -429,12 +431,12 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
         patterns: [
           {
             name: `keyword.control.${ns}`,
-            match: RI(/\b(?:select|from|where|group\s+by|having|order\s+by|union(?:\s+all)?|distinct|as|on|limit|offset|with\s+parameters|excluding|extend|projection|cast|case|when|then|else|end|and|or|not|like|in|is|between|exists|asc|desc|inner|left|right|full|outer|cross|join|many|one|of|to|using)\b/),
+            match: RI(/\b(?:select|from|where|group\s+by|having|order\s+by|union(?:\s+all)?|distinct|top|as|on|via\s+entity|mixin|into|limit|offset|with\s+parameters|excluding|extend|projection|cast|case|when|then|else|end|and|or|not|like|escape|in|is|between|exists|any|some|asc|desc|nulls|first|last|inner|left|right|full|outer|cross|join|many|one|of|to|using|new)\b/),
           },
           { name: `storage.modifier.${ns}`, match: RI(/\b(?:key|virtual|const|element|default|not\s+null|null)\b/) },
         ],
       },
-      operators: { name: `keyword.operator.${ns}`, match: R(/::|:|\|\||<>|!=|<=|>=|[-+*\/%=<>]/) },
+      operators: { name: `keyword.operator.${ns}`, match: R(/::|\.\.|:|\|\||<>|!=|<=|>=|[-+*\/%=<>]/) },
     },
   });
 }
@@ -488,11 +490,12 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
 {
   const ns = 'xsodata';
   const words = [
-    'service', 'namespace', 'as', 'keys', 'key', 'generate', 'local', 'navigates', 'create', 'update', 'delete', 'read', 'link',
-    'events', 'before', 'after', 'using', 'with', 'without', 'forbidden', 'parameters', 'via', 'entity', 'results', 'property',
-    'aggregates', 'always', 'of', 'association', 'principal', 'dependent', 'multiplicity', 'over', 'referential', 'constraint',
-    'annotations', 'enable', 'disable', 'settings', 'support', 'null', 'limits', 'max_records', 'max_expanded_records', 'omitting',
-    'omit', 'hints', 'etag', 'concurrencytoken', 'metadata', 'content', 'cache-control', 'use', 'and', 'join', 'on', 'default',
+    'service', 'namespace', 'as', 'keys', 'key', 'generate', 'local', 'navigates', 'from', 'create', 'update', 'delete', 'read', 'link',
+    'events', 'before', 'after', 'precommit', 'postcommit', 'for', 'using', 'with', 'without', 'forbidden', 'parameters', 'via', 'entity',
+    'results', 'property', 'aggregates', 'always', 'of', 'association', 'principal', 'dependent', 'multiplicity', 'over', 'referential',
+    'constraint', 'storage', 'no', 'annotations', 'enable', 'disable', 'settings', 'support', 'null', 'limits', 'max_records',
+    'max_expanded_records', 'omitting', 'omit', 'hints', 'etag', 'concurrencytoken', 'metadata', 'content', 'cache-control', 'use', 'and',
+    'join', 'on', 'default',
   ];
   write('xsodata', {
     name: 'SAP HANA OData Service (.xsodata)',
@@ -507,7 +510,13 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
     ],
     repository: {
       comments: comments(ns),
-      string: { patterns: [{ ...dqString(ns), name: `variable.other.quoted-identifier.${ns}` }, sqString(ns)] },
+      string: {
+        patterns: [
+          { name: `constant.other.multiplicity.${ns}`, match: R(/"(?:1|0\.\.1|1\.\.\*|\*)"/) },
+          { ...dqString(ns), name: `variable.other.quoted-identifier.${ns}` },
+          sqString(ns),
+        ],
+      },
       number: number(ns),
       service: {
         match: R(/\b(service)\s+(namespace)\b/),
@@ -516,6 +525,7 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
       keywords: {
         patterns: [
           { name: `constant.language.${ns}`, match: R(/\b(?:true|false|null)\b/) },
+          { name: `support.function.aggregate.${ns}`, match: RI(/\b(?:SUM|AVG|MIN|MAX)\b(?=\s+of\b)/) },
           { name: `keyword.control.${ns}`, match: `(?i)\\b(?:${alt(words)})\\b` },
           { name: `support.constant.odata4sap.${ns}`, match: RI(/\bOData4SAP\b/) },
         ],
@@ -524,6 +534,9 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
         patterns: [
           { name: `punctuation.terminator.statement.${ns}`, match: ';' },
           { name: `punctuation.separator.comma.${ns}`, match: ',' },
+          { name: `punctuation.separator.colon.${ns}`, match: ':' },
+          { name: `punctuation.section.braces.${ns}`, match: R(/[{}]/) },
+          { name: `punctuation.section.parens.${ns}`, match: R(/[()]/) },
           { name: `punctuation.accessor.${ns}`, match: R(/\./) },
           { name: `keyword.operator.assignment.${ns}`, match: '=' },
         ],
@@ -538,7 +551,7 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
 // ---------------------------------------------------------------------------
 const ROLE_KEYS = ['role', 'name', 'privileges', 'privileges_with_grant_option', 'schema_reference', 'type', 'names', 'object_privileges', 'pattern_mode', 'schema', 'pattern_escape_character', 'global_roles', 'schema_roles', 'system_privileges', 'schema_privileges', 'reference', 'global_object_privileges', 'schema_analytic_privileges', 'logical_schema'];
 const GRANT_KEYS = ['object_owner', 'application_user', 'object_privileges', 'schema_privileges', 'system_privileges', 'global_roles', 'schema_roles', 'schema', 'name', 'privileges', 'privileges_with_grant_option', 'global_object_privileges', 'schema_analytic_privileges'];
-const TARGET_KEYS = ['target', 'schema', 'object', 'remote', 'database', 'revalidate', 'logical_schema'];
+const TARGET_KEYS = ['target', 'schema', 'object', 'package', 'remote', 'database', 'revalidate', 'logical_schema'];
 
 jsonGrammar('hdbgrants', 'SAP HANA HDI Grants (.hdbgrants)', GRANT_KEYS);
 jsonGrammar('hdbrevokes', 'SAP HANA HDI Revokes (.hdbrevokes)', GRANT_KEYS);
@@ -676,11 +689,15 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
 
 // ---------------------------------------------------------------------------
 // Text analysis extraction rules (CGUL): .hdbtextrule / .hdbtextinclude / .hdbtextlexicon
-// Only the directives are documented in the Text Analysis Developer Guide; the rule body
-// (CGUL) is covered with a basic grammar.
 // ---------------------------------------------------------------------------
 {
   const ns = 'hdbtextrule';
+  const posTags = [
+    'NN', 'NNS', 'NNP', 'NNPS', 'VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ', 'JJ', 'JJR', 'JJS', 'RB', 'RBR', 'RBS',
+    'IN', 'DT', 'CC', 'CD', 'PRP', 'PRP\\$', 'WP', 'WP\\$', 'WDT', 'WRB', 'MD', 'TO', 'RP', 'UH', 'FW', 'SYM',
+    'POS', 'EX', 'LS', 'PDT', 'Noun', 'ProperNoun', 'Verb', 'Adjective', 'Adverb', 'Preposition', 'Conjunction',
+    'Determiner', 'Pronoun', 'Numeral', 'Interjection', 'Punctuation', 'Particle',
+  ];
   write('hdbtextrule', {
     name: 'SAP HANA Text Analysis Rules (CGUL)',
     scopeName: 'source.hdbtextrule',
@@ -689,31 +706,78 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
       { include: '#import' },
       { include: '#definition' },
       { include: '#string' },
+      { include: '#slot-label' },
+      { include: '#character-class' },
       { include: '#token' },
       { include: '#group-reference' },
+      { include: '#slot-variable' },
       { include: '#attribute' },
       { include: '#number' },
       { include: '#operators' },
     ],
     repository: {
-      comments: comments(ns),
-      string: dqString(ns),
+      comments: {
+        patterns: [
+          { name: `comment.line.double-slash.${ns}`, match: R(/\/\/.*$/) },
+          { name: `comment.line.double-dash.${ns}`, match: R(/--.*$/) },
+          { name: `comment.block.${ns}`, begin: R(/\/\*/), end: R(/\*\//) },
+        ],
+      },
+      string: { patterns: [dqString(ns), sqString(ns)] },
       number: number(ns),
       import: {
-        match: R(/^\s*(#(?:include|lexicon))\s+(?:([A-Za-z_]\w*)\s+)?(<)([^>\n]*)(>)/),
-        captures: {
-          1: { name: `keyword.control.import.${ns}` },
-          2: { name: `entity.name.type.${ns}` },
-          3: { name: `punctuation.definition.string.begin.${ns}` },
-          4: { name: `string.unquoted.path.${ns}` },
-          5: { name: `punctuation.definition.string.end.${ns}` },
-        },
+        patterns: [
+          {
+            match: R(/^\s*(#(?:include|lexicon))\s+(?:([A-Za-z_]\w*)\s+)?(<)([^>\n]*)(>)/),
+            captures: {
+              1: { name: `keyword.control.import.${ns}` },
+              2: { name: `entity.name.type.${ns}` },
+              3: { name: `punctuation.definition.string.begin.${ns}` },
+              4: { name: `string.unquoted.path.${ns}` },
+              5: { name: `punctuation.definition.string.end.${ns}` },
+            },
+          },
+          {
+            match: R(/^\s*(#(?:include|lexicon))\s+(?:([A-Za-z_]\w*)\s+)?(")([^"\n]*)(")/),
+            captures: {
+              1: { name: `keyword.control.import.${ns}` },
+              2: { name: `entity.name.type.${ns}` },
+              3: { name: `punctuation.definition.string.begin.${ns}` },
+              4: { name: `string.quoted.double.path.${ns}` },
+              5: { name: `punctuation.definition.string.end.${ns}` },
+            },
+          },
+        ],
       },
       definition: {
-        match: R(/^\s*(#(?:define|subgroup|group))\s+([A-Za-z_][\w]*)?/),
+        match: R(/^\s*(#(?:define|subgroup|group|index|feature|category|priority|language|encoding|version))\b(?:\s+([A-Za-z_][\w]*))?/),
         captures: { 1: { name: `keyword.control.directive.${ns}` }, 2: { name: `entity.name.type.${ns}` } },
       },
-      attribute: { match: R(/\b([A-Za-z_]\w*)(?=\s*=\s*")/), name: `variable.parameter.attribute.${ns}` },
+      'slot-label': {
+        match: R(/(\[)([A-Za-z_]\w*)(\])(:)/),
+        captures: {
+          1: { name: `punctuation.section.brackets.begin.${ns}` },
+          2: { name: `entity.name.tag.label.${ns}` },
+          3: { name: `punctuation.section.brackets.end.${ns}` },
+          4: { name: `punctuation.separator.colon.${ns}` },
+        },
+      },
+      'character-class': {
+        begin: R(/\[\^?/),
+        beginCaptures: { 0: { name: `punctuation.definition.character-class.begin.${ns}` } },
+        end: R(/\]/),
+        endCaptures: { 0: { name: `punctuation.definition.character-class.end.${ns}` } },
+        name: `meta.character-class.${ns}`,
+        patterns: [
+          { name: `constant.character.escape.${ns}`, match: R(/\\./) },
+          { name: `constant.character.set.${ns}`, match: R(/[A-Za-z0-9]-[A-Za-z0-9]/) },
+        ],
+      },
+      'slot-variable': {
+        name: `variable.other.slot.${ns}`,
+        match: R(/\$(?:\{[A-Za-z_]\w*\}|[A-Za-z_]\w*|\d+)/),
+      },
+      attribute: { match: R(/\b([A-Za-z_][\w.]*)(?=\s*=\s*["'])/), name: `variable.parameter.attribute.${ns}` },
       token: {
         begin: R(/</),
         end: R(/>/),
@@ -722,13 +786,17 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
         contentName: `meta.token.${ns}`,
         patterns: [
           { include: '#string' },
-          { name: `support.type.property-name.${ns}`, match: R(/\b[A-Z][A-Z_]+(?=\s*:)/) },
+          { name: `support.type.property-name.${ns}`, match: R(/\b(?:STEM|POS|ORTH|TOKEN|TYPE|SUBTYPE|LEMMA|NORM|TAG|FEAT|LANG|REGEXP|LEXICON|[A-Z][A-Z_]+)(?=\s*[:=!~])/) },
+          { name: `constant.language.pos-tag.${ns}`, match: `\\b(?:${alt(posTags)})\\b` },
+          { name: `keyword.operator.comparison.${ns}`, match: R(/!=|~=|=/) },
+          { name: `keyword.operator.negation.${ns}`, match: R(/[!~]/) },
+          { name: `constant.character.wildcard.${ns}`, match: R(/\.\*|\.\+/) },
           { name: `punctuation.separator.${ns}`, match: R(/[:,]/) },
           { name: `keyword.operator.${ns}`, match: R(/[|+*?]/) },
         ],
       },
       'group-reference': {
-        match: R(/(%)(\()([A-Za-z_]\w*)(\))/),
+        match: R(/(%)(\()([A-Za-z_][\w.]*(?:::[A-Za-z_][\w.]*)?)(\))/),
         captures: {
           1: { name: `keyword.operator.${ns}` },
           2: { name: `punctuation.section.parens.${ns}` },
@@ -736,7 +804,15 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
           4: { name: `punctuation.section.parens.${ns}` },
         },
       },
-      operators: { name: `keyword.operator.${ns}`, match: R(/[|+*?^$:]|\{\d+(?:,\d*)?\}/) },
+      operators: {
+        patterns: [
+          { name: `keyword.operator.action.${ns}`, match: R(/=>|->/) },
+          { name: `keyword.operator.${ns}`, match: R(/[|+*?^$:]|\{\d+(?:,\d*)?\}/) },
+          { name: `punctuation.terminator.statement.${ns}`, match: ';' },
+          { name: `punctuation.section.parens.${ns}`, match: R(/[()]/) },
+          { name: `punctuation.section.braces.${ns}`, match: R(/[{}]/) },
+        ],
+      },
     },
   });
   write('hdbtextinclude', { name: 'SAP HANA Text Analysis Rules Include', scopeName: 'source.hdbtextinclude', patterns: [{ include: 'source.hdbtextrule' }] });

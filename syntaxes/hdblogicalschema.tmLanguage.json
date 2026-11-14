@@ -7,7 +7,7 @@
     },
     {
       "name": "support.type.property-name.json.hdblogicalschema",
-      "match": "\"(?:target|schema|object|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+      "match": "\"(?:target|schema|object|package|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
     },
     {
       "name": "support.type.property-name.json",

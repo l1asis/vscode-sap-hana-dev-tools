@@ -1,0 +1,5134 @@
+{
+  "keywords": [
+    {
+      "name": "ABSTRACT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ADAPTER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ADD",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ADJACENCY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ADOPT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AFTER",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AGENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ALL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ALPHANUM",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "ALTER",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ALWAYS",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ANALYTIC",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ANALYZERSUPPRESS",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AND",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ANNOTATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ANY",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "APPLICATION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "APPLY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "APPLY_FILTER",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ARRAY",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AS",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ASC",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ASYNCHRONOUS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ATOMIC",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AUDIT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AUTO",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AUTOCOMMIT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "AUTONOMOUS",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BALANCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BEFORE",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BEGIN",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BETWEEN",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BFS",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BIGINT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BIND_AS_PARAMETER",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BIND_AS_VALUE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BINTEXT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "BLOB",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BLOCK",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BOOLEAN",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BOTH",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BREAK",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BREAKUP",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BULK",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "BY",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CACHE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CALL",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CAPTURE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CASCADE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CASE",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CELLS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CERTIFICATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CHAR",
+      "category": "reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CHECK",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLASS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLEAR",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLIENTSIDE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLOB",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLOSE",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLUSTER",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CLUSTERS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "COLLECTION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "COLUMN",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "COMMENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "COMMIT",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONDITION",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONFIGURATION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONNECT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONSISTENCY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONSTANT",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONSTRAINT",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONTAINS",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONTENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CONTINUE",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CREATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CREDENTIAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CROSS",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CUBE",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_CONNECTION",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_DATE",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_LINE_NUMBER",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_OBJECT_NAME",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_OBJECT_SCHEMA",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_SCHEMA",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_TIME",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_TIMESTAMP",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_TRANSACTION_ISOLATION_LEVEL",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_USER",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_UTCDATE",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_UTCTIME",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRENT_UTCTIMESTAMP",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURRVAL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CURSOR",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "CYCLE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DATA",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DATABASE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DATE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DAYDATE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "DBSCAN",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DDL",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DEC",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DECIMAL",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DECLARE",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DEFAULT",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DEFINER",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DEGREE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DELETE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DELTA",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DESC",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DETERMINISTIC",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DFS",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DISABLE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DISTINCT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DO",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DOUBLE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DROP",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "DYNAMIC",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EACH",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EDGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EDGES",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ELSE",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ELSEIF",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ENABLE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ENCRYPTION",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "END",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ENTRY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EPS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EQUIDISTANT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ESCAPE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXCEPT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXCEPTION",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXCHANGER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXCLUDED",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXEC",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXECUTE",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXECUTION",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXISTS",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXIT",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "EXPLAIN",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FALSE",
+      "category": "reserved",
+      "scope": "constant.language.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FETCH",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FILE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FILTER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FIRST",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FLOAT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FOLLOWING",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FOR",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FORCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FOREACH",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FOREIGN",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FROM",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FULL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FUNCTION",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "FUZZY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GENERATED",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GEOCODE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GLOBAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GRANT",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GRAPH",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GRID",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "GROUP",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HALF_VECTOR",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HANDLER",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HASH",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HAVING",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HEXAGON",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HINT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HISTORY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "HNSW",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IDENTITY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IF",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IMMEDIATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IN",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IN_DEGREE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IN_EDGES",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INCREMENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INCREMENTAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INDEX",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INDUCED_SUBGRAPH",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INIFILE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INLINE",
+      "category": "non-reserved",
+      "scope": "keyword.control.directive.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INNER",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INOUT",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INSERT",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INSTEAD",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INTEGER",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INTERSECT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INTO",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INVERSE_GRAPH",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "INVOKER",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IS",
+      "category": "reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "IS_REACHABLE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "JOB",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "JOIN",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "JSON",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "JWT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "K_SHORTEST_PATHS",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "KERNEL",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "KEY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "KEYPAIR",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "KMEANS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LABEL",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LANGUAGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LAST",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LATERAL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LDAP",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LEADING",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LEAVES",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LEFT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LEVELS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LIBRARY",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LIKE",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LIKE_REGEXPR",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LIMIT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOAD",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOB",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOCAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOCATION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOG",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LOGIN",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "LONGDATE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "LOOP",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MAP_MERGE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MAP_REDUCE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MAPPING",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MASK",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MATCHED",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MATERIALIZED",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MAXVALUE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MEASURE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MEASURES",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MERGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MINPTS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MINUS",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MINVALUE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MODEL",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MODIFIES",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MONITORING",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "MULTIPARENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NATURAL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NCHAR",
+      "category": "reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NCLOB",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NEIGHBORS",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NEXTVAL",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NO",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NO_INLINE",
+      "category": "non-reserved",
+      "scope": "keyword.control.directive.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NO_VECTOR_INDEX",
+      "category": "non-reserved",
+      "scope": "support.constant.hint.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NOT",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NOWAIT",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NULL",
+      "category": "reserved",
+      "scope": "constant.language.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NULLS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "NVARCHAR",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OCCURRENCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OF",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OFFSET",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ON",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ONLINE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ONLY",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OPEN",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OR",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ORDER",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ORDINALITY",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ORPHAN",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OUT",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OUT_DEGREE",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OUT_EDGES",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OUTER",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OVER",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "OVERRIDING",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PACKAGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PARALLEL",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PARAMETERS",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PARTITION",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PATH",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PERFTRACE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PERIOD",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PIECEWISE",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PLACEMENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PLAN",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "POLICY",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "POPSCOPE",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRECEDING",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PREDEFINED",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRIMARY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRIOR",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRIORITY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRIVATE",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRIVILEGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PROCEDURE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PROFILE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PROFILER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PROJECTION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PROVIDER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PRUNE",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PSE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PUBLIC",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PUBLICATION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "PUSHSCOPE",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RANGE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RDF",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "READ",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "READS",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REAL",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REAL_VECTOR",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RECLAIM",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RECOMPILE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RECONFIGURE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REFERENCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REFERENCES",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REFRESH",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REMOTE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REMOVE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RENAME",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REPLACE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RESET",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RESIGNAL",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RESULT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RETAIN",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RETENTION",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RETURN",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RETURNS",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REVERSE",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "REVOKE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RIGHT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROLE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROLEGROUP",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROLLBACK",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROLLUP",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROOT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROUTE_TO",
+      "category": "non-reserved",
+      "scope": "support.constant.hint.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROW",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROWCOUNT",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROWID",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ROWS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RUNTIMEDUMP",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SAML",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SATISFIES",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SAVE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SAVEPOINT",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SCHEDULER",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SCHEMA",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SEARCH",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SECONDDATE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SECTIONS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SECURITY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SELECT",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SEQUENCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SEQUENTIAL",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SERIES",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SERVICE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SESSION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SESSION_USER",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SET",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SHORTEST_PATH",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SHORTEST_PATHS_ONE_TO_ALL",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SHORTTEXT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "SIBLING",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SIBLINGS",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SIGNAL",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SIMILARITY",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SMALLDECIMAL",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SMALLINT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SOME",
+      "category": "non-reserved",
+      "scope": "keyword.operator.logical.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SOURCE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SPACE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SPATIAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQL",
+      "category": "reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQL_ERROR_CODE",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQL_ERROR_MESSAGE",
+      "category": "non-reserved",
+      "scope": "support.variable.system.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQLEXCEPTION",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQLSCRIPT",
+      "category": "non-reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQLSCRIPT_LOGGING_TABLE_TYPE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQLSCRIPT_STATEMENT_STATISTICS_TYPE",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SQLWARNING",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_CIRCULARSTRING",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_GEOMETRY",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_GEOMETRYCOLLECTION",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_LINESTRING",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_MULTILINESTRING",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_MULTIPOINT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_MULTIPOLYGON",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_POINT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_POINTM",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_POINTZ",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_POINTZM",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "ST_POLYGON",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "START",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STATEMENT",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STATIC",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STATISTICS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STOP",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STRONGLY_CONNECTED_COMPONENTS",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "STRUCTURED",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SUBGRAPH",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SUBSCRIPTION",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SUBTOTAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SYNONYM",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SYSTEM",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SYSTEMS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "SYSUUID",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TABLE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TABLESAMPLE",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TARGET",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TEMPORARY",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TEST",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTCLASSIFICATION",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTSETUP",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTSETUPCONFIG",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTSETUPLIBRARY",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTSETUPTEST",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTTEARDOWN",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTTEARDOWNCONFIG",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTTEARDOWNLIBRARY",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TESTTEARDOWNTEST",
+      "category": "non-reserved",
+      "scope": "storage.type.annotation.pragma.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TEXT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI"
+      ]
+    },
+    {
+      "name": "THEN",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "THREADS",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TIME",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TIMESTAMP",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TIMEZONE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TINYINT",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TO",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TOKEN",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TOP",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRACEPROFILE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRACES",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRAILING",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRANSACTION",
+      "category": "non-reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRAVERSE",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRIGGER",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRUE",
+      "category": "reserved",
+      "scope": "constant.language.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TRUNCATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "TYPE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNBOUNDED",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNION",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNIQUE",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNIT",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNKNOWN",
+      "category": "reserved",
+      "scope": "constant.language.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNLOAD",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNSET",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNTIL",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UNUSED",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UPDATE",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UPSERT",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "USER",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "USERGROUP",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "USING",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "UTCTIMESTAMP",
+      "category": "reserved",
+      "scope": "support.constant.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VALID",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VALUES",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VARBINARY",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VARCHAR",
+      "category": "non-reserved",
+      "scope": "storage.type.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VECTOR",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VECTOR_INDEX",
+      "category": "non-reserved",
+      "scope": "support.constant.hint.hanasql",
+      "platforms": [
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VERTEX",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VERTICES",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VIEW",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VIRTUAL",
+      "category": "non-reserved",
+      "scope": "keyword.other.ddl.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "VISIT",
+      "category": "non-reserved",
+      "scope": "keyword.control.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WAITGRAPH",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WHEN",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WHERE",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WHILE",
+      "category": "reserved",
+      "scope": "keyword.control.flow.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WINDOW",
+      "category": "non-reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WITH",
+      "category": "reserved",
+      "scope": "keyword.other.dml.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WORKLOAD",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WORKSPACE",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "WRAPPER",
+      "category": "non-reserved",
+      "scope": "keyword.other.clause.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "X509",
+      "category": "non-reserved",
+      "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    }
+  ]
+}

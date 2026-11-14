@@ -1,0 +1,4846 @@
+{
+  "functions": [
+    {
+      "name": "INDUCED_SUBGRAPH",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "INDUCED_SUBGRAPH(<graph>, <vertices>)"
+      ],
+      "returnType": "GRAPH",
+      "description": "Constructs an induced subgraph from <vertices> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "INVERSE_GRAPH",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "INVERSE_GRAPH(<graph>)"
+      ],
+      "returnType": "GRAPH",
+      "description": "Constructs a graph with all edge directions reversed ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "IS_REACHABLE",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "IS_REACHABLE(<graph>, <start_vertex>, <end_vertex> [, <direction>])"
+      ],
+      "returnType": "BOOLEAN",
+      "description": "Returns true if <end_vertex> is reachable from <start_vertex> in <graph> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "K_SHORTEST_PATHS",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "K_SHORTEST_PATHS(<graph>, <source_vertex>, <target_vertex>, <k> [, <weight_closure>] [, <direction>])"
+      ],
+      "returnType": "SEQUENCE<WEIGHTEDPATH>",
+      "description": "Computes the top <k> shortest paths between <source_vertex> and <target_vertex> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NEIGHBORS",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "NEIGHBORS(<graph>, <start_vertices>, <lower_bound>, <upper_bound> [, <direction>])"
+      ],
+      "returnType": "MULTISET<VERTEX>",
+      "description": "Returns vertices within hop distance [<lower_bound>, <upper_bound>] from <start_vertices> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SHORTEST_PATH",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "SHORTEST_PATH(<graph>, <source_vertex>, <target_vertex> [, <weight_closure>] [, <direction>])"
+      ],
+      "returnType": "WEIGHTEDPATH",
+      "description": "Computes a shortest path from <source_vertex> to <target_vertex> in <graph> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SHORTEST_PATHS_ONE_TO_ALL",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "SHORTEST_PATHS_ONE_TO_ALL(<graph>, <source_vertex>, <weight_attribute> [, <weight_closure>] [, <direction>])"
+      ],
+      "returnType": "GRAPH",
+      "description": "Computes shortest paths from <source_vertex> to all reachable vertices in <graph> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STRONGLY_CONNECTED_COMPONENTS",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "STRONGLY_CONNECTED_COMPONENTS(<graph>)"
+      ],
+      "returnType": "MULTISET<MULTISET<VERTEX>>",
+      "description": "Partitions <graph> into strongly connected components ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBGRAPH",
+      "library": "GRAPHSCRIPT",
+      "signatures": [
+        "SUBGRAPH(<graph>, <vertices>)"
+      ],
+      "returnType": "GRAPH",
+      "description": "Constructs a subgraph induced by <vertices> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_FILTER",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "ADD_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
+      ],
+      "returnType": "VOID",
+      "description": "Adds topic filters to a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_SQLSCRIPT_OBJECT",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "ADD_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL, IN level VARCHAR(7) DEFAULT NULL)"
+      ],
+      "returnType": "VOID",
+      "description": "Registers a procedure, function, or library member with a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CREATE_CONFIGURATION",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "CREATE_CONFIGURATION(IN configuration_name NVARCHAR(256))"
+      ],
+      "returnType": "VOID",
+      "description": "Creates a named SQLScript logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DROP_CONFIGURATION",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "DROP_CONFIGURATION(IN configuration_name NVARCHAR(256), IN drop_cascade BOOLEAN DEFAULT FALSE)"
+      ],
+      "returnType": "VOID",
+      "description": "Drops a SQLScript logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOG",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LOG(IN level VARCHAR(7), IN topic NVARCHAR(256), IN message NVARCHAR(5000) [, IN <arg1> <any>, ...])"
+      ],
+      "returnType": "VOID",
+      "description": "Writes a formatted log entry when logging is active for the current object and topic ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "REMOVE_FILTER",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "REMOVE_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
+      ],
+      "returnType": "VOID",
+      "description": "Removes topic filters from a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "REMOVE_SQLSCRIPT_OBJECT",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "REMOVE_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL)"
+      ],
+      "returnType": "VOID",
+      "description": "Unregisters a SQLScript object from a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SET_FILTER",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "SET_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
+      ],
+      "returnType": "VOID",
+      "description": "Replaces the topic filter list for a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SET_LEVEL",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "SET_LEVEL(IN configuration_name NVARCHAR(256), IN level VARCHAR(7))"
+      ],
+      "returnType": "VOID",
+      "description": "Sets the log level (LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARNING, LEVEL_INFO, LEVEL_DEBUG) for a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SET_OUTPUT_TABLE",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "SET_OUTPUT_TABLE(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN table_name NVARCHAR(256))"
+      ],
+      "returnType": "VOID",
+      "description": "Sets the target log table (of type SYS.SQLSCRIPT_LOGGING_TABLE_TYPE) for a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "START_LOGGING",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "START_LOGGING(IN configuration_name NVARCHAR(256))"
+      ],
+      "returnType": "VOID",
+      "description": "Activates logging for a configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STOP_LOGGING",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "STOP_LOGGING(IN configuration_name NVARCHAR(256))"
+      ],
+      "returnType": "VOID",
+      "description": "Deactivates logging for a configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UNSET_FILTER",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "UNSET_FILTER(IN configuration_name NVARCHAR(256))"
+      ],
+      "returnType": "VOID",
+      "description": "Clears all topic filters for a logging configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PRINT_LINE",
+      "library": "SQLSCRIPT_PRINT",
+      "signatures": [
+        "PRINT_LINE(IN <input> NVARCHAR(8388607))"
+      ],
+      "returnType": "VOID",
+      "description": "Prints a line of text to the SQLScript client output buffer ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PRINT_TABLE",
+      "library": "SQLSCRIPT_PRINT",
+      "signatures": [
+        "PRINT_TABLE(IN <tab> TABLE(...), IN <max_records> INT DEFAULT 100)"
+      ],
+      "returnType": "VOID",
+      "description": "Prints a formatted table variable to the SQLScript client output buffer ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FORMAT",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "FORMAT(IN FORMAT NVARCHAR(5000), IN <arg1> <any>, ...)"
+      ],
+      "returnType": "NVARCHAR(5000)",
+      "description": "Formats a string using positional/printf placeholders ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FORMAT_TO_ARRAY",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "FORMAT_TO_ARRAY(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
+      ],
+      "returnType": "NVARCHAR(5000) ARRAY",
+      "description": "Formats each row of a table variable using a format string into an array ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FORMAT_TO_TABLE",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "FORMAT_TO_TABLE(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
+      ],
+      "returnType": "TABLE (RESULT NVARCHAR(5000))",
+      "description": "Formats each row of a table variable using a format string into a table ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "TABLE (RESULT NVARCHAR(5000))",
+      "description": "Splits a string by SEPARATOR into a table of substrings ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT_REGEXPR",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT_REGEXPR(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "TABLE (RESULT NVARCHAR(5000))",
+      "description": "Splits a string using a regular expression pattern ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT_REGEXPR_TO_ARRAY",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT_REGEXPR_TO_ARRAY(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "NVARCHAR(5000) ARRAY",
+      "description": "Splits a string using a regular expression into an NVARCHAR ARRAY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT_REGEXPR_TO_TABLE",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT_REGEXPR_TO_TABLE(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "TABLE (RESULT NVARCHAR(5000))",
+      "description": "Splits a string using a regular expression into a single-column table ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT_TO_ARRAY",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT_TO_ARRAY(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "NVARCHAR(5000) ARRAY",
+      "description": "Splits a string by SEPARATOR into an NVARCHAR ARRAY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPLIT_TO_TABLE",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "SPLIT_TO_TABLE(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
+      ],
+      "returnType": "TABLE (RESULT NVARCHAR(5000))",
+      "description": "Splits a string by SEPARATOR into a single-column table ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TABLE_SUMMARY",
+      "library": "SQLSCRIPT_STRING",
+      "signatures": [
+        "TABLE_SUMMARY(IN TAB TABLE(...), IN ROWS INT DEFAULT 100)"
+      ],
+      "returnType": "NVARCHAR(5000)",
+      "description": "Formats a tabular ASCII summary of a table variable ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SLEEP_SECONDS",
+      "library": "SQLSCRIPT_SYNC",
+      "signatures": [
+        "SLEEP_SECONDS(IN <sleep_time> DOUBLE)"
+      ],
+      "returnType": "VOID",
+      "description": "Suspends execution of the current SQLScript session for <sleep_time> seconds ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "WAKEUP_CONNECTION",
+      "library": "SQLSCRIPT_SYNC",
+      "signatures": [
+        "WAKEUP_CONNECTION(IN <connection_id> INTEGER)"
+      ],
+      "returnType": "VOID",
+      "description": "Wakes up a sleeping connection identified by <connection_id> ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_EQ",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_EQ(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual == expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_GE",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_GE(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual >= expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_GT",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_GT(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual > expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_LE",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_LE(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual <= expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_LT",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_LT(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual < expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_NE",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_NE(IN actual <any>, IN expected <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual != expected in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_NULL",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_NULL(IN actual <any>)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that actual IS NULL in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPECT_TABLE_EQ",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "EXPECT_TABLE_EQ(IN actual TABLE(...), IN expected TABLE(...), IN ignore_order BOOLEAN DEFAULT FALSE)"
+      ],
+      "returnType": "VOID",
+      "description": "Asserts that two table variables contain identical rows in a SQLScript unit test ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FAIL",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "FAIL(IN message NVARCHAR(5000) DEFAULT '')"
+      ],
+      "returnType": "VOID",
+      "description": "Unconditionally fails the current SQLScript unit test with <message> ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LIST_CONFIGURATIONS",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "LIST_CONFIGURATIONS(IN config_json NCLOB, OUT configs TABLE(...))"
+      ],
+      "returnType": "VOID",
+      "description": "Lists all test configurations defined in SQLSCRIPT_TEST libraries ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LIST_TESTS",
+      "library": "SQLSCRIPT_TEST",
+      "signatures": [
+        "LIST_TESTS(IN config_json NCLOB, OUT tests TABLE(...))"
+      ],
+      "returnType": "VOID",
+      "description": "Lists all @Test procedures matching the JSON test configuration ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_ALPHANUM",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_ALPHANUM(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_ALPHANUM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_DF16RAW_TO_SMALLDECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_DF16RAW_TO_SMALLDECIMAL(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_DF16RAW_TO_SMALLDECIMAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_DF34RAW_TO_DECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_DF34RAW_TO_DECIMAL(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_DF34RAW_TO_DECIMAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_LOWER",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_LOWER(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_LOWER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_NUMC",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_NUMC(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_NUMC ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABAP_UPPER",
+      "library": "SYS",
+      "signatures": [
+        "ABAP_UPPER(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ABAP_UPPER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ABS",
+      "library": "SYS",
+      "signatures": [
+        "ABS(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ABS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ACOS",
+      "library": "SYS",
+      "signatures": [
+        "ACOS(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ACOS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_DAYS",
+      "library": "SYS",
+      "signatures": [
+        "ADD_DAYS(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_DAYS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_MONTHS",
+      "library": "SYS",
+      "signatures": [
+        "ADD_MONTHS(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_MONTHS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_MONTHS_LAST",
+      "library": "SYS",
+      "signatures": [
+        "ADD_MONTHS_LAST(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_MONTHS_LAST ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_NANO100",
+      "library": "SYS",
+      "signatures": [
+        "ADD_NANO100(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_NANO100 ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_SECONDS",
+      "library": "SYS",
+      "signatures": [
+        "ADD_SECONDS(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_SECONDS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_WORKDAYS",
+      "library": "SYS",
+      "signatures": [
+        "ADD_WORKDAYS(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_WORKDAYS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ADD_YEARS",
+      "library": "SYS",
+      "signatures": [
+        "ADD_YEARS(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ADD_YEARS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "AI_TEXT_COMPLETION",
+      "library": "SYS",
+      "signatures": [
+        "AI_TEXT_COMPLETION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ALLOW_PRECISION_LOSS",
+      "library": "SYS",
+      "signatures": [
+        "ALLOW_PRECISION_LOSS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ANALYZE_SQLSCRIPT_DEFINITION",
+      "library": "SYS",
+      "signatures": [
+        "ANALYZE_SQLSCRIPT_DEFINITION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ANALYZE_SQLSCRIPT_OBJECTS",
+      "library": "SYS",
+      "signatures": [
+        "ANALYZE_SQLSCRIPT_OBJECTS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "APPLY_FILTER",
+      "library": "SYS",
+      "signatures": [
+        "APPLY_FILTER(<table_or_view>, <dynamic_where_string>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Applies a dynamic SQL WHERE filter string to a table or table variable ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ARRAY",
+      "library": "SYS",
+      "signatures": [
+        "ARRAY(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ARRAY_AGG",
+      "library": "SYS",
+      "signatures": [
+        "ARRAY_AGG(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function ARRAY_AGG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ASCII",
+      "library": "SYS",
+      "signatures": [
+        "ASCII(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function ASCII ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ASIN",
+      "library": "SYS",
+      "signatures": [
+        "ASIN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ASIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ATAN",
+      "library": "SYS",
+      "signatures": [
+        "ATAN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ATAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ATAN2",
+      "library": "SYS",
+      "signatures": [
+        "ATAN2(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ATAN2 ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "AUTO_CORR",
+      "library": "SYS",
+      "signatures": [
+        "AUTO_CORR(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function AUTO_CORR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "AVG",
+      "library": "SYS",
+      "signatures": [
+        "AVG(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function AVG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BIND_AS_PARAMETER",
+      "library": "SYS",
+      "signatures": [
+        "BIND_AS_PARAMETER(<scalar_expr>)"
+      ],
+      "returnType": "ANY",
+      "description": "Forces a scalar expression in SQLScript to be bound as a query parameter ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BIND_AS_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "BIND_AS_VALUE(<scalar_expr>)"
+      ],
+      "returnType": "ANY",
+      "description": "Forces a scalar expression in SQLScript to be inlined as a literal value ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BINNING",
+      "library": "SYS",
+      "signatures": [
+        "BINNING(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function BINNING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BINTOHEX",
+      "library": "SYS",
+      "signatures": [
+        "BINTOHEX(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function BINTOHEX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BINTONHEX",
+      "library": "SYS",
+      "signatures": [
+        "BINTONHEX(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function BINTONHEX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BINTOSTR",
+      "library": "SYS",
+      "signatures": [
+        "BINTOSTR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function BINTOSTR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITAND",
+      "library": "SYS",
+      "signatures": [
+        "BITAND(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITAND ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITAT",
+      "library": "SYS",
+      "signatures": [
+        "BITAT(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITAT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITCOUNT",
+      "library": "SYS",
+      "signatures": [
+        "BITCOUNT(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITCOUNT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITNOT",
+      "library": "SYS",
+      "signatures": [
+        "BITNOT(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITNOT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITOR",
+      "library": "SYS",
+      "signatures": [
+        "BITOR(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITOR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITSET",
+      "library": "SYS",
+      "signatures": [
+        "BITSET(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITSET ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITUNSET",
+      "library": "SYS",
+      "signatures": [
+        "BITUNSET(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITUNSET ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "BITXOR",
+      "library": "SYS",
+      "signatures": [
+        "BITXOR(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function BITXOR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CARDINALITY",
+      "library": "SYS",
+      "signatures": [
+        "CARDINALITY(<array_or_vector>)"
+      ],
+      "returnType": "INTEGER",
+      "description": "Returns the number of elements in an ARRAY or dimension of a REAL_VECTOR / HALF_VECTOR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CAST",
+      "library": "SYS",
+      "signatures": [
+        "CAST(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL data type conversion function CAST ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CE_AGGREGATION",
+      "library": "SYS",
+      "signatures": [
+        "CE_AGGREGATION(<tab>, [<agg_list>] [, [<group_by_cols>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine aggregation plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_CALC",
+      "library": "SYS",
+      "signatures": [
+        "CE_CALC('<expr>', <data_type>)"
+      ],
+      "returnType": "SCALAR",
+      "description": "Calculation Engine computed column evaluator inside CE_PROJECTION / CE_AGGREGATION ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_CALC_VIEW",
+      "library": "SYS",
+      "signatures": [
+        "CE_CALC_VIEW(<calc_view_name> [, [<attr_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine plan operator binding a calculation view ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_COLUMN_TABLE",
+      "library": "SYS",
+      "signatures": [
+        "CE_COLUMN_TABLE(<table_name> [, [<attr_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine plan operator binding a column table ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_CONVERSION",
+      "library": "SYS",
+      "signatures": [
+        "CE_CONVERSION(<tab>, [<conversion_params>] [, [<rename_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine currency/unit conversion plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_JOIN",
+      "library": "SYS",
+      "signatures": [
+        "CE_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine inner join plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_JOIN_VIEW",
+      "library": "SYS",
+      "signatures": [
+        "CE_JOIN_VIEW(<view_name> [, [<attr_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine plan operator binding an attribute/join view ([XSC])."
+    },
+    {
+      "name": "CE_LEFT_OUTER_JOIN",
+      "library": "SYS",
+      "signatures": [
+        "CE_LEFT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine left outer join plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_OLAP_VIEW",
+      "library": "SYS",
+      "signatures": [
+        "CE_OLAP_VIEW(<olap_view_name> [, [<dim_and_measures>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine plan operator binding an analytic/OLAP view ([XSC])."
+    },
+    {
+      "name": "CE_PROJECTION",
+      "library": "SYS",
+      "signatures": [
+        "CE_PROJECTION(<tab>, [<proj_list>] [, <filter_expr>])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine projection and filter plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_RIGHT_OUTER_JOIN",
+      "library": "SYS",
+      "signatures": [
+        "CE_RIGHT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine right outer join plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_UNION_ALL",
+      "library": "SYS",
+      "signatures": [
+        "CE_UNION_ALL(<tab1>, <tab2>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine union all plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CE_VERTICAL_UNION",
+      "library": "SYS",
+      "signatures": [
+        "CE_VERTICAL_UNION(<tab1>, [<cols1>], <tab2>, [<cols2>])"
+      ],
+      "returnType": "TABLE",
+      "description": "Calculation Engine vertical union plan operator ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "CEIL",
+      "library": "SYS",
+      "signatures": [
+        "CEIL(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function CEIL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CHAR",
+      "library": "SYS",
+      "signatures": [
+        "CHAR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function CHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "COALESCE",
+      "library": "SYS",
+      "signatures": [
+        "COALESCE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CONCAT",
+      "library": "SYS",
+      "signatures": [
+        "CONCAT(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function CONCAT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CONCAT_NAZ",
+      "library": "SYS",
+      "signatures": [
+        "CONCAT_NAZ(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function CONCAT_NAZ ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CONVERT_CURRENCY",
+      "library": "SYS",
+      "signatures": [
+        "CONVERT_CURRENCY(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CONVERT_UNIT",
+      "library": "SYS",
+      "signatures": [
+        "CONVERT_UNIT(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CORR",
+      "library": "SYS",
+      "signatures": [
+        "CORR(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function CORR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CORR_SPEARMAN",
+      "library": "SYS",
+      "signatures": [
+        "CORR_SPEARMAN(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function CORR_SPEARMAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "COS",
+      "library": "SYS",
+      "signatures": [
+        "COS(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function COS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "COSH",
+      "library": "SYS",
+      "signatures": [
+        "COSH(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function COSH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "COSINE_SIMILARITY",
+      "library": "SYS",
+      "signatures": [
+        "COSINE_SIMILARITY(<vector1>, <vector2>)"
+      ],
+      "returnType": "DOUBLE",
+      "description": "Computes the cosine similarity in [-1, 1] between two REAL_VECTOR or HALF_VECTOR values ([CLOUD])."
+    },
+    {
+      "name": "COT",
+      "library": "SYS",
+      "signatures": [
+        "COT(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function COT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "COUNT",
+      "library": "SYS",
+      "signatures": [
+        "COUNT(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function COUNT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CREATE_VECTOR_EMBEDDINGS",
+      "library": "SYS",
+      "signatures": [
+        "CREATE_VECTOR_EMBEDDINGS(<schema>, <table>, <text_col>, <embedding_col>, <text_type>, <model_and_version> [, <batch_size> [, <remote_schema>, <remote_source>]] [, <options>])"
+      ],
+      "returnType": "VOID",
+      "description": "Built-in procedure that batch-computes vector embeddings for a table column ([CLOUD])."
+    },
+    {
+      "name": "CROSS_CORR",
+      "library": "SYS",
+      "signatures": [
+        "CROSS_CORR(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function CROSS_CORR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CROSS_ENCODE",
+      "library": "SYS",
+      "signatures": [
+        "CROSS_ENCODE(<text_a>, <text_b>, <model_and_version> [, <options>]) OVER (<window_spec>)"
+      ],
+      "returnType": "DOUBLE",
+      "description": "Window function that scores text pairs using a cross-encoder model ([CLOUD])."
+    },
+    {
+      "name": "CUBIC_SPLINE_APPROX",
+      "library": "SYS",
+      "signatures": [
+        "CUBIC_SPLINE_APPROX(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function CUBIC_SPLINE_APPROX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CUME_DIST",
+      "library": "SYS",
+      "signatures": [
+        "CUME_DIST(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function CUME_DIST ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_CONNECTION",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_CONNECTION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_DATABASE",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_DATABASE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_DATE",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_DATE(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_DATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_IDENTITY_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_IDENTITY_VALUE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_MVCC_SNAPSHOT_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_MVCC_SNAPSHOT_TIMESTAMP(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_MVCC_SNAPSHOT_TIMESTAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_OBJECT_SCHEMA",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_OBJECT_SCHEMA(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_ROLEGROUP",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_ROLEGROUP(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_SCHEMA",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_SCHEMA(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_SITE_ID",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_SITE_ID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_TIME",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_TIME(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_TIME ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_TIMESTAMP(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_TIMESTAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_TRANSACTION_ISOLATION_LEVEL",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_TRANSACTION_ISOLATION_LEVEL(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_UPDATE_STATEMENT_SEQUENCE",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_UPDATE_STATEMENT_SEQUENCE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_UPDATE_TRANSACTION",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_UPDATE_TRANSACTION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_USER",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_USER(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_USER_ID",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_USER_ID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_USERGROUP",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_USERGROUP(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_UTCDATE",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_UTCDATE(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_UTCDATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_UTCTIME",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_UTCTIME(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_UTCTIME ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "CURRENT_UTCTIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "CURRENT_UTCTIMESTAMP(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function CURRENT_UTCTIMESTAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DAYNAME",
+      "library": "SYS",
+      "signatures": [
+        "DAYNAME(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function DAYNAME ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DAYOFMONTH",
+      "library": "SYS",
+      "signatures": [
+        "DAYOFMONTH(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function DAYOFMONTH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DAYOFYEAR",
+      "library": "SYS",
+      "signatures": [
+        "DAYOFYEAR(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function DAYOFYEAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DAYS_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "DAYS_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function DAYS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DENSE_RANK",
+      "library": "SYS",
+      "signatures": [
+        "DENSE_RANK(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function DENSE_RANK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "DFT",
+      "library": "SYS",
+      "signatures": [
+        "DFT(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function DFT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS",
+      "library": "SYS",
+      "signatures": [
+        "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD",
+      "library": "SYS",
+      "signatures": [
+        "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ESCAPE_DOUBLE_QUOTES",
+      "library": "SYS",
+      "signatures": [
+        "ESCAPE_DOUBLE_QUOTES(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ESCAPE_SINGLE_QUOTES",
+      "library": "SYS",
+      "signatures": [
+        "ESCAPE_SINGLE_QUOTES(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXP",
+      "library": "SYS",
+      "signatures": [
+        "EXP(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function EXP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXPRESSION_MACRO",
+      "library": "SYS",
+      "signatures": [
+        "EXPRESSION_MACRO(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "EXTRACT",
+      "library": "SYS",
+      "signatures": [
+        "EXTRACT(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function EXTRACT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FIRST_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "FIRST_VALUE(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function FIRST_VALUE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "FLOOR",
+      "library": "SYS",
+      "signatures": [
+        "FLOOR(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function FLOOR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GENERATE_PASSWORD",
+      "library": "SYS",
+      "signatures": [
+        "GENERATE_PASSWORD(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GET_DELTA_LAKE_TABLE_CHANGES",
+      "library": "SYS",
+      "signatures": [
+        "GET_DELTA_LAKE_TABLE_CHANGES(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GET_DELTA_LAKE_TABLE_VERSION",
+      "library": "SYS",
+      "signatures": [
+        "GET_DELTA_LAKE_TABLE_VERSION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GET_REMOTE_SOURCE_AI_MODELS",
+      "library": "SYS",
+      "signatures": [
+        "GET_REMOTE_SOURCE_AI_MODELS(<remote_source_name>, OUT <models_table>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in procedure listing available AI models on a remote SAP AI Core source ([CLOUD])."
+    },
+    {
+      "name": "GET_X509_USER_MAPPING_DETAILS",
+      "library": "SYS",
+      "signatures": [
+        "GET_X509_USER_MAPPING_DETAILS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GREATEST",
+      "library": "SYS",
+      "signatures": [
+        "GREATEST(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GROUP_SCORE",
+      "library": "SYS",
+      "signatures": [
+        "GROUP_SCORE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GROUPING",
+      "library": "SYS",
+      "signatures": [
+        "GROUPING(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "GROUPING_ID",
+      "library": "SYS",
+      "signatures": [
+        "GROUPING_ID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HAMMING_DISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "HAMMING_DISTANCE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function HAMMING_DISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HASH_MD5",
+      "library": "SYS",
+      "signatures": [
+        "HASH_MD5(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HASH_SHA256",
+      "library": "SYS",
+      "signatures": [
+        "HASH_SHA256(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HEXTOBIN",
+      "library": "SYS",
+      "signatures": [
+        "HEXTOBIN(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function HEXTOBIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HEXTONUM",
+      "library": "SYS",
+      "signatures": [
+        "HEXTONUM(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function HEXTONUM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [MULTIPARENT ...] [ORPHAN ...] [CYCLE ...] [CACHE ...] [LOAD ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Generates a parent-child hierarchy table with HIERARCHY_RANK, HIERARCHY_TREE_SIZE, HIERARCHY_PARENT_RANK, HIERARCHY_LEVEL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_ANCESTORS",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_ANCESTORS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Navigates upward to ancestors from start nodes in a generated hierarchy ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_ANCESTORS_AGGREGATE",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_ANCESTORS_AGGREGATE(SOURCE <hierarchy> [START ...] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Computes aggregations along ancestor paths in a generated hierarchy ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_COMPOSITE_ID",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_COMPOSITE_ID(<expr1>, <expr2> [, ...])"
+      ],
+      "returnType": "VARBINARY",
+      "description": "Scalar function combining multiple key columns into a single composite hierarchy NODE_ID/PARENT_ID ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_DESCENDANTS",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_DESCENDANTS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Navigates downward from start nodes in a generated hierarchy, adding HIERARCHY_DISTANCE and START_RANK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_DESCENDANTS_AGGREGATE",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE <hierarchy> [JOIN <table> ON <cond>] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...] [WITH SUBTOTAL] [WITH BALANCE] [WITH NOT MATCHED] [WITH TOTAL])"
+      ],
+      "returnType": "TABLE",
+      "description": "Computes hierarchical rollups and subtotals over descendant subtrees ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_LEVELED",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_LEVELED(SOURCE <source> [LEVELS (<col_list>)] [SIBLING ORDER BY <order>] [CACHE ...] [RETAIN NULLS ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Generates a hierarchy from leveled (column-per-level) source data ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_SIBLINGS",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_SIBLINGS(SOURCE <hierarchy> [START ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Returns sibling nodes sharing the same parent as the start nodes, adding HIERARCHY_SIBLING_DISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_SPANTREE",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_SPANTREE(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [CACHE ...] [LOAD ...])"
+      ],
+      "returnType": "TABLE",
+      "description": "Generates a minimum spanning-tree hierarchy from a parent-child adjacency source ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HIERARCHY_TEMPORAL",
+      "library": "SYS",
+      "signatures": [
+        "HIERARCHY_TEMPORAL(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] VALID {FROM <t1> UNTIL <t2> | AT <t>} ...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Generates a time-dependent hierarchy filtered by VALID_FROM / VALID_UNTIL intervals ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "HOUR",
+      "library": "SYS",
+      "signatures": [
+        "HOUR(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function HOUR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "IFNULL",
+      "library": "SYS",
+      "signatures": [
+        "IFNULL(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "INDEXING_ERROR_CODE",
+      "library": "SYS",
+      "signatures": [
+        "INDEXING_ERROR_CODE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "INDEXING_ERROR_MESSAGE",
+      "library": "SYS",
+      "signatures": [
+        "INDEXING_ERROR_MESSAGE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "INDEXING_STATUS",
+      "library": "SYS",
+      "signatures": [
+        "INDEXING_STATUS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "INITCAP",
+      "library": "SYS",
+      "signatures": [
+        "INITCAP(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function INITCAP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "IS_SQL_INJECTION_SAFE",
+      "library": "SYS",
+      "signatures": [
+        "IS_SQL_INJECTION_SAFE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ISOWEEK",
+      "library": "SYS",
+      "signatures": [
+        "ISOWEEK(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function ISOWEEK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "JSON_QUERY",
+      "library": "SYS",
+      "signatures": [
+        "JSON_QUERY(<json_doc>, '<json_path>' [RETURNING {NVARCHAR(<n>) | JSON}] [WRAPPER] [ON EMPTY] [ON ERROR])"
+      ],
+      "returnType": "NVARCHAR | JSON",
+      "description": "Extracts a JSON object or JSON array fragment from a JSON document ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "JSON_TABLE",
+      "library": "SYS",
+      "signatures": [
+        "JSON_TABLE(<json_doc>, '<json_path>' COLUMNS (<col_specs>) [{ERROR | EMPTY} ON ERROR])"
+      ],
+      "returnType": "TABLE",
+      "description": "Projects a JSON document into a relational table with support for NESTED PATH and FOR ORDINALITY ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "JSON_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "JSON_VALUE(<json_doc>, '<json_path>' [RETURNING <data_type>] [{ERROR | NULL | DEFAULT <val>} ON EMPTY] [{ERROR | NULL | DEFAULT <val>} ON ERROR])"
+      ],
+      "returnType": "NVARCHAR | <data_type>",
+      "description": "Extracts a scalar SQL value from a JSON document at <json_path> ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "L2DISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "L2DISTANCE(<vector1>, <vector2>)"
+      ],
+      "returnType": "DOUBLE",
+      "description": "Computes the Euclidean (L2) distance between two REAL_VECTOR or HALF_VECTOR values ([CLOUD])."
+    },
+    {
+      "name": "L2NORM",
+      "library": "SYS",
+      "signatures": [
+        "L2NORM(<vector>)"
+      ],
+      "returnType": "DOUBLE",
+      "description": "Computes the Euclidean (L2) norm (length) of a vector ([CLOUD])."
+    },
+    {
+      "name": "L2NORMALIZE",
+      "library": "SYS",
+      "signatures": [
+        "L2NORMALIZE(<vector>)"
+      ],
+      "returnType": "REAL_VECTOR | HALF_VECTOR",
+      "description": "Normalizes a REAL_VECTOR or HALF_VECTOR to unit length under the L2 norm ([CLOUD])."
+    },
+    {
+      "name": "LAG",
+      "library": "SYS",
+      "signatures": [
+        "LAG(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function LAG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LANGUAGE",
+      "library": "SYS",
+      "signatures": [
+        "LANGUAGE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LAST_DAY",
+      "library": "SYS",
+      "signatures": [
+        "LAST_DAY(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function LAST_DAY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LAST_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "LAST_VALUE(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function LAST_VALUE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LCASE",
+      "library": "SYS",
+      "signatures": [
+        "LCASE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LCASE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEAD",
+      "library": "SYS",
+      "signatures": [
+        "LEAD(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function LEAD ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEAST",
+      "library": "SYS",
+      "signatures": [
+        "LEAST(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEFT",
+      "library": "SYS",
+      "signatures": [
+        "LEFT(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LEFT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LENGTH",
+      "library": "SYS",
+      "signatures": [
+        "LENGTH(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LENGTH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LINEAR_APPROX",
+      "library": "SYS",
+      "signatures": [
+        "LINEAR_APPROX(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function LINEAR_APPROX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LN",
+      "library": "SYS",
+      "signatures": [
+        "LN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function LN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOCALTOUTC",
+      "library": "SYS",
+      "signatures": [
+        "LOCALTOUTC(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function LOCALTOUTC ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOCATE",
+      "library": "SYS",
+      "signatures": [
+        "LOCATE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LOCATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOCATE_REGEXPR",
+      "library": "SYS",
+      "signatures": [
+        "LOCATE_REGEXPR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LOCATE_REGEXPR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOG",
+      "library": "SYS",
+      "signatures": [
+        "LOG(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function LOG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LOWER",
+      "library": "SYS",
+      "signatures": [
+        "LOWER(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LOWER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LPAD",
+      "library": "SYS",
+      "signatures": [
+        "LPAD(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LPAD ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LTRIM",
+      "library": "SYS",
+      "signatures": [
+        "LTRIM(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function LTRIM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MAP",
+      "library": "SYS",
+      "signatures": [
+        "MAP(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MAP_MERGE",
+      "library": "SYS",
+      "signatures": [
+        "MAP_MERGE(<input_table>, <mapper_func>(<input_table>.<col1>, ...))"
+      ],
+      "returnType": "TABLE",
+      "description": "SQLScript parallel map-merge operator executing a table function per row ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MAP_REDUCE",
+      "library": "SYS",
+      "signatures": [
+        "MAP_REDUCE(<input_table>, <mapper_func>(...), <reducer_func>(...))"
+      ],
+      "returnType": "TABLE",
+      "description": "SQLScript parallel map-reduce operator ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MAX",
+      "library": "SYS",
+      "signatures": [
+        "MAX(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function MAX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MEDIAN",
+      "library": "SYS",
+      "signatures": [
+        "MEDIAN(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function MEDIAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MEMBER_AT",
+      "library": "SYS",
+      "signatures": [
+        "MEMBER_AT(<array_or_vector>, <position> [, <default_value>])"
+      ],
+      "returnType": "ANY | REAL",
+      "description": "Returns the element at 1-based <position> from an ARRAY or REAL_VECTOR / HALF_VECTOR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MIMETYPE",
+      "library": "SYS",
+      "signatures": [
+        "MIMETYPE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MIN",
+      "library": "SYS",
+      "signatures": [
+        "MIN(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function MIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MINUTE",
+      "library": "SYS",
+      "signatures": [
+        "MINUTE(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function MINUTE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MOD",
+      "library": "SYS",
+      "signatures": [
+        "MOD(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function MOD ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MONTH",
+      "library": "SYS",
+      "signatures": [
+        "MONTH(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function MONTH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MONTHNAME",
+      "library": "SYS",
+      "signatures": [
+        "MONTHNAME(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function MONTHNAME ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "MONTHS_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "MONTHS_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function MONTHS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NANO100_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "NANO100_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function NANO100_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NCHAR",
+      "library": "SYS",
+      "signatures": [
+        "NCHAR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function NCHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NDIV0",
+      "library": "SYS",
+      "signatures": [
+        "NDIV0(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function NDIV0 ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NEWUID",
+      "library": "SYS",
+      "signatures": [
+        "NEWUID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NEXT_DAY",
+      "library": "SYS",
+      "signatures": [
+        "NEXT_DAY(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function NEXT_DAY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NORMALIZE",
+      "library": "SYS",
+      "signatures": [
+        "NORMALIZE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function NORMALIZE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NOW",
+      "library": "SYS",
+      "signatures": [
+        "NOW(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function NOW ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NTH_VALUE",
+      "library": "SYS",
+      "signatures": [
+        "NTH_VALUE(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function NTH_VALUE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NTILE",
+      "library": "SYS",
+      "signatures": [
+        "NTILE(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function NTILE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NULLIF",
+      "library": "SYS",
+      "signatures": [
+        "NULLIF(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "NUMTOHEX",
+      "library": "SYS",
+      "signatures": [
+        "NUMTOHEX(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function NUMTOHEX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "OCCURRENCES_REGEXPR",
+      "library": "SYS",
+      "signatures": [
+        "OCCURRENCES_REGEXPR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function OCCURRENCES_REGEXPR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "OPENCYPHER_TABLE",
+      "library": "SYS",
+      "signatures": [
+        "OPENCYPHER_TABLE(GRAPH WORKSPACE <workspace_name> QUERY <cypher_query_string> [PARAMETERS (<param_list>)])"
+      ],
+      "returnType": "TABLE",
+      "description": "Executes an OpenCypher pattern-matching query on a SAP HANA Property Graph workspace ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PARSE_CERTIFICATES",
+      "library": "SYS",
+      "signatures": [
+        "PARSE_CERTIFICATES(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PARSE_JSON",
+      "library": "SYS",
+      "signatures": [
+        "PARSE_JSON(<json_string>)"
+      ],
+      "returnType": "JSON",
+      "description": "Parses a string into a native SAP HANA Cloud JSON document value ([CLOUD])."
+    },
+    {
+      "name": "PARTITION_ALLOCATION",
+      "library": "SYS",
+      "signatures": [
+        "PARTITION_ALLOCATION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PARTITION_HASH",
+      "library": "SYS",
+      "signatures": [
+        "PARTITION_HASH(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PERCENT_RANK",
+      "library": "SYS",
+      "signatures": [
+        "PERCENT_RANK(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function PERCENT_RANK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PERCENTILE_CONT",
+      "library": "SYS",
+      "signatures": [
+        "PERCENTILE_CONT(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function PERCENTILE_CONT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PERCENTILE_DISC",
+      "library": "SYS",
+      "signatures": [
+        "PERCENTILE_DISC(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function PERCENTILE_DISC ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "PLAINTEXT",
+      "library": "SYS",
+      "signatures": [
+        "PLAINTEXT(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "POWER",
+      "library": "SYS",
+      "signatures": [
+        "POWER(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function POWER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "QUARTER",
+      "library": "SYS",
+      "signatures": [
+        "QUARTER(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function QUARTER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RAND",
+      "library": "SYS",
+      "signatures": [
+        "RAND(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function RAND ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RAND_SECURE",
+      "library": "SYS",
+      "signatures": [
+        "RAND_SECURE(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function RAND_SECURE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RANDOM_PARTITION",
+      "library": "SYS",
+      "signatures": [
+        "RANDOM_PARTITION(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function RANDOM_PARTITION ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RANK",
+      "library": "SYS",
+      "signatures": [
+        "RANK(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function RANK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RDF_GRAPH_FROM_GRAPH_WORKSPACE",
+      "library": "SYS",
+      "signatures": [
+        "RDF_GRAPH_FROM_GRAPH_WORKSPACE(<workspace_schema>, <workspace_name>, <graph_uri>, <base_uri>, <vocabulary_uri>, <options>, OUT <result>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Converts a Property Graph workspace into an RDF graph in the Knowledge Graph Engine ([CLOUD])."
+    },
+    {
+      "name": "RDF_GRAPH_TO_GRAPH_WORKSPACE",
+      "library": "SYS",
+      "signatures": [
+        "RDF_GRAPH_TO_GRAPH_WORKSPACE(<graph_uri>, <workspace_schema>, <workspace_name>, <tables_schema>, <options>, OUT <result>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Converts an RDF graph into a Property Graph workspace and backing vertex/edge tables ([CLOUD])."
+    },
+    {
+      "name": "RECORD_COMMIT_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "RECORD_COMMIT_TIMESTAMP(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RECORD_ID",
+      "library": "SYS",
+      "signatures": [
+        "RECORD_ID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RECORD_LOCK_STATE",
+      "library": "SYS",
+      "signatures": [
+        "RECORD_LOCK_STATE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "REPLACE",
+      "library": "SYS",
+      "signatures": [
+        "REPLACE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function REPLACE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "REPLACE_REGEXPR",
+      "library": "SYS",
+      "signatures": [
+        "REPLACE_REGEXPR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function REPLACE_REGEXPR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RESULT_CACHE_ID",
+      "library": "SYS",
+      "signatures": [
+        "RESULT_CACHE_ID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RESULT_CACHE_REFRESH_TIME",
+      "library": "SYS",
+      "signatures": [
+        "RESULT_CACHE_REFRESH_TIME(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RIGHT",
+      "library": "SYS",
+      "signatures": [
+        "RIGHT(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function RIGHT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ROUND",
+      "library": "SYS",
+      "signatures": [
+        "ROUND(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function ROUND ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ROW_LOCK_WAIT_STATISTICS",
+      "library": "SYS",
+      "signatures": [
+        "ROW_LOCK_WAIT_STATISTICS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ROW_NUMBER",
+      "library": "SYS",
+      "signatures": [
+        "ROW_NUMBER(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function ROW_NUMBER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RPAD",
+      "library": "SYS",
+      "signatures": [
+        "RPAD(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function RPAD ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "RTRIM",
+      "library": "SYS",
+      "signatures": [
+        "RTRIM(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function RTRIM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SCORE",
+      "library": "SYS",
+      "signatures": [
+        "SCORE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SECOND",
+      "library": "SYS",
+      "signatures": [
+        "SECOND(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function SECOND ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SECONDS_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "SECONDS_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function SECONDS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_BIGINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_BIGINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_BIGINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_DATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_DATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_DATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_DECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_DECIMAL(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_DECIMAL ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_INTEGER",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_INTEGER(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_INTEGER ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_SECONDDATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_SECONDDATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_SECONDDATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_SMALLINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_SMALLINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_SMALLINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_TIME",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_TIME(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_TIME ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_TIMESTAMP(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_TIMESTAMP ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_DISAGGREGATE_TINYINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_DISAGGREGATE_TINYINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_DISAGGREGATE_TINYINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_ELEMENT_TO_PERIOD",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_ELEMENT_TO_PERIOD(...)"
+      ],
+      "returnType": "SCALAR",
+      "description": "Built-in SAP HANA Series Data function SERIES_ELEMENT_TO_PERIOD ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_FILTER",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_FILTER(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function SERIES_FILTER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SERIES_GENERATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_BIGINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_BIGINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_BIGINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_DATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_DATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_DATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_DECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_DECIMAL(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_DECIMAL ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_INTEGER",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_INTEGER(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_INTEGER ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_SECONDDATE",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_SECONDDATE(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_SECONDDATE ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_SMALLINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_SMALLINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_SMALLINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_TIME",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_TIME(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_TIME ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_TIMESTAMP(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_TIMESTAMP ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_GENERATE_TINYINT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_GENERATE_TINYINT(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Series Data function SERIES_GENERATE_TINYINT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_PERIOD_TO_ELEMENT",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_PERIOD_TO_ELEMENT(...)"
+      ],
+      "returnType": "SCALAR",
+      "description": "Built-in SAP HANA Series Data function SERIES_PERIOD_TO_ELEMENT ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SERIES_ROUND",
+      "library": "SYS",
+      "signatures": [
+        "SERIES_ROUND(...)"
+      ],
+      "returnType": "SCALAR",
+      "description": "Built-in SAP HANA Series Data function SERIES_ROUND ([XSC]/[XSA]/[HDI])."
+    },
+    {
+      "name": "SESSION_CONTEXT",
+      "library": "SYS",
+      "signatures": [
+        "SESSION_CONTEXT(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SESSION_USER",
+      "library": "SYS",
+      "signatures": [
+        "SESSION_USER(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SIGN",
+      "library": "SYS",
+      "signatures": [
+        "SIGN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function SIGN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SIN",
+      "library": "SYS",
+      "signatures": [
+        "SIN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function SIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SINH",
+      "library": "SYS",
+      "signatures": [
+        "SINH(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function SINH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SOUNDEX",
+      "library": "SYS",
+      "signatures": [
+        "SOUNDEX(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SOUNDEX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SPARQL_EXECUTE",
+      "library": "SYS",
+      "signatures": [
+        "SPARQL_EXECUTE(IN <request_string> NCLOB, IN <headers_string> NCLOB, OUT <response_body> NCLOB, OUT <response_headers> NCLOB)"
+      ],
+      "returnType": "VOID",
+      "description": "Built-in procedure executing SPARQL 1.1 Query/Update or RDF Turtle ingestion on the Knowledge Graph Engine ([CLOUD])."
+    },
+    {
+      "name": "SPARQL_TABLE",
+      "library": "SYS",
+      "signatures": [
+        "SPARQL_TABLE(<sparql_select_query_string> [, <accept_header_string>])"
+      ],
+      "returnType": "TABLE",
+      "description": "Executes a SPARQL SELECT query on the SAP HANA Cloud Knowledge Graph Engine triple store and returns a relational table ([CLOUD])."
+    },
+    {
+      "name": "SQL_TABLE",
+      "library": "SYS",
+      "signatures": [
+        "SQL_TABLE(<sql_query_string>)"
+      ],
+      "returnType": "TABLE",
+      "description": "Knowledge Graph Engine SPARQL function that embeds a relational SQL query result inside a SPARQL WHERE clause ([CLOUD])."
+    },
+    {
+      "name": "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA",
+      "library": "SYS",
+      "signatures": [
+        "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SQRT",
+      "library": "SYS",
+      "signatures": [
+        "SQRT(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function SQRT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ADDPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ADDPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ADDPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALLOCATEDSIZE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALLOCATEDSIZE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALLOCATEDSIZE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALPHASHAPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALPHASHAPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALPHASHAPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALPHASHAPEAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALPHASHAPEAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALPHASHAPEAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALPHASHAPEAREA",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALPHASHAPEAREA(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALPHASHAPEAREA ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALPHASHAPEAREAAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALPHASHAPEAREAAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALPHASHAPEAREAAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ALPHASHAPEEDGE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ALPHASHAPEEDGE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ALPHASHAPEEDGE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_AREA",
+      "library": "SYS",
+      "signatures": [
+        "ST_AREA(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_AREA ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASBINARY",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASBINARY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASBINARY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASESRIJSON",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASESRIJSON(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASESRIJSON ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASESRISHAPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASESRISHAPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASESRISHAPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASEWKB",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASEWKB(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASEWKB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASEWKT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASEWKT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASEWKT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASGEOJSON",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASGEOJSON(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASGEOJSON ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASMVT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASMVT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASMVT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASMVTGEOM",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASMVTGEOM(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASMVTGEOM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASSVG",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASSVG(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASSVG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASSVGAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASSVGAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASSVGAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASTEXT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASTEXT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASTEXT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASWKB",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASWKB(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASWKB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ASWKT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ASWKT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ASWKT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_BOUNDARY",
+      "library": "SYS",
+      "signatures": [
+        "ST_BOUNDARY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_BOUNDARY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_BUFFER",
+      "library": "SYS",
+      "signatures": [
+        "ST_BUFFER(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_BUFFER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CENTROID",
+      "library": "SYS",
+      "signatures": [
+        "ST_CENTROID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CENTROID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CLOSESTPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_CLOSESTPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CLOSESTPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CLUSTERCELL",
+      "library": "SYS",
+      "signatures": [
+        "ST_CLUSTERCELL(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CLUSTERCELL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CLUSTERCENTROID",
+      "library": "SYS",
+      "signatures": [
+        "ST_CLUSTERCENTROID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CLUSTERCENTROID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CLUSTERENVELOPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_CLUSTERENVELOPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CLUSTERENVELOPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CLUSTERID",
+      "library": "SYS",
+      "signatures": [
+        "ST_CLUSTERID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CLUSTERID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_COLLECT",
+      "library": "SYS",
+      "signatures": [
+        "ST_COLLECT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_COLLECT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_COLLECTAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_COLLECTAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_COLLECTAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CONCAVEHULL",
+      "library": "SYS",
+      "signatures": [
+        "ST_CONCAVEHULL(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CONCAVEHULL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CONCAVEHULLAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_CONCAVEHULLAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_CONCAVEHULLAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CONTAINS",
+      "library": "SYS",
+      "signatures": [
+        "ST_CONTAINS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CONTAINS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CONVEXHULL",
+      "library": "SYS",
+      "signatures": [
+        "ST_CONVEXHULL(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CONVEXHULL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CONVEXHULLAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_CONVEXHULLAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_CONVEXHULLAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_COORDDIM",
+      "library": "SYS",
+      "signatures": [
+        "ST_COORDDIM(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_COORDDIM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_COVEREDBY",
+      "library": "SYS",
+      "signatures": [
+        "ST_COVEREDBY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_COVEREDBY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_COVERS",
+      "library": "SYS",
+      "signatures": [
+        "ST_COVERS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_COVERS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CROSSES",
+      "library": "SYS",
+      "signatures": [
+        "ST_CROSSES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CROSSES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_CURVETOLINE",
+      "library": "SYS",
+      "signatures": [
+        "ST_CURVETOLINE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_CURVETOLINE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_DIFFERENCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_DIFFERENCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_DIFFERENCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_DIMENSION",
+      "library": "SYS",
+      "signatures": [
+        "ST_DIMENSION(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_DIMENSION ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_DISJOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_DISJOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_DISJOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_DISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_DISTANCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_DISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_DUPLICATES",
+      "library": "SYS",
+      "signatures": [
+        "ST_DUPLICATES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_DUPLICATES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ENDPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_ENDPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ENDPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ENVELOPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ENVELOPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ENVELOPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ENVELOPEAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_ENVELOPEAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_ENVELOPEAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_EQUALS",
+      "library": "SYS",
+      "signatures": [
+        "ST_EQUALS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_EQUALS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_EXTERIORRING",
+      "library": "SYS",
+      "signatures": [
+        "ST_EXTERIORRING(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_EXTERIORRING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FLIPCOORDINATES",
+      "library": "SYS",
+      "signatures": [
+        "ST_FLIPCOORDINATES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FLIPCOORDINATES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FORCE2D",
+      "library": "SYS",
+      "signatures": [
+        "ST_FORCE2D(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FORCE2D ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FORCE3DM",
+      "library": "SYS",
+      "signatures": [
+        "ST_FORCE3DM(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FORCE3DM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FORCE3DZ",
+      "library": "SYS",
+      "signatures": [
+        "ST_FORCE3DZ(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FORCE3DZ ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FORCE4D",
+      "library": "SYS",
+      "signatures": [
+        "ST_FORCE4D(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FORCE4D ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_FRECHETDISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_FRECHETDISTANCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_FRECHETDISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GENERATEPOINTS",
+      "library": "SYS",
+      "signatures": [
+        "ST_GENERATEPOINTS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GENERATEPOINTS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOHASH",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOHASH(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOHASH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOHASHBOUNDARY",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOHASHBOUNDARY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOHASHBOUNDARY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOHASHNEIGHBORS",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOHASHNEIGHBORS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOHASHNEIGHBORS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMETRYN",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMETRYN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMETRYN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMETRYTYPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMETRYTYPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMETRYTYPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMESRISHAPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMESRISHAPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMESRISHAPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMEWKB",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMEWKB(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMEWKB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMEWKT",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMEWKT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMEWKT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMGEOJSON",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMGEOJSON(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMGEOJSON ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMTEXT",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMTEXT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMTEXT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMWKB",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMWKB(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMWKB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_GEOMFROMWKT",
+      "library": "SYS",
+      "signatures": [
+        "ST_GEOMFROMWKT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_GEOMFROMWKT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_HAUSDORFFDISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_HAUSDORFFDISTANCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_HAUSDORFFDISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_HEXAGONGRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_HEXAGONGRID(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_HEXAGONGRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_HEXAGONGRIDBOUNDINGBOX",
+      "library": "SYS",
+      "signatures": [
+        "ST_HEXAGONGRIDBOUNDINGBOX(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_HEXAGONGRIDBOUNDINGBOX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERIORRINGN",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERIORRINGN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERIORRINGN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERPOLATEPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERPOLATEPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERPOLATEPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTION",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTION(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTION ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTIONAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTIONAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTIONAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTS",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTSFILTER",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTSFILTER(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTSFILTER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTSRECT",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTSRECT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTSRECT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_INTERSECTSRECTPLANAR",
+      "library": "SYS",
+      "signatures": [
+        "ST_INTERSECTSRECTPLANAR(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_INTERSECTSRECTPLANAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_IS3D",
+      "library": "SYS",
+      "signatures": [
+        "ST_IS3D(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_IS3D ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISCLOSED",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISCLOSED(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISCLOSED ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISEMPTY",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISEMPTY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISEMPTY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISMEASURED",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISMEASURED(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISMEASURED ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISRING",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISRING(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISRING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISSIMPLE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISSIMPLE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISSIMPLE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ISVALID",
+      "library": "SYS",
+      "signatures": [
+        "ST_ISVALID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ISVALID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LENGTH",
+      "library": "SYS",
+      "signatures": [
+        "ST_LENGTH(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LENGTH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LINEHASH",
+      "library": "SYS",
+      "signatures": [
+        "ST_LINEHASH(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LINEHASH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LINEINTERPOLATEPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_LINEINTERPOLATEPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LINEINTERPOLATEPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LINELOCATEPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_LINELOCATEPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LINELOCATEPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LINEMERGE",
+      "library": "SYS",
+      "signatures": [
+        "ST_LINEMERGE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LINEMERGE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LINESUBSTRING",
+      "library": "SYS",
+      "signatures": [
+        "ST_LINESUBSTRING(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LINESUBSTRING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LOCATEALONG",
+      "library": "SYS",
+      "signatures": [
+        "ST_LOCATEALONG(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LOCATEALONG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_LOCATEBETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "ST_LOCATEBETWEEN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_LOCATEBETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_M",
+      "library": "SYS",
+      "signatures": [
+        "ST_M(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_M ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MAKEENVELOPE",
+      "library": "SYS",
+      "signatures": [
+        "ST_MAKEENVELOPE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MAKEENVELOPE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MAKELINE",
+      "library": "SYS",
+      "signatures": [
+        "ST_MAKELINE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MAKELINE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MAKELINEAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_MAKELINEAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_MAKELINEAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MAKEPOLYGON",
+      "library": "SYS",
+      "signatures": [
+        "ST_MAKEPOLYGON(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MAKEPOLYGON ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MAKEVALID",
+      "library": "SYS",
+      "signatures": [
+        "ST_MAKEVALID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MAKEVALID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MINIMUMBOUNDINGCIRCLE",
+      "library": "SYS",
+      "signatures": [
+        "ST_MINIMUMBOUNDINGCIRCLE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MINIMUMBOUNDINGCIRCLE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MMAX",
+      "library": "SYS",
+      "signatures": [
+        "ST_MMAX(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MMAX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_MMIN",
+      "library": "SYS",
+      "signatures": [
+        "ST_MMIN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_MMIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_NUMGEOMETRIES",
+      "library": "SYS",
+      "signatures": [
+        "ST_NUMGEOMETRIES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_NUMGEOMETRIES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_NUMINTERIORRING",
+      "library": "SYS",
+      "signatures": [
+        "ST_NUMINTERIORRING(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_NUMINTERIORRING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_NUMINTERIORRINGS",
+      "library": "SYS",
+      "signatures": [
+        "ST_NUMINTERIORRINGS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_NUMINTERIORRINGS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_NUMPATCHES",
+      "library": "SYS",
+      "signatures": [
+        "ST_NUMPATCHES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_NUMPATCHES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_NUMPOINTS",
+      "library": "SYS",
+      "signatures": [
+        "ST_NUMPOINTS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_NUMPOINTS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ORDERINGEQUALS",
+      "library": "SYS",
+      "signatures": [
+        "ST_ORDERINGEQUALS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ORDERINGEQUALS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_OVERLAPS",
+      "library": "SYS",
+      "signatures": [
+        "ST_OVERLAPS(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_OVERLAPS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_PATCHN",
+      "library": "SYS",
+      "signatures": [
+        "ST_PATCHN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_PATCHN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_PERIMETER",
+      "library": "SYS",
+      "signatures": [
+        "ST_PERIMETER(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_PERIMETER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_POINTN",
+      "library": "SYS",
+      "signatures": [
+        "ST_POINTN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_POINTN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_POINTONSURFACE",
+      "library": "SYS",
+      "signatures": [
+        "ST_POINTONSURFACE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_POINTONSURFACE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_RECTANGLEGRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_RECTANGLEGRID(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_RECTANGLEGRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_RECTANGLEGRIDBOUNDINGBOX",
+      "library": "SYS",
+      "signatures": [
+        "ST_RECTANGLEGRIDBOUNDINGBOX(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_RECTANGLEGRIDBOUNDINGBOX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_RELATE",
+      "library": "SYS",
+      "signatures": [
+        "ST_RELATE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_RELATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_REMOVEPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_REMOVEPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_REMOVEPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_REVERSE",
+      "library": "SYS",
+      "signatures": [
+        "ST_REVERSE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_REVERSE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ROTATE",
+      "library": "SYS",
+      "signatures": [
+        "ST_ROTATE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ROTATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SCALE",
+      "library": "SYS",
+      "signatures": [
+        "ST_SCALE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SCALE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SETPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_SETPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SETPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SETSRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_SETSRID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SETSRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SHORTESTLINE",
+      "library": "SYS",
+      "signatures": [
+        "ST_SHORTESTLINE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SHORTESTLINE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SIMPLIFY",
+      "library": "SYS",
+      "signatures": [
+        "ST_SIMPLIFY(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SIMPLIFY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SNAPTOGRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_SNAPTOGRID(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_SNAPTOGRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SPLIT",
+      "library": "SYS",
+      "signatures": [
+        "ST_SPLIT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SPLIT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SQUAREGRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_SQUAREGRID(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Spatial function/method ST_SQUAREGRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SRID",
+      "library": "SYS",
+      "signatures": [
+        "ST_SRID(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SRID ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_STARTPOINT",
+      "library": "SYS",
+      "signatures": [
+        "ST_STARTPOINT(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_STARTPOINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SUBDIVIDE",
+      "library": "SYS",
+      "signatures": [
+        "ST_SUBDIVIDE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SUBDIVIDE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_SYMDIFFERENCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_SYMDIFFERENCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_SYMDIFFERENCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_TOUCHES",
+      "library": "SYS",
+      "signatures": [
+        "ST_TOUCHES(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_TOUCHES ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_TRANSFORM",
+      "library": "SYS",
+      "signatures": [
+        "ST_TRANSFORM(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_TRANSFORM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_TRANSLATE",
+      "library": "SYS",
+      "signatures": [
+        "ST_TRANSLATE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_TRANSLATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_TRANSLATE3D",
+      "library": "SYS",
+      "signatures": [
+        "ST_TRANSLATE3D(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_TRANSLATE3D ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_UNION",
+      "library": "SYS",
+      "signatures": [
+        "ST_UNION(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_UNION ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_UNIONAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_UNIONAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_UNIONAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_VORONOICELL",
+      "library": "SYS",
+      "signatures": [
+        "ST_VORONOICELL(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_VORONOICELL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_VORONOICELLAGGR",
+      "library": "SYS",
+      "signatures": [
+        "ST_VORONOICELLAGGR(...)"
+      ],
+      "returnType": "ST_GEOMETRY",
+      "description": "Built-in SAP HANA Spatial function/method ST_VORONOICELLAGGR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_WITHIN",
+      "library": "SYS",
+      "signatures": [
+        "ST_WITHIN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_WITHIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_WITHINDISTANCE",
+      "library": "SYS",
+      "signatures": [
+        "ST_WITHINDISTANCE(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_WITHINDISTANCE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_X",
+      "library": "SYS",
+      "signatures": [
+        "ST_X(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_X ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_XMAX",
+      "library": "SYS",
+      "signatures": [
+        "ST_XMAX(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_XMAX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_XMIN",
+      "library": "SYS",
+      "signatures": [
+        "ST_XMIN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_XMIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_Y",
+      "library": "SYS",
+      "signatures": [
+        "ST_Y(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_Y ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_YMAX",
+      "library": "SYS",
+      "signatures": [
+        "ST_YMAX(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_YMAX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_YMIN",
+      "library": "SYS",
+      "signatures": [
+        "ST_YMIN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_YMIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_Z",
+      "library": "SYS",
+      "signatures": [
+        "ST_Z(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_Z ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ZMAX",
+      "library": "SYS",
+      "signatures": [
+        "ST_ZMAX(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ZMAX ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "ST_ZMIN",
+      "library": "SYS",
+      "signatures": [
+        "ST_ZMIN(...)"
+      ],
+      "returnType": "ST_GEOMETRY | DOUBLE | INTEGER",
+      "description": "Built-in SAP HANA Spatial function/method ST_ZMIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STATEMENT_EXECUTION_HOST",
+      "library": "SYS",
+      "signatures": [
+        "STATEMENT_EXECUTION_HOST(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STATEMENT_EXECUTION_PORT",
+      "library": "SYS",
+      "signatures": [
+        "STATEMENT_EXECUTION_PORT(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STDDEV",
+      "library": "SYS",
+      "signatures": [
+        "STDDEV(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function STDDEV ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STDDEV_POP",
+      "library": "SYS",
+      "signatures": [
+        "STDDEV_POP(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function STDDEV_POP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STDDEV_SAMP",
+      "library": "SYS",
+      "signatures": [
+        "STDDEV_SAMP(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function STDDEV_SAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STRING_AGG",
+      "library": "SYS",
+      "signatures": [
+        "STRING_AGG(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function STRING_AGG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "STRTOBIN",
+      "library": "SYS",
+      "signatures": [
+        "STRTOBIN(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function STRTOBIN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBARRAY",
+      "library": "SYS",
+      "signatures": [
+        "SUBARRAY(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTR",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SUBSTR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTR_AFTER",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTR_AFTER(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SUBSTR_AFTER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTR_BEFORE",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTR_BEFORE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SUBSTR_BEFORE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTR_REGEXPR",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTR_REGEXPR(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTRING",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTRING(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SUBSTRING ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBSTRING_REGEXPR",
+      "library": "SYS",
+      "signatures": [
+        "SUBSTRING_REGEXPR(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function SUBSTRING_REGEXPR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SUBVECTOR",
+      "library": "SYS",
+      "signatures": [
+        "SUBVECTOR(<vector>, <start_position>, <dimension>)"
+      ],
+      "returnType": "REAL_VECTOR | HALF_VECTOR",
+      "description": "Extracts a contiguous subvector starting at 1-based <start_position> with length <dimension> ([CLOUD])."
+    },
+    {
+      "name": "SUM",
+      "library": "SYS",
+      "signatures": [
+        "SUM(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function SUM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "SYSUUID",
+      "library": "SYS",
+      "signatures": [
+        "SYSUUID(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TAN",
+      "library": "SYS",
+      "signatures": [
+        "TAN(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function TAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TANH",
+      "library": "SYS",
+      "signatures": [
+        "TANH(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function TANH ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TM_CATEGORIZE_KNN",
+      "library": "SYS",
+      "signatures": [
+        "TM_CATEGORIZE_KNN(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_CATEGORIZE_KNN ([XSC]/[XSA])."
+    },
+    {
+      "name": "TM_GET_RELATED_DOCUMENTS",
+      "library": "SYS",
+      "signatures": [
+        "TM_GET_RELATED_DOCUMENTS(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_GET_RELATED_DOCUMENTS ([XSC]/[XSA])."
+    },
+    {
+      "name": "TM_GET_RELATED_TERMS",
+      "library": "SYS",
+      "signatures": [
+        "TM_GET_RELATED_TERMS(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_GET_RELATED_TERMS ([XSC]/[XSA])."
+    },
+    {
+      "name": "TM_GET_RELEVANT_DOCUMENTS",
+      "library": "SYS",
+      "signatures": [
+        "TM_GET_RELEVANT_DOCUMENTS(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_GET_RELEVANT_DOCUMENTS ([XSC]/[XSA])."
+    },
+    {
+      "name": "TM_GET_RELEVANT_TERMS",
+      "library": "SYS",
+      "signatures": [
+        "TM_GET_RELEVANT_TERMS(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_GET_RELEVANT_TERMS ([XSC]/[XSA])."
+    },
+    {
+      "name": "TM_GET_SUGGESTED_TERMS",
+      "library": "SYS",
+      "signatures": [
+        "TM_GET_SUGGESTED_TERMS(...)"
+      ],
+      "returnType": "TABLE",
+      "description": "Built-in SAP HANA Text Mining function TM_GET_SUGGESTED_TERMS ([XSC]/[XSA])."
+    },
+    {
+      "name": "TO_ALPHANUM",
+      "library": "SYS",
+      "signatures": [
+        "TO_ALPHANUM(...)"
+      ],
+      "returnType": "ALPHANUM",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_ALPHANUM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_ARRAY",
+      "library": "SYS",
+      "signatures": [
+        "TO_ARRAY(<vector>)"
+      ],
+      "returnType": "REAL ARRAY",
+      "description": "Converts a REAL_VECTOR or HALF_VECTOR into a SQLScript REAL ARRAY ([CLOUD])."
+    },
+    {
+      "name": "TO_BIGINT",
+      "library": "SYS",
+      "signatures": [
+        "TO_BIGINT(...)"
+      ],
+      "returnType": "BIGINT",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_BIGINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_BINARY",
+      "library": "SYS",
+      "signatures": [
+        "TO_BINARY(...)"
+      ],
+      "returnType": "BINARY",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_BINARY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_BLOB",
+      "library": "SYS",
+      "signatures": [
+        "TO_BLOB(...)"
+      ],
+      "returnType": "BLOB",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_BLOB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_BOOLEAN",
+      "library": "SYS",
+      "signatures": [
+        "TO_BOOLEAN(...)"
+      ],
+      "returnType": "BOOLEAN",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_BOOLEAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_CLOB",
+      "library": "SYS",
+      "signatures": [
+        "TO_CLOB(...)"
+      ],
+      "returnType": "CLOB",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_CLOB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_DATE",
+      "library": "SYS",
+      "signatures": [
+        "TO_DATE(...)"
+      ],
+      "returnType": "DATE",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_DATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_DATS",
+      "library": "SYS",
+      "signatures": [
+        "TO_DATS(...)"
+      ],
+      "returnType": "DATS",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_DATS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_DECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "TO_DECIMAL(...)"
+      ],
+      "returnType": "DECIMAL",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_DECIMAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_DOUBLE",
+      "library": "SYS",
+      "signatures": [
+        "TO_DOUBLE(...)"
+      ],
+      "returnType": "DOUBLE",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_DOUBLE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_FIXEDCHAR",
+      "library": "SYS",
+      "signatures": [
+        "TO_FIXEDCHAR(...)"
+      ],
+      "returnType": "FIXEDCHAR",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_FIXEDCHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_HALF_VECTOR",
+      "library": "SYS",
+      "signatures": [
+        "TO_HALF_VECTOR(<vector_representation>)"
+      ],
+      "returnType": "HALF_VECTOR",
+      "description": "Constructs a 16-bit float HALF_VECTOR from a textual array, binary, or REAL_VECTOR value ([CLOUD])."
+    },
+    {
+      "name": "TO_INT",
+      "library": "SYS",
+      "signatures": [
+        "TO_INT(...)"
+      ],
+      "returnType": "INT",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_INT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_INTEGER",
+      "library": "SYS",
+      "signatures": [
+        "TO_INTEGER(...)"
+      ],
+      "returnType": "INTEGER",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_INTEGER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_JSON_BOOLEAN",
+      "library": "SYS",
+      "signatures": [
+        "TO_JSON_BOOLEAN(<value>)"
+      ],
+      "returnType": "JSON",
+      "description": "Converts a SQL boolean, numeric, or string value to a JSON boolean value ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_NCLOB",
+      "library": "SYS",
+      "signatures": [
+        "TO_NCLOB(...)"
+      ],
+      "returnType": "NCLOB",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_NCLOB ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_NVARCHAR",
+      "library": "SYS",
+      "signatures": [
+        "TO_NVARCHAR(...)"
+      ],
+      "returnType": "NVARCHAR",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_NVARCHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_REAL",
+      "library": "SYS",
+      "signatures": [
+        "TO_REAL(...)"
+      ],
+      "returnType": "REAL",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_REAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_REAL_VECTOR",
+      "library": "SYS",
+      "signatures": [
+        "TO_REAL_VECTOR(<vector_representation>)"
+      ],
+      "returnType": "REAL_VECTOR",
+      "description": "Constructs a 32-bit float REAL_VECTOR from a textual array, binary, or HALF_VECTOR value ([CLOUD])."
+    },
+    {
+      "name": "TO_SECONDDATE",
+      "library": "SYS",
+      "signatures": [
+        "TO_SECONDDATE(...)"
+      ],
+      "returnType": "SECONDDATE",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_SECONDDATE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_SMALLDECIMAL",
+      "library": "SYS",
+      "signatures": [
+        "TO_SMALLDECIMAL(...)"
+      ],
+      "returnType": "SMALLDECIMAL",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_SMALLDECIMAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_SMALLINT",
+      "library": "SYS",
+      "signatures": [
+        "TO_SMALLINT(...)"
+      ],
+      "returnType": "SMALLINT",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_SMALLINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_TIME",
+      "library": "SYS",
+      "signatures": [
+        "TO_TIME(...)"
+      ],
+      "returnType": "TIME",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_TIME ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_TIMESTAMP",
+      "library": "SYS",
+      "signatures": [
+        "TO_TIMESTAMP(...)"
+      ],
+      "returnType": "TIMESTAMP",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_TIMESTAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_TIMS",
+      "library": "SYS",
+      "signatures": [
+        "TO_TIMS(...)"
+      ],
+      "returnType": "TIMS",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_TIMS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_TINYINT",
+      "library": "SYS",
+      "signatures": [
+        "TO_TINYINT(...)"
+      ],
+      "returnType": "TINYINT",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_TINYINT ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_VARBINARY",
+      "library": "SYS",
+      "signatures": [
+        "TO_VARBINARY(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TO_VARCHAR",
+      "library": "SYS",
+      "signatures": [
+        "TO_VARCHAR(...)"
+      ],
+      "returnType": "VARCHAR",
+      "description": "Built-in SAP HANA SQL data type conversion function TO_VARCHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TRIM",
+      "library": "SYS",
+      "signatures": [
+        "TRIM(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function TRIM ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "TRIM_ARRAY",
+      "library": "SYS",
+      "signatures": [
+        "TRIM_ARRAY(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UCASE",
+      "library": "SYS",
+      "signatures": [
+        "UCASE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function UCASE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UMINUS",
+      "library": "SYS",
+      "signatures": [
+        "UMINUS(...)"
+      ],
+      "returnType": "NUMERIC",
+      "description": "Built-in SAP HANA SQL numeric/math function UMINUS ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UNICODE",
+      "library": "SYS",
+      "signatures": [
+        "UNICODE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function UNICODE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UNNEST",
+      "library": "SYS",
+      "signatures": [
+        "UNNEST(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UPPER",
+      "library": "SYS",
+      "signatures": [
+        "UPPER(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function UPPER ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "UTCTOLOCAL",
+      "library": "SYS",
+      "signatures": [
+        "UTCTOLOCAL(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function UTCTOLOCAL ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION",
+      "library": "SYS",
+      "signatures": [
+        "VALIDATE_USERGROUP_CONNECT_RESTRICTION(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS",
+      "library": "SYS",
+      "signatures": [
+        "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VAR",
+      "library": "SYS",
+      "signatures": [
+        "VAR(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function VAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VAR_POP",
+      "library": "SYS",
+      "signatures": [
+        "VAR_POP(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function VAR_POP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VAR_SAMP",
+      "library": "SYS",
+      "signatures": [
+        "VAR_SAMP(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL aggregate function VAR_SAMP ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "VECTOR_EMBEDDING",
+      "library": "SYS",
+      "signatures": [
+        "VECTOR_EMBEDDING(<text>, {'DOCUMENT' | 'QUERY'}, <model_and_version> [, <remote_source_schema>, <remote_source>] [, <options>])"
+      ],
+      "returnType": "REAL_VECTOR",
+      "description": "Generates a vector embedding for <text> using SAP HANA NLP or SAP AI Core ([CLOUD])."
+    },
+    {
+      "name": "WEEK",
+      "library": "SYS",
+      "signatures": [
+        "WEEK(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function WEEK ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "WEEKDAY",
+      "library": "SYS",
+      "signatures": [
+        "WEEKDAY(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function WEEKDAY ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "WEIGHTED_AVG",
+      "library": "SYS",
+      "signatures": [
+        "WEIGHTED_AVG(...)"
+      ],
+      "returnType": "NUMERIC | ANY",
+      "description": "Built-in SAP HANA SQL window function WEIGHTED_AVG ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "WIDTH_BUCKET",
+      "library": "SYS",
+      "signatures": [
+        "WIDTH_BUCKET(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "WORKDAYS_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "WORKDAYS_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function WORKDAYS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "XMLEXTRACT",
+      "library": "SYS",
+      "signatures": [
+        "XMLEXTRACT(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "XMLEXTRACTVALUE",
+      "library": "SYS",
+      "signatures": [
+        "XMLEXTRACTVALUE(...)"
+      ],
+      "returnType": "ANY",
+      "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "XMLTABLE",
+      "library": "SYS",
+      "signatures": [
+        "XMLTABLE(...)"
+      ],
+      "returnType": "NVARCHAR | INTEGER",
+      "description": "Built-in SAP HANA SQL string function XMLTABLE ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "YEAR",
+      "library": "SYS",
+      "signatures": [
+        "YEAR(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function YEAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "YEARS_BETWEEN",
+      "library": "SYS",
+      "signatures": [
+        "YEARS_BETWEEN(...)"
+      ],
+      "returnType": "TIMESTAMP | DATE | TIME | INTEGER",
+      "description": "Built-in SAP HANA SQL datetime function YEARS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
+    }
+  ]
+}

@@ -15,10 +15,19 @@
       "include": "#string"
     },
     {
+      "include": "#slot-label"
+    },
+    {
+      "include": "#character-class"
+    },
+    {
       "include": "#token"
     },
     {
       "include": "#group-reference"
+    },
+    {
+      "include": "#slot-variable"
     },
     {
       "include": "#attribute"
@@ -38,6 +47,10 @@
           "match": "\\/\\/.*$"
         },
         {
+          "name": "comment.line.double-dash.hdbtextrule",
+          "match": "--.*$"
+        },
+        {
           "name": "comment.block.hdbtextrule",
           "begin": "\\/\\*",
           "end": "\\*\\/"
@@ -45,13 +58,28 @@
       ]
     },
     "string": {
-      "name": "string.quoted.double.hdbtextrule",
-      "begin": "\"",
-      "end": "\"",
       "patterns": [
         {
-          "name": "constant.character.escape.hdbtextrule",
-          "match": "\\\\."
+          "name": "string.quoted.double.hdbtextrule",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.hdbtextrule",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.hdbtextrule",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.hdbtextrule",
+              "match": "\\\\.|''"
+            }
+          ]
         }
       ]
     },
@@ -60,27 +88,51 @@
       "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
     },
     "import": {
-      "match": "^\\s*(#(?:include|lexicon))\\s+(?:([A-Za-z_]\\w*)\\s+)?(<)([^>\\n]*)(>)",
-      "captures": {
-        "1": {
-          "name": "keyword.control.import.hdbtextrule"
+      "patterns": [
+        {
+          "match": "^\\s*(#(?:include|lexicon))\\s+(?:([A-Za-z_]\\w*)\\s+)?(<)([^>\\n]*)(>)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.hdbtextrule"
+            },
+            "2": {
+              "name": "entity.name.type.hdbtextrule"
+            },
+            "3": {
+              "name": "punctuation.definition.string.begin.hdbtextrule"
+            },
+            "4": {
+              "name": "string.unquoted.path.hdbtextrule"
+            },
+            "5": {
+              "name": "punctuation.definition.string.end.hdbtextrule"
+            }
+          }
         },
-        "2": {
-          "name": "entity.name.type.hdbtextrule"
-        },
-        "3": {
-          "name": "punctuation.definition.string.begin.hdbtextrule"
-        },
-        "4": {
-          "name": "string.unquoted.path.hdbtextrule"
-        },
-        "5": {
-          "name": "punctuation.definition.string.end.hdbtextrule"
+        {
+          "match": "^\\s*(#(?:include|lexicon))\\s+(?:([A-Za-z_]\\w*)\\s+)?(\")([^\"\\n]*)(\")",
+          "captures": {
+            "1": {
+              "name": "keyword.control.import.hdbtextrule"
+            },
+            "2": {
+              "name": "entity.name.type.hdbtextrule"
+            },
+            "3": {
+              "name": "punctuation.definition.string.begin.hdbtextrule"
+            },
+            "4": {
+              "name": "string.quoted.double.path.hdbtextrule"
+            },
+            "5": {
+              "name": "punctuation.definition.string.end.hdbtextrule"
+            }
+          }
         }
-      }
+      ]
     },
     "definition": {
-      "match": "^\\s*(#(?:define|subgroup|group))\\s+([A-Za-z_][\\w]*)?",
+      "match": "^\\s*(#(?:define|subgroup|group|index|feature|category|priority|language|encoding|version))\\b(?:\\s+([A-Za-z_][\\w]*))?",
       "captures": {
         "1": {
           "name": "keyword.control.directive.hdbtextrule"
@@ -90,8 +142,54 @@
         }
       }
     },
+    "slot-label": {
+      "match": "(\\[)([A-Za-z_]\\w*)(\\])(:)",
+      "captures": {
+        "1": {
+          "name": "punctuation.section.brackets.begin.hdbtextrule"
+        },
+        "2": {
+          "name": "entity.name.tag.label.hdbtextrule"
+        },
+        "3": {
+          "name": "punctuation.section.brackets.end.hdbtextrule"
+        },
+        "4": {
+          "name": "punctuation.separator.colon.hdbtextrule"
+        }
+      }
+    },
+    "character-class": {
+      "begin": "\\[\\^?",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.definition.character-class.begin.hdbtextrule"
+        }
+      },
+      "end": "\\]",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.definition.character-class.end.hdbtextrule"
+        }
+      },
+      "name": "meta.character-class.hdbtextrule",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtextrule",
+          "match": "\\\\."
+        },
+        {
+          "name": "constant.character.set.hdbtextrule",
+          "match": "[A-Za-z0-9]-[A-Za-z0-9]"
+        }
+      ]
+    },
+    "slot-variable": {
+      "name": "variable.other.slot.hdbtextrule",
+      "match": "\\$(?:\\{[A-Za-z_]\\w*\\}|[A-Za-z_]\\w*|\\d+)"
+    },
     "attribute": {
-      "match": "\\b([A-Za-z_]\\w*)(?=\\s*=\\s*\")",
+      "match": "\\b([A-Za-z_][\\w.]*)(?=\\s*=\\s*[\"'])",
       "name": "variable.parameter.attribute.hdbtextrule"
     },
     "token": {
@@ -114,7 +212,23 @@
         },
         {
           "name": "support.type.property-name.hdbtextrule",
-          "match": "\\b[A-Z][A-Z_]+(?=\\s*:)"
+          "match": "\\b(?:STEM|POS|ORTH|TOKEN|TYPE|SUBTYPE|LEMMA|NORM|TAG|FEAT|LANG|REGEXP|LEXICON|[A-Z][A-Z_]+)(?=\\s*[:=!~])"
+        },
+        {
+          "name": "constant.language.pos-tag.hdbtextrule",
+          "match": "\\b(?:NN|NNS|NNP|NNPS|VB|VBD|VBG|VBN|VBP|VBZ|JJ|JJR|JJS|RB|RBR|RBS|IN|DT|CC|CD|PRP|PRP\\$|WP|WP\\$|WDT|WRB|MD|TO|RP|UH|FW|SYM|POS|EX|LS|PDT|Noun|ProperNoun|Verb|Adjective|Adverb|Preposition|Conjunction|Determiner|Pronoun|Numeral|Interjection|Punctuation|Particle)\\b"
+        },
+        {
+          "name": "keyword.operator.comparison.hdbtextrule",
+          "match": "!=|~=|="
+        },
+        {
+          "name": "keyword.operator.negation.hdbtextrule",
+          "match": "[!~]"
+        },
+        {
+          "name": "constant.character.wildcard.hdbtextrule",
+          "match": "\\.\\*|\\.\\+"
         },
         {
           "name": "punctuation.separator.hdbtextrule",
@@ -127,7 +241,7 @@
       ]
     },
     "group-reference": {
-      "match": "(%)(\\()([A-Za-z_]\\w*)(\\))",
+      "match": "(%)(\\()([A-Za-z_][\\w.]*(?:::[A-Za-z_][\\w.]*)?)(\\))",
       "captures": {
         "1": {
           "name": "keyword.operator.hdbtextrule"
@@ -144,8 +258,28 @@
       }
     },
     "operators": {
-      "name": "keyword.operator.hdbtextrule",
-      "match": "[|+*?^$:]|\\{\\d+(?:,\\d*)?\\}"
+      "patterns": [
+        {
+          "name": "keyword.operator.action.hdbtextrule",
+          "match": "=>|->"
+        },
+        {
+          "name": "keyword.operator.hdbtextrule",
+          "match": "[|+*?^$:]|\\{\\d+(?:,\\d*)?\\}"
+        },
+        {
+          "name": "punctuation.terminator.statement.hdbtextrule",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.section.parens.hdbtextrule",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.section.braces.hdbtextrule",
+          "match": "[{}]"
+        }
+      ]
     }
   }
 }
