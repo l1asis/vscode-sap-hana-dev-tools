@@ -94,7 +94,19 @@
         },
         {
           "comment": "HDI design-time artifacts (no CREATE): PROCEDURE \"name\", COLUMN TABLE \"name\", STRUCTURED PRIVILEGE \"name\", RESULT CACHE \"name\", ...",
-          "match": "(?i)^\\s*((?:COLUMN|ROW)\\s+TABLE|TABLE\\s+TYPE|VIRTUAL\\s+(?:TABLE|FUNCTION|PROCEDURE)|APPLICATION\\s+TIME|GRAPH\\s+WORKSPACE|PROJECTION\\s+VIEW|STRUCTURED\\s+(?:PRIVILEGE|FILTER)|RESULT\\s+CACHE|SYSTEM\\s+VERSIONING|SCHEDULER\\s+JOB|REMOTE\\s+TABLE\\s+REPLICA|(?:FUZZY\\s+SEARCH|FULLTEXT|UNIQUE|HASH|INVERTED\\s+(?:HASH|VALUE))\\s+INDEX|INDEX|COLLECTION|LIBRARY|STATISTICS|SEQUENCE|TRIGGER|PROCEDURE|FUNCTION|VIEW|TABLE)\\s+(\\\"(?:[^\\\"]|\\\"\\\")+\\\"(?:\\.\\\"(?:[^\\\"]|\\\"\\\")+\\\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
+          "match": "(?i)^\\s*((?:COLUMN|ROW)\\s+TABLE|TABLE\\s+TYPE|VIRTUAL\\s+(?:TABLE|FUNCTION|PROCEDURE)|APPLICATION\\s+TIME|GRAPH\\s+WORKSPACE|PROJECTION\\s+VIEW|STRUCTURED\\s+(?:PRIVILEGE|FILTER)|RESULT\\s+CACHE|SYSTEM\\s+VERSIONING|SCHEDULER\\s+JOB|REMOTE\\s+TABLE\\s+REPLICA|(?:FUZZY\\s+SEARCH|FULLTEXT|UNIQUE|HASH|BLOCK\\s+RANGE|ADJACENCY|INVERTED\\s+(?:HASH|VALUE))\\s+INDEX|INDEX|COLLECTION|LIBRARY|STATISTICS|SEQUENCE|TRIGGER|PROCEDURE|FUNCTION|VIEW|TABLE)\\s+(\\\"(?:[^\\\"]|\\\"\\\")+\\\"(?:\\.\\\"(?:[^\\\"]|\\\"\\\")+\\\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.ddl.hanasql"
+            },
+            "2": {
+              "name": "entity.name.type.hanasql"
+            }
+          }
+        },
+        {
+          "comment": "HDI headerless Fabric Virtual Table: SHARED [SNAPSHOT] REPLICA [PAGE|COLUMN LOADABLE] ON \"VT\"",
+          "match": "(?i)^\\s*(SHARED(?:\\s+SNAPSHOT)?\\s+REPLICA(?:\\s+(?:PAGE|COLUMN)\\s+LOADABLE)?\\s+ON)\\s+(\"(?:[^\"]|\"\")+\"(?:\\.\"(?:[^\"]|\"\")+\")?|[A-Za-z_#$][\\w#$]*(?:\\.[A-Za-z_#$][\\w#$]*)?)",
           "captures": {
             "1": {
               "name": "keyword.control.ddl.hanasql"
@@ -274,7 +286,7 @@
         },
         {
           "name": "keyword.other.clause.hanasql",
-          "match": "(?i)\\b(?:SIMILARITY\\s+FUNCTION|BUILD\\s+CONFIGURATION|SEARCH\\s+CONFIGURATION|JSON\\s+SCHEMA|VERTEX\\s+TABLE|EDGE\\s+TABLE|WITH\\s+(?:DYNAMIC|STATIC)\\s+CACHE|NO\\s+CACHE|SIBLINGS?\\s+ORDER\\s+BY|START\\s+WHERE|MULTIPARENT(?:\\s+(?:ERROR|LEAVES))?|ORPHAN\\s+(?:IGNORE|ERROR|ADOPT|ROOT)|CYCLE\\s+(?:BREAKUP|ERROR)|LOAD\\s+(?:BULK|INCREMENTAL)|RETAIN\\s+NULLS|WITH\\s+SUBTOTAL|WITH\\s+BALANCE|WITH\\s+NOT\\s+MATCHED|WITH\\s+TOTAL|SERIES\\s+KEY|PERIOD\\s+FOR\\s+SERIES|EQUIDISTANT(?:\\s+PIECEWISE)?|NOT\\s+EQUIDISTANT|MISSING\\s+ELEMENTS\\s+(?:NOT\\s+)?ALLOWED|SERIES\\s+REORGANIZE|CLUSTER\\s+BY|WITH\\s+SQL\\s+STATISTICS\\s+INTO|EXPORT\\s+INTO\\s+RDF\\s+FILE|IMPORT\\s+FROM\\s+RDF\\s+FILE|CANCEL\\s+ASYNC\\s+CALL|MEMBER\\s+OF)\\b"
+          "match": "(?i)\\b(?:SIMILARITY\\s+FUNCTION|BUILD\\s+CONFIGURATION|SEARCH\\s+CONFIGURATION|JSON\\s+SCHEMA|VERTEX\\s+TABLE|EDGE\\s+TABLE|WITH\\s+(?:DYNAMIC|STATIC)\\s+CACHE|NO\\s+CACHE|SIBLINGS?\\s+ORDER\\s+BY|START\\s+WHERE|MULTIPARENT(?:\\s+(?:ERROR|LEAVES))?|ORPHAN\\s+(?:IGNORE|ERROR|ADOPT|ROOT)|CYCLE\\s+(?:BREAKUP|ERROR)|LOAD\\s+(?:BULK|INCREMENTAL)|RETAIN\\s+NULLS|WITH\\s+SUBTOTAL|WITH\\s+BALANCE|WITH\\s+NOT\\s+MATCHED|WITH\\s+TOTAL|SHARED\\s+(?:SNAPSHOT\\s+)?REPLICA|SNAPSHOT\\s+REPLICA|NOT\\s+SHARED|(?:PAGE|COLUMN)\\s+LOADABLE|SERIES\\s+KEY|PERIOD\\s+FOR\\s+SERIES|EQUIDISTANT(?:\\s+PIECEWISE)?|NOT\\s+EQUIDISTANT|MISSING\\s+ELEMENTS\\s+(?:NOT\\s+)?ALLOWED|SERIES\\s+REORGANIZE|CLUSTER\\s+BY|WITH\\s+SQL\\s+STATISTICS\\s+INTO|EXPORT\\s+INTO\\s+RDF\\s+FILE|IMPORT\\s+FROM\\s+RDF\\s+FILE|CANCEL\\s+ASYNC\\s+CALL|MEMBER\\s+OF)\\b"
         }
       ]
     }

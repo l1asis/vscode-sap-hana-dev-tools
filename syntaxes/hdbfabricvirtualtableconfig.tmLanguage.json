@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Fabric Virtual Table Configuration (.hdbfabricvirtualtableconfig)",
+  "scopeName": "source.hdbfabricvirtualtableconfig",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbfabricvirtualtableconfig",
+      "match": "\"(?:target|schema|object|package|remote|database|revalidate|logical_schema)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbfabricvirtualtableconfig",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbfabricvirtualtableconfig",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbfabricvirtualtableconfig",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbfabricvirtualtableconfig",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbfabricvirtualtableconfig",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbfabricvirtualtableconfig",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbfabricvirtualtableconfig",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbfabricvirtualtableconfig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbfabricvirtualtableconfig",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbfabricvirtualtableconfig",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

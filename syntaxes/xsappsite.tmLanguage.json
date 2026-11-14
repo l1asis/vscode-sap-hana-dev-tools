@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA XS Application Site (.xsappsite)",
+  "scopeName": "source.xsappsite",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.xsappsite",
+      "match": "\"(?:id|title|description|theme|catalogs|groups|tiles|personalization)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.xsappsite",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.xsappsite",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.xsappsite",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.xsappsite",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.xsappsite",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsappsite",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsappsite",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.xsappsite",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.xsappsite",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsappsite",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

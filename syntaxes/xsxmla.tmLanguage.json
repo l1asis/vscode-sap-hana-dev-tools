@@ -1,0 +1,143 @@
+{
+  "name": "SAP HANA XMLA Service (.xsxmla)",
+  "scopeName": "source.xsxmla",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "include": "#service"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "#punctuation"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.xsxmla",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.xsxmla",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "patterns": [
+        {
+          "name": "entity.name.type.object.xsxmla",
+          "match": "\"[^\"\\n]*::[^\"\\n]*\""
+        },
+        {
+          "name": "string.quoted.double.xsxmla",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.xsxmla",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.xsxmla",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.xsxmla",
+              "match": "\\\\.|''"
+            }
+          ]
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.xsxmla",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "service": {
+      "patterns": [
+        {
+          "match": "(?i)\\b(service)\\s+(namespace)\\b",
+          "captures": {
+            "1": {
+              "name": "storage.type.service.xsxmla"
+            },
+            "2": {
+              "name": "keyword.other.xsxmla"
+            }
+          }
+        },
+        {
+          "name": "storage.type.service.xsxmla",
+          "match": "(?i)\\bservice\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "constant.language.xsxmla",
+          "match": "\\b(?:true|false|null)\\b"
+        },
+        {
+          "name": "keyword.control.xsxmla",
+          "match": "(?i)\\b(?:namespace|as|analytic|calculation|cube|dimension|measure|metadata|with|without|enable|disable|default|null)\\b"
+        }
+      ]
+    },
+    "assignment": {
+      "match": "\\b([A-Za-z_]\\w*)\\b(?=\\s*=)",
+      "name": "support.type.property-name.xsxmla"
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.statement.xsxmla",
+          "match": ";"
+        },
+        {
+          "name": "punctuation.separator.comma.xsxmla",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.xsxmla",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.braces.xsxmla",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.section.parens.xsxmla",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.accessor.xsxmla",
+          "match": "\\."
+        },
+        {
+          "name": "keyword.operator.assignment.xsxmla",
+          "match": "="
+        }
+      ]
+    }
+  }
+}

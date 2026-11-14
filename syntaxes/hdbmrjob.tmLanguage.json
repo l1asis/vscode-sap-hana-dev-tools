@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Hadoop MapReduce Job (.hdbmrjob)",
+  "scopeName": "source.hdbmrjob",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbmrjob",
+      "match": "\"(?:plugin_name|name|jar|class_name|remote_source|location|parameters)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbmrjob",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbmrjob",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbmrjob",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbmrjob",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbmrjob",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbmrjob",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbmrjob",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbmrjob",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbmrjob",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbmrjob",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

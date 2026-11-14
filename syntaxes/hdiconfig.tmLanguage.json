@@ -7,7 +7,7 @@
     },
     {
       "name": "entity.name.type.hdiconfig",
-      "match": "\"hdb[a-z]+\"(?=\\s*:)"
+      "match": "\"(?:hdb[a-z]+|properties|tags|csv|txt|jar)\"(?=\\s*:)"
     },
     {
       "name": "support.type.property-name.json.hdiconfig",

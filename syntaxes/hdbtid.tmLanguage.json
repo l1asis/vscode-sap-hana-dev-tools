@@ -1,0 +1,162 @@
+{
+  "name": "SAP HANA Table Import Data (.hdbtid, XS Classic)",
+  "scopeName": "source.hdbtid",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "#generic-key"
+    },
+    {
+      "include": "#struct"
+    },
+    {
+      "include": "#values"
+    },
+    {
+      "name": "punctuation.terminator.statement.hdbtid",
+      "match": ";"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbtid",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbtid",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbtid",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtid",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbtid",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbtid",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbtid",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbtid",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbtid",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbtid",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(import|table|cdstable|hdbtable|schema|file|columns|keys|header|useHeaderNames|delimField|delimEnclosing|distinguishEmptyFromNull)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbtid"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbtid"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbtid"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#struct"
+        },
+        {
+          "include": "#values"
+        }
+      ]
+    },
+    "generic-key": {
+      "match": "\\b([A-Za-z_]\\w*)\\b\\s*(=)",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.hdbtid"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbtid"
+        }
+      }
+    },
+    "struct": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.begin.hdbtid"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.end.hdbtid"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#assignment"
+        },
+        {
+          "include": "#generic-key"
+        },
+        {
+          "include": "#values"
+        },
+        {
+          "name": "punctuation.terminator.statement.hdbtid",
+          "match": ";"
+        }
+      ]
+    }
+  }
+}

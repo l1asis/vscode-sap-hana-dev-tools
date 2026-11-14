@@ -1,0 +1,73 @@
+{
+  "name": "SAP HANA HDI Virtual Package (.hdbvirtualpackage, .hdbvirtualpackagehadoop, .hdbvirtualpackagesparksql)",
+  "scopeName": "source.hdbvirtualpackage",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "support.type.property-name.json.hdbvirtualpackage",
+      "match": "\"(?:plugin_name|plugin_version|adapter_type|location|remote_source|schema|package|name|file|jar|class_name)\"(?=\\s*:)"
+    },
+    {
+      "name": "support.type.property-name.json",
+      "match": "\"(?:[^\"\\\\]|\\\\.)*\"(?=\\s*:)"
+    },
+    {
+      "include": "#string"
+    },
+    {
+      "include": "#number"
+    },
+    {
+      "name": "constant.language.json.hdbvirtualpackage",
+      "match": "\\b(?:true|false|null)\\b"
+    },
+    {
+      "name": "punctuation.separator.key-value.hdbvirtualpackage",
+      "match": ":"
+    },
+    {
+      "name": "punctuation.separator.comma.hdbvirtualpackage",
+      "match": ","
+    },
+    {
+      "name": "punctuation.section.braces.hdbvirtualpackage",
+      "match": "[{}]"
+    },
+    {
+      "name": "punctuation.section.brackets.hdbvirtualpackage",
+      "match": "[\\[\\]]"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbvirtualpackage",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbvirtualpackage",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbvirtualpackage",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbvirtualpackage",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbvirtualpackage",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    }
+  }
+}

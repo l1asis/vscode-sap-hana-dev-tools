@@ -1,0 +1,162 @@
+{
+  "name": "SAP HANA Table Import Schema (.hdbtim, XS Classic)",
+  "scopeName": "source.hdbtim",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#assignment"
+    },
+    {
+      "include": "#generic-key"
+    },
+    {
+      "include": "#struct"
+    },
+    {
+      "include": "#values"
+    },
+    {
+      "name": "punctuation.terminator.statement.hdbtim",
+      "match": ";"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.hdbtim",
+          "match": "\\/\\/.*$"
+        },
+        {
+          "name": "comment.block.hdbtim",
+          "begin": "\\/\\*",
+          "end": "\\*\\/"
+        }
+      ]
+    },
+    "string": {
+      "name": "string.quoted.double.hdbtim",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtim",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "number": {
+      "name": "constant.numeric.hdbtim",
+      "match": "(?<![\\w.])-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?\\b"
+    },
+    "boolean": {
+      "name": "constant.language.boolean.hdbtim",
+      "match": "\\b(?:true|false)\\b"
+    },
+    "values": {
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#string"
+        },
+        {
+          "include": "#number"
+        },
+        {
+          "include": "#boolean"
+        },
+        {
+          "name": "constant.other.enum.hdbtim",
+          "match": "\\b[A-Za-z_][\\w]*\\b"
+        },
+        {
+          "name": "punctuation.separator.comma.hdbtim",
+          "match": ","
+        },
+        {
+          "name": "punctuation.separator.colon.hdbtim",
+          "match": ":"
+        },
+        {
+          "name": "punctuation.section.brackets.hdbtim",
+          "match": "[\\[\\]]"
+        }
+      ]
+    },
+    "assignment": {
+      "begin": "\\b(import|table|cdstable|hdbtable|schema|file|columns|keys)\\b\\s*(=)",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbtim"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbtim"
+        }
+      },
+      "end": "(;)",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.terminator.statement.hdbtim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#struct"
+        },
+        {
+          "include": "#values"
+        }
+      ]
+    },
+    "generic-key": {
+      "match": "\\b([A-Za-z_]\\w*)\\b\\s*(=)",
+      "captures": {
+        "1": {
+          "name": "support.type.property-name.hdbtim"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbtim"
+        }
+      }
+    },
+    "struct": {
+      "begin": "\\{",
+      "beginCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.begin.hdbtim"
+        }
+      },
+      "end": "\\}",
+      "endCaptures": {
+        "0": {
+          "name": "punctuation.section.braces.end.hdbtim"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#comments"
+        },
+        {
+          "include": "#assignment"
+        },
+        {
+          "include": "#generic-key"
+        },
+        {
+          "include": "#values"
+        },
+        {
+          "name": "punctuation.terminator.statement.hdbtim",
+          "match": ";"
+        }
+      ]
+    }
+  }
+}
