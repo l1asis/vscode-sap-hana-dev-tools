@@ -594,10 +594,16 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   // 6. package.json registration checks (and explicit exclusions)
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')) as {
     contributes: {
-      languages: Array<{ id: string; extensions: string[] }>;
+      languages: Array<{ id: string; extensions: string[]; icon?: { light: string; dark: string } }>;
       grammars: Array<{ language: string; scopeName: string }>;
     };
   };
+  for (const lang of pkg.contributes.languages) {
+    if (lang.icon) {
+      assert.ok(fs.existsSync(path.join(rootDir, lang.icon.light)), `Missing light icon for ${lang.id}: ${lang.icon.light}`);
+      assert.ok(fs.existsSync(path.join(rootDir, lang.icon.dark)), `Missing dark icon for ${lang.id}: ${lang.icon.dark}`);
+    }
+  }
   const allExt = new Set(pkg.contributes.languages.flatMap((l) => l.extensions));
   for (const expected of [
     '.hdbcollectionindex', '.hdbcollectionadjindex', '.hdbfabricvirtualtable',

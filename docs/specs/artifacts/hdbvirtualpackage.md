@@ -12,8 +12,8 @@
 | Extension | Language ID | Scope | Build Plug-in | Target Platforms |
 | :--- | :--- | :--- | :--- | :--- |
 | `.hdbvirtualpackage` | `hdbvirtualpackage` | `source.hdbvirtualpackage` | Virtual Package family (`access` target schema) | `[XSA]` `[HDI]` |
-| `.hdbvirtualpackagehadoop` | `hdbvirtualpackage` | `source.hdbvirtualpackage` | `com.sap.hana.di.virtualpackage.hadoop` | `[XSA]` `[HDI]` |
-| `.hdbvirtualpackagesparksql` | `hdbvirtualpackage` | `source.hdbvirtualpackage` | `com.sap.hana.di.virtualpackage.sparksql` | `[XSA]` `[HDI]` |
+| `.hdbvirtualpackagehadoop` | `hdbvirtualpackagehadoop` | `source.hdbvirtualpackage` | `com.sap.hana.di.virtualpackage.hadoop` | `[XSA]` `[HDI]` |
+| `.hdbvirtualpackagesparksql` | `hdbvirtualpackagesparksql` | `source.hdbvirtualpackage` | `com.sap.hana.di.virtualpackage.sparksql` | `[XSA]` `[HDI]` |
 | `.hdbmrjob` | `hdbmrjob` | `source.hdbmrjob` | `com.sap.hana.di.virtualfunctionpackage.hadoop` *(deprecated)* | `[XSA]` `[HDI]` |
 
 ---

@@ -13,7 +13,7 @@
 | Attribute | Value |
 | :--- | :--- |
 | **File Extensions** | `.hdbcollectionindex`, `.hdbcollectionadjindex` |
-| **VS Code Language ID** | `hdbcollection` |
+| **VS Code Language ID** | `hdbcollectionindex`, `hdbcollectionadjindex` |
 | **TextMate `scopeName`** | `source.hanasql` |
 | **Build Plug-ins** | `com.sap.hana.di.collection.index`, `com.sap.hana.di.collection.adjacency_index` |
 | **Target Platforms** | `[CLOUD]` (SAP HDI Cloud feature version 1006+) |

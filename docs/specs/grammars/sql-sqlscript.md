@@ -18,7 +18,7 @@
 | `.hdbview` (HDI DDL), `.hdbresultcache` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `VIEW` and `RESULT CACHE` DDL |
 | `.hdbsequence` (HDI DDL), `.hdbindex`, `.hdbfulltextindex`, `.hdbconstraint`, `.hdbstatistics` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `SEQUENCE`, `INDEX`, `FULLTEXT INDEX`, `CONSTRAINT`, `STATISTICS` DDL |
 | `.hdbtabletype`, `.hdbstructuredprivilege`, `.hdbgraphworkspace`, `.hdbcollection`, `.hdbschedulerjob` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI `TYPE`, `STRUCTURED PRIVILEGE`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB` DDL |
-| `.hdbcollectionindex`, `.hdbcollectionadjindex` | `hdbcollection` | `source.hanasql` | `[CLOUD]` | Headerless Document Store collection index and adjacency index DDL (`HASH INDEX` / `BLOCK RANGE INDEX` / `ADJACENCY INDEX`) |
+| `.hdbcollectionindex`, `.hdbcollectionadjindex` | `hdbcollectionindex`, `hdbcollectionadjindex` | `source.hanasql` | `[CLOUD]` | Headerless Document Store collection index and adjacency index DDL (`HASH INDEX` / `BLOCK RANGE INDEX` / `ADJACENCY INDEX`) |
 | `.hdbfabricvirtualtable` | `hdbfabricvirtualtable` | `source.hanasql` | `[CLOUD]` | Headerless Fabric Virtual Table shared replica DDL (`SHARED [SNAPSHOT] REPLICA [PAGE\|COLUMN LOADABLE] ON`) |
 | `.hdbafllangprocedure`, `.hdbvirtualfunction`, `.hdbvirtualprocedure`, `.hdbsearchruleset` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI AFL, Smart Data Integration, and Search Ruleset DDL |
 
