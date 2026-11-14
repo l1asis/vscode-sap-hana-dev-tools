@@ -45,10 +45,26 @@ Thank you for helping improve SAP HANA language support in VS Code! This documen
 
 ## Commit Message Convention
 
-We follow **Conventional Commits** for clean changelog generation:
+We follow **Conventional Commits** (`<type>(<optional scope>): <description>`) for clean changelog generation. Emojis are completely optional, but welcome—if you use them, place them after the colon so automated changelog parsers can still read the commit type.
 
-* `feat(grammar): add highlighting for ...`
+**Allowed Commit Types:**
+
+* `feat`: ✨ A new feature
+* `fix`: 🐛 A bug fix
+* `docs`: 📝 Documentation-only changes
+* `style`: 🎨 Formatting, missing semi-colons, whitespace, etc. (no code logic changes)
+* `refactor`: ♻️ A code change that neither fixes a bug nor adds a feature
+* `perf`: ⚡ A code change that improves performance
+* `test`: ✅ Adding missing tests or correcting existing tests
+* `build`: 📦 Changes that affect the build system or external dependencies
+* `ci`: 👷 Changes to CI configuration files and scripts
+* `chore`: 🔧 Other changes that don't modify `src` or `test` files
+* `revert`: ⏪ Reverts a previous commit
+
+**Examples:**
+
+* `feat(grammar): ✨ add highlighting for ...`
 * `feat(formatter): support ...`
-* `fix(formatter): preserve trailing semicolon behavior in ...`
-* `docs(specs): distill ...`
-* `test(formatter): add regression fixture for ...`
+* `fix(formatter): 🐛 preserve trailing semicolon behavior in ...`
+* `docs(specs): 📝 distill ...`
+* `test(formatter): ✅ add regression fixture for ...`
