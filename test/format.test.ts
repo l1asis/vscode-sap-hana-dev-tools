@@ -117,3 +117,19 @@ test('SQLScript library calls and ALTER SYSTEM statements (Administration Guide 
   assert.match(f('alter system clear traces;'), /^ALTER SYSTEM CLEAR TRACES;/);
   assert.match(f('select source, service from t'), /source,\n {4}service/); // identifiers keep their case
 });
+
+test('headerless HDI collection indexes and fabric virtual tables format safely', () => {
+  const hIdx = f('hash index "CUSTOMERS_LASTNAME" on "CUSTOMERS"($."lastName")', { trailingSemicolon: 'add' });
+  assert.strictEqual(hIdx, 'HASH INDEX "CUSTOMERS_LASTNAME" ON "CUSTOMERS"($."lastName")\n');
+
+  const adjIdx = f('adjacency index "GRAPH_ADJ" on "GRAPH_COL" (ID "id", SOURCE "source", TARGET "target", TYPE "type")', { trailingSemicolon: 'add' });
+  assert.ok(adjIdx.startsWith('ADJACENCY INDEX "GRAPH_ADJ" ON "GRAPH_COL"'));
+  assert.ok(!adjIdx.trimEnd().endsWith(';'));
+
+  const fvt = f('shared snapshot replica page loadable on "MY_VIRTUAL_TABLE"', { trailingSemicolon: 'add' });
+  assert.strictEqual(fvt, 'SHARED SNAPSHOT REPLICA PAGE LOADABLE ON "MY_VIRTUAL_TABLE"\n');
+
+  // Negative check: non-HDI root statements still receive semicolons under trailingSemicolon: "add"
+  const regularSql = f('select "source" from "MY_TABLE"', { trailingSemicolon: 'add' });
+  assert.ok(regularSql.trimEnd().endsWith(';'));
+});

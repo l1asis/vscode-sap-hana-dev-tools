@@ -515,6 +515,107 @@ test('Phase 1 SQL, SQLScript, Vector, Spatial, Graph, Hierarchy, JSON & Catalogs
   }
 });
 
+test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', () => {
+  // 1. Headerless HDI DDL (.hdbcollectionindex, .hdbcollectionadjindex, .hdbfabricvirtualtable)
+  const hdiHash = tokenize('source.hanasql', sample('hdi/CUSTOMERS_LASTNAME.hdbcollectionindex'));
+  check(hdiHash, 'HASH INDEX', 'keyword.control.ddl.hanasql');
+  check(hdiHash, '"CUSTOMERS_LASTNAME"', 'entity.name.type.hanasql');
+  check(hdiHash, 'ON', 'keyword.other.dml.hanasql');
+
+  const hdiBlock = tokenize('source.hanasql', 'BLOCK RANGE INDEX "ORDERS_DT_IDX" ON "ORDERS"($."date_of_purchase")');
+  check(hdiBlock, 'BLOCK RANGE INDEX', 'keyword.control.ddl.hanasql');
+  check(hdiBlock, '"ORDERS_DT_IDX"', 'entity.name.type.hanasql');
+
+  const hdiAdj = tokenize('source.hanasql', sample('hdi/GRAPH_COLLECTION_ADJ.hdbcollectionadjindex'));
+  check(hdiAdj, 'ADJACENCY INDEX', 'keyword.control.ddl.hanasql');
+  check(hdiAdj, '"GRAPH_COLLECTION_ADJ"', 'entity.name.type.hanasql');
+  check(hdiAdj, 'ON', 'keyword.other.dml.hanasql');
+  assert.ok(!has(hdiAdj, '"GRAPH_COLLECTION"', 'keyword.control.ddl.hanasql'));
+
+  const hdiFabric = tokenize('source.hanasql', sample('hdi/MY_FABRIC_VT.hdbfabricvirtualtable'));
+  check(hdiFabric, 'SHARED SNAPSHOT REPLICA PAGE LOADABLE ON', 'keyword.control.ddl.hanasql');
+  check(hdiFabric, '"MY_VIRTUAL_TABLE"', 'entity.name.type.hanasql');
+  assert.ok(!has(hdiFabric, '"MY_VIRTUAL_TABLE"', 'keyword.control.ddl.hanasql'));
+
+  // 2. .hdiconfig recognizes "properties" and "tags" as valid plugin keys
+  const tHdiCfg = tokenize('source.hdiconfig', sample('hdi/.hdiconfig'));
+  check(tHdiCfg, '"properties"', 'entity.name.type.hdiconfig');
+  check(tHdiCfg, '"tags"', 'entity.name.type.hdiconfig');
+  check(tHdiCfg, '"hdbcollectionadjindex"', 'entity.name.type.hdiconfig');
+  check(tHdiCfg, '"hdbfabricvirtualtable"', 'entity.name.type.hdiconfig');
+  check(tHdiCfg, '"plugin_name"', 'support.type.property-name.json.hdiconfig');
+  assert.ok(!has(tHdiCfg, '"plugin_name"', 'entity.name.type.hdiconfig'));
+
+  // 3. HDI JSON (jsonc) artifacts
+  const tFvtCfg = tokenize('source.hdbfabricvirtualtableconfig', sample('hdi/MY_FABRIC_VT.hdbfabricvirtualtableconfig'));
+  check(tFvtCfg, '"target"', 'support.type.property-name.json.hdbfabricvirtualtableconfig');
+  check(tFvtCfg, '"remote"', 'support.type.property-name.json.hdbfabricvirtualtableconfig');
+  assert.ok(!has(tFvtCfg, '"MY_VIRTUAL_TABLE"', 'support.type.property-name.json.hdbfabricvirtualtableconfig'));
+
+  const tVpHadoop = tokenize('source.hdbvirtualpackage', sample('hdi/hadoop_analytics.hdbvirtualpackagehadoop'));
+  check(tVpHadoop, '// Hadoop Virtual Package configuration', 'comment.line.double-slash.hdbvirtualpackage');
+  check(tVpHadoop, '"adapter_type"', 'support.type.property-name.json.hdbvirtualpackage');
+  check(tVpHadoop, '"location"', 'support.type.property-name.json.hdbvirtualpackage');
+
+  const tVpSpark = tokenize('source.hdbvirtualpackage', sample('hdi/sparksql_analytics.hdbvirtualpackagesparksql'));
+  check(tVpSpark, '// SparkSQL Virtual Package configuration', 'comment.line.double-slash.hdbvirtualpackage');
+  check(tVpSpark, '"remote_source"', 'support.type.property-name.json.hdbvirtualpackage');
+
+  const tVpBase = tokenize('source.hdbvirtualpackage', sample('hdi/custom_pkg.hdbvirtualpackage'));
+  check(tVpBase, '"schema"', 'support.type.property-name.json.hdbvirtualpackage');
+
+  const tMrj = tokenize('source.hdbmrjob', sample('hdi/legacy_mrjob.hdbmrjob'));
+  check(tMrj, '"class_name"', 'support.type.property-name.json.hdbmrjob');
+  assert.ok(!has(tMrj, '"com.example.hana.WordCountJob"', 'support.type.property-name.json.hdbmrjob'));
+
+  // 4. XS Classic JSON (.xsappsite)
+  const tSite = tokenize('source.xsappsite', sample('launchpad.xsappsite'));
+  check(tSite, '"theme"', 'support.type.property-name.json.xsappsite');
+  check(tSite, '"personalization"', 'support.type.property-name.json.xsappsite');
+  check(tSite, 'true', 'constant.language.json.xsappsite');
+
+  // 5. Classic Config / Service Definitions (.xsxmla, .hdbtid, .hdbtim)
+  const tXmla = tokenize('source.xsxmla', sample('sales.xsxmla'));
+  check(tXmla, 'service', 'storage.type.service.xsxmla');
+  check(tXmla, 'namespace', 'keyword.other.xsxmla');
+  check(tXmla, '"sap.hana.example::CA_SALES"', 'entity.name.type.object.xsxmla');
+  check(tXmla, 'as', 'keyword.control.xsxmla');
+  assert.ok(!has(tXmla, '"SalesCube"', 'entity.name.type.object.xsxmla'));
+
+  const tTid = tokenize('source.hdbtid', sample('legacy_data.hdbtid'));
+  check(tTid, 'import', 'support.type.property-name.hdbtid');
+  check(tTid, 'table', 'support.type.property-name.hdbtid');
+  check(tTid, 'file', 'support.type.property-name.hdbtid');
+
+  const tTim = tokenize('source.hdbtim', sample('legacy_schema.hdbtim'));
+  check(tTim, 'import', 'support.type.property-name.hdbtim');
+  check(tTim, 'columns', 'support.type.property-name.hdbtim');
+
+  // 6. package.json registration checks (and explicit exclusions)
+  const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')) as {
+    contributes: {
+      languages: Array<{ id: string; extensions: string[] }>;
+      grammars: Array<{ language: string; scopeName: string }>;
+    };
+  };
+  const allExt = new Set(pkg.contributes.languages.flatMap((l) => l.extensions));
+  for (const expected of [
+    '.hdbcollectionindex', '.hdbcollectionadjindex', '.hdbfabricvirtualtable',
+    '.hdbvirtualpackagehadoop', '.hdbvirtualpackagesparksql', '.hdbvirtualpackage',
+    '.hdbmrjob', '.hdbfabricvirtualtableconfig', '.xsappsite',
+    '.hdbdecisiontable', '.xswidget', '.xsxmla', '.hdbtid', '.hdbtim',
+  ]) {
+    assert.ok(allExt.has(expected), `Missing extension ${expected} in package.json`);
+  }
+  for (const excluded of ['.properties', '.csv', '.txt', '.jar', '.hdbtabledataprops', '.hdbtabledatatags']) {
+    assert.ok(!allExt.has(excluded), `Excluded extension ${excluded} must NOT be registered in package.json`);
+  }
+  const grammarMap = new Map(pkg.contributes.grammars.map((g) => [g.language, g.scopeName]));
+  assert.strictEqual(grammarMap.get('hdbdecisiontable'), 'text.xml.hana');
+  assert.strictEqual(grammarMap.get('xswidget'), 'text.xml.hana');
+  assert.strictEqual(grammarMap.get('hdbfabricvirtualtable'), 'source.hanasql');
+});
+
 if (process.env.DUMP && process.env.FILE) {
   const dumpScope = process.env.DUMP;
   const dumpFile = process.env.FILE;
