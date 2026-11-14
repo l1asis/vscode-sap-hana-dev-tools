@@ -29,10 +29,9 @@ const fmt = (name, arr) => {
   let lines = [], cur = '  ';
   for (const w of a) { const piece = `'${w}', `; if ((cur + piece).length > 100) { lines.push(cur.trimEnd()); cur = '  '; } cur += piece; }
   lines.push(cur.trimEnd());
-  return `const ${name} = new Set([\n${lines.join('\n')}\n]);\n`;
+  return `export const ${name}: ReadonlySet<string> = new Set([\n${lines.join('\n')}\n]);\n`;
 };
-let out = `'use strict';
-// Generated from syntaxes/hanasql.tmLanguage.json and the SAP HANA SQL Reference
+let out = `// Generated from syntaxes/hanasql.tmLanguage.json and the SAP HANA SQL Reference
 // (section "Reserved Words"). Keep in sync with the grammar when you add keywords.
 
 `;
@@ -42,7 +41,6 @@ out += fmt('TYPES', [...TYPES]) + '\n';
 out += fmt('RESERVED', RESERVED) + '\n';
 out += fmt('PROTECTED', [...RESERVED, ...PROTECT_EXTRA, ...KEYWORDS, ...FUNCTIONS, ...TYPES]) + '\n';
 out += fmt('SYSTEM_WORDS', ["ALTER", "ADD", "REMOVE", "ENABLE", "DISABLE", "CLEAR", "CREATE", "LOAD", "SAVE", "START", "STOP", "RECLAIM", "RECOMPILE", "RECONFIGURE", "REFRESH", "RESET", "APPLICATION", "ENCRYPTION", "AUDIT", "LOG", "CACHE", "COLUMN", "JOIN", "DATA", "STATISTICS", "INIFILE", "CONTENT", "HISTORY", "RESULT", "SQL", "PLAN", "TIMEZONE", "TRACES", "PERFTRACE", "LOB", "SPACE", "ENTRY", "SERVICE", "MONITORING", "VIEW", "SAVEPOINT", "TABLE", "PLACEMENT", "CONFIGURATION", "WAITGRAPH", "RUNTIMEDUMP", "KERNEL", "PROFILER", "ABSTRACT", "CAPTURE", "APPLY", "ASYNCHRONOUS", "CONSISTENCY", "CHECK", "ALL", "THREADS", "LOCATION", "FILE", "SECTIONS", "TRACEPROFILE", "PROFILE"]) + '\n';
-out += fmt('STATEMENT_NOUNS', ["ANALYTIC", "AUDIT", "AUTOCOMMIT", "CERTIFICATE", "CLASS", "CREDENTIAL", "DATABASE", "DDL", "DELTA", "EXCHANGER", "FILTER", "FUNCTION", "FUZZY", "GRAPH", "GROUP", "INDEX", "JOB", "JWT", "KEY", "LDAP", "LIBRARY", "MAPPING", "MODEL", "POLICY", "PRIVILEGE", "PROCEDURE", "PROJECTION", "PROVIDER", "PSE", "PUBLIC", "REMOTE", "ROLEGROUP", "SAML", "SCHEDULER", "SCHEMA", "SEARCH", "SESSION", "SOURCE", "STATISTICS", "STRUCTURED", "SUBSCRIPTION", "SYNONYM", "TABLE", "TOKEN", "TRANSACTION", "USERGROUP", "VECTOR", "VIEW", "VIRTUAL", "WORKLOAD", "WORKSPACE", "X509"]) + '\n';
-out += `module.exports = { KEYWORDS, FUNCTIONS, TYPES, RESERVED, PROTECTED, SYSTEM_WORDS, STATEMENT_NOUNS };\n`;
-fs.writeFileSync(require('path').join(__dirname, '..', 'src', 'formatter', 'keywords.js'), out);
+out += fmt('STATEMENT_NOUNS', ["ANALYTIC", "AUDIT", "AUTOCOMMIT", "CERTIFICATE", "CLASS", "CREDENTIAL", "DATABASE", "DDL", "DELTA", "EXCHANGER", "FILTER", "FUNCTION", "FUZZY", "GRAPH", "GROUP", "INDEX", "JOB", "JWT", "KEY", "LDAP", "LIBRARY", "MAPPING", "MODEL", "POLICY", "PRIVILEGE", "PROCEDURE", "PROJECTION", "PROVIDER", "PSE", "PUBLIC", "REMOTE", "ROLEGROUP", "SAML", "SCHEDULER", "SCHEMA", "SEARCH", "SESSION", "SOURCE", "STATISTICS", "STRUCTURED", "SUBSCRIPTION", "SYNONYM", "TABLE", "TOKEN", "TRANSACTION", "USERGROUP", "VECTOR", "VIEW", "VIRTUAL", "WORKLOAD", "WORKSPACE", "X509"]);
+fs.writeFileSync(require('path').join(__dirname, '..', 'src', 'formatter', 'keywords.ts'), out);
 console.log(KEYWORDS.size, FUNCTIONS.size, TYPES.size);

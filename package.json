@@ -1684,7 +1684,7 @@
           "default": 0,
           "minimum": 0,
           "maximum": 16,
-          "markdownDescription": "Spaces per indentation level. `0` uses the editor\u0027s `editor.tabSize`."
+          "markdownDescription": "Spaces per indentation level. `0` uses the editor's `editor.tabSize`."
         },
         "hanasql.format.indentStyle": {
           "type": "string",
@@ -1889,7 +1889,7 @@
             "crlf"
           ],
           "default": "auto",
-          "markdownDescription": "Line ending. `auto` keeps the document\u0027s."
+          "markdownDescription": "Line ending. `auto` keeps the document's."
         },
         "hanasql.format.identifierQuotes": {
           "type": "string",
@@ -1918,7 +1918,7 @@
       }
     }
   },
-  "main": "./src/extension.js",
+  "main": "./out/src/extension.js",
   "activationEvents": [
     "onLanguage:hanasql",
     "onLanguage:hdbprocedure",
@@ -2003,7 +2003,10 @@
     "onLanguage:hdbafllangprocedure"
   ],
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test out/test/*.test.js",
     "build:grammars": "node scripts/build-grammars.js",
     "build:keywords": "node scripts/build-keywords.js"
   },
@@ -2020,5 +2023,10 @@
     "hdbcds",
     "hdbprocedure",
     "formatter"
-  ]
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^7.0.2"
+  }
 }

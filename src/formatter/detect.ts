@@ -1,6 +1,4 @@
-'use strict';
-
-const { tokenize } = require('./tokenizer');
+import { tokenize } from './tokenizer';
 
 /**
  * XS Classic design-time files such as .hdbtable, .hdbview, .hdbsequence use a
@@ -8,7 +6,7 @@ const { tokenize } = require('./tokenizer');
  * while the same extensions contain plain SQL DDL in HDI projects.
  * The SQL formatter must leave the former alone.
  */
-function isKeyValueArtifact(text) {
+export function isKeyValueArtifact(text: string): boolean {
   // `//` comments are valid in XS Classic files but unknown to the SQL tokenizer
   const tokens = tokenize(text.replace(/^[ \t]*\/\/.*$/gm, ''));
   let i = tokens.findIndex((t) => t.type !== 'lineComment' && t.type !== 'blockComment');
@@ -17,5 +15,3 @@ function isKeyValueArtifact(text) {
   while (tokens[i] && tokens[i].text === '.' && tokens[i + 1] && tokens[i + 1].type === 'word') i += 2;
   return !!tokens[i] && tokens[i].text === '=';
 }
-
-module.exports = { isKeyValueArtifact };

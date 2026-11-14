@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Lossless-enough tokenizer for SAP HANA SQL / SQLScript.
  *
@@ -13,6 +11,68 @@
  *   start/end offsets into the source text
  */
 
+export type TokenType =
+  | 'word'
+  | 'number'
+  | 'string'
+  | 'qident'
+  | 'var'
+  | 'sysvar'
+  | 'param'
+  | 'op'
+  | 'punct'
+  | 'lineComment'
+  | 'blockComment'
+  | 'other'
+  | 'raw';
+
+export interface BaseToken<T extends TokenType = TokenType> {
+  readonly type: T;
+  readonly text: string;
+  readonly nlBefore: number;
+  readonly wsBefore: boolean;
+  readonly start: number;
+  readonly end: number;
+}
+
+export type WordToken = BaseToken<'word'>;
+export type NumberToken = BaseToken<'number'>;
+export type StringToken = BaseToken<'string'>;
+export type QuotedIdentToken = BaseToken<'qident'>;
+export type VariableToken = BaseToken<'var'>;
+export type SystemVariableToken = BaseToken<'sysvar'>;
+export type ParameterToken = BaseToken<'param'>;
+export type OperatorToken = BaseToken<'op'>;
+export type PunctuationToken = BaseToken<'punct'>;
+export type LineCommentToken = BaseToken<'lineComment'>;
+export type BlockCommentToken = BaseToken<'blockComment'>;
+export type OtherToken = BaseToken<'other'>;
+export type RawToken = BaseToken<'raw'>;
+
+export type CommentToken = LineCommentToken | BlockCommentToken;
+
+export type Token =
+  | WordToken
+  | NumberToken
+  | StringToken
+  | QuotedIdentToken
+  | VariableToken
+  | SystemVariableToken
+  | ParameterToken
+  | OperatorToken
+  | PunctuationToken
+  | LineCommentToken
+  | BlockCommentToken
+  | OtherToken
+  | RawToken;
+
+export type PragmaMode = 'on' | 'off';
+
+export interface PragmaState {
+  mode: PragmaMode;
+  offToken: CommentToken | null;
+}
+
 const WORD_START = /[\p{L}_#$]/u;
 const WORD_PART = /[\p{L}\p{N}_#$]/u;
 const DIGIT = /[0-9]/;
@@ -20,15 +80,15 @@ const DIGIT = /[0-9]/;
 const OFF_RE = /^(?:--|\/\*)\s*hanasql-format\s*:?\s*off\b/i;
 const ON_RE = /^(?:--|\/\*)\s*hanasql-format\s*:?\s*on\b/i;
 
-function tokenize(text) {
-  const tokens = [];
+export function tokenize(text: string): Token[] {
+  const tokens: Token[] = [];
   const n = text.length;
   let i = 0;
   let nl = 0;
   let ws = false;
 
-  const push = (type, start, end) => {
-    tokens.push({ type, text: text.slice(start, end), nlBefore: nl, wsBefore: ws, start, end });
+  const push = <T extends TokenType>(type: T, start: number, end: number): void => {
+    tokens.push({ type, text: text.slice(start, end), nlBefore: nl, wsBefore: ws, start, end } as Token);
     nl = 0;
     ws = false;
   };
@@ -153,7 +213,7 @@ function tokenize(text) {
     if (ch === '?') { push('param', i, i + 1); i++; continue; }
 
     // operators
-    const two = text.substr(i, 2);
+    const two = text.slice(i, i + 2);
     if (two === '||' || two === '<>' || two === '!=' || two === '<=' || two === '>=' || two === '=>') {
       push('op', i, i + 2);
       i += 2;
@@ -171,7 +231,7 @@ function tokenize(text) {
   return collapseFormatOff(tokens, text);
 }
 
-function scanString(text, i) {
+function scanString(text: string, i: number): number {
   const n = text.length;
   let j = i + 1;
   while (j < n) {
@@ -184,35 +244,57 @@ function scanString(text, i) {
   return n;
 }
 
-function isValueEnd(tokens) {
+function isValueEnd(tokens: readonly Token[]): boolean {
   const t = tokens[tokens.length - 1];
   if (!t) return false;
   return t.type === 'word' || t.type === 'qident' || t.type === 'number' || t.text === ')' || t.text === ']';
 }
 
+function isCommentToken(t: Token): t is CommentToken {
+  return t.type === 'lineComment' || t.type === 'blockComment';
+}
+
 /** Replace "-- hanasql-format off" ... "-- hanasql-format on" regions by one raw token. */
-function collapseFormatOff(tokens, text) {
-  const out = [];
+function collapseFormatOff(tokens: readonly Token[], text: string): Token[] {
+  const out: Token[] = [];
+  const pragma: PragmaState = { mode: 'on', offToken: null };
+
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
-    if ((t.type === 'lineComment' || t.type === 'blockComment') && OFF_RE.test(t.text)) {
-      let j = i + 1;
-      while (j < tokens.length && !((tokens[j].type === 'lineComment' || tokens[j].type === 'blockComment') && ON_RE.test(tokens[j].text))) j++;
-      const last = j < tokens.length ? tokens[j] : tokens[tokens.length - 1];
-      out.push({
-        type: 'raw',
-        text: text.slice(t.start, last.end),
-        nlBefore: t.nlBefore,
-        wsBefore: t.wsBefore,
-        start: t.start,
-        end: last.end,
-      });
-      i = j;
+    if (pragma.mode === 'off' && pragma.offToken !== null) {
+      if ((isCommentToken(t) && ON_RE.test(t.text)) || i === tokens.length - 1) {
+        out.push({
+          type: 'raw',
+          text: text.slice(pragma.offToken.start, t.end),
+          nlBefore: pragma.offToken.nlBefore,
+          wsBefore: pragma.offToken.wsBefore,
+          start: pragma.offToken.start,
+          end: t.end,
+        });
+        pragma.mode = 'on';
+        pragma.offToken = null;
+      }
       continue;
     }
+
+    if (isCommentToken(t) && OFF_RE.test(t.text)) {
+      if (i === tokens.length - 1) {
+        out.push({
+          type: 'raw',
+          text: text.slice(t.start, t.end),
+          nlBefore: t.nlBefore,
+          wsBefore: t.wsBefore,
+          start: t.start,
+          end: t.end,
+        });
+      } else {
+        pragma.mode = 'off';
+        pragma.offToken = t;
+      }
+      continue;
+    }
+
     out.push(t);
   }
   return out;
 }
-
-module.exports = { tokenize };

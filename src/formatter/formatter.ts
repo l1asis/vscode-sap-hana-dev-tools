@@ -1,32 +1,167 @@
-'use strict';
+import { tokenize, Token } from './tokenizer';
+import * as K from './keywords';
+import {
+  CaseMode,
+  EditorOptions,
+  ListContext,
+  PartialFormatterOptions,
+  ResolvedFormatterOptions,
+  resolveOptions,
+} from './options';
 
-const { tokenize } = require('./tokenizer');
-const K = require('./keywords');
-const { resolveOptions } = require('./options');
+// ---------------------------------------------------------------------------
+// types & interfaces
+// ---------------------------------------------------------------------------
+
+export interface FormatExtraOptions {
+  fragment?: boolean;
+  initialLevel?: number;
+}
+
+export type WordClass = 'ident' | 'keyword' | 'function' | 'type';
+export type OperatorKind = 'binary' | 'unary' | null;
+
+interface BaseLayoutToken {
+  t: string;
+  srcSp: boolean;
+  sp?: boolean;
+  cls?: WordClass;
+  up?: string;
+  op?: OperatorKind;
+  forceSpace?: boolean;
+  comment?: boolean;
+  multi?: boolean;
+  noBreak?: boolean;
+}
+
+export interface LayoutWordToken extends BaseLayoutToken {
+  k: 'word';
+  cls: WordClass;
+  up: string;
+}
+
+export interface LayoutOpToken extends BaseLayoutToken {
+  k: 'op';
+  op: OperatorKind;
+}
+
+export interface LayoutCommentToken extends BaseLayoutToken {
+  k: 'comment';
+  comment: true;
+  multi: boolean;
+}
+
+export interface LayoutSimpleToken extends BaseLayoutToken {
+  k: 'number' | 'string' | 'qident' | 'var' | 'sysvar' | 'param' | 'punct' | 'other';
+}
+
+export type LayoutToken =
+  | LayoutWordToken
+  | LayoutOpToken
+  | LayoutCommentToken
+  | LayoutSimpleToken;
+
+export type LineKind = 'code' | 'comment' | 'raw';
+export type FrameType = 'stmt' | 'sub' | 'list' | 'plain';
+export type ClauseKind =
+  | 'select'
+  | 'from'
+  | 'where'
+  | 'group'
+  | 'order'
+  | 'having'
+  | 'limit'
+  | 'into'
+  | 'values'
+  | 'set'
+  | 'using'
+  | 'with'
+  | 'on'
+  | 'join'
+  | 'update'
+  | null;
+
+interface ListContainer {
+  line: Line;
+  idx: number;
+  broken: boolean;
+  itemLevel: number;
+  ctx: ListContext;
+}
+
+type StatementKind =
+  | 'select'
+  | 'insert'
+  | 'update'
+  | 'delete'
+  | 'merge'
+  | 'create'
+  | 'declare'
+  | 'assign'
+  | 'cond'
+  | 'casehdr'
+  | 'end'
+  | 'other';
+
+interface StatementState {
+  kind: StatementKind;
+  count: number;
+  first: string;
+  alterSystem: boolean;
+  createKind: string | null;
+  hdiRoot: boolean;
+  paramsSeen: boolean;
+  colsSeen: boolean;
+  insColsSeen: boolean;
+}
+
+type BlockKind = 'begin' | 'if' | 'while' | 'for' | 'loop' | 'casestmt' | 'caseexpr';
+
+interface BlockState {
+  kind: BlockKind;
+  level: number;
+  frame: Frame | null;
+  hdrOpen?: boolean;
+  hdiRoot?: boolean;
+}
+
+type LastEndState = 'start' | 'stmtEnd' | 'blockOpen';
+
+interface WrapCandidate {
+  j: number;
+  pr: number;
+  depth: number;
+}
 
 // ---------------------------------------------------------------------------
 // constants
 // ---------------------------------------------------------------------------
 
-const JOIN_STARTERS = new Set(['JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'NATURAL']);
-const JOIN_PHRASE = new Set(['NATURAL', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS']);
-const BEGIN_MODS = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL', 'EXECUTION', 'ATOMIC']);
-const END_SUFFIX = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
-const SET_OPS = new Set(['UNION', 'INTERSECT', 'EXCEPT', 'MINUS']);
-const OBJ_TYPES = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
-const STMT_VERBS = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
-const HDI_FIRST = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
-const HEADER_WORDS = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
+const JOIN_STARTERS: ReadonlySet<string> = new Set(['JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'NATURAL']);
+const JOIN_PHRASE: ReadonlySet<string> = new Set(['NATURAL', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS']);
+const BEGIN_MODS: ReadonlySet<string> = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL', 'EXECUTION', 'ATOMIC']);
+const END_SUFFIX: ReadonlySet<string> = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
+const OBJ_TYPES: ReadonlySet<string> = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
+const STMT_VERBS: ReadonlySet<string> = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
+const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
+const HEADER_WORDS: ReadonlySet<string> = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
 // keywords after which a following + - * is unary / a wildcard, not a binary operator
-const NON_VALUE = new Set([
+const NON_VALUE: ReadonlySet<string> = new Set([
   'SELECT', 'DISTINCT', 'ALL', 'WHERE', 'ON', 'AND', 'OR', 'NOT', 'WHEN', 'THEN', 'ELSE', 'CASE', 'BY', 'IN', 'IS', 'AS',
   'RETURN', 'RETURNS', 'HAVING', 'SET', 'VALUES', 'BETWEEN', 'LIKE', 'EXISTS', 'ANY', 'SOME', 'UNION', 'INTERSECT',
   'EXCEPT', 'MINUS', 'TOP', 'USING', 'DO', 'IF', 'ELSEIF', 'WHILE', 'FOR', 'LOOP', 'BEGIN', 'INTO', 'LIMIT', 'OFFSET',
 ]);
-const WRAP_BINARY = new Set(['||', '+', '-', '*', '/', '%']);
+const WRAP_BINARY: ReadonlySet<string> = new Set(['||', '+', '-', '*', '/', '%']);
 
 class Line {
-  constructor(level) {
+  level: number;
+  toks: LayoutToken[];
+  blank: number;
+  kind: LineKind;
+  hang: boolean;
+  raw: string | null;
+
+  constructor(level: number) {
     this.level = level;
     this.toks = [];
     this.blank = 0;
@@ -37,7 +172,17 @@ class Line {
 }
 
 class Frame {
-  constructor(type, level, closeLevel) {
+  type: FrameType;
+  level: number;
+  lineLevel: number;
+  closeLevel: number;
+  clause: ClauseKind;
+  hasSelect: boolean;
+  cont: ListContainer | null;
+  between: number;
+  afterSetOp: boolean;
+
+  constructor(type: FrameType, level: number, closeLevel?: number) {
     this.type = type; // stmt | sub | list | plain
     this.level = level; // indent of clause-start lines
     this.lineLevel = level; // indent of the next line created in this frame
@@ -55,7 +200,23 @@ class Frame {
 // ---------------------------------------------------------------------------
 
 class Layout {
-  constructor(tokens, o, extra) {
+  private readonly t: readonly Token[];
+  private readonly o: ResolvedFormatterOptions;
+  private readonly fragment: boolean;
+  private level: number;
+  private readonly lines: Line[];
+  private cur: Line | null;
+  private nextLevel: number | null;
+  private nextBlank: number;
+  private readonly blocks: BlockState[];
+  private frames: Frame[];
+  private stmt: StatementState | null;
+  private atStmtStart: boolean;
+  private lastEnd: LastEndState;
+  private lastTok: LayoutToken | null;
+  private prevCode: LayoutToken | null;
+
+  constructor(tokens: readonly Token[], o: ResolvedFormatterOptions, extra: FormatExtraOptions) {
     this.t = tokens;
     this.o = o;
     this.fragment = !!extra.fragment;
@@ -75,9 +236,11 @@ class Layout {
 
   // ---- small helpers ------------------------------------------------------
 
-  top() { return this.frames[this.frames.length - 1] || null; }
+  top(): Frame | null {
+    return this.frames[this.frames.length - 1] || null;
+  }
 
-  nextCode(i) {
+  nextCode(i: number): Token | null {
     for (let j = i + 1; j < this.t.length; j++) {
       const ty = this.t[j].type;
       if (ty !== 'lineComment' && ty !== 'blockComment') return this.t[j];
@@ -85,7 +248,7 @@ class Layout {
     return null;
   }
 
-  prevSrc(i) {
+  prevSrc(i: number): Token | null {
     for (let j = i - 1; j >= 0; j--) {
       const ty = this.t[j].type;
       if (ty !== 'lineComment' && ty !== 'blockComment') return this.t[j];
@@ -93,20 +256,22 @@ class Layout {
     return null;
   }
 
-  upOf(tok) { return tok && tok.type === 'word' ? tok.text.toUpperCase() : ''; }
+  upOf(tok: Token | null): string {
+    return tok && tok.type === 'word' ? tok.text.toUpperCase() : '';
+  }
 
-  breakLine(level) {
+  breakLine(level?: number): void {
     if (this.cur && this.cur.toks.length) this.cur = null;
     if (level !== undefined) this.nextLevel = level;
   }
 
   // ---- token conversion & spacing ----------------------------------------
 
-  caseOf(text, mode) {
+  caseOf(text: string, mode: CaseMode): string {
     return mode === 'upper' ? text.toUpperCase() : mode === 'lower' ? text.toLowerCase() : text;
   }
 
-  valueLike(p) {
+  valueLike(p: LayoutToken | null): boolean {
     if (!p) return false;
     if (p.k === 'number' || p.k === 'string' || p.k === 'qident' || p.k === 'var' || p.k === 'sysvar' || p.k === 'param') return true;
     if (p.t === ')' || p.t === ']') return true;
@@ -114,12 +279,12 @@ class Layout {
     return false;
   }
 
-  mkWord(tok, i) {
+  mkWord(tok: Token, i: number): LayoutWordToken {
     const up = tok.text.toUpperCase();
     const prevT = this.prevSrc(i);
     const nextT = this.nextCode(i);
     const dotAdj = (prevT && prevT.text === '.') || (nextT && nextT.text === '.');
-    let cls = 'ident';
+    let cls: WordClass = 'ident';
     if (!dotAdj) {
       const nextParen = !!nextT && nextT.text === '(';
       const isF = K.FUNCTIONS.has(up);
@@ -142,7 +307,7 @@ class Layout {
     return { t: this.caseOf(tok.text, mode), k: 'word', cls, up, srcSp: tok.wsBefore };
   }
 
-  mkTok(tok, i) {
+  mkTok(tok: Token, i: number): LayoutToken {
     const o = this.o;
     switch (tok.type) {
       case 'word':
@@ -174,7 +339,7 @@ class Layout {
         let t = tok.text;
         if (t === '<>' && o.notEqualOperator === '!=') t = '!=';
         else if (t === '!=' && o.notEqualOperator === '<>') t = '<>';
-        const tk = { t, k: 'op', op: 'binary', srcSp: tok.wsBefore };
+        const tk: LayoutOpToken = { t, k: 'op', op: 'binary', srcSp: tok.wsBefore };
         if (t === '+' || t === '-') {
           if (!this.valueLike(this.prevCode)) tk.op = 'unary';
         } else if (t === '*') {
@@ -189,7 +354,7 @@ class Layout {
     }
   }
 
-  space(a, b) {
+  space(a: LayoutToken | null, b: LayoutToken): boolean {
     const o = this.o;
     if (!a) return false;
     if (b.t === ';' || b.t === ',') return false;
@@ -230,7 +395,7 @@ class Layout {
     return true;
   }
 
-  push(tk) {
+  push(tk: LayoutToken): LayoutToken {
     const f = this.top();
     if (!this.cur) {
       const level = this.nextLevel !== null ? this.nextLevel : f ? f.lineLevel : this.level;
@@ -250,13 +415,13 @@ class Layout {
     return tk;
   }
 
-  emit(tok, i) {
+  emit(tok: Token, i: number): LayoutToken {
     return this.push(this.mkTok(tok, i));
   }
 
   // ---- blank lines -------------------------------------------------------
 
-  blankFor(srcBlank) {
+  blankFor(srcBlank: number): number {
     const o = this.o;
     if (this.lines.length === 0) return 0;
     const prev = this.lines[this.lines.length - 1];
@@ -270,7 +435,7 @@ class Layout {
 
   // ---- statement bookkeeping --------------------------------------------
 
-  stmtKind(tok, up, i) {
+  stmtKind(tok: Token, up: string, i: number): StatementKind {
     if (tok.type === 'word') {
       switch (up) {
         case 'SELECT': case 'WITH': return 'select';
@@ -291,7 +456,7 @@ class Layout {
     return 'other';
   }
 
-  beginStatement(tok, i) {
+  beginStatement(tok: Token, i: number): void {
     const up = this.upOf(tok);
     this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
     this.stmt = {
@@ -310,7 +475,7 @@ class Layout {
     this.nextLevel = this.level;
   }
 
-  endStatement() {
+  endStatement(): void {
     this.breakLine();
     this.nextLevel = null;
     this.atStmtStart = true;
@@ -319,7 +484,7 @@ class Layout {
     this.lastEnd = 'stmtEnd';
   }
 
-  endHeader() {
+  endHeader(): void {
     this.breakLine();
     this.nextLevel = null;
     this.atStmtStart = true;
@@ -328,13 +493,13 @@ class Layout {
     this.lastEnd = 'blockOpen';
   }
 
-  syntheticSemi() {
+  syntheticSemi(): void {
     this.push({ t: ';', k: 'punct', srcSp: false });
     this.endStatement();
   }
 
   /** In "add" mode, terminate an unterminated statement before END / ELSE / WHEN. */
-  ensureSemi() {
+  ensureSemi(): boolean {
     const st = this.stmt;
     if (this.o.trailingSemicolon !== 'add' || this.fragment) return false;
     if (this.atStmtStart || !st || st.count === 0) return false;
@@ -346,11 +511,12 @@ class Layout {
 
   // ---- lists -------------------------------------------------------------
 
-  openCont(f, ctx, itemLevel) {
+  openCont(f: Frame, ctx: ListContext, itemLevel: number): void {
+    if (!this.cur) return;
     f.cont = { line: this.cur, idx: this.cur.toks.length, broken: false, itemLevel, ctx };
   }
 
-  splitList(f, c) {
+  splitList(f: Frame, c: ListContainer): void {
     const line = c.line;
     const tail = line.toks.splice(c.idx);
     c.broken = true;
@@ -381,20 +547,20 @@ class Layout {
     }
   }
 
-  commaBreak(tk, level) {
+  commaBreak(tk: LayoutToken, level: number): void {
     if (this.o.commaPosition === 'leading') {
       this.breakLine(level);
       this.push(tk);
-      this.cur.hang = true;
+      if (this.cur) this.cur.hang = true;
     } else {
       this.push(tk);
       this.breakLine(level);
     }
   }
 
-  comma() {
-    const f = this.top();
-    const tk = { t: ',', k: 'punct', srcSp: false };
+  comma(): void {
+    const f = this.top()!;
+    const tk: LayoutSimpleToken = { t: ',', k: 'punct', srcSp: false };
     const c = f.cont;
     if (c) {
       if (!c.broken) this.splitList(f, c);
@@ -408,8 +574,8 @@ class Layout {
 
   // ---- parentheses -------------------------------------------------------
 
-  listContextFor(f, tk) {
-    const st = this.stmt;
+  listContextFor(f: Frame): ListContext | null {
+    const st = this.stmt!;
     const p = this.prevCode;
     if (!p) return null;
     const pIdent = (p.k === 'word' && p.cls === 'ident') || p.k === 'qident';
@@ -432,42 +598,43 @@ class Layout {
     return null;
   }
 
-  openParen(tok, i) {
-    const f = this.top();
+  openParen(tok: Token, i: number): void {
+    const f = this.top()!;
     const nx = this.nextCode(i);
     const nup = this.upOf(nx);
-    const tk = { t: '(', k: 'punct', srcSp: tok.wsBefore };
+    const tk: LayoutSimpleToken = { t: '(', k: 'punct', srcSp: tok.wsBefore };
 
     if (nup === 'SELECT' || nup === 'WITH') {
       this.push(tk);
-      const base = this.cur.level;
+      const base = this.cur!.level;
       const sf = new Frame('sub', base + 1, base);
       this.frames.push(sf);
       this.breakLine(sf.level);
       return;
     }
 
-    const ctx = this.listContextFor(f, tk);
+    const ctx = this.listContextFor(f);
     if (ctx && this.o.listCtx.has(ctx)) {
       tk.forceSpace = this.o.spaceBeforeListParenthesis;
       this.push(tk);
-      const lf = new Frame('list', f.level, this.cur.level);
-      lf.lineLevel = this.cur.level + 1;
+      const curLevel = this.cur!.level;
+      const lf = new Frame('list', f.level, curLevel);
+      lf.lineLevel = curLevel + 1;
       this.frames.push(lf);
-      this.openCont(lf, ctx, this.cur.level + 1);
+      this.openCont(lf, ctx, curLevel + 1);
       return;
     }
     if (ctx) tk.forceSpace = this.o.spaceBeforeListParenthesis;
     this.push(tk);
-    this.frames.push(new Frame('plain', f.level, this.cur.level));
-    const pf = this.top();
+    this.frames.push(new Frame('plain', f.level, this.cur!.level));
+    const pf = this.top()!;
     pf.lineLevel = f.lineLevel;
   }
 
-  closeParen() {
-    const tk = { t: ')', k: 'punct', srcSp: false };
+  closeParen(): void {
+    const tk: LayoutSimpleToken = { t: ')', k: 'punct', srcSp: false };
     if (this.frames.length > 1) {
-      const f = this.frames.pop();
+      const f = this.frames.pop()!;
       if (f.type === 'sub' || (f.type === 'list' && f.cont && f.cont.broken)) this.breakLine(f.closeLevel);
     }
     this.push(tk);
@@ -475,7 +642,7 @@ class Layout {
 
   // ---- comments ----------------------------------------------------------
 
-  commentText(text, isLine) {
+  commentText(text: string, isLine: boolean): string {
     let t = text.replace(/[ \t]+$/, '');
     if (isLine) {
       if (this.o.spaceAfterCommentMarker && /^--[A-Za-z0-9]/.test(t)) t = '-- ' + t.slice(2);
@@ -485,14 +652,20 @@ class Layout {
     return t;
   }
 
-  comment(tok, i) {
+  comment(tok: Token): void {
     const isLine = tok.type === 'lineComment';
     const standalone = tok.nlBefore > 0 || this.lines.length === 0 || (this.lastTok === null && !this.cur);
-    const tk = { t: this.commentText(tok.text, isLine), k: 'comment', comment: true, srcSp: true, multi: tok.text.includes('\n') };
+    const tk: LayoutCommentToken = {
+      t: this.commentText(tok.text, isLine),
+      k: 'comment',
+      comment: true,
+      srcSp: true,
+      multi: tok.text.includes('\n'),
+    };
 
     if (standalone) {
       if (this.cur && this.cur.toks.length) this.breakLine();
-      let level;
+      let level: number;
       if (this.atStmtStart) {
         this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
         level = this.level;
@@ -543,7 +716,7 @@ class Layout {
     if (isLine) this.breakLine();
   }
 
-  raw(tok) {
+  raw(tok: Token): void {
     if (this.cur && this.cur.toks.length) this.breakLine();
     if (this.atStmtStart) this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
     const line = new Line(0);
@@ -558,10 +731,10 @@ class Layout {
 
   // ---- main loop ---------------------------------------------------------
 
-  run() {
+  run(): Line[] {
     for (let i = 0; i < this.t.length; i++) {
       const tok = this.t[i];
-      if (tok.type === 'lineComment' || tok.type === 'blockComment') { this.comment(tok, i); continue; }
+      if (tok.type === 'lineComment' || tok.type === 'blockComment') { this.comment(tok); continue; }
       if (tok.type === 'raw') { this.raw(tok); continue; }
       i += this.code(tok, i);
     }
@@ -569,7 +742,7 @@ class Layout {
     return this.lines;
   }
 
-  code(tok, i) {
+  code(tok: Token, i: number): number {
     const isSemi = tok.type === 'punct' && tok.text === ';';
 
     // "END IF" etc. without semicolon followed by something else
@@ -611,10 +784,10 @@ class Layout {
 
   // ---- words: blocks, clauses, headers ----------------------------------
 
-  word(tok, i) {
+  word(tok: Token, i: number): number {
     const o = this.o;
-    const f = this.top();
-    const st = this.stmt;
+    const f = this.top()!;
+    const st = this.stmt!;
     const up = tok.text.toUpperCase();
     const nx = this.nextCode(i);
     const nup = this.upOf(nx);
@@ -689,7 +862,7 @@ class Layout {
         }
         if (topBlock && topBlock.kind === 'casestmt' && stmtLevel) {
           this.ensureSemiAndRestart(tok, i);
-          const nf = this.top();
+          const nf = this.top()!;
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level + 1;
           nf.level = this.level;
@@ -717,21 +890,21 @@ class Layout {
       case 'ELSEIF':
         if (stmtLevel && topBlock && topBlock.kind === 'if') {
           this.ensureSemiAndRestart(tok, i);
-          const nf = this.top();
+          const nf = this.top()!;
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level;
           nf.level = this.level;
           nf.lineLevel = this.level + 1;
           this.breakLine(this.level);
           topBlock.hdrOpen = true;
-          this.stmt.kind = 'cond';
+          this.stmt!.kind = 'cond';
         }
         break;
 
       case 'ELSE':
         if (stmtLevel && topBlock && (topBlock.kind === 'if' || topBlock.kind === 'casestmt') && !topBlock.hdrOpen) {
           this.ensureSemiAndRestart(tok, i);
-          const nf = this.top();
+          const nf = this.top()!;
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level + (topBlock.kind === 'if' ? 0 : 1);
           nf.level = this.level;
@@ -800,17 +973,17 @@ class Layout {
     return this.plain(tok, i);
   }
 
-  plain(tok, i) {
+  plain(tok: Token, i: number): number {
     this.emit(tok, i);
     return 0;
   }
 
-  ensureSemiAndRestart(tok, i) {
+  ensureSemiAndRestart(tok: Token, i: number): void {
     if (this.ensureSemi()) this.beginStatement(tok, i);
   }
 
-  doBegin(tok, i) {
-    const f = this.top();
+  doBegin(tok: Token, i: number): number {
+    const f = this.top()!;
     const anonymous = this.cur && this.cur.toks.length === 1 && this.prevCode && this.prevCode.up === 'DO';
     if (this.o.beginOnNewLine && !anonymous && this.cur && this.cur.toks.length) this.breakLine(f.level);
     this.blocks.push({ kind: 'begin', level: this.level, frame: f, hdiRoot: !!(this.stmt && this.stmt.hdiRoot) });
@@ -828,8 +1001,7 @@ class Layout {
     return consumed;
   }
 
-  doEnd(tok, i) {
-    const f = this.top();
+  doEnd(tok: Token, i: number): number {
     const topBlock = this.blocks[this.blocks.length - 1] || null;
 
     if (topBlock && topBlock.kind === 'caseexpr') {
@@ -841,15 +1013,15 @@ class Layout {
 
     if (this.frames.length === 1) {
       this.ensureSemiAndRestart(tok, i);
-      const nf = this.top();
+      const nf = this.top()!;
       this.nextBlank = this.o.removeBlankLinesAtBlockEdges ? 0 : this.blankFor(Math.max(0, tok.nlBefore - 1));
       const blk = this.blocks.pop();
       this.level = blk ? blk.level : Math.max(0, this.level - 1);
       nf.level = this.level;
       nf.lineLevel = this.level + 1;
       this.breakLine(this.level);
-      this.stmt.kind = 'end';
-      if (blk && blk.hdiRoot && this.blocks.length === 0) this.stmt.hdiRoot = true;
+      this.stmt!.kind = 'end';
+      if (blk && blk.hdiRoot && this.blocks.length === 0) this.stmt!.hdiRoot = true;
       this.emit(tok, i);
       const nx = this.t[i + 1];
       if (nx && nx.type === 'word' && END_SUFFIX.has(nx.text.toUpperCase())) {
@@ -864,10 +1036,10 @@ class Layout {
   }
 
   /** Clause keywords. Returns null when the word is not a clause start. */
-  clauseWord(tok, i, up, nup, pup, f, st) {
+  clauseWord(tok: Token, i: number, up: string, nup: string, pup: string, f: Frame, st: StatementState): number | null {
     const o = this.o;
-    const tk = () => this.mkTok(tok, i);
-    const startClause = (name, ctx) => {
+    const tk = (): LayoutToken => this.mkTok(tok, i);
+    const startClause = (name: ClauseKind, ctx: ListContext | null): number => {
       this.breakLine(f.level);
       f.clause = name;
       f.cont = null;
@@ -880,7 +1052,7 @@ class Layout {
     switch (up) {
       case 'SELECT': {
         let inline = !this.cur || !this.cur.toks.length;
-        if (!inline) {
+        if (!inline && this.cur) {
           const real = this.cur.toks.filter((t) => !t.comment);
           const last = real[real.length - 1];
           if (real.length <= 3 && last && (last.t === '=' || last.t === ':=')) inline = true;
@@ -898,7 +1070,7 @@ class Layout {
 
       case 'DISTINCT':
       case 'ALL':
-        if (f.clause === 'select' && f.cont && !f.cont.broken && f.cont.idx === this.cur.toks.length) {
+        if (f.clause === 'select' && f.cont && !f.cont.broken && this.cur && f.cont.idx === this.cur.toks.length) {
           this.push(tk());
           f.cont.idx = this.cur.toks.length;
           return 0;
@@ -912,7 +1084,7 @@ class Layout {
         return null;
 
       case 'TOP':
-        if (f.clause === 'select' && f.cont && !f.cont.broken && f.cont.idx === this.cur.toks.length) {
+        if (f.clause === 'select' && f.cont && !f.cont.broken && this.cur && f.cont.idx === this.cur.toks.length) {
           this.push(tk());
           const nx = this.t[i + 1];
           let used = 0;
@@ -1044,7 +1216,7 @@ class Layout {
 
   // ---- end of input ------------------------------------------------------
 
-  finish() {
+  finish(): void {
     const o = this.o;
     const st = this.stmt;
     if (!this.fragment && o.trailingSemicolon === 'add' && st && !this.atStmtStart && st.count > 0 && this.lastTok && this.lastTok.t !== ';' && !st.hdiRoot && this.frames.length >= 1) {
@@ -1068,17 +1240,17 @@ class Layout {
 // render pass
 // ---------------------------------------------------------------------------
 
-function render(lines, o, fragment) {
+function render(lines: readonly Line[], o: ResolvedFormatterOptions): string[] {
   const unit = o.useTabs ? '\t' : ' '.repeat(o.indentWidth);
-  const indentOf = (level) => unit.repeat(Math.max(0, level));
-  const widthOf = (level) => Math.max(0, level) * o.indentWidth;
-  const out = [];
+  const indentOf = (level: number): string => unit.repeat(Math.max(0, level));
+  const widthOf = (level: number): number => Math.max(0, level) * o.indentWidth;
+  const out: string[] = [];
 
   lines.forEach((line, idx) => {
     if (idx > 0) for (let k = 0; k < line.blank; k++) out.push('');
 
     if (line.kind === 'raw') {
-      out.push(...line.raw.replace(/\r\n?/g, '\n').split('\n'));
+      out.push(...(line.raw ?? '').replace(/\r\n?/g, '\n').split('\n'));
       return;
     }
 
@@ -1097,7 +1269,7 @@ function render(lines, o, fragment) {
     renderCode(line);
   });
 
-  function renderCode(line) {
+  function renderCode(line: Line): void {
     const toks = line.toks;
     if (!toks.length) return;
     let firstIndent = indentOf(line.level);
@@ -1108,14 +1280,14 @@ function render(lines, o, fragment) {
     const max = o.maxLineLength;
 
     // text pieces
-    const txt = (j, first) => (first ? '' : toks[j].sp ? ' ' : '') + toks[j].t;
-    const w = (j, first) => (toks[j].comment ? 0 : txt(j, first).length);
+    const txt = (j: number, first: boolean): string => (first ? '' : toks[j].sp ? ' ' : '') + toks[j].t;
+    const w = (j: number, first: boolean): number => (toks[j].comment ? 0 : txt(j, first).length);
 
     // wrap candidates
-    const cands = [];
+    const cands: WrapCandidate[] = [];
     if (max > 0) {
       let depth = 0;
-      const depthAt = [];
+      const depthAt: number[] = [];
       for (let j = 0; j < toks.length; j++) {
         depthAt[j] = depth;
         if (toks[j].t === '(' || toks[j].t === '[') depth++;
@@ -1134,7 +1306,7 @@ function render(lines, o, fragment) {
       }
     }
 
-    const starts = [0];
+    const starts: number[] = [0];
     let segStart = 0;
     let segW = widthOf(line.level) - (firstIndent.length < indentOf(line.level).length ? 2 : 0);
     const contW = widthOf(line.level + 1);
@@ -1143,7 +1315,7 @@ function render(lines, o, fragment) {
         for (;;) {
           const add = w(j, j === segStart);
           if (segW + add <= max || j === segStart) { segW += add; break; }
-          let best = null;
+          let best: WrapCandidate | null = null;
           for (const c of cands) {
             if (c.j <= segStart || c.j > j) continue;
             if (!best || c.depth < best.depth || (c.depth === best.depth && (c.pr < best.pr || (c.pr === best.pr && c.j > best.j)))) best = c;
@@ -1171,21 +1343,24 @@ function render(lines, o, fragment) {
 // public API
 // ---------------------------------------------------------------------------
 
-/**
- * @param {string} text
- * @param {object} userOptions  hanasql.format.* settings
- * @param {object} [editor]     { tabSize, insertSpaces, eol }
- * @param {object} [extra]      { fragment: boolean, initialLevel: number }
- */
-function format(text, userOptions = {}, editor = {}, extra = {}) {
-  const o = userOptions && userOptions.listCtx ? userOptions : resolveOptions(userOptions, editor);
+function isResolvedOptions(
+  opts: PartialFormatterOptions | ResolvedFormatterOptions
+): opts is ResolvedFormatterOptions {
+  return 'listCtx' in opts && opts.listCtx instanceof Set;
+}
+
+export function format(
+  text: string,
+  userOptions: PartialFormatterOptions | ResolvedFormatterOptions = {},
+  editor: EditorOptions = {},
+  extra: FormatExtraOptions = {}
+): string {
+  const o = isResolvedOptions(userOptions) ? userOptions : resolveOptions(userOptions, editor);
   const tokens = tokenize(text);
   if (tokens.length === 0) return o.insertFinalNewline && !extra.fragment && text.length ? '' : '';
   const lines = new Layout(tokens, o, extra).run();
-  const rendered = render(lines, o, !!extra.fragment);
+  const rendered = render(lines, o);
   let result = rendered.join(o.eol);
   if (!extra.fragment) result += o.insertFinalNewline ? o.eol : '';
   return result;
 }
-
-module.exports = { format };

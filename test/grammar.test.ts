@@ -1,13 +1,24 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert');
-const fs = require('fs');
-const path = require('path');
-const { tokenize, has } = require('./helpers/tm');
+import test from 'node:test';
+import * as assert from 'node:assert';
+import * as fs from 'fs';
+import * as path from 'path';
+import { tokenize, has, TmToken } from './helpers/tm';
 
-const sample = (name) => fs.readFileSync(path.join(__dirname, '..', 'samples', name.startsWith('hdi/') ? '' : 'xs-classic', name), 'utf8');
-const check = (tokens, text, scope) => assert.ok(has(tokens, text, scope), `expected "${text}" to have scope "${scope}"`);
-const dump = (tokens) => tokens.filter((t) => t.text.trim()).map((t) => `${JSON.stringify(t.text)} ${t.scopes.slice(1).join(' ')}`).join('\n');
+const rootDir = fs.existsSync(path.join(__dirname, '..', 'samples'))
+  ? path.join(__dirname, '..')
+  : path.join(__dirname, '..', '..');
+
+const sample = (name: string): string =>
+  fs.readFileSync(path.join(rootDir, 'samples', name.startsWith('hdi/') ? '' : 'xs-classic', name), 'utf8');
+
+const check = (tokens: readonly TmToken[], text: string, scope: string): void =>
+  assert.ok(has(tokens, text, scope), `expected "${text}" to have scope "${scope}"`);
+
+const dump = (tokens: readonly TmToken[]): string =>
+  tokens
+    .filter((t) => t.text.trim())
+    .map((t) => `${JSON.stringify(t.text)} ${t.scopes.slice(1).join(' ')}`)
+    .join('\n');
 
 test('hdbtable (XS Classic)', () => {
   const t = tokenize('source.hdbtable', sample('MYTABLE.hdbtable'));
@@ -57,7 +68,9 @@ test('hdbview extension also highlights HDI-style SQL', () => {
 
 test('hdbsequence', () => {
   const t = tokenize('source.hdbsequence', sample('MYSEQ.hdbsequence'));
-  for (const k of ['schema', 'start_with', 'maxvalue', 'nomaxvalue', 'minvalue', 'nominvalue', 'cycles', 'reset_by', 'depends_on']) check(t, k, 'property-name.hdbsequence');
+  for (const k of ['schema', 'start_with', 'maxvalue', 'nomaxvalue', 'minvalue', 'nominvalue', 'cycles', 'reset_by', 'depends_on']) {
+    check(t, k, 'property-name.hdbsequence');
+  }
   check(t, 'SELECT', 'keyword.other.dml.hanasql');
   check(t, '10', 'constant.numeric');
 });
@@ -70,51 +83,57 @@ test('hdbschema', () => {
 test('hdbti', () => {
   const t = tokenize('source.hdbti', sample('myTableImportCfg.hdbti'));
   check(t, 'import', 'keyword.control.import');
-  for (const k of ['table', 'schema', 'file', 'header', 'useHeaderNames', 'delimField', 'delimEnclosing', 'distinguishEmptyFromNull', 'keys']) check(t, k, 'property-name.hdbti');
+  for (const k of ['table', 'schema', 'file', 'header', 'useHeaderNames', 'delimField', 'delimEnclosing', 'distinguishEmptyFromNull', 'keys']) {
+    check(t, k, 'property-name.hdbti');
+  }
   check(t, 'false', 'constant.language.boolean');
 });
 
 test('xshttpdest', () => {
   const t = tokenize('source.xshttpdest', sample('yahoo.xshttpdest'));
-  for (const k of ['host', 'port', 'description', 'useSSL', 'pathPrefix', 'authType', 'useProxy', 'proxyHost', 'proxyPort', 'timeout']) check(t, k, 'property-name.xshttpdest');
+  for (const k of ['host', 'port', 'description', 'useSSL', 'pathPrefix', 'authType', 'useProxy', 'proxyHost', 'proxyPort', 'timeout']) {
+    check(t, k, 'property-name.xshttpdest');
+  }
   check(t, 'none', 'constant.other.enum');
 });
 
 test('xsaccess / xsapp / xssecurestore / xsprivileges', () => {
   let t = tokenize('source.xsaccess', sample('.xsaccess'));
-  check(t, '"'+'exposed'+'"', 'property-name.json.xsaccess');
-  check(t, '"'+'authentication'+'"', 'property-name.json.xsaccess');
-  check(t, '"'+'prevent_xsrf'+'"', 'property-name.json.xsaccess');
+  check(t, '"' + 'exposed' + '"', 'property-name.json.xsaccess');
+  check(t, '"' + 'authentication' + '"', 'property-name.json.xsaccess');
+  check(t, '"' + 'prevent_xsrf' + '"', 'property-name.json.xsaccess');
   check(t, 'true', 'constant.language');
   t = tokenize('source.xsapp', sample('.xsapp'));
   check(t, '{', 'punctuation.section.braces');
   t = tokenize('source.xssecurestore', sample('localStore.xssecurestore'));
   check(t, '}', 'punctuation.section.braces');
   t = tokenize('source.xsprivileges', sample('.xsprivileges'));
-  check(t, '"'+'privileges'+'"', 'property-name.json.xsprivileges');
-  check(t, '"'+'name'+'"', 'property-name.json.xsprivileges');
+  check(t, '"' + 'privileges' + '"', 'property-name.json.xsprivileges');
+  check(t, '"' + 'name' + '"', 'property-name.json.xsprivileges');
 });
 
 test('xsjob with xscron expression', () => {
   const t = tokenize('source.xsjob', sample('yahoo.xsjob'));
-  for (const k of ['description', 'action', 'schedules', 'xscron', 'parameter', 'signature_version']) check(t, `"${k}"`, 'property-name.json.xsjob');
+  for (const k of ['description', 'action', 'schedules', 'xscron', 'parameter', 'signature_version']) {
+    check(t, `"${k}"`, 'property-name.json.xsjob');
+  }
   check(t, '*', 'keyword.operator.wildcard');
   check(t, '*/5', 'keyword.operator.wildcard');
   check(t, '59', 'constant.numeric');
-  check(t, '"'+'stock'+'"', 'property-name.json'); // unknown key still highlighted
+  check(t, '"' + 'stock' + '"', 'property-name.json'); // unknown key still highlighted
 });
 
 test('xssqlcc tolerates the missing comma used in the SAP documentation', () => {
   const t = tokenize('source.xssqlcc', sample('AdminConn.xssqlcc'));
-  check(t, '"'+'description'+'"', 'property-name.json.xssqlcc');
-  check(t, '"'+'role_for_auto_user'+'"', 'property-name.json.xssqlcc');
+  check(t, '"' + 'description' + '"', 'property-name.json.xssqlcc');
+  check(t, '"' + 'role_for_auto_user' + '"', 'property-name.json.xssqlcc');
 });
 
 test('hdbsynonym', () => {
   const t = tokenize('source.hdbsynonym', sample('MySynonym1.hdbsynonym'));
-  check(t, '"'+'acme.com.app1::MySynonym1'+'"', 'entity.name.type.hdbsynonym');
-  check(t, '"'+'target'+'"', 'property-name.json.hdbsynonym');
-  check(t, '"'+'object'+'"', 'property-name.json.hdbsynonym');
+  check(t, '"' + 'acme.com.app1::MySynonym1' + '"', 'entity.name.type.hdbsynonym');
+  check(t, '"' + 'target' + '"', 'property-name.json.hdbsynonym');
+  check(t, '"' + 'object' + '"', 'property-name.json.hdbsynonym');
 });
 
 test('hdbdd (CDS)', () => {
@@ -180,7 +199,6 @@ test('hanasql: SQLScript additions from the SQLScript reference', () => {
   check(lib, ':a', 'variable.other.readwrite');
 });
 
-
 test('xsjs: XS JavaScript API on top of the JavaScript grammar', () => {
   const t = tokenize('source.xsjs', sample('lib.xsjs'));
   check(t, '$', 'variable.language.xsjs');
@@ -215,7 +233,9 @@ test('HDI: hdbrole (JSON), hdbgrants, hdbtabledata, hdbsynonym', () => {
   check(t, '"object_owner"', 'property-name.json.hdbgrants');
   check(t, '"application_user"', 'property-name.json.hdbgrants');
   t = tokenize('source.hdbtabledata', sample('hdi/data.hdbtabledata'));
-  for (const k of ['format_version', 'imports', 'target_table', 'source_data', 'has_header', 'import_settings', 'column_mappings']) check(t, `"${k}"`, 'property-name.json.hdbtabledata');
+  for (const k of ['format_version', 'imports', 'target_table', 'source_data', 'has_header', 'import_settings', 'column_mappings']) {
+    check(t, `"${k}"`, 'property-name.json.hdbtabledata');
+  }
   t = tokenize('source.hdbsynonym', sample('hdi/syn.hdbsynonym'));
   check(t, '"acme.com.app1::MySynonym"', 'entity.name.type.hdbsynonym');
   check(t, '// optional configuration', 'comment.line.double-slash');
@@ -251,7 +271,9 @@ test('hdbcds (XS Advanced)', () => {
 
 test('xsaccess keys from the Developer Guide', () => {
   const t = tokenize('source.xsaccess', '{ "default_connection": "x", "cors": { "enabled": true }, "headers": { "customHeaders": [{ "name": "a", "value": "b" }] } }');
-  for (const k of ['default_connection', 'cors', 'headers', 'customHeaders', 'enabled']) check(t, `"${k}"`, 'property-name.json.xsaccess');
+  for (const k of ['default_connection', 'cors', 'headers', 'customHeaders', 'enabled']) {
+    check(t, `"${k}"`, 'property-name.json.xsaccess');
+  }
 });
 
 test('hanasql: ALTER SYSTEM and object DDL statement phrases, vector types, new functions', () => {
@@ -270,12 +292,15 @@ test('hanasql: ALTER SYSTEM and object DDL statement phrases, vector types, new 
   check(t, 'VIRTUAL PROCEDURE', 'keyword.control.ddl');
 });
 
-
 test('HDI: more JSON artifacts', () => {
   let t = tokenize('source.hdbafllangprocedure', sample('hdi/qa1_f3.hdbafllangprocedure'));
-  for (const k of ['procedure', 'area', 'function', 'parameters', 'type', 'direction']) check(t, `"${k}"`, 'property-name.json.hdbafllangprocedure');
+  for (const k of ['procedure', 'area', 'function', 'parameters', 'type', 'direction']) {
+    check(t, `"${k}"`, 'property-name.json.hdbafllangprocedure');
+  }
   t = tokenize('source.hdblogicalschema', sample('hdi/logicalschemas.hdblogicalschema'));
-  for (const k of ['target', 'remote', 'database', 'schema']) check(t, `"${k}"`, 'property-name.json.hdblogicalschema');
+  for (const k of ['target', 'remote', 'database', 'schema']) {
+    check(t, `"${k}"`, 'property-name.json.hdblogicalschema');
+  }
   t = tokenize('source.hdbsysbicsynonym', sample('hdi/a.hdbsysbicsynonym'));
   check(t, '"object"', 'property-name.json.hdbsysbicsynonym');
   t = tokenize('source.hdbvirtualprocedureconfig', sample('hdi/remote_procedure.hdbvirtualprocedureconfig'));
@@ -311,12 +336,16 @@ test('HDI: SQL-style artifacts (application time, graph workspace, virtual funct
 });
 
 test('every grammar tokenizes its sample without throwing', () => {
-  for (const f of fs.readdirSync(path.join(__dirname, '..', 'syntaxes'))) {
-    const scope = 'source.' + f.replace('.tmLanguage.json', '');
+  const syntaxesDir = path.join(rootDir, 'syntaxes');
+  for (const f of fs.readdirSync(syntaxesDir)) {
+    const raw = JSON.parse(fs.readFileSync(path.join(syntaxesDir, f), 'utf8')) as { scopeName?: string };
+    const scope = raw.scopeName || 'source.' + f.replace('.tmLanguage.json', '');
     tokenize(scope, 'x = "a\\"b" ; { [ ( \n -- c\n // c\n /* c */');
   }
 });
 
-if (process.env.DUMP) {
-  test('dump', () => console.log(dump(tokenize(process.env.DUMP, sample(process.env.FILE)))));
+if (process.env.DUMP && process.env.FILE) {
+  const dumpScope = process.env.DUMP;
+  const dumpFile = process.env.FILE;
+  test('dump', () => console.log(dump(tokenize(dumpScope, sample(dumpFile)))));
 }

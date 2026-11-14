@@ -1,13 +1,17 @@
-'use strict';
-
-const vscode = require('vscode');
-const { format } = require('./formatter/formatter');
-const { DEFAULTS, resolveOptions } = require('./formatter/options');
-const { isKeyValueArtifact } = require('./formatter/detect');
+import * as vscode from 'vscode';
+import { format } from './formatter/formatter';
+import {
+  DEFAULTS,
+  EditorOptions,
+  FormatterOptions,
+  PartialFormatterOptions,
+  resolveOptions,
+} from './formatter/options';
+import { isKeyValueArtifact } from './formatter/detect';
 
 // Languages whose files can contain SQL. For .hdbtable/.hdbview/.hdbsequence/.hdbstructure the same
 // extension is XS Classic `key = value;` syntax in some projects; those files are detected and skipped.
-const SQL_LANGUAGES = [
+const SQL_LANGUAGES: readonly string[] = [
   'hanasql',
   'hdbprocedure',
   'hdbfunction',
@@ -38,16 +42,19 @@ const SQL_LANGUAGES = [
   'hdbview',
   'hdbsequence',
 ];
-let output;
 
-function readSettings(document) {
+let output: vscode.OutputChannel | undefined;
+
+function readSettings(document: vscode.TextDocument): PartialFormatterOptions {
   const cfg = vscode.workspace.getConfiguration('hanasql.format', document);
-  const raw = {};
-  for (const key of Object.keys(DEFAULTS)) raw[key] = cfg.get(key);
-  return raw;
+  const raw: Record<string, unknown> = {};
+  for (const key of Object.keys(DEFAULTS) as Array<keyof FormatterOptions>) {
+    raw[key] = cfg.get(key);
+  }
+  return raw as PartialFormatterOptions;
 }
 
-function editorInfo(document, options) {
+function editorInfo(document: vscode.TextDocument, options: vscode.FormattingOptions): EditorOptions {
   return {
     tabSize: options.tabSize,
     insertSpaces: options.insertSpaces,
@@ -55,23 +62,27 @@ function editorInfo(document, options) {
   };
 }
 
-function fullRange(document) {
+function fullRange(document: vscode.TextDocument): vscode.Range {
   const last = document.lineAt(document.lineCount - 1);
   return new vscode.Range(0, 0, last.lineNumber, last.text.length);
 }
 
-function safe(fn) {
+function safe(fn: () => vscode.TextEdit[]): vscode.TextEdit[] {
   try {
     return fn();
-  } catch (err) {
-    output.appendLine(`[format] ${err && err.stack ? err.stack : err}`);
+  } catch (err: unknown) {
+    const detail = err instanceof Error && err.stack ? err.stack : String(err);
+    output?.appendLine(`[format] ${detail}`);
     vscode.window.showErrorMessage('SAP HANA SQL: formatting failed (see output channel "SAP HANA SQL").');
     return [];
   }
 }
 
-const provider = {
-  provideDocumentFormattingEdits(document, options) {
+const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeFormattingEditProvider = {
+  provideDocumentFormattingEdits(
+    document: vscode.TextDocument,
+    options: vscode.FormattingOptions
+  ): vscode.TextEdit[] {
     const raw = readSettings(document);
     if (raw.enable === false) return [];
     return safe(() => {
@@ -82,20 +93,26 @@ const provider = {
     });
   },
 
-  provideDocumentRangeFormattingEdits(document, range, options) {
+  provideDocumentRangeFormattingEdits(
+    document: vscode.TextDocument,
+    range: vscode.Range,
+    options: vscode.FormattingOptions
+  ): vscode.TextEdit[] {
     const raw = readSettings(document);
     if (raw.enable === false) return [];
     return safe(() => {
       if (isKeyValueArtifact(document.getText())) return [];
       // work on whole lines
-      const endLine = range.end.character === 0 && range.end.line > range.start.line ? range.end.line - 1 : range.end.line;
+      const endLine =
+        range.end.character === 0 && range.end.line > range.start.line ? range.end.line - 1 : range.end.line;
       const lineRange = new vscode.Range(range.start.line, 0, endLine, document.lineAt(endLine).text.length);
       const text = document.getText(lineRange);
       const ed = editorInfo(document, options);
       const o = resolveOptions(raw, ed);
       // derive the starting indentation level from the first non-empty line
       const first = document.lineAt(range.start.line).text;
-      const lead = /^[ \t]*/.exec(first)[0];
+      const leadMatch = /^[ \t]*/.exec(first);
+      const lead = leadMatch ? leadMatch[0] : '';
       const cols = [...lead].reduce((n, ch) => n + (ch === '\t' ? o.indentWidth : 1), 0);
       const level = Math.floor(cols / o.indentWidth);
       const result = format(text, o, ed, { fragment: true, initialLevel: level });
@@ -104,9 +121,9 @@ const provider = {
   },
 };
 
-function activate(context) {
+export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel('SAP HANA SQL');
-  const selector = SQL_LANGUAGES.map((language) => ({ language }));
+  const selector: vscode.DocumentFilter[] = SQL_LANGUAGES.map((language) => ({ language }));
   context.subscriptions.push(
     output,
     vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
@@ -117,6 +134,4 @@ function activate(context) {
   );
 }
 
-function deactivate() {}
-
-module.exports = { activate, deactivate };
+export function deactivate(): void {}

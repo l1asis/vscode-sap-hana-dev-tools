@@ -1,10 +1,11 @@
-'use strict';
-const test = require('node:test');
-const assert = require('node:assert');
-const { format } = require('../src/formatter/formatter');
+import test from 'node:test';
+import * as assert from 'node:assert';
+import { format } from '../src/formatter/formatter';
+import { EditorOptions, PartialFormatterOptions } from '../src/formatter/options';
+import { isKeyValueArtifact } from '../src/formatter/detect';
 
-const ED = { tabSize: 4, insertSpaces: true, eol: '\n' };
-const f = (sql, opts = {}) => format(sql, opts, ED);
+const ED: EditorOptions = { tabSize: 4, insertSpaces: true, eol: '\n' };
+const f = (sql: string, opts: PartialFormatterOptions = {}): string => format(sql, opts, ED);
 
 test('basic SELECT layout, keyword case, one item per line', () => {
   assert.strictEqual(
@@ -24,7 +25,12 @@ test('idempotent', () => {
 });
 
 test('keyword / function / type / identifier case', () => {
-  const out = f('select Coalesce(a,1), cast(b as nvarchar(5)) from MyTab', { keywordCase: 'lower', functionCase: 'upper', dataTypeCase: 'lower', identifierCase: 'upper' });
+  const out = f('select Coalesce(a,1), cast(b as nvarchar(5)) from MyTab', {
+    keywordCase: 'lower',
+    functionCase: 'upper',
+    dataTypeCase: 'lower',
+    identifierCase: 'upper',
+  });
   assert.match(out, /select/);
   assert.match(out, /COALESCE\(/);
   assert.match(out, /nvarchar\(5\)/);
@@ -70,7 +76,11 @@ test('format off region is kept verbatim', () => {
 });
 
 test('unnecessary quotes and != normalization', () => {
-  const out = f('select "ABC", "abc", "SELECT" from "TAB" where a != b', { identifierQuotes: 'removeUnnecessary', notEqualOperator: '<>', oneItemPerLine: [] });
+  const out = f('select "ABC", "abc", "SELECT" from "TAB" where a != b', {
+    identifierQuotes: 'removeUnnecessary',
+    notEqualOperator: '<>',
+    oneItemPerLine: [],
+  });
   assert.ok(out.includes('ABC, "abc", "SELECT"'));
   assert.ok(out.includes('FROM TAB'));
   assert.ok(out.includes('a <> b'));
@@ -83,13 +93,15 @@ test('tabs and CRLF', () => {
 
 test('control flow indentation', () => {
   const out = f('begin if :a=1 then x=1; elseif :a=2 then x=2; else x=3; end if; end');
-  assert.strictEqual(out, ['BEGIN', '    IF :a = 1 THEN', '        x = 1;', '    ELSEIF :a = 2 THEN', '        x = 2;', '    ELSE', '        x = 3;', '    END IF;', 'END', ''].join('\n'));
+  assert.strictEqual(
+    out,
+    ['BEGIN', '    IF :a = 1 THEN', '        x = 1;', '    ELSEIF :a = 2 THEN', '        x = 2;', '    ELSE', '        x = 3;', '    END IF;', 'END', ''].join('\n')
+  );
 });
 
 test('empty input', () => assert.strictEqual(f(''), ''));
 
 test('XS Classic key=value artifacts are detected (formatter must skip them)', () => {
-  const { isKeyValueArtifact } = require('../src/formatter/detect');
   assert.ok(isKeyValueArtifact('table.schemaName = "S";\ntable.tableType = COLUMNSTORE;'));
   assert.ok(isKeyValueArtifact('// comment\nschema="MYSCHEMA";\nquery="SELECT 1";'));
   assert.ok(isKeyValueArtifact('schema_name="X";'));
