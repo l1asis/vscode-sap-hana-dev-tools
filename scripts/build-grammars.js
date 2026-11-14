@@ -547,6 +547,113 @@ jsonGrammar('xsjob', 'SAP HANA XS Job (.xsjob)', ['description', 'action', 'sche
 
 
 // ---------------------------------------------------------------------------
+// .xsxmla  (XS Classic XMLA service definition)
+// ---------------------------------------------------------------------------
+{
+  const ns = 'xsxmla';
+  const words = [
+    'namespace', 'as', 'analytic', 'calculation', 'cube', 'dimension', 'measure',
+    'metadata', 'with', 'without', 'enable', 'disable', 'default', 'null',
+  ];
+  write('xsxmla', {
+    name: 'SAP HANA XMLA Service (.xsxmla)',
+    scopeName: 'source.xsxmla',
+    patterns: [
+      { include: '#comments' },
+      { include: '#string' },
+      { include: '#number' },
+      { include: '#service' },
+      { include: '#keywords' },
+      { include: '#assignment' },
+      { include: '#punctuation' },
+    ],
+    repository: {
+      comments: comments(ns),
+      string: {
+        patterns: [
+          { name: `entity.name.type.object.${ns}`, match: R(/"[^"\n]*::[^"\n]*"/) },
+          dqString(ns),
+          sqString(ns),
+        ],
+      },
+      number: number(ns),
+      service: {
+        patterns: [
+          {
+            match: RI(/\b(service)\s+(namespace)\b/),
+            captures: { 1: { name: `storage.type.service.${ns}` }, 2: { name: `keyword.other.${ns}` } },
+          },
+          { name: `storage.type.service.${ns}`, match: RI(/\bservice\b/) },
+        ],
+      },
+      keywords: {
+        patterns: [
+          { name: `constant.language.${ns}`, match: R(/\b(?:true|false|null)\b/) },
+          { name: `keyword.control.${ns}`, match: `(?i)\\b(?:${alt(words)})\\b` },
+        ],
+      },
+      assignment: {
+        match: R(/\b([A-Za-z_]\w*)\b(?=\s*=)/),
+        name: `support.type.property-name.${ns}`,
+      },
+      punctuation: {
+        patterns: [
+          { name: `punctuation.terminator.statement.${ns}`, match: ';' },
+          { name: `punctuation.separator.comma.${ns}`, match: ',' },
+          { name: `punctuation.separator.colon.${ns}`, match: ':' },
+          { name: `punctuation.section.braces.${ns}`, match: R(/[{}]/) },
+          { name: `punctuation.section.parens.${ns}`, match: R(/[()]/) },
+          { name: `punctuation.accessor.${ns}`, match: R(/\./) },
+          { name: `keyword.operator.assignment.${ns}`, match: '=' },
+        ],
+      },
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// .hdbtid / .hdbtim  (deprecated XS Classic table import data / schema)
+// ---------------------------------------------------------------------------
+function kvGenericGrammar(file, title, keys) {
+  const ns = file;
+  write(file, {
+    name: title,
+    scopeName: `source.${file}`,
+    patterns: [
+      { include: '#comments' },
+      { include: '#assignment' },
+      { include: '#generic-key' },
+      { include: '#struct' },
+      { include: '#values' },
+      { name: `punctuation.terminator.statement.${ns}`, match: ';' },
+    ],
+    repository: {
+      ...baseRepo(ns),
+      assignment: assign(ns, keys, [{ include: '#comments' }, { include: '#struct' }, { include: '#values' }]),
+      'generic-key': {
+        match: R(/\b([A-Za-z_]\w*)\b\s*(=)/),
+        captures: { 1: { name: `support.type.property-name.${ns}` }, 2: { name: `keyword.operator.assignment.${ns}` } },
+      },
+      struct: {
+        begin: R(/\{/),
+        beginCaptures: { 0: { name: `punctuation.section.braces.begin.${ns}` } },
+        end: R(/\}/),
+        endCaptures: { 0: { name: `punctuation.section.braces.end.${ns}` } },
+        patterns: [{ include: '#comments' }, { include: '#assignment' }, { include: '#generic-key' }, { include: '#values' }, { name: `punctuation.terminator.statement.${ns}`, match: ';' }],
+      },
+    },
+  });
+}
+
+kvGenericGrammar('hdbtid', 'SAP HANA Table Import Data (.hdbtid, XS Classic)', [
+  'import', 'table', 'cdstable', 'hdbtable', 'schema', 'file', 'columns', 'keys', 'header', 'useHeaderNames', 'delimField', 'delimEnclosing', 'distinguishEmptyFromNull',
+]);
+kvGenericGrammar('hdbtim', 'SAP HANA Table Import Schema (.hdbtim, XS Classic)', [
+  'import', 'table', 'cdstable', 'hdbtable', 'schema', 'file', 'columns', 'keys',
+]);
+
+
+// ---------------------------------------------------------------------------
 // HDI (XS Advanced / HANA 2 containers) JSON artifacts
 // ---------------------------------------------------------------------------
 const ROLE_KEYS = ['role', 'name', 'privileges', 'privileges_with_grant_option', 'schema_reference', 'type', 'names', 'object_privileges', 'pattern_mode', 'schema', 'pattern_escape_character', 'global_roles', 'schema_roles', 'system_privileges', 'schema_privileges', 'reference', 'global_object_privileges', 'schema_analytic_privileges', 'logical_schema'];
@@ -571,12 +678,20 @@ jsonGrammar('hdbeshconfig', 'SAP HANA HDI Enterprise Search Configuration (.hdbe
   rules: [{ name: 'entity.name.tag.annotation.hdbeshconfig', match: R(/"@[A-Za-z][\w.]*"(?=\s*:)/) }],
 });
 jsonGrammar('hdiconfig', 'SAP HANA HDI Container Configuration (.hdiconfig)', ['plugin_name', 'plugin_version', 'minimum_feature_version', 'file_suffixes'], {
-  rules: [{ name: 'entity.name.type.hdiconfig', match: R(/"hdb[a-z]+"(?=\s*:)/) }],
+  rules: [{ name: 'entity.name.type.hdiconfig', match: R(/"(?:hdb[a-z]+|properties|tags|csv|txt|jar)"(?=\s*:)/) }],
 });
 jsonGrammar('hdinamespace', 'SAP HANA HDI Namespace Rules (.hdinamespace)', ['name', 'subfolder']);
 jsonGrammar('xsoauthappconfig', 'SAP HANA XS OAuth Application Configuration', ['clientConfig', 'mandatoryScopes', 'optionalScopes', 'description']);
 jsonGrammar('xsoauthclientconfig', 'SAP HANA XS OAuth Client Configuration', ['clientFlavor', 'clientID', 'clientAuthType', 'authorizationEndpointURL', 'tokenEndpointURL', 'revocationEndpointURL', 'redirectURL', 'description']);
 jsonGrammar('xsoauthclientflavor', 'SAP HANA XS OAuth Client Flavor', ['description', 'flavorStep', 'paramLocation', 'paramName', 'paramValue', 'valueType', 'paramMandatory', 'modifies', 'parameters']);
+jsonGrammar('xsappsite', 'SAP HANA XS Application Site (.xsappsite)', ['id', 'title', 'description', 'theme', 'catalogs', 'groups', 'tiles', 'personalization']);
+jsonGrammar('hdbfabricvirtualtableconfig', 'SAP HANA HDI Fabric Virtual Table Configuration (.hdbfabricvirtualtableconfig)', TARGET_KEYS);
+jsonGrammar('hdbvirtualpackage', 'SAP HANA HDI Virtual Package (.hdbvirtualpackage, .hdbvirtualpackagehadoop, .hdbvirtualpackagesparksql)', [
+  'plugin_name', 'plugin_version', 'adapter_type', 'location', 'remote_source', 'schema', 'package', 'name', 'file', 'jar', 'class_name',
+]);
+jsonGrammar('hdbmrjob', 'SAP HANA HDI Hadoop MapReduce Job (.hdbmrjob)', [
+  'plugin_name', 'name', 'jar', 'class_name', 'remote_source', 'location', 'parameters',
+]);
 
 // ---------------------------------------------------------------------------
 // .hdbmigrationtable  (SQL DDL plus "== version = N" / "== migration = N" markers)
