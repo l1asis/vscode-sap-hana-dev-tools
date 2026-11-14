@@ -1,0 +1,7 @@
+{
+  "id": "sap.hana.example.launchpad",
+  "title": "Sales Operations Launchpad",
+  "description": "Fiori Launchpad Application Site",
+  "theme": "sap_bluecrystal",
+  "personalization": true
+}

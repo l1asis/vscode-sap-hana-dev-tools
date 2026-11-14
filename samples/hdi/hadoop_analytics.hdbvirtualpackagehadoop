@@ -1,0 +1,6 @@
+// Hadoop Virtual Package configuration
+{
+  "name": "hadoop_analytics",
+  "adapter_type": "hadoop",
+  "location": "hdfs://namenode:8020/user/hana/lib/analytics.jar"
+}

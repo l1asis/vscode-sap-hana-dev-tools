@@ -1,0 +1,4 @@
+// XMLA service exposing analytic/calculation view as multidimensional cube
+service namespace "sap.hana.example" {
+  "sap.hana.example::CA_SALES" as "SalesCube";
+}

@@ -1,0 +1,8 @@
+// Deprecated XS Classic table import data definition
+import = [
+  {
+    table = "MY_TABLE";
+    schema = "MY_SCHEMA";
+    file = "sap.example:legacy_data.csv";
+  }
+];

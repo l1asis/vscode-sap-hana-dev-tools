@@ -1,0 +1,5 @@
+{
+  "name": "legacy_mrjob",
+  "class_name": "com.example.hana.WordCountJob",
+  "location": "/jobs/wordcount.jar"
+}

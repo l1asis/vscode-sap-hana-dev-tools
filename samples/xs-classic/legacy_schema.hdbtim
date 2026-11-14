@@ -1,0 +1,8 @@
+// Deprecated XS Classic table import schema mapping
+import = [
+  {
+    schema = "MY_SCHEMA";
+    table = "MY_TABLE";
+    columns = ["ID", "NAME"];
+  }
+];

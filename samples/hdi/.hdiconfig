@@ -1,7 +1,16 @@
 {
-  "plugin_version": "2.0.30.0",
+  "plugin_version": "4.0.0.0",
   "file_suffixes": {
     "hdbsynonym": { "plugin_name": "com.sap.hana.di.synonym" },
-    "hdbview": { "plugin_name": "com.sap.hana.di.view" }
+    "hdbview": { "plugin_name": "com.sap.hana.di.view" },
+    "hdbcollection": { "plugin_name": "com.sap.hana.di.collection" },
+    "hdbcollectionindex": { "plugin_name": "com.sap.hana.di.collection.index" },
+    "hdbcollectionadjindex": { "plugin_name": "com.sap.hana.di.collection.adjacency_index" },
+    "hdbfabricvirtualtable": {
+      "plugin_name": "com.sap.hana.di.sharedreplica",
+      "plugin_version": "4.0.0.0"
+    },
+    "properties": { "plugin_name": "com.sap.hana.di.tabledata.properties" },
+    "tags": { "plugin_name": "com.sap.hana.di.tabledata.properties" }
   }
 }

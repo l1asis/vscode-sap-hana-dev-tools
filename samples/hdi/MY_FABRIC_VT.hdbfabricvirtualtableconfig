@@ -1,0 +1,10 @@
+{
+  "MY_VIRTUAL_TABLE": {
+    "target": {
+      "remote": "REMOTE_FABRIC_SRC",
+      "database": "LAKE_DB",
+      "schema": "ANALYTICS",
+      "object": "SALES_FACT"
+    }
+  }
+}

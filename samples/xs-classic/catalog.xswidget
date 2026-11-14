@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget id="sap.hana.example.catalog" title="Sales Analytics Catalog" type="tileCatalog">
+  <tiles>
+    <tile id="ordersTile" type="static" title="Sales Orders" targetUrl="#SalesOrder-display" />
+  </tiles>
+</widget>
