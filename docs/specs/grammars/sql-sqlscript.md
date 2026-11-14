@@ -18,7 +18,9 @@
 | `.hdbview` (HDI DDL), `.hdbresultcache` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `VIEW` and `RESULT CACHE` DDL |
 | `.hdbsequence` (HDI DDL), `.hdbindex`, `.hdbfulltextindex`, `.hdbconstraint`, `.hdbstatistics` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `SEQUENCE`, `INDEX`, `FULLTEXT INDEX`, `CONSTRAINT`, `STATISTICS` DDL |
 | `.hdbtabletype`, `.hdbstructuredprivilege`, `.hdbgraphworkspace`, `.hdbcollection`, `.hdbschedulerjob` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI `TYPE`, `STRUCTURED PRIVILEGE`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB` DDL |
-| `.hdbafllangprocedure`, `.hdbvirtualfunction`, `.hdbvirtualpackage`, `.hdbvirtualprocedure`, `.hdbsearchruleset` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI AFL, Smart Data Integration, and Search Ruleset DDL |
+| `.hdbcollectionindex`, `.hdbcollectionadjindex` | `hdbcollection` | `source.hanasql` | `[CLOUD]` | Headerless Document Store collection index and adjacency index DDL (`HASH INDEX` / `BLOCK RANGE INDEX` / `ADJACENCY INDEX`) |
+| `.hdbfabricvirtualtable` | `hdbfabricvirtualtable` | `source.hanasql` | `[CLOUD]` | Headerless Fabric Virtual Table shared replica DDL (`SHARED [SNAPSHOT] REPLICA [PAGE\|COLUMN LOADABLE] ON`) |
+| `.hdbafllangprocedure`, `.hdbvirtualfunction`, `.hdbvirtualprocedure`, `.hdbsearchruleset` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI AFL, Smart Data Integration, and Search Ruleset DDL |
 
 ---
 
@@ -360,6 +362,28 @@ series_table_clause ::=
         "PERIOD" "FOR" "SERIES" "(" column_name [ "," column_name ] ")"
     ")" ;
 ```
+
+### 4.10 Headerless Document Store Collection Indexes & Fabric Virtual Tables `[CLOUD]`
+
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/007_pages_211_245.md (Pages 222–228)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_JSON_Document_Store_Guide/030_CREATE_HASH_INDEX_Statement.md (Pages 33–33)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_JSON_Document_Store_Guide/031_CREATE_BLOCK_RANGE_INDEX_Statement.md (Pages 34–35)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_JSON_Document_Store_Guide/032_CREATE_ADJACENCY_INDEX_Statement.md (Pages 36–36)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/020_pages_571_600.md (Pages 580–585)
+
+```ebnf
+collection_index_artifact ::=
+    ( "HASH" | "BLOCK" "RANGE" ) "INDEX" identifier "ON" collection_name "(" path_expression ")" ;
+
+collection_adj_index_artifact ::=
+    "ADJACENCY" "INDEX" identifier "ON" collection_name
+    "(" "ID" adj_field "," "SOURCE" adj_field "," "TARGET" adj_field "," "TYPE" adj_field ")" ;
+
+fabric_virtual_table_artifact ::=
+    "SHARED" [ "SNAPSHOT" ] "REPLICA" [ ( "PAGE" | "COLUMN" ) "LOADABLE" ] "ON" virtual_table_name ;
+```
+
+- Leading keywords `HASH`, `BLOCK`, `ADJACENCY`, and `SHARED` are root-level HDI artifact headers (no `CREATE` prefix and no root trailing semicolon appended).
 
 ---
 
