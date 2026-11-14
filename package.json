@@ -284,7 +284,8 @@
         ],
         "extensions": [
           ".hdbcollection",
-          ".hdbcollectionindex"
+          ".hdbcollectionindex",
+          ".hdbcollectionadjindex"
         ],
         "configuration": "./language-configuration.json",
         "icon": {
@@ -1179,6 +1180,148 @@
           "light": "./images/icons/hdbafllangprocedure.svg",
           "dark": "./images/icons/hdbafllangprocedure.svg"
         }
+      },
+      {
+        "id": "hdbfabricvirtualtable",
+        "aliases": [
+          "SAP HANA HDI Fabric Virtual Table"
+        ],
+        "extensions": [
+          ".hdbfabricvirtualtable"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualtable.svg",
+          "dark": "./images/icons/hdbvirtualtable.svg"
+        }
+      },
+      {
+        "id": "hdbfabricvirtualtableconfig",
+        "aliases": [
+          "SAP HANA HDI Fabric Virtual Table Configuration"
+        ],
+        "extensions": [
+          ".hdbfabricvirtualtableconfig"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualtableconfig.svg",
+          "dark": "./images/icons/hdbvirtualtableconfig.svg"
+        }
+      },
+      {
+        "id": "hdbvirtualpackage",
+        "aliases": [
+          "SAP HANA HDI Virtual Package"
+        ],
+        "extensions": [
+          ".hdbvirtualpackage",
+          ".hdbvirtualpackagehadoop",
+          ".hdbvirtualpackagesparksql"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualfunction.svg",
+          "dark": "./images/icons/hdbvirtualfunction.svg"
+        }
+      },
+      {
+        "id": "hdbmrjob",
+        "aliases": [
+          "SAP HANA HDI Hadoop MapReduce Job"
+        ],
+        "extensions": [
+          ".hdbmrjob"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/hdbvirtualfunction.svg",
+          "dark": "./images/icons/hdbvirtualfunction.svg"
+        }
+      },
+      {
+        "id": "xsappsite",
+        "aliases": [
+          "SAP HANA XS Application Site"
+        ],
+        "extensions": [
+          ".xsappsite"
+        ],
+        "configuration": "./language-configuration-xsjson.json",
+        "icon": {
+          "light": "./images/icons/xsapp.svg",
+          "dark": "./images/icons/xsapp.svg"
+        }
+      },
+      {
+        "id": "hdbdecisiontable",
+        "aliases": [
+          "SAP HANA Decision Table"
+        ],
+        "extensions": [
+          ".hdbdecisiontable"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbcalculationview.svg",
+          "dark": "./images/icons/hdbcalculationview.svg"
+        }
+      },
+      {
+        "id": "xswidget",
+        "aliases": [
+          "SAP HANA XS Widget Catalog"
+        ],
+        "extensions": [
+          ".xswidget"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/xsapp.svg",
+          "dark": "./images/icons/xsapp.svg"
+        }
+      },
+      {
+        "id": "xsxmla",
+        "aliases": [
+          "SAP HANA XS XMLA Service"
+        ],
+        "extensions": [
+          ".xsxmla"
+        ],
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/xsodata.svg",
+          "dark": "./images/icons/xsodata.svg"
+        }
+      },
+      {
+        "id": "hdbtid",
+        "aliases": [
+          "SAP HANA Table Import Data"
+        ],
+        "extensions": [
+          ".hdbtid"
+        ],
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbti.svg",
+          "dark": "./images/icons/hdbti.svg"
+        }
+      },
+      {
+        "id": "hdbtim",
+        "aliases": [
+          "SAP HANA Table Import Schema"
+        ],
+        "extensions": [
+          ".hdbtim"
+        ],
+        "configuration": "./language-configuration-xs.json",
+        "icon": {
+          "light": "./images/icons/hdbti.svg",
+          "dark": "./images/icons/hdbti.svg"
+        }
       }
     ],
     "grammars": [
@@ -1586,6 +1729,56 @@
         "language": "hdbtextminingconfig",
         "scopeName": "text.xml.hana",
         "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "hdbfabricvirtualtable",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbfabricvirtualtableconfig",
+        "scopeName": "source.hdbfabricvirtualtableconfig",
+        "path": "./syntaxes/hdbfabricvirtualtableconfig.tmLanguage.json"
+      },
+      {
+        "language": "hdbvirtualpackage",
+        "scopeName": "source.hdbvirtualpackage",
+        "path": "./syntaxes/hdbvirtualpackage.tmLanguage.json"
+      },
+      {
+        "language": "hdbmrjob",
+        "scopeName": "source.hdbmrjob",
+        "path": "./syntaxes/hdbmrjob.tmLanguage.json"
+      },
+      {
+        "language": "xsappsite",
+        "scopeName": "source.xsappsite",
+        "path": "./syntaxes/xsappsite.tmLanguage.json"
+      },
+      {
+        "language": "hdbdecisiontable",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "xswidget",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "xsxmla",
+        "scopeName": "source.xsxmla",
+        "path": "./syntaxes/xsxmla.tmLanguage.json"
+      },
+      {
+        "language": "hdbtid",
+        "scopeName": "source.hdbtid",
+        "path": "./syntaxes/hdbtid.tmLanguage.json"
+      },
+      {
+        "language": "hdbtim",
+        "scopeName": "source.hdbtim",
+        "path": "./syntaxes/hdbtim.tmLanguage.json"
       }
     ],
     "commands": [
@@ -1668,6 +1861,9 @@
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdbvirtualfunction]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbfabricvirtualtable]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       }
     },
@@ -2000,7 +2196,17 @@
     "onLanguage:hdbsysbicsynonym",
     "onLanguage:hdbvirtualprocedureconfig",
     "onLanguage:hdbvirtualfunctionconfig",
-    "onLanguage:hdbafllangprocedure"
+    "onLanguage:hdbafllangprocedure",
+    "onLanguage:hdbfabricvirtualtable",
+    "onLanguage:hdbfabricvirtualtableconfig",
+    "onLanguage:hdbvirtualpackage",
+    "onLanguage:hdbmrjob",
+    "onLanguage:xsappsite",
+    "onLanguage:hdbdecisiontable",
+    "onLanguage:xswidget",
+    "onLanguage:xsxmla",
+    "onLanguage:hdbtid",
+    "onLanguage:hdbtim"
   ],
   "scripts": {
     "vscode:prepublish": "npm run compile",
