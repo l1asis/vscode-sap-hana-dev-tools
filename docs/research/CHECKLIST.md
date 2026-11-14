@@ -9,58 +9,58 @@
 
 ## Phase 1 & 2: Grammars & Formatters (SQL, SQLScript, CDS, XSODATA, CGUL) (23 unique guides)
 
-- [ ] **hana-cloud-data-lake_SAP HANA Cloud, Data Lake SQL Reference for Data Lake Relational Engine (SAP HANA DB-Managed)** (796p, 27 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-data-lake_SAP HANA Cloud, Data Lake SQL Reference for Data Lake Relational Engine (SAP HANA DB-Managed)** (796p, 27 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-data-lake_SAP_HANA_Cloud,_Data_Lake_SQL_Reference_for_Data_Lake_Relat`
-- [ ] **hana-cloud-data-lake_SAP HANA Cloud, Data Lake SQL Reference for Data Lake Relational Engine** (1601p, 54 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-data-lake_SAP HANA Cloud, Data Lake SQL Reference for Data Lake Relational Engine** (1601p, 54 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-data-lake_SAP_HANA_Cloud,_Data_Lake_SQL_Reference_for_Data_Lake_Relat`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Hierarchy Developer Guide** (91p, 50 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Hierarchy Developer Guide** (91p, 50 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database JSON Document Store Guide** (84p, 64 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database JSON Document Store Guide** (84p, 64 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_JSON_Document_Store_Guide`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Knowledge Graph Engine Guide** (37p, 35 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Knowledge Graph Engine Guide** (37p, 35 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Knowledge_Graph_Engine_Gui`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Property Graph Engine Reference** (180p, 6 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Property Graph Engine Reference** (180p, 6 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Spatial Reference** (222p, 8 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Spatial Reference** (222p, 8 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Spatial_Reference`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database SQL Reference Guide** (1775p, 60 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database SQL Reference Guide** (1775p, 60 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Vector Engine Guide** (55p, 53 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Vector Engine Guide** (55p, 53 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Vector_Engine_Guide`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA SQLScript Reference** (278p, 10 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA SQLScript Reference** (278p, 10 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference`
-- [ ] **HANA_SMART_DATA_INTEGRATION_SAP HANA Cloud, SAP HANA Database SQL Reference Guide** (1772p, 60 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **HANA_SMART_DATA_INTEGRATION_SAP HANA Cloud, SAP HANA Database SQL Reference Guide** (1772p, 60 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/HANA_SMART_DATA_INTEGRATION_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guid`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Graph Reference** (74p, 57 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Graph Reference** (74p, 57 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Graph_Reference`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA JSON Document Store Guide** (33p, 38 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA JSON Document Store Guide** (33p, 38 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_JSON_Document_Store_Guide`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Series Data Developer Guide** (18p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Series Data Developer Guide** (18p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Series_Data_Developer_Guide`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Spatial Reference** (202p, 7 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Spatial Reference** (202p, 7 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Spatial_Reference`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA SQL Reference Guide for SAP HANA Platform** (1893p, 64 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA SQL Reference Guide for SAP HANA Platform** (1893p, 64 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA SQLScript Reference for SAP HANA Platform** (287p, 10 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA SQLScript Reference for SAP HANA Platform** (287p, 10 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Graph_Reference_en** (94p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Graph_Reference_en** (94p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Graph_Reference_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_JSON_Document_Store_Guide_en** (48p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_JSON_Document_Store_Guide_en** (48p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_JSON_Document_Store_Guide_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Series_Data_Developer_Guide_en** (30p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Series_Data_Developer_Guide_en** (30p, 14 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Series_Data_Developer_Guide_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Spatial_Reference_en** (338p, 11 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Spatial_Reference_en** (338p, 11 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Spatial_Reference_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en** (2388p, 13 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en** (2388p, 13 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en** (332p, 22 chapters) $\rightarrow$ `docs/specs/grammars/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en** (332p, 22 chapters) $\rightarrow$ `docs/specs/grammars/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en`
 
 ## Phase 2 & 3: Design-Time Artifacts (.hdb*, .xs*, Calculation Views, HDI) (31 unique guides)
 
 - [ ] **hana-cloud-data-lake_SAP HANA Cloud, Data Lake Developer Guide for Data Lake Relational Engine** (619p, 21 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-data-lake_SAP_HANA_Cloud,_Data_Lake_Developer_Guide_for_Data_Lake_Rel`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Deployment Infrastructure (HDI) Reference** (291p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Deployment Infrastructure (HDI) Reference** (291p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_`
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Developer Guide for Cloud Foundry Multitarget Applications (SAP Bu** (395p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Developer_Guide_for_Cloud_`
@@ -70,7 +70,7 @@
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Modeling_Guide_for_SAP_Bus`
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Modeling Guide for SAP Web IDE Full-Stack** (175p, 6 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Modeling_Guide_for_SAP_Web`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Search Developer Guide** (438p, 15 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Search Developer Guide** (438p, 15 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Search_Developer_Guide`
 - [ ] **HANA_SMART_DATA_INTEGRATION_Modeling Guide for SAP HANA Web-based Development Workbench** (262p, 9 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/HANA_SMART_DATA_INTEGRATION_Modeling_Guide_for_SAP_HANA_Web-based_Development_Wo`
@@ -80,45 +80,45 @@
   Extracted: `research/refs/extracted/HANA_SMART_DATA_INTEGRATION_REST_API_Developer_Guide`
 - [ ] **SAP_HANA_COCKPIT_SAP HANA Cloud Developer Guide for Cloud Foundry Multitarget Applications (SAP Business App Studio)** (396p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_COCKPIT_SAP_HANA_Cloud_Developer_Guide_for_Cloud_Foundry_Multitarget_Ap`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Core Data Services (CDS) Reference** (273p, 117 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Core Data Services (CDS) Reference** (273p, 117 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_(CDS)_Reference`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Deployment Infrastructure (HDI) Reference for SAP HANA Platform** (300p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Deployment Infrastructure (HDI) Reference for SAP HANA Platform** (300p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(HDI)_Reference_for_SAP_HAN`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Developer Guide for SAP HANA XS Advanced Model (SAP Business App Studio)** (999p, 34 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Developer Guide for SAP HANA XS Advanced Model (SAP Business App Studio)** (999p, 34 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_(SAP_B`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Developer Guide for SAP HANA XS Advanced Model (SAP Web IDE)** (1140p, 38 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Developer Guide for SAP HANA XS Advanced Model (SAP Web IDE)** (1140p, 38 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_(SAP_W`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Developer Guide** (639p, 22 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Developer Guide** (639p, 22 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA Developer Guide_52715f71** (642p, 22 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA Developer Guide_52715f71** (642p, 22 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_52715f71`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA HDBTable Syntax Reference** (55p, 33 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA HDBTable Syntax Reference** (55p, 33 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_HDBTable_Syntax_Reference`
 - [ ] **SAP_HANA_PLATFORM_SAP HANA Modeling Guide for SAP HANA Web Workbench** (99p, 113 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_Web_Workbench`
 - [ ] **SAP_HANA_PLATFORM_SAP HANA Modeling Guide for SAP Web IDE for SAP HANA** (190p, 7 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_Web_IDE_for_SAP_HANA`
-- [ ] **SAP_HANA_PLATFORM_SAP HANA XS Advanced Migration Guide** (134p, 109 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP HANA XS Advanced Migration Guide** (134p, 109 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_CDS_Reference_en** (326p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_CDS_Reference_en** (326p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_CDS_Reference_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(DI)_Reference_en** (374p, 11 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(DI)_Reference_en** (374p, 11 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(DI)_Reference_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Studio_en** (778p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Studio_en** (778p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Studio_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Web_Workbench_en** (540p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Web_Workbench_en** (540p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_Web_Workbench_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_BAS_en** (1168p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_BAS_en** (1168p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_BAS_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en** (1312p, 20 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en** (1312p, 20 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_HDBTable_Syntax_Reference_en** (70p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_HDBTable_Syntax_Reference_en** (70p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_HDBTable_Syntax_Reference_en`
 - [ ] **SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_Web_Workbench_en** (132p, 12 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_Web_Workbench_en`
 - [ ] **SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_XS_Advanced_Model_en** (242p, 9 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_XS_Advanced_Model_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en** (170p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [~] **SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en** (170p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en`
 
 ## Phase 3 & 4: API & System View Catalogs (xsjs.d.ts, SYS.*, BIMC, PAL/APL) (12 unique guides)
