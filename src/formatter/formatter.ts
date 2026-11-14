@@ -143,7 +143,7 @@ const BEGIN_MODS: ReadonlySet<string> = new Set(['AUTONOMOUS', 'TRANSACTION', 'S
 const END_SUFFIX: ReadonlySet<string> = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
 const OBJ_TYPES: ReadonlySet<string> = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
 const STMT_VERBS: ReadonlySet<string> = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
-const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'INVERTED', 'SEQUENCE', 'TRIGGER']);
+const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'BLOCK', 'ADJACENCY', 'INVERTED', 'SEQUENCE', 'TRIGGER', 'SHARED']);
 const HEADER_WORDS: ReadonlySet<string> = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
 // keywords after which a following + - * is unary / a wildcard, not a binary operator
 const NON_VALUE: ReadonlySet<string> = new Set([
@@ -301,7 +301,7 @@ class Layout {
     if (cls === 'ident' && !dotAdj && this.stmt) {
       const st = this.stmt;
       if (st.alterSystem && (up === 'SYSTEM' || K.SYSTEM_WORDS.has(up))) cls = 'keyword';
-      else if (st.count <= 6 && STMT_VERBS.has(st.first) && K.STATEMENT_NOUNS.has(up)) cls = 'keyword';
+      else if (st.count <= 6 && (STMT_VERBS.has(st.first) || st.hdiRoot) && K.STATEMENT_NOUNS.has(up)) cls = 'keyword';
     }
     const mode = cls === 'keyword' ? this.o.keywordCase : cls === 'function' ? this.o.functionCase : cls === 'type' ? this.o.dataTypeCase : this.o.identifierCase;
     return { t: this.caseOf(tok.text, mode), k: 'word', cls, up, srcSp: tok.wsBefore };

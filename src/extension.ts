@@ -31,6 +31,7 @@ const SQL_LANGUAGES: readonly string[] = [
   'hdbschedulerjob',
   'hdbremotetablereplica',
   'hdbcollection',
+  'hdbfabricvirtualtable',
   'hdblibrary',
   'hdbdropcreatetable',
   'hdbapplicationtime',
