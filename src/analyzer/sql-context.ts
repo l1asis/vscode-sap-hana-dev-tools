@@ -950,7 +950,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           ) {
             emitDiag(tok, 'HANA-SYN-029', `Table UDF body is missing a 'RETURN <query_or_table_var>;' statement.`);
           }
-          atStmtStart = false;
+          atStmtStart = scopeStack[scopeStack.length - 1]?.kind === 'library_root';
           i++;
           continue;
         }
@@ -1052,9 +1052,97 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       continue;
     }
 
-    // 4. Inside `.hdblibrary` root block: parse member PROCEDURE / FUNCTION / VARIABLE
+    // 4. Inside `.hdblibrary` root block: parse USING / member VARIABLE / PROCEDURE / FUNCTION
     if (topScope.kind === 'library_root') {
-      if (atStmtStart) {
+      if (!atStmtStart || parenDepth !== topScope.parenDepth || caseDepth !== 0) {
+        i++;
+        continue;
+      }
+
+      const hasVisibility = up === 'PUBLIC' || up === 'PRIVATE';
+      const memberTok = hasVisibility ? nextTok : tok;
+      const memberUp = hasVisibility ? nextUp : up;
+
+      if (!hasVisibility && up === 'USING' && isSimpleIdOrIdent(nextTok)) {
+        if (topScope.phase >= BlockPhase.DECL) {
+          emitDiag(
+            tok,
+            'HANA-SYN-028',
+            `'USING' declaration in a LIBRARY must appear before variable declarations and member procedures/functions.`
+          );
+        } else {
+          topScope.phase = BlockPhase.AFTER_MODIFIER;
+        }
+        atStmtStart = false;
+        i++;
+        continue;
+      }
+
+      if (memberUp === 'VARIABLE' && memberTok) {
+        if (!hasVisibility) {
+          emitDiag(tok, 'HANA-SYN-029', `Library member 'VARIABLE' must specify 'PUBLIC' or 'PRIVATE' visibility.`);
+        }
+        if (topScope.phase >= BlockPhase.EXECUTABLE) {
+          emitDiag(
+            memberTok,
+            'HANA-SYN-028',
+            `Library variable declarations must appear before member procedures and functions.`
+          );
+        } else {
+          topScope.phase = BlockPhase.DECL;
+        }
+
+        let cur = hasVisibility ? i + 2 : i + 1;
+        if (cur < codeTokens.length && codeTokens[cur].text !== ';') {
+          cur++;
+        }
+        let hasConstant = false;
+        let initTok: Token | undefined;
+        let localParen = 0;
+        let localCase = 0;
+        while (cur < codeTokens.length) {
+          const t = codeTokens[cur];
+          const tUp = wordUpper(t);
+          if (t.text === '(') {
+            localParen++;
+          } else if (t.text === ')') {
+            if (localParen > 0) localParen--;
+          } else if (tUp === 'CASE') {
+            localCase++;
+          } else if (tUp === 'END' && localCase > 0 && !END_COMPOUND_SUFFIXES.has(wordUpper(codeTokens[cur + 1]))) {
+            localCase--;
+          } else if (localParen === 0 && localCase === 0) {
+            if (t.text === ';') break;
+            if (tUp === 'END' || tUp === 'PUBLIC' || tUp === 'PRIVATE') break;
+            if (tUp === 'CONSTANT') {
+              hasConstant = true;
+            } else if (!initTok && (tUp === 'DEFAULT' || t.text === '=' || t.text === ':=')) {
+              initTok = t;
+            }
+          }
+          cur++;
+        }
+        if (initTok && !hasConstant) {
+          emitDiag(
+            initTok,
+            'HANA-SYN-028',
+            `Library variable initializer '${initTok.text.toUpperCase()}' requires 'CONSTANT'.`
+          );
+        }
+        i = codeTokens[cur]?.text === ';' ? cur + 1 : cur;
+        atStmtStart = true;
+        continue;
+      }
+
+      if (memberUp === 'PROCEDURE' || memberUp === 'FUNCTION') {
+        if (!hasVisibility) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Library member '${memberUp}' must specify 'PUBLIC' or 'PRIVATE' visibility.`
+          );
+        }
+        topScope.phase = BlockPhase.EXECUTABLE;
         const res = tryParseRoutineHeader(i, true);
         if (res.handled) {
           if (res.openedKind && res.openedRoutine) {
@@ -1065,6 +1153,12 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           continue;
         }
       }
+
+      emitDiag(
+        tok,
+        'HANA-SYN-029',
+        `Statement '${up || tok.text}' is not allowed directly inside a LIBRARY body; use 'PUBLIC'/'PRIVATE' 'VARIABLE', 'PROCEDURE', or 'FUNCTION' members.`
+      );
       atStmtStart = false;
       i++;
       continue;
@@ -1098,11 +1192,15 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
               'HANA-SYN-029',
               `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
             );
+          } else if (routine?.kind === 'trigger') {
+            emitDiag(tok, 'HANA-SYN-029', `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a TRIGGER body.`);
           }
         } else if (up === 'PARALLEL') {
           (topScope as { inParallel: boolean }).inParallel = true;
           if (isFunctionRoutine) {
             emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION.`);
+          } else if (routine?.kind === 'trigger') {
+            emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a TRIGGER body.`);
           }
         }
         topScope.phase = BlockPhase.AFTER_MODIFIER;
@@ -1270,8 +1368,6 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           } else {
             routine.hasSawReturnExpr = true;
           }
-        } else if (routine?.kind === 'trigger') {
-          emitDiag(tok, 'HANA-SYN-029', `'RETURN' is not allowed inside a TRIGGER body.`);
         } else if (!isBareReturn && routine) {
           emitDiag(
             tok,
@@ -1338,6 +1434,8 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           emitDiag(tok, 'HANA-SYN-029', `DDL statement '${up}' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
         } else if (topScope.inParallel) {
           emitDiag(tok, 'HANA-SYN-029', `DDL statement '${up}' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        } else if (routine?.kind === 'trigger') {
+          emitDiag(tok, 'HANA-SYN-029', `DDL statement '${up}' is not allowed inside a TRIGGER body.`);
         }
       } else if (
         up === 'COMMIT' ||
@@ -1358,6 +1456,12 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
             'HANA-SYN-029',
             `Transaction control statement '${up}' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`
           );
+        } else if (routine?.kind === 'trigger') {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Transaction control statement '${up}' is not allowed inside a TRIGGER body.`
+          );
         }
       } else if ((up === 'EXEC' && nextTok && nextTok.text !== ';') || (up === 'EXECUTE' && nextUp === 'IMMEDIATE')) {
         const dynLabel = up === 'EXECUTE' ? 'EXECUTE IMMEDIATE' : 'EXEC';
@@ -1371,6 +1475,8 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
         } else if (topScope.inParallel) {
           emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        } else if (routine?.kind === 'trigger') {
+          emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside a TRIGGER body.`);
         }
       } else if (up === 'CALL' && nextTok) {
         if (isFunctionRoutine) {
