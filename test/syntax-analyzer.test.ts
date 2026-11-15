@@ -166,7 +166,7 @@ test('HANA-SYN-020: SQLScript compound blocks, CASE..END, IF EXISTS & loops', ()
 
 test('HANA-SYN-021 & HANA-SYN-022: anchored header keyword typos, QuickFixes & Classic KV', () => {
   // User's exact scenario: `CREATE FUNC` / root `FUNC` in `.hdbfunction`
-  const badCreateFunc = 'CREATE FUNC "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;';
+  const badCreateFunc = 'CREATE FUNC "MY_FN"() RETURNS x INT AS BEGIN x = 1; END;';
   const diags1 = syntaxDiags('hanasql', badCreateFunc);
   const f1 = diags1.find((d) => d.ruleId === 'HANA-SYN-021');
   assert.ok(f1);
@@ -645,6 +645,880 @@ test('HANA-SYN-034: XSJS missing, dangling, and consecutive operators & negative
     '}',
   ].join('\n');
   assert.deepEqual(syntaxDiags('xsjs', validJs), []);
+});
+
+test('HANA-SYN-027: SELECT query clause ordering, duplicate clauses & negative checks', () => {
+  const syn27 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-027');
+
+  // 1. Out-of-order clauses
+  const whereBeforeFrom = syn27('hanasql', 'SELECT "A" WHERE "A" = 1 FROM "T";');
+  assert.equal(whereBeforeFrom.length, 1);
+  assert.match(whereBeforeFrom[0].message, /after 'FROM'/);
+
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" ORDER BY "A" WHERE "B" = 1;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A", COUNT(*) FROM "T" HAVING COUNT(*) > 1 GROUP BY "A";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" LIMIT 10 ORDER BY "A";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" OFFSET 5;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" INTO #TMP WHERE "A" = 1;').length, 1);
+
+  // 2. Duplicate non-repeatable clauses
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" WHERE "A" = 1 WHERE "B" = 2;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" ORDER BY "A" ORDER BY "B";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" INTO lv_a FROM "T" INTO lv_b;').length, 1);
+
+  // 3. Unparenthesized ORDER BY before UNION & bad clause inside CTE
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T1" ORDER BY "A" UNION SELECT "A" FROM "T2";').length, 1);
+  assert.equal(syn27('hanasql', 'WITH c AS (SELECT "A" WHERE "A" = 1 FROM "T") SELECT * FROM c;').length, 1);
+
+  // 4. Negative tests: complex valid HANA queries must emit ZERO HANA-SYN-027 diagnostics
+  const validQueries = [
+    'WITH cte AS (SELECT "ID", "CAT", "VAL" FROM "BASE" WHERE "ACTIVE" = 1)',
+    'SELECT "CAT", COUNT(*) AS "CNT", STRING_AGG("ID", \',\' ORDER BY "ID") AS "IDS",',
+    '  ROW_NUMBER() OVER (PARTITION BY "CAT" ORDER BY "VAL" DESC) AS "RN",',
+    '  CASE WHEN EXTRACT(YEAR FROM "CREATED_AT") >= 2024 THEN 1 ELSE 0 END AS "RECENT"',
+    'FROM cte FOR SYSTEM_TIME AS OF UTCTIMESTAMP \'2025-01-01 00:00:00\'',
+    'WHERE "FLAG" IS NOT DISTINCT FROM 1 AND EXISTS (SELECT 1 FROM "OTHER" o WHERE o."ID" = cte."ID")',
+    'GROUP BY "CAT", "ID", "VAL", "CREATED_AT"',
+    'HAVING COUNT(*) >= 1',
+    'WINDOW w AS (PARTITION BY "CAT" ORDER BY "VAL")',
+    'ORDER BY "CAT" ASC',
+    'LIMIT 50 OFFSET 10;',
+    'SELECT COUNT(*) INTO lv_cnt FROM "BASE" WHERE "ACTIVE" = 1;',
+    'SELECT "A" FROM "T1" WHERE "X" = 1 UNION ALL SELECT "A" FROM "T2" WHERE "X" = 2 ORDER BY "A";',
+    '(SELECT "A" FROM "T1" ORDER BY "A") UNION (SELECT "A" FROM "T2" ORDER BY "A");',
+  ].join('\n');
+  assert.deepEqual(syn27('hanasql', validQueries), []);
+});
+
+test('HANA-SYN-028: SQLScript routine header, USING, block declaration ordering, handler conflicts & unreachable statements', () => {
+  const syn28 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-028');
+
+  // 1. Misplaced header clause after AS, duplicate header options, and RETURNS ordering
+  assert.ok(
+    syn28('hanasql', 'CREATE PROCEDURE p() AS READS SQL DATA BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /before 'AS'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE PROCEDURE p() READS SQL DATA READS SQL DATA AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /Duplicate 'READS SQL DATA'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f(IN x INT) LANGUAGE SQLSCRIPT RETURNS INT AS BEGIN RETURN x; END;').some((d) =>
+      /'RETURNS' clause must appear before/i.test(d.message)
+    )
+  );
+
+  // 2. Parameter & routine header compatibility
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f(OUT x INT) RETURNS INT AS BEGIN x = 1; END;').some((d) =>
+      /'OUT' is not allowed in a FUNCTION header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE FUNCTION f(INOUT x INT) RETURNS INT AS BEGIN RETURN; END;').some((d) =>
+      /'INOUT' is not allowed in a FUNCTION header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE FUNCTION f(IN x INT) AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /Missing 'RETURNS' clause/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() RETURNS INT AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'RETURNS' clause is not allowed in a PROCEDURE header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f() RETURNS INT STRUCTURED FILTER CHECK AS BEGIN RETURN; END;').length === 0
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() STRUCTURED FILTER CHECK AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'STRUCTURED FILTER CHECK' is only supported in FUNCTION/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f() RETURNS x INT LANGUAGE SQLSCRIPT READS SQL DATA AS BEGIN x = 1; END').length === 0
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() READS SQL DATA AUTOCOMMIT DDL ON AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'AUTOCOMMIT DDL' is not allowed in a 'READS SQL DATA' procedure/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() SEQUENTIAL EXECUTION AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'SEQUENTIAL EXECUTION' must appear immediately after 'BEGIN'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN READS SQL DATA; SELECT 1 FROM DUMMY; END').some((d) =>
+      /'READS SQL DATA' must appear before 'AS'/i.test(d.message)
+    )
+  );
+
+  // 3. USING placement
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() USING SYS.SQLSCRIPT_STRING AS LIB; AS BEGIN SELECT 1 FROM DUMMY; END').some((d) =>
+      /'USING' library declaration must appear after 'AS'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN DECLARE v INT; USING SYS.SQLSCRIPT_STRING AS LIB; v = 1; END').some((d) =>
+      /'USING' declaration must appear before 'DECLARE'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN IF 1 = 1 THEN USING SYS.SQLSCRIPT_STRING AS LIB; END IF; END'
+    ).some((d) => /routine root level/i.test(d.message))
+  );
+
+  // 4. Compound block declaration / handler / modifier ordering
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN SELECT 1 FROM DUMMY; DECLARE v INT; v = 1; END').some((d) =>
+      /'DECLARE' must appear before executable statements/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL; DECLARE c CONDITION; SELECT 1 FROM DUMMY; END'
+    ).some((d) => /must appear before 'DECLARE \.\.\. HANDLER'/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN SELECT 1 FROM DUMMY; DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL; END'
+    ).some((d) => /'DECLARE \.\.\. HANDLER' must appear before executable statements/i.test(d.message))
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN DECLARE v INT; SEQUENTIAL EXECUTION; v = 1; END').some((d) =>
+      /'SEQUENTIAL EXECUTION' must appear immediately after the block opener/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN IF 1 = 1 THEN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END IF; END').some(
+      (d) => /'PARALLEL EXECUTION' is only valid on a 'BEGIN' block/i.test(d.message)
+    )
+  );
+
+  // 5. EXIT / CONTINUE handler conflicts and duplicates
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299 RESIGNAL;
+         DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+       END`
+    ).some((d) => /cannot appear in the same scope/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 1 FROM DUMMY;
+         IF 1 = 1 THEN
+           DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299 RESIGNAL;
+           SELECT 1 FROM DUMMY;
+         END IF;
+       END`
+    ).some((d) => /inside an enclosing 'CONTINUE HANDLER' scope/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+         DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN END;
+       END`
+    ).some((d) => /Duplicate condition handler for 'SQLEXCEPTION'/i.test(d.message))
+  );
+
+  // 6. Unreachable statements (warning + unnecessary tag)
+  const unreachDiags = syn28(
+    'hdbprocedure',
+    `PROCEDURE p(OUT o INT) AS
+     BEGIN
+       IF 1 = 1 THEN
+         RETURN;
+         o = 99;
+       END IF;
+       LOOP
+         BREAK;
+         o = 2;
+       END LOOP;
+     END`
+  );
+  assert.equal(unreachDiags.length, 2);
+  assert.ok(unreachDiags.every((d) => d.severity === 'warning' && d.tags?.includes('unnecessary')));
+
+  // 7. Negative checks: complex valid SAP HANA SQLScript must yield 0 diagnostics
+  const validComplexProc = `
+    CREATE PROCEDURE "demo::complex_proc" (IN iv_flag INT, OUT ov_res INT)
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER
+    DEFAULT SCHEMA "DEMO"
+    DETERMINISTIC
+    WITH ENCRYPTION
+    AUTOCOMMIT DDL OFF
+    AS
+    USING SYS.SQLSCRIPT_STRING AS STR_LIB;
+    BEGIN SEQUENTIAL EXECUTION
+      DECLARE c_custom CONDITION FOR SQL_ERROR_CODE 10001;
+      DECLARE EXIT HANDLER FOR c_custom
+      BEGIN
+        DECLARE v_err NVARCHAR(100) := 'err';
+        ov_res = 0;
+      END;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+
+      IF CASE WHEN :iv_flag = 1 THEN 1 ELSE 0 END = 1 THEN
+        DECLARE v_local INT DEFAULT 1;
+        DECLARE CONTINUE HANDLER FOR SQLEXCEPTION ov_res = -1;
+        IF :v_local = 1 THEN
+          RETURN;
+        ELSE
+          ov_res = 2;
+        END IF;
+        ov_res = :ov_res + 1;
+      ELSEIF :iv_flag = 2 THEN
+        DECLARE v_loop INT DEFAULT 0;
+        WHILE :v_loop < 3 DO SEQUENTIAL EXECUTION
+          v_loop = :v_loop + 1;
+        END WHILE;
+      ELSE
+        ov_res = -1;
+      END IF;
+
+      MERGE INTO tgt USING src ON tgt.id = src.id
+      WHEN MATCHED THEN UPDATE SET tgt.val = src.val;
+    END;
+  `;
+  assert.deepEqual(syn28('hanasql', validComplexProc), []);
+
+  const validUsingAtRootBegin = `
+    PROCEDURE "demo::using_in_begin" (OUT ov_len INT)
+    LANGUAGE SQLSCRIPT SQL SECURITY INVOKER READS SQL DATA AS
+    BEGIN
+      USING SYS.SQLSCRIPT_STRING AS STR_LIB;
+      DECLARE v_tmp INT := 0;
+      ov_len = LENGTH('abc');
+    END
+  `;
+  assert.deepEqual(syn28('hdbprocedure', validUsingAtRootBegin), []);
+
+  const validAlterAndMisc = `
+    ALTER FUNCTION "demo::fn_alter" () AS BEGIN x = 1; END;
+    ALTER PROCEDURE "demo::p_recomp" RECOMPILE;
+    DROP FUNCTION "demo::fn_old";
+    FUNCTION "demo::fn_scalar" (IN a INT) RETURNS b INT DETERMINISTIC STRUCTURED FILTER CHECK AS BEGIN b = :a + 1; END
+  `;
+  assert.deepEqual(syn28('hanasql', validAlterAndMisc), []);
+});
+
+test('HANA-SYN-029: context-sensitive SQLScript statement legality & DETERMINISTIC checks', () => {
+  const syn29 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-029');
+
+  // 1. Read-only restrictions in FUNCTION & READS SQL DATA PROCEDURE
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN INSERT INTO MY_TAB VALUES (1); END').some((d) =>
+      /'INSERT' on persistent table 'MY_TAB' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS r INT AS BEGIN UPDATE MY_TAB SET a = 1; r = 1; END').some((d) =>
+      /'UPDATE' on persistent table 'MY_TAB' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN DELETE FROM MY_TAB; END').some((d) =>
+      /'DELETE' on persistent table/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN CREATE TABLE T (A INT); END').some((d) =>
+      /DDL statement 'CREATE' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN COMMIT; END').some((d) =>
+      /Transaction control statement 'COMMIT' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', "PROCEDURE p() READS SQL DATA AS BEGIN EXECUTE IMMEDIATE 'DROP TABLE T'; END").some((d) =>
+      /Dynamic SQL \('EXECUTE IMMEDIATE'\) is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      'PROCEDURE p() READS SQL DATA AS BEGIN BEGIN AUTONOMOUS TRANSACTION INSERT INTO LOG_TAB VALUES (1); END; END'
+    ).some((d) => /'BEGIN AUTONOMOUS TRANSACTION' is not allowed/i.test(d.message))
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS r INT AS BEGIN CALL other_proc(); r = 1; END').some((d) =>
+      /'CALL' procedure invocation is not allowed inside a FUNCTION/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbfunction',
+      'FUNCTION f() RETURNS r INT AS BEGIN BEGIN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END; r = 1; END'
+    ).some((d) => /'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION/i.test(d.message))
+  );
+
+  // 2. DETERMINISTIC non-deterministic built-in & sequence warnings
+  const detDiags = syn29(
+    'hdbfunction',
+    `FUNCTION f() RETURNS r NVARCHAR(64) DETERMINISTIC AS
+     BEGIN
+       DECLARE u INT;
+       SELECT MY_SEQ.NEXTVAL INTO u FROM DUMMY;
+       r = CAST(RAND() AS NVARCHAR(64)) || TO_NVARCHAR(CURRENT_TIMESTAMP) || SESSION_CONTEXT('XS_USER');
+     END`
+  );
+  assert.equal(detDiags.length, 4);
+  assert.ok(detDiags.every((d) => d.severity === 'warning'));
+
+  // 3. RETURN rules by routine kind
+  assert.ok(
+    syn29('hdbtablefunction', 'FUNCTION f() RETURNS TABLE (A INT) AS BEGIN DECLARE x INT := 1; END').some((d) =>
+      /Table UDF body is missing a 'RETURN/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbtablefunction', 'FUNCTION f() RETURNS TABLE (A INT) AS BEGIN RETURN; END').some((d) =>
+      /Table UDF cannot use bare 'RETURN;'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS x INT AS BEGIN RETURN 1; END').some((d) =>
+      /'RETURN <expr>' is only allowed in a Table UDF/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN RETURN 1; END').some((d) =>
+      /'RETURN <expr>' is only allowed in a Table UDF/i.test(d.message)
+    )
+  );
+
+  // 4. BREAK / CONTINUE outside loop, RESIGNAL outside handler, SIGNAL code range
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN BREAK; END').some((d) =>
+      /'BREAK' is only allowed inside a 'LOOP', 'WHILE', or 'FOR'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN CONTINUE; END').some((d) =>
+      /'CONTINUE' is only allowed inside a 'LOOP', 'WHILE', or 'FOR'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN RESIGNAL; END').some((d) =>
+      /'RESIGNAL' is only allowed inside a 'DECLARE \.\.\. HANDLER'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN SIGNAL SQL_ERROR_CODE 500; END').some((d) =>
+      /between 10000 and 19999/i.test(d.message)
+    )
+  );
+
+  // 5. Nested DO BEGIN, AUTONOMOUS TRANSACTION & PARALLEL EXECUTION restrictions
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN DO BEGIN SELECT 1 FROM DUMMY; END; END').some((d) =>
+      /Nested 'DO BEGIN \.\.\. END'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         BEGIN AUTONOMOUS TRANSACTION
+           DECLARE CURSOR c FOR SELECT 1 FROM DUMMY;
+           CALL helper_proc();
+           CREATE TABLE T_TMP (A INT);
+           OPEN c;
+         END;
+       END`
+    ).length === 4
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         BEGIN PARALLEL EXECUTION
+           DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+           CREATE TABLE T_PAR (A INT);
+           COMMIT;
+           EXEC 'SELECT 1 FROM DUMMY';
+         END;
+       END`
+    ).length === 4
+  );
+
+  // 6. Top-level imperative statements outside routine / DO BEGIN
+  assert.ok(
+    syn29('hanasql', 'DECLARE v INT := 1;\nRETURN;').length === 2
+  );
+  assert.ok(
+    syn29('hanasql', 'IF 1 = 1 THEN SELECT 1 FROM DUMMY; END IF;').some((d) =>
+      /Imperative statement 'IF' is only allowed inside a routine/i.test(d.message)
+    )
+  );
+
+  // 7. Negative checks: all valid SQLScript contexts must yield 0 HANA-SYN-029 diagnostics
+  const validContextCases = `
+    CREATE PROCEDURE "demo::ro_tablevar_proc" (OUT ot TABLE (ID INT))
+    LANGUAGE SQLSCRIPT READS SQL DATA AS
+    BEGIN
+      DECLARE lt TABLE (ID INT);
+      :lt.INSERT((1), 1);
+      INSERT INTO :lt VALUES (2);
+      UPDATE :lt SET ID = 3 WHERE ID = 2;
+      DELETE FROM :lt WHERE ID = 1;
+      SELECT 1 FROM DUMMY;
+      ot = SELECT * FROM :lt;
+      RETURN;
+    END;
+
+    CREATE PROCEDURE "demo::rw_full_proc" () LANGUAGE SQLSCRIPT AS
+    BEGIN
+      DECLARE c_dup CONDITION FOR SQL_ERROR_CODE 301;
+      DECLARE c_user CONDITION FOR SQL_ERROR_CODE 10001;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+      DECLARE i INT := 0;
+
+      WHILE :i < 5 DO
+        i = :i + 1;
+        IF :i = 2 THEN
+          CONTINUE;
+        ELSEIF :i = 4 THEN
+          BREAK;
+        END IF;
+      END WHILE;
+
+      BEGIN AUTONOMOUS TRANSACTION
+        INSERT INTO "AUDIT_LOG" VALUES ('ok');
+        COMMIT;
+        BEGIN AUTONOMOUS TRANSACTION
+          ROLLBACK;
+        END;
+      END;
+
+      BEGIN PARALLEL EXECUTION
+        UPDATE "CTAB1" SET A = 1;
+        CALL "demo::sub_rw_1"();
+      END;
+
+      IF 1 = 0 THEN
+        SIGNAL SQL_ERROR_CODE 10001 SET MESSAGE_TEXT = 'bad';
+      END IF;
+    END;
+
+    CREATE FUNCTION "demo::det_scalar_fn" (IN a INT, IN b INT)
+    RETURNS res INT DETERMINISTIC AS
+    BEGIN
+      IF :a < 0 THEN
+        res = 0;
+        RETURN;
+      END IF;
+      res = :a + :b;
+    END;
+
+    CREATE FUNCTION "demo::tudf_branch" (IN flag INT)
+    RETURNS TABLE (A INT) AS
+    BEGIN
+      DECLARE buf TABLE (A INT);
+      :buf.INSERT((1), 1);
+      IF :flag > 0 THEN
+        RETURN SELECT A FROM :buf;
+      ELSE
+        RETURN SELECT 0 AS A FROM DUMMY;
+      END IF;
+    END;
+
+    DO BEGIN
+      DECLARE v_x INT := 1;
+      v_x = :v_x + 1;
+    END;
+  `;
+  assert.deepEqual(syn29('hanasql', validContextCases), []);
+});
+
+test('HANA-SYN-004: strict HDI artifact roots, invalid CREATE objects, and single-object trailing statements', () => {
+  const syn04 = (lang: string, code: string) => syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-004');
+
+  // Wrong root keywords or mismatched CREATE object kinds in HDI artifacts
+  assert.ok(syn04('hdbprocedure', 'SELECT 1 FROM DUMMY;').length >= 1);
+  assert.ok(syn04('hdbprocedure', 'CREATE VIEW "V" AS SELECT 1 AS A FROM DUMMY;').length >= 1);
+  assert.ok(syn04('hdbfunction', 'PROCEDURE "P"() AS BEGIN END').length >= 1);
+  assert.ok(syn04('hdbview', 'COLUMN TABLE "T" ("ID" INT);').length >= 1);
+
+  // Trailing statements after a single-object HDI declaration (with and without `;` after END)
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END; SELECT 2 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END SELECT 2 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() LANGUAGE SQLSCRIPT AS HEADER ONLY; SELECT 1 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdbfunction',
+      'FUNCTION "F1"() RETURNS r INT AS BEGIN r = 1; END; FUNCTION "F2"() RETURNS r INT AS BEGIN r = 2; END'
+    ).length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdblibrary',
+      'LIBRARY "L" AS BEGIN PUBLIC VARIABLE c CONSTANT INT := 1; END; SELECT 1 FROM DUMMY;'
+    ).length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdbtrigger',
+      'TRIGGER "TRG" AFTER INSERT ON "T" FOR EACH ROW BEGIN END; SELECT 1 FROM DUMMY;'
+    ).length >= 1
+  );
+  assert.ok(syn04('hdbtable', 'COLUMN TABLE "T1" ("ID" INT); COLUMN TABLE "T2" ("ID" INT);').length >= 1);
+  assert.ok(
+    syn04('hdbview', 'VIEW "V1" AS SELECT 1 AS A FROM DUMMY; VIEW "V2" AS SELECT 2 AS B FROM DUMMY;').length >= 1
+  );
+
+  // Negative checks: keyword typos keep HANA-SYN-021 QuickFixes without spurious HANA-SYN-004
+  const typoFn = syntaxDiags('hdbfunction', 'FUNC "my_fn"() RETURNS r INT AS BEGIN r = 1; END');
+  assert.ok(typoFn.some((d) => d.ruleId === 'HANA-SYN-021' && d.fixes.length > 0));
+  assert.deepEqual(
+    typoFn.filter((d) => d.ruleId === 'HANA-SYN-004'),
+    []
+  );
+
+  const typoCreateProc = syntaxDiags('hanasql', 'CREATE PROCEDUR "P"() AS BEGIN END;');
+  assert.ok(typoCreateProc.some((d) => d.ruleId === 'HANA-SYN-021' && d.fixes.length > 0));
+  assert.deepEqual(
+    typoCreateProc.filter((d) => d.ruleId === 'HANA-SYN-004'),
+    []
+  );
+
+  // Negative checks: valid single-object HDI constructs (USING before BEGIN, foreign bodies, Cloud variants)
+  assert.deepEqual(
+    syn04('hdbprocedure', 'PROCEDURE "P"() LANGUAGE SQLSCRIPT AS USING "LIB" AS L; BEGIN SELECT 1 FROM DUMMY; END'),
+    []
+  );
+  assert.deepEqual(
+    syn04(
+      'hdbprocedure',
+      `PROCEDURE "P"() LANGUAGE R AS
+BEGIN
+  result <- data.frame(A = 1);
+END`
+    ),
+    []
+  );
+  assert.deepEqual(
+    syn04(
+      'hdbvirtualfunction',
+      'VIRTUAL FUNCTION "VF"() RETURNS TABLE ("ID" INT) CONFIGURATION \'{"remote":true}\''
+    ),
+    []
+  );
+  assert.deepEqual(syn04('hdbcollectionindex', 'HASH INDEX "IDX1" ON "COL1"($."lastName")'), []);
+  assert.deepEqual(syn04('hdbcollectionindex', 'BLOCK RANGE INDEX "IDX2" ON "COL1"($."ts")'), []);
+  assert.deepEqual(syn04('hdbfabricvirtualtable', 'SHARED SNAPSHOT REPLICA PAGE LOADABLE ON "MY_VT"'), []);
+
+  // Multi-statement contexts excluded from single-object HANA-SYN-004 restriction
+  assert.deepEqual(syn04('hdbdropcreatetable', 'DROP TABLE "T"; COLUMN TABLE "T" ("ID" INT)'), []);
+  assert.deepEqual(
+    syn04('hanasql', 'SELECT 1 FROM DUMMY; SELECT 2 FROM DUMMY; CREATE PROCEDURE "P"() AS BEGIN END;'),
+    []
+  );
+  assert.deepEqual(
+    syn04('hdbmigrationtable', '== version=1\nDROP TABLE "T";\nCOLUMN TABLE "T" ("ID" INT);'),
+    []
+  );
+});
+
+test('HANA-SYN-028 / HANA-SYN-029: .hdblibrary member ordering/visibility and .hdbtrigger body restrictions', () => {
+  const synLibTrg = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-004' || d.ruleId === 'HANA-SYN-028' || d.ruleId === 'HANA-SYN-029');
+
+  // .hdblibrary: VARIABLE after PROCEDURE (HANA-SYN-028)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END;
+        PUBLIC VARIABLE "V_LATE" CONSTANT INT := 1;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-028' && /before member/i.test(d.message))
+  );
+
+  // .hdblibrary: USING after VARIABLE (HANA-SYN-028)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC VARIABLE "V_C" CONSTANT INT := 1;
+        USING "pkg::other" AS other;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-028' && /USING/i.test(d.message))
+  );
+
+  // .hdblibrary: DEFAULT / = / := initializer on non-CONSTANT library variable (HANA-SYN-028)
+  for (const initClause of ['DEFAULT 1', '= 1', ':= 1']) {
+    assert.ok(
+      synLibTrg(
+        'hdblibrary',
+        `LIBRARY "pkg::lib" AS BEGIN
+          PRIVATE VARIABLE "V_BAD" INT ${initClause};
+        END`
+      ).some((d) => d.ruleId === 'HANA-SYN-028' && /CONSTANT/i.test(d.message))
+    );
+  }
+
+  // .hdblibrary: missing PUBLIC/PRIVATE visibility and direct statements outside members (HANA-SYN-029)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        VARIABLE "V_NO_VIS" CONSTANT INT := 1;
+        FUNCTION "F_NO_VIS"() RETURNS res INT AS BEGIN res = 1; END;
+        SELECT 1 FROM DUMMY;
+        DECLARE "V_LOCAL" INT;
+      END`
+    ).filter((d) => d.ruleId === 'HANA-SYN-029').length >= 4
+  );
+
+  // .hdblibrary: member bodies still get nested HANA-SYN-029 checks
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC FUNCTION "F_BAD"() RETURNS res INT AS BEGIN
+          INSERT INTO "PERSISTENT_TAB" VALUES (1);
+          res = 1;
+        END;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-029' && /PERSISTENT_TAB/i.test(d.message))
+  );
+
+  // .hdblibrary valid complete artifact (mixed omitted/present `;` after member END)
+  assert.deepEqual(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" LANGUAGE SQLSCRIPT AS BEGIN
+        USING "pkg::other" AS other;
+        PUBLIC VARIABLE "C_RATE" CONSTANT DECIMAL(10, 2) := 0.19;
+        PRIVATE VARIABLE "V_CACHE" INT;
+        PRIVATE FUNCTION "F_HELPER"(IN x INT) RETURNS res INT AS BEGIN
+          res = :x + 1;
+        END
+        PUBLIC PROCEDURE "P_RUN"(IN x INT, OUT y INT) AS BEGIN
+          DECLARE v_tmp INT := :x;
+          y = :v_tmp;
+        END;
+      END`
+    ),
+    []
+  );
+
+  // .hdbtrigger: disallowed DDL, TCL, dynamic SQL, AUTONOMOUS, PARALLEL, RETURN <expr> (HANA-SYN-029)
+  const triggerBodyBad = (stmt: string) =>
+    `TRIGGER "pkg::trg" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN ${stmt} END`;
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('COMMIT;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('ROLLBACK;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('CREATE COLUMN TABLE "TMP" ("A" INT);')).some((d) => d.ruleId === 'HANA-SYN-029')
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad("EXECUTE IMMEDIATE 'DROP TABLE \"X\"';")).some((d) => d.ruleId === 'HANA-SYN-029')
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('BEGIN AUTONOMOUS TRANSACTION INSERT INTO "LOG" VALUES (1); END;')).some(
+      (d) => d.ruleId === 'HANA-SYN-029'
+    )
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('BEGIN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END;')).some(
+      (d) => d.ruleId === 'HANA-SYN-029'
+    )
+  );
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('RETURN 1;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+
+  // .hdbtrigger valid artifact allowing DML writes, CALL, and bare RETURN;
+  assert.deepEqual(
+    synLibTrg(
+      'hdbtrigger',
+      `TRIGGER "pkg::trg_audit" AFTER INSERT ON "ORDERS" REFERENCING NEW ROW mynew FOR EACH ROW BEGIN
+        IF :mynew.ID IS NULL THEN
+          RETURN;
+        END IF;
+        INSERT INTO "AUDIT_LOG" ("ORDER_ID") VALUES (:mynew.ID);
+        CALL "pkg::notify_order"(:mynew.ID);
+      END`
+    ),
+    []
+  );
+});
+
+test('HANA-SYN-004 / 027 / 028 / 029: edge cases, multiple violations, and QuickFix replacements', () => {
+  const byRule = (lang: string, code: string, rule: string) => syntaxDiags(lang, code).filter((d) => d.ruleId === rule);
+
+  // --- Multiple violations in one document are each reported, at distinct offsets ---
+  const multiTrigger = `TRIGGER "T1" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN
+    COMMIT;
+    ROLLBACK;
+    CREATE COLUMN TABLE "X" ("A" INT);
+    EXEC 'SELECT 1 FROM DUMMY';
+  END`;
+  const trg29 = byRule('hdbtrigger', multiTrigger, 'HANA-SYN-029');
+  assert.equal(trg29.length, 4);
+  assert.equal(new Set(trg29.map((d) => d.start)).size, 4);
+  for (const d of trg29) {
+    assert.ok(/TRIGGER/.test(d.message));
+    assert.ok(['COMMIT', 'ROLLBACK', 'CREATE', 'EXEC'].includes(multiTrigger.slice(d.start, d.end).toUpperCase()));
+  }
+
+  const multiLib = `LIBRARY "L" AS BEGIN
+    PRIVATE VARIABLE "A" INT DEFAULT 1;
+    PRIVATE VARIABLE "B" INT := 2;
+    PUBLIC PROCEDURE "P"() AS BEGIN END;
+    PUBLIC VARIABLE "C" CONSTANT INT := 3;
+  END`;
+  const lib28 = byRule('hdblibrary', multiLib, 'HANA-SYN-028');
+  assert.equal(lib28.filter((d) => /CONSTANT/.test(d.message)).length, 2);
+  assert.equal(lib28.filter((d) => /before member/.test(d.message)).length, 1);
+
+  // Duplicate SELECT clauses in separate statements each flagged (HANA-SYN-027)
+  const dupClauses = 'SELECT A FROM T WHERE A = 1 WHERE A = 2;\nSELECT B FROM T ORDER BY B ORDER BY B;';
+  assert.ok(byRule('hanasql', dupClauses, 'HANA-SYN-027').length >= 2);
+
+  // Several trailing statements in a single-object artifact: at least one HANA-SYN-004, never on root
+  const trailing = 'VIEW "V" AS SELECT 1 AS A FROM DUMMY; SELECT 2 FROM DUMMY; SELECT 3 FROM DUMMY;';
+  const t04 = byRule('hdbview', trailing, 'HANA-SYN-004');
+  assert.ok(t04.length >= 1);
+  assert.ok(t04.every((d) => d.start > trailing.indexOf(';')));
+
+  // --- Boundary / negative edge cases ---
+  // CONSTANT with initializer inside parentheses / CASE expression in a library variable
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `LIBRARY "L" AS BEGIN
+        PUBLIC VARIABLE "D" CONSTANT DECIMAL(10, 2) := (CASE WHEN 1 = 1 THEN 1.5 ELSE 2 END);
+        PUBLIC VARIABLE "E" INT;
+      END`,
+      'HANA-SYN-028'
+    ),
+    []
+  );
+  // '=' inside a nested routine body must not be mistaken for a library variable initializer
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `LIBRARY "L" AS BEGIN
+        PUBLIC FUNCTION "F"(IN x INT) RETURNS r INT AS BEGIN
+          r = CASE WHEN :x = 1 THEN 1 ELSE 0 END;
+        END;
+      END`,
+      'HANA-SYN-028'
+    ),
+    []
+  );
+  // Lowercase keywords and comments between visibility and member keyword
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `library "L" as begin
+        public /* doc */ variable "c" constant int := 1;
+        private -- helper
+        procedure "p"() as begin end
+      end`,
+      'HANA-SYN-029'
+    ),
+    []
+  );
+  // Nested BEGIN inside trigger keeps trigger restrictions
+  assert.ok(
+    byRule(
+      'hdbtrigger',
+      'TRIGGER "T" AFTER UPDATE ON "TAB" FOR EACH ROW BEGIN IF 1 = 1 THEN BEGIN COMMIT; END; END IF; END',
+      'HANA-SYN-029'
+    ).length === 1
+  );
+  // COMMIT outside a trigger (plain procedure) is allowed
+  assert.deepEqual(byRule('hdbprocedure', 'PROCEDURE "P"() AS BEGIN COMMIT; END', 'HANA-SYN-029'), []);
+  // Strings / comments containing trigger-forbidden words are ignored
+  assert.deepEqual(
+    byRule(
+      'hdbtrigger',
+      `TRIGGER "T" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN
+        -- COMMIT; ROLLBACK;
+        INSERT INTO "LOG" VALUES ('CREATE TABLE x; COMMIT;');
+      END`,
+      'HANA-SYN-029'
+    ),
+    []
+  );
+  // Comments / blank lines after the root END are not trailing statements
+  assert.deepEqual(
+    byRule('hdbprocedure', 'PROCEDURE "P"() AS BEGIN END;\n\n-- trailing comment\n/* block */\n', 'HANA-SYN-004'),
+    []
+  );
+  // CASE ... END and END IF / END LOOP inside body do not prematurely close the root
+  assert.deepEqual(
+    byRule(
+      'hdbprocedure',
+      `PROCEDURE "P"(IN x INT) AS BEGIN
+        DECLARE v INT := CASE WHEN :x > 0 THEN 1 ELSE 0 END;
+        IF :v = 1 THEN v = 2; END IF;
+        WHILE :v < 10 DO v = :v + 1; END WHILE;
+        BEGIN v = 0; END;
+      END`,
+      'HANA-SYN-004'
+    ),
+    []
+  );
+  // Leading comment and annotations before root keyword
+  assert.deepEqual(byRule('hdbview', '-- header\n/* doc */\nVIEW "V" AS SELECT 1 AS A FROM DUMMY', 'HANA-SYN-004'), []);
+  // Empty artifact produces no HANA-SYN-004
+  assert.deepEqual(byRule('hdbprocedure', '', 'HANA-SYN-004'), []);
+  assert.deepEqual(byRule('hdbprocedure', '   \n-- only a comment\n', 'HANA-SYN-004'), []);
+
+  // --- QuickFix replacements: multiple independent typo fixes applied together ---
+  const multiTypo = 'SELCT "A" FROM "T";\nSELCT "B" FROM "T";';
+  const typoDiags = byRule('hanasql', multiTypo, 'HANA-SYN-021');
+  assert.equal(typoDiags.length, 2);
+  const allEdits = typoDiags.flatMap((d) => d.fixes[0].edits);
+  const fixedMulti = applyTextEdits(multiTypo, allEdits);
+  assert.equal(fixedMulti, 'SELECT "A" FROM "T";\nSELECT "B" FROM "T";');
+  assert.deepEqual(syntaxDiags('hanasql', fixedMulti), []);
+
+  // HDI root typo fix yields a valid artifact with no HANA-SYN-004 / 021 remaining
+  const hdiTypo = 'PROCEDUR "P"() AS BEGIN SELECT 1 FROM DUMMY; END';
+  const hdiTypoDiag = byRule('hdbprocedure', hdiTypo, 'HANA-SYN-021');
+  assert.ok(hdiTypoDiag.length === 1 && hdiTypoDiag[0].fixes.length > 0);
+  const hdiFixed = applyTextEdits(hdiTypo, hdiTypoDiag[0].fixes[0].edits);
+  assert.ok(hdiFixed.startsWith('PROCEDURE '));
+  assert.deepEqual(
+    syntaxDiags('hdbprocedure', hdiFixed).filter((d) => d.ruleId === 'HANA-SYN-004' || d.ruleId === 'HANA-SYN-021'),
+    []
+  );
+
+  // Valid-but-wrong root (e.g. GRANT in .hdbtable) must not offer a bogus typo fix
+  const wrongRoot = syntaxDiags('hdbtable', 'GRANT SELECT ON "T" TO "U"');
+  assert.ok(wrongRoot.some((d) => d.ruleId === 'HANA-SYN-004' && d.fixes.length === 0));
+  assert.ok(!wrongRoot.some((d) => d.ruleId === 'HANA-SYN-021'));
 });
 
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {

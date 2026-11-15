@@ -3,6 +3,8 @@ import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } 
 import { tokenize, type Token } from '../formatter/tokenizer';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { parseJsonAstWithErrors } from './json-parser';
+import { checkSqlSelectClauseOrder } from './sql-order';
+import { checkSqlScriptOrderAndContext } from './sql-context';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -22,7 +24,11 @@ const SQLSCRIPT_BLOCK_LANGUAGES = new Set<string>([
   'hdbprocedure',
   'hdbfunction',
   'hdbtablefunction',
+  'hdbscalarfunction',
+  'hdblibrary',
   'hdbtrigger',
+  'hdbvirtualprocedure',
+  'hdbvirtualfunction',
   'hdbmigrationtable',
   'procedure',
   'sqlscript',
@@ -150,6 +156,7 @@ const HDI_ROOT_TARGETS: Readonly<Record<string, readonly string[]>> = {
   hdbprocedure: ['PROCEDURE', 'CREATE'],
   hdbfunction: ['FUNCTION', 'CREATE'],
   hdbtablefunction: ['FUNCTION', 'CREATE'],
+  hdbscalarfunction: ['FUNCTION', 'CREATE'],
   hdbtrigger: ['TRIGGER', 'CREATE'],
   hdblibrary: ['LIBRARY', 'CREATE'],
   hdbtable: ['COLUMN', 'ROW', 'GLOBAL', 'LOCAL', 'TEMPORARY', 'TABLE', 'CREATE', 'HISTORY', 'VIRTUAL'],
@@ -171,9 +178,9 @@ const HDI_ROOT_TARGETS: Readonly<Record<string, readonly string[]>> = {
   hdbschedulerjob: ['SCHEDULER', 'CREATE'],
   hdbremotetablereplica: ['REMOTE', 'SHARED', 'CREATE'],
   hdbcollection: ['COLLECTION', 'CREATE'],
-  hdbcollectionindex: ['INDEX', 'COLLECTION', 'CREATE'],
+  hdbcollectionindex: ['HASH', 'BLOCK', 'INDEX', 'COLLECTION', 'CREATE'],
   hdbcollectionadjindex: ['ADJACENCY', 'INDEX', 'CREATE'],
-  hdbfabricvirtualtable: ['VIRTUAL', 'CREATE'],
+  hdbfabricvirtualtable: ['SHARED', 'VIRTUAL', 'CREATE'],
   hdbdropcreatetable: ['DROP', 'COLUMN', 'ROW', 'CREATE'],
   hdbgraphworkspace: ['GRAPH', 'CREATE'],
   hdbvirtualprocedure: ['VIRTUAL', 'PROCEDURE', 'CREATE'],
@@ -681,7 +688,22 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
   );
 
   // 5. Expression operators, incomplete clauses & missing body semicolons (HANA-SYN-024, HANA-SYN-025)
+  // 6. SELECT query clause ordering & duplicate clause checks (HANA-SYN-027)
+  // 7. SQLScript header & block declaration order & context checks (HANA-SYN-028, HANA-SYN-029)
+  // 8. Single-object HDI artifact trailing statement check (HANA-SYN-004)
   if (foreignBodyStart < 0) {
+    if (checkHeaderRoots && HDI_ROOT_TARGETS[languageId] && languageId !== 'hdbdropcreatetable') {
+      checkSingleObjectHdiTrailing(
+        codeTokens,
+        languageId,
+        baseOffset,
+        lineStarts,
+        brokenQidentLines,
+        delimResult.unclosedStarts,
+        delimResult.unmatchedCloseStarts,
+        diagnostics
+      );
+    }
     checkSqlExpressionsAndClauses(
       codeTokens,
       baseOffset,
@@ -691,9 +713,143 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
       delimResult.unmatchedCloseStarts,
       diagnostics
     );
+    checkSqlSelectClauseOrder({
+      codeTokens,
+      baseOffset,
+      lineStarts,
+      brokenQidentLines,
+      unclosedStarts: delimResult.unclosedStarts,
+      unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
+      diagnostics,
+    });
+    if (SQLSCRIPT_BLOCK_LANGUAGES.has(languageId)) {
+      checkSqlScriptOrderAndContext({
+        languageId,
+        codeTokens,
+        baseOffset,
+        lineStarts,
+        brokenQidentLines,
+        unclosedStarts: delimResult.unclosedStarts,
+        unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
+        diagnostics,
+      });
+    }
   }
 
   return diagnostics;
+}
+
+const PROCEDURAL_HDI_LANGUAGES = new Set<string>([
+  'hdbprocedure',
+  'hdbfunction',
+  'hdbtablefunction',
+  'hdbscalarfunction',
+  'hdblibrary',
+  'hdbtrigger',
+  'hdbvirtualprocedure',
+  'hdbvirtualfunction',
+]);
+
+function checkSingleObjectHdiTrailing(
+  codeTokens: readonly Token[],
+  languageId: string,
+  baseOffset: number,
+  lineStarts: readonly number[],
+  brokenQidentLines: ReadonlySet<number>,
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const isProcedural = PROCEDURAL_HDI_LANGUAGES.has(languageId);
+  const END_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
+  let parenDepth = 0;
+  let bracketDepth = 0;
+  let caseDepth = 0;
+  let beginDepth = 0;
+  let sawRootBegin = false;
+  let skipNext = false;
+
+  const emitTrailing = (tok: Token): void => {
+    if (unclosedStarts.has(tok.start) || unmatchedCloseStarts.has(tok.start)) return;
+    if (brokenQidentLines.has(findLineNumber(lineStarts, baseOffset + tok.start))) return;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-004',
+      category: 'syntax',
+      severity: 'error',
+      message: `Only one top-level declaration is allowed in '.${languageId}'; unexpected trailing statement '${tok.text}'.`,
+      start: baseOffset + tok.start,
+      end: baseOffset + tok.end,
+      fixes: [],
+    });
+  };
+
+  for (let idx = 0; idx < codeTokens.length; idx++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+    const tok = codeTokens[idx];
+    if (tok.text === '(') {
+      parenDepth++;
+      continue;
+    }
+    if (tok.text === ')') {
+      if (parenDepth > 0) parenDepth--;
+      continue;
+    }
+    if (tok.text === '[') {
+      bracketDepth++;
+      continue;
+    }
+    if (tok.text === ']') {
+      if (bracketDepth > 0) bracketDepth--;
+      continue;
+    }
+    const up = tok.type === 'word' ? tok.text.toUpperCase() : '';
+    if (up === 'CASE') {
+      caseDepth++;
+      continue;
+    }
+    if (up === 'BEGIN' && parenDepth === 0 && bracketDepth === 0) {
+      sawRootBegin = true;
+      beginDepth++;
+      continue;
+    }
+    if (up === 'END') {
+      const nextUp = codeTokens[idx + 1]?.type === 'word' ? codeTokens[idx + 1].text.toUpperCase() : '';
+      if (END_SUFFIXES.has(nextUp)) {
+        skipNext = true;
+        continue;
+      }
+      if (caseDepth > 0) {
+        caseDepth--;
+        continue;
+      }
+      if (parenDepth === 0 && bracketDepth === 0 && beginDepth > 0) {
+        beginDepth--;
+        if (beginDepth === 0 && sawRootBegin) {
+          let after = idx + 1;
+          while (after < codeTokens.length && codeTokens[after].text === ';') after++;
+          if (after < codeTokens.length) {
+            emitTrailing(codeTokens[after]);
+          }
+          return;
+        }
+      }
+      continue;
+    }
+    if (tok.text === ';' && parenDepth === 0 && bracketDepth === 0 && caseDepth === 0 && beginDepth === 0) {
+      let after = idx + 1;
+      while (after < codeTokens.length && codeTokens[after].text === ';') after++;
+      if (after >= codeTokens.length) return;
+      const afterUp = codeTokens[after].type === 'word' ? codeTokens[after].text.toUpperCase() : '';
+      if (isProcedural && !sawRootBegin && (afterUp === 'USING' || afterUp === 'BEGIN')) {
+        continue;
+      }
+      emitTrailing(codeTokens[after]);
+      return;
+    }
+  }
 }
 
 function checkSqlHeaderTypos(
@@ -709,12 +865,12 @@ function checkSqlHeaderTypos(
     const upper = first.text.toUpperCase();
     const hdiTargets = HDI_ROOT_TARGETS[languageId];
     if (hdiTargets) {
-      if (!hdiTargets.includes(upper) && !GENERAL_SQL_VALID_ROOTS.has(upper)) {
+      if (!hdiTargets.includes(upper)) {
         const nextTok = codeTokens[1];
         // Do not flag labels (`lbl:`) or KV-like (`a = b` / `a.b`) if any slipped through
         const looksLikeIdentExpr = nextTok && (nextTok.text === '=' || nextTok.text === ':=' || nextTok.text === '.');
         if (!looksLikeIdentExpr) {
-          const fixKw = matchKeywordTypo(first.text, hdiTargets);
+          const fixKw = GENERAL_SQL_VALID_ROOTS.has(upper) ? undefined : matchKeywordTypo(first.text, hdiTargets);
           if (fixKw) {
             diagnostics.push({
               ruleId: 'HANA-SYN-021',
@@ -724,6 +880,45 @@ function checkSqlHeaderTypos(
               start: baseOffset + first.start,
               end: baseOffset + first.end,
               fixes: [makeReplaceFix(`Replace '${first.text}' with '${fixKw}'`, baseOffset + first.start, baseOffset + first.end, fixKw)],
+            });
+          } else {
+            diagnostics.push({
+              ruleId: 'HANA-SYN-004',
+              category: 'syntax',
+              severity: 'error',
+              message: `Unexpected '${first.text}' at root of '.${languageId}' artifact; expected ${hdiTargets.join(' / ')}.`,
+              start: baseOffset + first.start,
+              end: baseOffset + first.end,
+              fixes: [],
+            });
+          }
+        }
+      } else if (upper === 'CREATE') {
+        let j = 1;
+        if (
+          codeTokens[j]?.type === 'word' &&
+          codeTokens[j].text.toUpperCase() === 'OR' &&
+          codeTokens[j + 1]?.type === 'word' &&
+          codeTokens[j + 1].text.toUpperCase() === 'REPLACE'
+        ) {
+          j += 2;
+        }
+        const objTok = codeTokens[j];
+        if (objTok && objTok.type === 'word') {
+          const objUpper = objTok.text.toUpperCase();
+          const expectedNonCreate = hdiTargets.filter((t) => t !== 'CREATE');
+          if (
+            !expectedNonCreate.includes(objUpper) &&
+            (VALID_DDL_NOUNS.has(objUpper) || VALID_DDL_MODIFIERS.has(objUpper))
+          ) {
+            diagnostics.push({
+              ruleId: 'HANA-SYN-004',
+              category: 'syntax',
+              severity: 'error',
+              message: `Object type '${objTok.text}' is not valid at root of '.${languageId}' artifact; expected ${expectedNonCreate.join(' / ')}.`,
+              start: baseOffset + objTok.start,
+              end: baseOffset + objTok.end,
+              fixes: [],
             });
           }
         }

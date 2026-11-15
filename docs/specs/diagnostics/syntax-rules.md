@@ -23,6 +23,7 @@
 | `HANA-SYN-001` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated string literal, quoted identifier, or CDS expression bracket (`![...]`) |
 | `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`) |
 | `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`) |
+| `HANA-SYN-004` | `error` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword for HDI artifact type, invalid `CREATE` object kind, or extra trailing top-level statement in single-object artifact |
 | `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
@@ -32,6 +33,9 @@
 | `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions, or trailing `,` before `)` / clause keyword (with QuickFix) |
 | `HANA-SYN-025` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Incomplete/empty SQL clause (`SELECT FROM`, `WHERE AND`) or missing `;` between SQLScript statements inside `BEGIN ... END` (with QuickFix) |
 | `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
+| `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
+| `HANA-SYN-028` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Routine header clause placement/compatibility, `USING` library placement, `DECLARE` / `HANDLER` / executable ordering in compound blocks, handler scope conflicts, or unreachable statements |
+| `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -72,6 +76,28 @@
 - **Diagnostic Span & Message:**
   - Stray/mismatched closer: `"Unexpected closing delimiter ')'. Expected ']'."` or `"Unmatched closing delimiter ')'."`
   - Unclosed opener: `"Unclosed delimiter '('."`
+
+---
+
+### `HANA-SYN-004` — Invalid HDI Artifact Root or Multiple Top-Level Statements
+
+> Source: `docs/specs/grammars/sql-sqlscript.md` (§5 HDI Headerless Artifacts), `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`
+
+- **Platform:** `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** Headerless HDI DDL artifact languages in `HDI_ROOT_TARGETS` (`hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbtable`, `hdbstructure`, `hdbtabletype`, `hdbview`, `hdbsequence`, `hdbindex`, `hdbfulltextindex`, `hdbconstraint`, `hdbvirtualtable`, `hdbprojectionview`, `hdbstructuredprivilege`, `hdbstructuredfilter`, `hdbresultcache`, `hdbstatistics`, `hdbsystemversioning`, `hdbapplicationtime`, `hdbschedulerjob`, `hdbremotetablereplica`, `hdbfabricvirtualtable`, `hdbdropcreatetable`, `hdbgraphworkspace`, `hdbvirtualprocedure`, `hdbvirtualfunction`).
+- **Severity:** `error`
+- **Category:** `syntax`
+- **Conditions:**
+  1. **Root Declaration Mismatch (`error`):**
+     - When an HDI SQL DDL artifact starts with a non-typo keyword that is not in `HDI_ROOT_TARGETS[languageId]` (e.g., `SELECT`, `DROP`, `INSERT`, or `VIEW` at root of `.hdbprocedure`; `PROCEDURE` at root of `.hdbfunction`), report an unexpected root declaration instead of falling back to generic SQL. (Keyword typos within Damerau-Levenshtein distance `<= 2` continue to report `HANA-SYN-021` with QuickFix.)
+     - When `CREATE [OR REPLACE] <object>` is used in an HDI artifact, `<object>` must match `HDI_ROOT_TARGETS[languageId]` (excluding `'CREATE'`).
+     - Classic KV dual-mode artifacts (`table.schemaName = ...`), `.hdbmigrationtable`, `.sql`, and `.hanasql` are excluded.
+  2. **Single-Object Artifact Enforcement (`error`):**
+     - Every HDI DDL artifact except `.hdbdropcreatetable` defines a single design-time object. Any non-semicolon top-level statement appearing after the root definition completes (after the root `BEGIN ... END` closes for procedural/library/trigger artifacts, or after the top-level `;` for DDL artifacts, excluding header `AS USING ...;` before `BEGIN`) is flagged.
+- **Diagnostic Examples:**
+  - `Unexpected 'SELECT' at root of '.hdbprocedure' artifact; expected PROCEDURE / CREATE.`
+  - `Object type 'VIEW' is not valid at root of '.hdbprocedure' artifact; expected PROCEDURE.`
+  - `Only one top-level declaration is allowed in '.hdbprocedure'; unexpected trailing statement 'SELECT'.`
 
 ---
 
@@ -188,6 +214,165 @@
 - **AST / Token Trigger:**
   1. **Header `;` Check:** Top-level `namespace ...` or `using ...` declaration missing terminating `;` before the next top-level keyword (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `@Annotation`).
   2. **Entity / Type Field Declarations:** Inside `entity { ... }` or `type { ... }` (at member brace depth, excluding `view ... as select ...` and `technical configuration { ... }` blocks): field missing `:` before its type (`key ID Integer;`), `:` followed immediately by `;` / `}` (missing type), or missing `;` before the next field declaration on a following line.
+
+### `HANA-SYN-027` — Out-of-Order or Duplicate `SELECT` Query Clause
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (Pages 1130–1160)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md (Pages 44–50)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/033_pages_961_990.md (Pages 961–990)
+
+- **Severity:** `error`
+- **Target Extensions:** `.sql`, `.hanasql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **AST / Token Trigger:** Tracks active `SELECT` queries per `(parenDepth, bracketDepth)` nesting level against canonical SAP HANA query clause precedence:
+  ```ebnf
+  subquery_clause_order ::=
+      "SELECT" [ pre_from_into ]
+      "FROM"
+      [ "WHERE" ]
+      [ "GROUP BY" ]
+      [ "HAVING" ]
+      [ "WINDOW" ]
+      [ ( "UNION" | "INTERSECT" | "EXCEPT" | "MINUS" ) ... ]
+      [ "ORDER BY" ]
+      [ "LIMIT" [ "OFFSET" ] ]
+      [ "FOR UPDATE" | "FOR SHARE LOCK" | "FOR XML" | "FOR JSON" | post_subquery_into ]
+      [ "WITH HINT" ] ;
+  ```
+  1. **Out-of-Order Clause:**
+     - `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` appearing before `FROM`.
+     - `FROM` appearing after `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT`.
+     - Any query-body clause (`WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`) appearing out of canonical sequence (e.g., `ORDER BY` before `WHERE`, `GROUP BY` after `HAVING`, `ORDER BY` after `LIMIT`, `OFFSET` before `LIMIT`, or any query clause after post-`FROM` `INTO` / `FOR UPDATE` / `WITH HINT`).
+     - `ORDER BY`, `LIMIT`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` appearing directly before an unparenthesized set operator (`UNION`, `INTERSECT`, `EXCEPT`, `MINUS`).
+  2. **Duplicate Non-Repeatable Clause:** Duplicate `INTO`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY` (SAP HANA SQL Error `398: ERR_SQL_MANY_ORDER_BY`), `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` within the same query level and set-operator branch. (Set operators reset branch-local state `FROM`..`WINDOW` for the next branch's `SELECT`.)
+  3. **False-Positive Exclusions:** Nested parenthesized subqueries `(SELECT ...)`, CTE headers `WITH cte AS (...)`, `OVER (... ORDER BY ...)`, `WITHIN GROUP (ORDER BY ...)`, `STRING_AGG`/`ARRAY_AGG` argument `ORDER BY`, `FILTER (WHERE ...)`, `EXTRACT`/`TRIM`/`SUBSTRING(... FROM ...)`, `IS [NOT] DISTINCT FROM`, temporal `FOR SYSTEM_TIME FROM ... TO ...`, `CASE ... WHEN ... THEN ... ELSE ... END`, and DDL `TRIGGER ... FOR EACH ROW` are isolated cleanly by paren depth and syntactic context.
+- **Diagnostic Examples:**
+  - `'WHERE' clause must appear after 'FROM' clause in SELECT query.`
+  - `Unexpected 'WHERE' clause after 'ORDER BY' clause in SELECT query.`
+  - `Duplicate 'WHERE' clause in SELECT query.`
+
+---
+
+### `HANA-SYN-028` — SQLScript Header & Block Declaration Ordering
+
+> Source: `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`, `010_8_Imperative_SQLScript_Logic.md`, `014_12_Built-In_Libraries.md`
+
+- **Platform:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** `sql`, `hanasql`, `sqlscript`, `procedure`, `hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbvirtualprocedure`, `hdbvirtualfunction`, `hdbmigrationtable`
+- **Severity:** `error` (`warning` + `unnecessary` tag for unreachable statements)
+- **Category:** `syntax`
+- **Grammar Reference:**
+
+```ebnf
+procedure_header ::= [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" ] "PROCEDURE" <name>
+                     [ "(" <param_list> ")" ]
+                     [ "LANGUAGE" <lang> ] [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
+                     [ "DEFAULT" "SCHEMA" <schema> ] [ "READS" "SQL" "DATA" ]
+                     [ <variable_cache_clause> ] [ "DETERMINISTIC" ] [ "WITH" "ENCRYPTION" ]
+                     [ "AUTOCOMMIT" "DDL" ( "ON" | "OFF" ) ]
+                     "AS" [ "USING" <lib> [ "AS" <alias> ] ";" ... ] ( "BEGIN" ... "END" | "HEADER" "ONLY" ) ;
+
+function_header  ::= [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" | "VIRTUAL" ] "FUNCTION" <name>
+                     [ "(" <in_param_list> ")" ]
+                     "RETURNS" ( <scalar_ret_list> | "TABLE" "(" ... ")" )
+                     [ "LANGUAGE" <lang> ] [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
+                     [ "DEFAULT" "SCHEMA" <schema> ] [ "READS" "SQL" "DATA" ] [ <variable_cache_clause> ]
+                     [ "DETERMINISTIC" ] [ "WITH" "ENCRYPTION" ]
+                     [ [ "NO" ] "STRUCTURED" "FILTER" "CHECK" ]
+                     "AS" [ "USING" <lib> [ "AS" <alias> ] ";" ... ] ( "BEGIN" ... "END" | "HEADER" "ONLY" ) ;
+
+compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTONOMOUS" "TRANSACTION" ]
+                     [ <using_stmt>* ]        /* root BEGIN only */
+                     [ <proc_decl>* ]         /* DECLARE var | table | array | cursor | condition */
+                     [ <proc_handler>* ]      /* DECLARE (EXIT | CONTINUE) HANDLER FOR ... */
+                     [ <proc_stmt>* ] ;       /* executable statements */
+```
+
+- **Conditions:**
+  1. **Routine Header Placement & Duplicates (`error`):**
+     - Header clauses (`RETURNS`, `LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, `READS SQL DATA`, `DETERMINISTIC`, `WITH ENCRYPTION`, `AUTOCOMMIT DDL`, `[NO] STRUCTURED FILTER CHECK`) MUST precede `AS` (and `BEGIN`) and MUST NOT repeat in the same routine header.
+     - On `FUNCTION` headers, `RETURNS` MUST appear after parameters and before trailing options (`LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, `DETERMINISTIC`, `WITH ENCRYPTION`, `STRUCTURED FILTER CHECK`, `AS`). (`RETURNS` is optional on `ALTER FUNCTION`.)
+     - Block modifiers (`SEQUENTIAL EXECUTION`, `PARALLEL EXECUTION`, `AUTONOMOUS TRANSACTION`) MUST NOT appear in the routine header before `AS`.
+  2. **Header Clause & Parameter Compatibility (`error`):**
+     - `OUT` and `INOUT` parameter modes are disallowed in `FUNCTION` parameter lists (only `IN` is permitted).
+     - `RETURNS` and `[NO] STRUCTURED FILTER CHECK` are disallowed in `PROCEDURE` headers.
+     - `AUTOCOMMIT DDL ON|OFF` is disallowed in `FUNCTION` headers and in `READS SQL DATA` `PROCEDURE` headers.
+     - `CREATE FUNCTION` / HDI `FUNCTION` / `VIRTUAL FUNCTION` headers MUST declare `RETURNS`.
+  3. **`USING` Library Placement (`error`):**
+     - `USING <library_name> [AS <alias>];` MUST appear either between `AS` and the root `BEGIN`, or at the start of the root `BEGIN` block before any `DECLARE` or executable statement.
+     - `USING` after declarations/statements or inside nested blocks (`IF`, `ELSEIF`, `ELSE`, `FOR`, `WHILE`, `LOOP`, nested `BEGIN`, handler body) is rejected.
+  4. **Compound Block Declaration Order (`error`):**
+     - Every compound scope (`BEGIN ... END`, `IF ... THEN`, `ELSEIF ... THEN`, `ELSE`, `FOR ... DO`, `WHILE ... DO`, `LOOP`, handler `BEGIN ... END`) enforces: block option (`SEQUENTIAL EXECUTION`, etc.) -> `<proc_decl_list>` (`DECLARE <var|table|array|cursor|condition>`) -> `<proc_handler_list>` (`DECLARE EXIT|CONTINUE HANDLER FOR ...`) -> `<proc_stmt_list>` (executables).
+     - Single-statement handler bodies (`DECLARE EXIT HANDLER FOR ... <stmt>;`) remain scoped to `<proc_handler_list>` and do not advance the enclosing block to `<proc_stmt_list>`.
+     - Compound handler bodies (`DECLARE ... HANDLER FOR ... BEGIN ... END;`) open an independent nested child scope allowing local declarations inside the handler.
+  5. **Handler Scope Conflicts & Duplicates (`error`):**
+     - `EXIT HANDLER` and `CONTINUE HANDLER` cannot appear in the same scope regardless of declaration order.
+     - `EXIT HANDLER` cannot be declared in any nested scope inside an ancestor scope that declared a `CONTINUE HANDLER`. (A `CONTINUE HANDLER` nested inside an `EXIT HANDLER` scope is permitted.)
+     - Duplicate condition specifications (e.g., two `SQLEXCEPTION`, two identical `SQL_ERROR_CODE <n>`, or two identical named conditions) within the same scope are rejected.
+  6. **Unreachable Statements (`warning`, tag `unnecessary`):**
+     - Sibling statements appearing after an unconditional control-flow terminator (`RETURN`, `SIGNAL`, `RESIGNAL`, `BREAK`, `CONTINUE`) within the same block/branch statement list (excluding single-statement handler bodies) are flagged as unreachable.
+  7. **`.hdblibrary` Member Declaration Order (`error`):**
+     - Inside `LIBRARY ... AS BEGIN ... END`, `PUBLIC` / `PRIVATE VARIABLE` declarations MUST precede any `PROCEDURE` or `FUNCTION` member declaration, and `DEFAULT` / `=` initializers on library variables require `CONSTANT`.
+- **Diagnostic Examples:**
+  - `Header clause 'READS SQL DATA' must appear before 'AS'.`
+  - `Parameter mode 'OUT' is not allowed in a FUNCTION header; use PROCEDURE or RETURNS instead.`
+  - `'AUTOCOMMIT DDL' is not allowed in a READS SQL DATA procedure or a function.`
+  - `'USING' declaration must appear before 'DECLARE' and statements at routine root level.`
+  - `'DECLARE' must appear before executable statements in this block.`
+  - `'DECLARE' variable/cursor/condition must appear before 'DECLARE ... HANDLER' in this block.`
+  - `'EXIT HANDLER' cannot be combined with 'CONTINUE HANDLER' in the same or enclosing scope.`
+  - `Duplicate condition handler for 'SQLEXCEPTION' in this scope.`
+  - `Library variable declarations must appear before member procedures and functions.`
+  - `Unreachable statement after 'RETURN'.`
+
+---
+
+### `HANA-SYN-029` — SQLScript Context-Sensitive Statement Rules
+
+> Source: `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`, `010_8_Imperative_SQLScript_Logic.md`, `006_4_SQL_Reference.md`
+
+- **Platform:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** `sql`, `hanasql`, `sqlscript`, `procedure`, `hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbmigrationtable`
+- **Severity:** `error` (`warning` for `DETERMINISTIC` non-deterministic built-in usage)
+- **Category:** `syntax`
+- **Conditions:**
+  1. **Read-Only Restrictions (`FUNCTION` & `READS SQL DATA` `PROCEDURE`) (`error`):**
+     - Disallow DML modifying persistent catalog tables (`INSERT`, `UPDATE`, `DELETE`, `UPSERT`, `MERGE`, `REPLACE`) inside `FUNCTION` (scalar or table UDF) and `READS SQL DATA` `PROCEDURE` bodies. DML targeting local `:table_var` table variables (`:lt.INSERT(...)`, `INSERT INTO :lt ...`, `UPDATE :lt ...`, `DELETE FROM :lt ...`) IS permitted.
+     - Disallow DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`, `LOCK TABLE`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), and `BEGIN AUTONOMOUS TRANSACTION`.
+     - Inside `FUNCTION` bodies, additionally disallow `CALL <proc>` and `BEGIN PARALLEL EXECUTION`.
+  2. **`DETERMINISTIC` Routine Side-Effect / Nondeterminism Check (`warning`):**
+     - Inside `DETERMINISTIC` procedures or functions, warn on non-deterministic functions/values (`RAND`, `RAND_SECURE`, `SYSUUID`, `SESSION_CONTEXT`, `SESSION_USER`, `CURRENT_TIMESTAMP`, `CURRENT_UTCTIMESTAMP`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_UTCDATE`, `CURRENT_UTCTIME`, `CURRENT_MVCC_SNAPSHOT_TIMESTAMP`, `CURRENT_TRANSACTION_ISOLATION_LEVEL`, `NOW`) and sequence access (`.NEXTVAL`, `.CURRVAL`).
+  3. **`RETURN` Statement Semantics by Routine Kind (`error`):**
+     - **Table UDF (`RETURNS TABLE (...)`):** A concrete SQLScript `BEGIN ... END` body (excluding `VIRTUAL`, `HEADER ONLY`, foreign language, and `ALTER FUNCTION` without `RETURNS`) MUST execute at least one `RETURN <table_expr_or_select>;` and MUST NOT use bare `RETURN;`.
+     - **Scalar UDF / `PROCEDURE` / `TRIGGER` / `DO`:** `RETURN <expr>;` returning an expression is rejected; Scalar UDFs assign return variables directly and optionally exit with bare `RETURN;`, and `PROCEDURE`/`TRIGGER`/`DO` only allow bare `RETURN;`.
+  4. **Loop Control (`BREAK` / `CONTINUE`) (`error`):**
+     - `BREAK` and `CONTINUE` are rejected outside `LOOP`, `WHILE`, and `FOR` loop bodies (and inside exception handlers unless nested inside a handler-local loop).
+  5. **Exception Handling Statements (`RESIGNAL` / `SIGNAL`) (`error`):**
+     - `RESIGNAL` is rejected outside an exception handler body (`DECLARE EXIT|CONTINUE HANDLER`).
+     - `SIGNAL SQL_ERROR_CODE <n>` requires user-defined error code `<n>` in range `10000..19999`. (`DECLARE <cond> CONDITION FOR SQL_ERROR_CODE <n>` permits built-in SQL error codes.)
+  6. **Nested Anonymous Blocks (`DO BEGIN`) (`error`):**
+     - Anonymous `DO [(...)] BEGIN ... END` blocks cannot be nested inside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO` bodies.
+  7. **`BEGIN AUTONOMOUS TRANSACTION` & `BEGIN PARALLEL EXECUTION` Restrictions (`error`):**
+     - Inside `BEGIN PARALLEL EXECUTION`: disallowed in `FUNCTION` and `TRIGGER` bodies; disallow `EXEC` / `EXECUTE IMMEDIATE`, DDL, `COMMIT` / `ROLLBACK` / `SAVEPOINT`, `DECLARE ... HANDLER`, and `RETURN`.
+     - Inside `BEGIN AUTONOMOUS TRANSACTION`: disallow `CALL`, DDL, dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`), and cursor operations (`DECLARE ... CURSOR`, `OPEN`, `FETCH`, `CLOSE`). Disallowed in `TRIGGER` bodies.
+  8. **Top-Level Imperative Statements (`error`):**
+     - Imperative SQLScript statements (`DECLARE`, `IF ... THEN`, `LOOP`, `WHILE`, `FOR`, `BREAK`, `CONTINUE`, `SIGNAL`, `RESIGNAL`, `RETURN`) are rejected at top-level SQL script scope outside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO BEGIN ... END`.
+  9. **`.hdblibrary` & `.hdbtrigger` Body Restrictions (`error`):**
+     - Inside `LIBRARY ... AS BEGIN ... END`, only `[PUBLIC | PRIVATE] VARIABLE`, `PROCEDURE`, and `FUNCTION` members are permitted (`PUBLIC` or `PRIVATE` required on members; direct executable/declarative statements outside members are rejected).
+     - Inside `TRIGGER ... BEGIN ... END`, DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `LOCK TABLE`, `SET TRANSACTION`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), `BEGIN AUTONOMOUS TRANSACTION`, and `BEGIN PARALLEL EXECUTION` are rejected.
+- **Diagnostic Examples:**
+  - `'INSERT' on persistent table 'TAB' is not allowed inside a READS SQL DATA procedure or FUNCTION.`
+  - `Dynamic SQL ('EXECUTE IMMEDIATE') is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+  - `Non-deterministic expression 'RAND' used inside a DETERMINISTIC routine.`
+  - `Table UDF must return a table expression via 'RETURN <query_or_table_var>;'.`
+  - `'RETURN <expr>' is only allowed in a Table UDF; use return parameter assignment or bare 'RETURN;' instead.`
+  - `'BREAK' is only allowed inside a 'LOOP', 'WHILE', or 'FOR' statement.`
+  - `'RESIGNAL' is only allowed inside a 'DECLARE ... HANDLER' exception handler.`
+  - `'SIGNAL SQL_ERROR_CODE' code 500 must be a user-defined error code between 10000 and 19999.`
+  - `Nested 'DO BEGIN ... END' anonymous blocks are not allowed inside a routine.`
+  - `'CALL' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`
+  - `Imperative statement 'DECLARE' is only allowed inside a routine or 'DO BEGIN ... END' block.`
+  - `Library member 'FUNCTION' must specify 'PUBLIC' or 'PRIVATE' visibility.`
+  - `DDL statement 'CREATE' is not allowed inside a TRIGGER body.`
 
 ---
 
