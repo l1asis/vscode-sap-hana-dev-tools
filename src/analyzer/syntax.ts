@@ -662,8 +662,8 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     return diagnostics;
   }
 
-  // 2. Anchored DDL & headerless HDI root keyword typo checks (HANA-SYN-021)
-  checkSqlHeaderTypos(codeTokens, languageId, baseOffset, checkHeaderRoots, diagnostics);
+  // 2. Anchored DDL & headerless HDI root keyword typo checks (HANA-SYN-021, HANA-SYN-004)
+  checkSqlHeaderTypos(slice, codeTokens, languageId, baseOffset, checkHeaderRoots, diagnostics);
 
   // 3. Compound block matching (HANA-SYN-020)
   if (checkBlocks && foreignBodyStart < 0) {
@@ -750,6 +750,87 @@ const PROCEDURAL_HDI_LANGUAGES = new Set<string>([
   'hdbvirtualfunction',
 ]);
 
+const HDI_END_COMPOUND_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
+
+/** Counts top-level non-comment statements starting at `startIdx` inside `codeTokens`. */
+function countTrailingStatements(codeTokens: readonly Token[], startIdx: number): number {
+  let count = 0;
+  let inStmt = false;
+  let parenDepth = 0;
+  let bracketDepth = 0;
+  let caseDepth = 0;
+  let beginDepth = 0;
+  let skipNext = false;
+
+  for (let k = startIdx; k < codeTokens.length; k++) {
+    if (skipNext) {
+      skipNext = false;
+      continue;
+    }
+    const t = codeTokens[k];
+    if (t.text === '(') {
+      parenDepth++;
+      inStmt = true;
+      continue;
+    }
+    if (t.text === ')') {
+      if (parenDepth > 0) parenDepth--;
+      continue;
+    }
+    if (t.text === '[') {
+      bracketDepth++;
+      inStmt = true;
+      continue;
+    }
+    if (t.text === ']') {
+      if (bracketDepth > 0) bracketDepth--;
+      continue;
+    }
+    const tUp = t.type === 'word' ? t.text.toUpperCase() : '';
+    if (tUp === 'CASE') {
+      caseDepth++;
+      inStmt = true;
+      continue;
+    }
+    if (tUp === 'BEGIN' && parenDepth === 0 && bracketDepth === 0) {
+      beginDepth++;
+      inStmt = true;
+      continue;
+    }
+    if (tUp === 'END') {
+      const nextUp = codeTokens[k + 1]?.type === 'word' ? codeTokens[k + 1].text.toUpperCase() : '';
+      if (HDI_END_COMPOUND_SUFFIXES.has(nextUp)) {
+        skipNext = true;
+        continue;
+      }
+      if (caseDepth > 0) {
+        caseDepth--;
+        continue;
+      }
+      if (parenDepth === 0 && bracketDepth === 0 && beginDepth > 0) {
+        beginDepth--;
+        if (beginDepth === 0 && inStmt && k + 1 < codeTokens.length && codeTokens[k + 1].text !== ';') {
+          count++;
+          inStmt = false;
+        }
+      }
+      continue;
+    }
+    if (t.text === ';' && parenDepth === 0 && bracketDepth === 0 && caseDepth === 0 && beginDepth === 0) {
+      if (inStmt) {
+        count++;
+        inStmt = false;
+      }
+      continue;
+    }
+    if (t.text !== ';') {
+      inStmt = true;
+    }
+  }
+  if (inStmt) count++;
+  return Math.max(1, count);
+}
+
 function checkSingleObjectHdiTrailing(
   codeTokens: readonly Token[],
   languageId: string,
@@ -761,7 +842,6 @@ function checkSingleObjectHdiTrailing(
   diagnostics: AnalyzerDiagnostic[]
 ): void {
   const isProcedural = PROCEDURAL_HDI_LANGUAGES.has(languageId);
-  const END_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
   let parenDepth = 0;
   let bracketDepth = 0;
   let caseDepth = 0;
@@ -769,17 +849,31 @@ function checkSingleObjectHdiTrailing(
   let sawRootBegin = false;
   let skipNext = false;
 
-  const emitTrailing = (tok: Token): void => {
-    if (unclosedStarts.has(tok.start) || unmatchedCloseStarts.has(tok.start)) return;
-    if (brokenQidentLines.has(findLineNumber(lineStarts, baseOffset + tok.start))) return;
+  const emitAggregatedTrailing = (afterIdx: number, rootKeepEndOffset: number): void => {
+    const firstTok = codeTokens[afterIdx];
+    const lastTok = codeTokens[codeTokens.length - 1];
+    if (!firstTok || !lastTok) return;
+    if (unclosedStarts.has(firstTok.start) || unmatchedCloseStarts.has(firstTok.start)) return;
+    if (brokenQidentLines.has(findLineNumber(lineStarts, baseOffset + firstTok.start))) return;
+
+    const count = countTrailingStatements(codeTokens, afterIdx);
+    const message =
+      count === 1
+        ? `Only one top-level declaration is allowed in '.${languageId}'; unexpected trailing statement '${firstTok.text}'.`
+        : `Only one top-level declaration is allowed in '.${languageId}'; found ${count} unexpected trailing statements.`;
+    const fixTitle = count === 1 ? 'Remove trailing statement' : 'Remove trailing statements';
+
     diagnostics.push({
       ruleId: 'HANA-SYN-004',
       category: 'syntax',
       severity: 'error',
-      message: `Only one top-level declaration is allowed in '.${languageId}'; unexpected trailing statement '${tok.text}'.`,
-      start: baseOffset + tok.start,
-      end: baseOffset + tok.end,
-      fixes: [],
+      message,
+      start: baseOffset + firstTok.start,
+      end: baseOffset + lastTok.end,
+      fixes:
+        lastTok.end > rootKeepEndOffset
+          ? [makeRemoveFix(fixTitle, baseOffset + rootKeepEndOffset, baseOffset + lastTok.end)]
+          : [],
     });
   };
 
@@ -817,7 +911,7 @@ function checkSingleObjectHdiTrailing(
     }
     if (up === 'END') {
       const nextUp = codeTokens[idx + 1]?.type === 'word' ? codeTokens[idx + 1].text.toUpperCase() : '';
-      if (END_SUFFIXES.has(nextUp)) {
+      if (HDI_END_COMPOUND_SUFFIXES.has(nextUp)) {
         skipNext = true;
         continue;
       }
@@ -831,7 +925,7 @@ function checkSingleObjectHdiTrailing(
           let after = idx + 1;
           while (after < codeTokens.length && codeTokens[after].text === ';') after++;
           if (after < codeTokens.length) {
-            emitTrailing(codeTokens[after]);
+            emitAggregatedTrailing(after, tok.end);
           }
           return;
         }
@@ -846,13 +940,14 @@ function checkSingleObjectHdiTrailing(
       if (isProcedural && !sawRootBegin && (afterUp === 'USING' || afterUp === 'BEGIN')) {
         continue;
       }
-      emitTrailing(codeTokens[after]);
+      emitAggregatedTrailing(after, tok.end);
       return;
     }
   }
 }
 
 function checkSqlHeaderTypos(
+  slice: string,
   codeTokens: readonly Token[],
   languageId: string,
   baseOffset: number,
@@ -919,6 +1014,26 @@ function checkSqlHeaderTypos(
               start: baseOffset + objTok.start,
               end: baseOffset + objTok.end,
               fixes: [],
+            });
+          } else if (expectedNonCreate.includes(objUpper)) {
+            const stripEndTok = codeTokens[j - 1];
+            const between = slice.slice(stripEndTok.end, objTok.start);
+            const delEnd = between.trim().length === 0 ? objTok.start : stripEndTok.end;
+            const prefixLabel = j === 3 ? 'CREATE OR REPLACE' : 'CREATE';
+            diagnostics.push({
+              ruleId: 'HANA-SYN-004',
+              category: 'syntax',
+              severity: 'warning',
+              message: `Headerless '.${languageId}' artifact should omit leading '${prefixLabel}'.`,
+              start: baseOffset + first.start,
+              end: baseOffset + stripEndTok.end,
+              fixes: [
+                makeRemoveFix(
+                  `Remove leading '${prefixLabel}'`,
+                  baseOffset + first.start,
+                  baseOffset + delEnd
+                ),
+              ],
             });
           }
         }
