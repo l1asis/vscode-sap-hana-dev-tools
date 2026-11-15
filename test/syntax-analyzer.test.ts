@@ -18,6 +18,10 @@ function syntaxDiags(languageId: string, text: string) {
   });
 }
 
+function lineOfOffset(src: string, offset: number): number {
+  return src.slice(0, offset).split('\n').length;
+}
+
 test('HANA-SYN-001..003: SQL, SQLScript, CDS & KV lexical and delimiter errors', () => {
   // Unterminated single-quoted SQL string (including trailing doubled escape '' without closing quote)
   const str1 = syntaxDiags('hanasql', "SELECT 'unclosed FROM DUMMY;");
@@ -354,7 +358,6 @@ test('HANA-SYN-001 & HANA-SYN-023: real test.hdbfunction quote localization, mis
 
 test('HANA-SYN-003 / 010 / 031: nested delimiter blame localization & non-cascading recovery', () => {
   const fnSample = fs.readFileSync(path.join(ROOT, 'samples', 'test.hdbfunction'), 'utf8');
-  const lineOfOffset = (src: string, offset: number): number => src.slice(0, offset).split('\n').length;
   const lineOfSnippet = (src: string, snippet: string): number => {
     const idx = src.indexOf(snippet);
     assert.ok(idx >= 0, `Snippet missing: ${snippet}`);
@@ -443,6 +446,205 @@ test('HANA-SYN-003 / 010 / 031: nested delimiter blame localization & non-cascad
   const jsonArrExtra = syntaxDiags('hdiconfig', jsonExtraArrClose).filter((d) => d.ruleId === 'HANA-SYN-010');
   assert.equal(jsonArrExtra.length, 1);
   assert.equal(lineOfOffset(jsonExtraArrClose, jsonArrExtra[0].start), 3);
+});
+
+test('HANA-SYN-024: SQL missing, dangling, duplicate operators, trailing commas & negative checks', () => {
+  const baseFn = fs.readFileSync(path.join(ROOT, 'samples', 'test.hdbfunction'), 'utf8');
+  assert.deepEqual(syntaxDiags('hdbfunction', baseFn), []);
+
+  // 1. Removing `*` on line 18: `"PRICE" (1.0 + :im_tax_rate)`
+  const missingMul = baseFn.replace('"PRICE" * (1.0 + :im_tax_rate)', '"PRICE" (1.0 + :im_tax_rate)');
+  const mulDiags = syntaxDiags('hdbfunction', missingMul);
+  assert.equal(mulDiags.filter((d) => d.ruleId === 'HANA-SYN-024').length, 1);
+  assert.equal(lineOfOffset(missingMul, mulDiags[0].start), 18);
+
+  // 2. Removing `+` inside `(1.0 + :im_tax_rate)` on line 18
+  const missingPlus = baseFn.replace('(1.0 + :im_tax_rate)', '(1.0 :im_tax_rate)');
+  const plusDiags = syntaxDiags('hdbfunction', missingPlus);
+  assert.ok(plusDiags.some((d) => d.ruleId === 'HANA-SYN-024' && lineOfOffset(missingPlus, d.start) === 18));
+
+  // 3. Removing `>=` on line 20: `WHERE "PRICE" :im_min_price`
+  const missingGte = baseFn.replace('WHERE "PRICE" >= :im_min_price', 'WHERE "PRICE" :im_min_price');
+  const gteDiags = syntaxDiags('hdbfunction', missingGte);
+  assert.ok(gteDiags.some((d) => d.ruleId === 'HANA-SYN-024' && lineOfOffset(missingGte, d.start) === 20));
+
+  // 4. Removing `=` on line 21: `AND "IS_ACTIVE" TRUE;`
+  const missingEq = baseFn.replace('AND "IS_ACTIVE" = TRUE;', 'AND "IS_ACTIVE" TRUE;');
+  const eqDiags = syntaxDiags('hdbfunction', missingEq);
+  assert.ok(eqDiags.some((d) => d.ruleId === 'HANA-SYN-024' && lineOfOffset(missingEq, d.start) === 21));
+
+  // 5. Removing `AND` between lines 20-21: `WHERE "PRICE" >= :im_min_price\n "IS_ACTIVE" = TRUE;`
+  const missingAnd = baseFn.replace('AND "IS_ACTIVE" = TRUE;', '    "IS_ACTIVE" = TRUE;');
+  const andDiags = syntaxDiags('hdbfunction', missingAnd);
+  assert.ok(andDiags.some((d) => d.ruleId === 'HANA-SYN-024' && lineOfOffset(missingAnd, d.start) === 21));
+
+  // 6. Dangling binary operators (`* AS`, `>= AND`, `>= =`, `(1.0 + )`)
+  const danglingMul = baseFn.replace('"PRICE" * (1.0 + :im_tax_rate) AS', '"PRICE" * AS');
+  assert.ok(syntaxDiags('hdbfunction', danglingMul).some((d) => d.ruleId === 'HANA-SYN-024'));
+
+  const danglingGte = baseFn.replace('WHERE "PRICE" >= :im_min_price', 'WHERE "PRICE" >=');
+  assert.ok(syntaxDiags('hdbfunction', danglingGte).some((d) => d.ruleId === 'HANA-SYN-024'));
+
+  const dupOp = baseFn.replace('WHERE "PRICE" >= :im_min_price', 'WHERE "PRICE" >= = :im_min_price');
+  assert.ok(syntaxDiags('hdbfunction', dupOp).some((d) => d.ruleId === 'HANA-SYN-024'));
+
+  const trailingParenOp = 'SELECT (1.0 + ) FROM DUMMY;';
+  assert.ok(syntaxDiags('hanasql', trailingParenOp).some((d) => d.ruleId === 'HANA-SYN-024'));
+
+  // 7. Trailing commas + QuickFix removal
+  const trailingDecimal = 'FUNCTION "f" (IN im_tax_rate DECIMAL(3, 2,)) RETURNS INT AS BEGIN RETURN 1; END;';
+  const decDiags = syntaxDiags('hanasql', trailingDecimal).filter((d) => d.ruleId === 'HANA-SYN-024');
+  assert.equal(decDiags.length, 1);
+  assert.equal(applyTextEdits(trailingDecimal, decDiags[0].fixes[0].edits), 'FUNCTION "f" (IN im_tax_rate DECIMAL(3, 2)) RETURNS INT AS BEGIN RETURN 1; END;');
+
+  const trailingSelect = 'SELECT "NAME", FROM "T";';
+  const selCommaDiags = syntaxDiags('hanasql', trailingSelect).filter((d) => d.ruleId === 'HANA-SYN-024');
+  assert.equal(selCommaDiags.length, 1);
+  assert.equal(applyTextEdits(trailingSelect, selCommaDiags[0].fixes[0].edits), 'SELECT "NAME" FROM "T";');
+
+  // 8. Negative tests: valid SQL expressions & multi-word predicates must produce ZERO errors
+  const validComplexSql = [
+    'SELECT',
+    '  *,',
+    '  COUNT(*),',
+    '  "SCHEMA"."MY_UDF"(1.0 + :im_a),',
+    '  "pkg::my_udf"(2, 3),',
+    '  CASE WHEN "A" IS NOT NULL AND "B" NOT BETWEEN 1 AND 10 THEN DATE \'2025-01-01\' ELSE TIMESTAMP \'2025-01-01 00:00:00\' END AS "C",',
+    '  INTERVAL \'5\' DAY,',
+    '  CAST("A" AS NVARCHAR(50))',
+    'FROM "T1" t1',
+    'INNER JOIN "T2" t2 ON t1."ID" = t2."ID"',
+    'WHERE t1."STATUS" NOT IN (\'X\', \'Y\')',
+    '  AND t1."NAME" LIKE \'%foo%\' ESCAPE \'\\\'',
+    '  AND t1."FLAG" IS NOT DISTINCT FROM t2."FLAG"',
+    '  AND t1."NEG" = -1',
+    '  AND ROUND((1.0 + :im_tax_rate), 2) > 0;',
+  ].join('\n');
+  assert.deepEqual(syntaxDiags('hanasql', validComplexSql), []);
+});
+
+test('HANA-SYN-021 & HANA-SYN-025: SQL signature/clause typos, incomplete clauses & missing semicolons', () => {
+  // 1. Routine signature typos (`RETUNS`, `LANUAGE`, `SECURTY`, `INVOKR`)
+  const badRetuns = 'FUNCTION "f" (IN a INT) RETUNS TABLE ("A" INT) LANGUAGE SQLSCRIPT SQL SECURITY INVOKER AS BEGIN RETURN SELECT 1 FROM DUMMY; END;';
+  const dRet = syntaxDiags('hanasql', badRetuns).filter((d) => d.ruleId === 'HANA-SYN-021');
+  assert.equal(dRet.length, 1);
+  assert.ok(applyTextEdits(badRetuns, dRet[0].fixes[0].edits).includes('RETURNS TABLE'));
+
+  const badHdr = 'FUNCTION "f" (IN a INT) RETURNS INT LANUAGE SQLSCRIPT SQL SECURTY INVOKR AS BEGIN RETURN 1; END;';
+  const dHdr = syntaxDiags('hanasql', badHdr).filter((d) => d.ruleId === 'HANA-SYN-021');
+  assert.equal(dHdr.length, 3);
+
+  // 2. Query clause typos (`SELCT`, `WHRE`, `GROP BY`, `ORDR BY`, `LIMT`)
+  const badSelct = 'SELCT "A" FROM "T";';
+  const dSel = syntaxDiags('hanasql', badSelct).filter((d) => d.ruleId === 'HANA-SYN-021');
+  assert.equal(dSel.length, 1);
+  assert.equal(applyTextEdits(badSelct, dSel[0].fixes[0].edits), 'SELECT "A" FROM "T";');
+
+  const badClauses = [
+    'SELECT "A", COUNT(*) AS "CNT"',
+    'FROM "T"',
+    'WHRE "PRICE" >= 10',
+    'GROP BY "A"',
+    'ORDR BY "CNT" DESC',
+    'LIMT 10;',
+  ].join('\n');
+  const dCls = syntaxDiags('hanasql', badClauses).filter((d) => d.ruleId === 'HANA-SYN-021');
+  assert.equal(dCls.length, 4);
+
+  // Guard: column names / variables / calls named like typos are NOT flagged
+  assert.deepEqual(syntaxDiags('hanasql', 'SELECT whre, gropp, limt FROM "T" t WHERE t.whre = 1;'), []);
+
+  // 3. Incomplete SQL clauses (`SELECT FROM`, `WHERE AND`)
+  assert.ok(syntaxDiags('hanasql', 'SELECT FROM "T";').some((d) => d.ruleId === 'HANA-SYN-025'));
+  assert.ok(syntaxDiags('hanasql', 'SELECT "A" FROM "T" WHERE AND "B" = 1;').some((d) => d.ruleId === 'HANA-SYN-025'));
+  assert.ok(syntaxDiags('hanasql', 'SELECT "A" FROM WHERE "B" = 1;').some((d) => d.ruleId === 'HANA-SYN-025'));
+
+  // 4. Missing `;` between SQLScript statements in `BEGIN ... END` + QuickFix
+  const missingSemiBody = [
+    'PROCEDURE "P" () LANGUAGE SQLSCRIPT AS',
+    'BEGIN',
+    '    DECLARE x INT := 1',
+    '    x := :x + 1',
+    '    RETURN;',
+    'END;',
+  ].join('\n');
+  const semiDiags = syntaxDiags('hdbprocedure', missingSemiBody).filter((d) => d.ruleId === 'HANA-SYN-025');
+  assert.equal(semiDiags.length, 2);
+  assert.equal(semiDiags[0].fixes[0].title, "Insert ';'");
+
+  // Missing `;` before `END;` inside `BEGIN ... END`
+  const baseFn = fs.readFileSync(path.join(ROOT, 'samples', 'test.hdbfunction'), 'utf8');
+  const missingEndSemi = baseFn.replace('AND "IS_ACTIVE" = TRUE;', 'AND "IS_ACTIVE" = TRUE');
+  const endSemiDiags = syntaxDiags('hdbfunction', missingEndSemi).filter((d) => d.ruleId === 'HANA-SYN-025');
+  assert.equal(endSemiDiags.length, 1);
+  assert.equal(applyTextEdits(missingEndSemi, endSemiDiags[0].fixes[0].edits), baseFn);
+});
+
+test('HANA-SYN-026: CDS (.hdbdd / .hdbcds) missing colon, type, and semicolons', () => {
+  // Missing `;` on `namespace` / `using`
+  const cdsHeader = 'namespace demo.app\nusing demo.common::Types as T\nentity Order { key id : Integer; };';
+  const hdrDiags = syntaxDiags('hdbdd', cdsHeader).filter((d) => d.ruleId === 'HANA-SYN-026');
+  assert.equal(hdrDiags.length, 2);
+
+  // Missing `:` and missing `;` and missing type in entity body
+  const cdsEntity = [
+    'namespace demo.app;',
+    'entity Order {',
+    '    key id Integer;',
+    '    title : ;',
+    '    price : Decimal(15, 2)',
+    '    status : String(10);',
+    '};',
+  ].join('\n');
+  const entDiags = syntaxDiags('hdbdd', cdsEntity).filter((d) => d.ruleId === 'HANA-SYN-026');
+  assert.equal(entDiags.length, 3);
+  assert.equal(lineOfOffset(cdsEntity, entDiags[0].start), 3);
+  assert.equal(lineOfOffset(cdsEntity, entDiags[1].start), 4);
+  assert.equal(lineOfOffset(cdsEntity, entDiags[2].start), 6);
+
+  // Valid enum type, structured type, technical configuration & AccessPolicy pass cleanly
+  const validCds = [
+    'namespace demo.hdi;',
+    'context M {',
+    '  type ItemState : String(10) { draft = \'D\'; active = \'A\'; };',
+    '  type Addr { street : String(80); zip : Integer; };',
+    '  entity E {',
+    '    @Comment: \'PK\'',
+    '    key id : Integer;',
+    '    addr : Addr;',
+    '  } technical configuration {',
+    '    column store;',
+    '  };',
+    '  AccessPolicy P { grant select on E where id > 0; };',
+    '};',
+  ].join('\n');
+  assert.deepEqual(syntaxDiags('hdbcds', validCds), []);
+});
+
+test('HANA-SYN-034: XSJS missing, dangling, and consecutive operators & negative checks', () => {
+  const xsMissingMul = 'var total = price tax;';
+  assert.ok(syntaxDiags('xsjs', xsMissingMul).some((d) => d.ruleId === 'HANA-SYN-034'));
+
+  const xsCondMissing = 'if (price minPrice) { $.response.status = $.net.http.OK; }';
+  assert.ok(syntaxDiags('xsjs', xsCondMissing).some((d) => d.ruleId === 'HANA-SYN-034'));
+
+  const xsDanglingOp = 'var total = price * ;\nif (price >= ) {}';
+  assert.equal(syntaxDiags('xsjs', xsDanglingOp).filter((d) => d.ruleId === 'HANA-SYN-034').length, 2);
+
+  const xsDupOp = 'if (price >= = minPrice) {}';
+  assert.equal(syntaxDiags('xsjs', xsDupOp).filter((d) => d.ruleId === 'HANA-SYN-034').length, 1);
+
+  // Negative checks: strict equality `===` / `!==`, regexes, methods, ASI across lines
+  const validJs = [
+    'function calc(price, tax) {',
+    '  var ok = price === tax && price !== 0;',
+    '  var matched = /abc/.test("abc");',
+    '  var a = price',
+    '  var b = tax;',
+    '  return { get val() { return a + b; }, matched: matched, ok: ok };',
+    '}',
+  ].join('\n');
+  assert.deepEqual(syntaxDiags('xsjs', validJs), []);
 });
 
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
