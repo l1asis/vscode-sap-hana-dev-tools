@@ -427,10 +427,78 @@ interface SqlSectionScanOptions {
   readonly checkHeaderRoots: boolean;
 }
 
+function resolveUnclosedQidentSpan(
+  tokens: readonly Token[],
+  tokIdx: number
+): { readonly start: number; readonly end: number; readonly message: string } {
+  const tok = tokens[tokIdx];
+  // Trace backward along zero-whitespace word/qident tokens on the same line
+  // so `"NAME AS "ITEM_NAME",` and `NAME" AS "ITEM_NAME",` point to the broken identifier head.
+  let headIdx = tokIdx;
+  while (
+    headIdx > 0 &&
+    tokens[headIdx].nlBefore === 0 &&
+    !tokens[headIdx].wsBefore &&
+    (tokens[headIdx - 1].type === 'word' || tokens[headIdx - 1].type === 'qident')
+  ) {
+    headIdx--;
+  }
+
+  const head = tokens[headIdx];
+  if (headIdx < tokIdx && head.type === 'word') {
+    // Missing opening quote: `NAME" AS "ITEM_NAME",` -> highlight `NAME"`
+    return {
+      start: head.start,
+      end: Math.min(tok.end, head.end + 1),
+      message: `Unterminated quoted identifier (missing opening '"' before '${head.text}"').`,
+    };
+  }
+
+  if (head.type === 'qident') {
+    const body = head.text.slice(1);
+    const spaceMatch = /[ \t\r\n,;()]/.exec(body);
+    const wordEnd = spaceMatch ? head.start + 1 + Math.max(1, spaceMatch.index) : head.end;
+    return {
+      start: head.start,
+      end: Math.min(head.end, Math.max(head.start + 2, wordEnd)),
+      message: 'Unterminated quoted identifier.',
+    };
+  }
+
+  return {
+    start: tok.start,
+    end: Math.min(tok.end, tok.start + 2),
+    message: 'Unterminated quoted identifier.',
+  };
+}
+
+function getLineStartOffsets(text: string): number[] {
+  const starts = [0];
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === '\n') starts.push(i + 1);
+  }
+  return starts;
+}
+
+function findLineNumber(lineStarts: readonly number[], offset: number): number {
+  let lo = 0;
+  let hi = lineStarts.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (lineStarts[mid] <= offset) lo = mid + 1;
+    else hi = mid - 1;
+  }
+  return Math.max(0, hi);
+}
+
 function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): AnalyzerDiagnostic[] {
   const { baseOffset, languageId, checkBlocks, checkHeaderRoots } = opts;
   const diagnostics: AnalyzerDiagnostic[] = [];
-  const allTokens = tokenize(slice, { collapseFormatOff: false, slashComments: true });
+  const allTokens = tokenize(slice, {
+    collapseFormatOff: false,
+    slashComments: true,
+    singleLineQident: true,
+  });
   const preTokens = allTokens.filter((t) => t.type !== 'lineComment' && t.type !== 'blockComment');
 
   // Skip lexical & block checks inside LANGUAGE R / RLANG / GRAPH opaque embedded code bodies.
@@ -440,10 +508,15 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
 
   // 1. Lexical checks: unterminated comments/strings/qidents (HANA-SYN-001, HANA-SYN-002) & delimiters (HANA-SYN-003)
   const delimStack: Array<{ ch: '(' | '[' | '{'; start: number; end: number }> = [];
+  const lineStarts = getLineStartOffsets(slice);
+  const brokenQidentLines = new Set<number>();
+  let hasEofSwallow = false;
 
-  for (const tok of tokens) {
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const tok = tokens[idx];
     if (tok.type === 'blockComment') {
       if (tok.text.length < 4 || !tok.text.endsWith('*/')) {
+        hasEofSwallow = true;
         diagnostics.push({
           ruleId: 'HANA-SYN-002',
           category: 'syntax',
@@ -461,13 +534,16 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
       const quoteIdx = tok.text.indexOf("'");
       const body = quoteIdx >= 0 ? tok.text.slice(quoteIdx) : tok.text;
       if (!isDoubledQuoteClosed(body, "'")) {
+        hasEofSwallow = true;
+        const nlPos = tok.text.search(/[\r\n]/);
+        const headEnd = nlPos >= 0 ? tok.start + nlPos : Math.min(tok.end, tok.start + 16);
         diagnostics.push({
           ruleId: 'HANA-SYN-001',
           category: 'syntax',
           severity: 'error',
           message: 'Unterminated string literal.',
           start: baseOffset + tok.start,
-          end: baseOffset + Math.min(tok.end, tok.start + 2),
+          end: baseOffset + Math.max(headEnd, Math.min(tok.end, tok.start + 2)),
           fixes: [],
         });
       }
@@ -476,13 +552,16 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
 
     if (tok.type === 'qident') {
       if (!isDoubledQuoteClosed(tok.text, '"')) {
+        const resolved = resolveUnclosedQidentSpan(tokens, idx);
+        brokenQidentLines.add(findLineNumber(lineStarts, tok.start));
+        brokenQidentLines.add(findLineNumber(lineStarts, resolved.start));
         diagnostics.push({
           ruleId: 'HANA-SYN-001',
           category: 'syntax',
           severity: 'error',
-          message: 'Unterminated quoted identifier.',
-          start: baseOffset + tok.start,
-          end: baseOffset + Math.min(tok.end, tok.start + 2),
+          message: resolved.message,
+          start: baseOffset + resolved.start,
+          end: baseOffset + resolved.end,
           fixes: [],
         });
       }
@@ -540,10 +619,10 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     });
   }
 
-  // Stop code-level checks if lexer left an unclosed literal/comment that swallowed trailing tokens
-  const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-001' || d.ruleId === 'HANA-SYN-002');
+  // Only suppress code-level checks if an unclosed literal/comment swallowed through EOF.
+  // Line-contained unclosed quoted identifiers still allow downstream lines to be checked.
   const codeTokens = tokens.filter((t) => t.type !== 'lineComment' && t.type !== 'blockComment');
-  if (codeTokens.length === 0 || hasLexicalSwallow) {
+  if (codeTokens.length === 0 || hasEofSwallow) {
     return diagnostics;
   }
 
@@ -554,6 +633,9 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
   if (checkBlocks && foreignBodyStart < 0) {
     checkSqlScriptBlocks(codeTokens, baseOffset, diagnostics);
   }
+
+  // 4. Missing comma separators (HANA-SYN-023)
+  checkSqlMissingCommas(codeTokens, baseOffset, lineStarts, brokenQidentLines, diagnostics);
 
   return diagnostics;
 }
@@ -928,6 +1010,891 @@ function prevTextNotMember(prev: Token | null): boolean {
   return !prev || prev.text !== '.';
 }
 
+const SPECIAL_CALL_NAMES = new Set<string>([
+  'CAST',
+  'CONVERT',
+  'EXTRACT',
+  'SUBSTRING',
+  'TRIM',
+  'POSITION',
+  'OVERLAY',
+  'TREAT',
+  'XMLELEMENT',
+  'XMLFOREST',
+  'XMLAGG',
+  'XMLATTRIBUTES',
+  'XMLPARSE',
+  'XMLSERIALIZE',
+  'XMLTABLE',
+  'OPENJSON',
+  'JSON_TABLE',
+  'JSON_OBJECT',
+  'JSON_ARRAY',
+  'OVER',
+  'FILTER',
+  'WITHIN',
+  'EXISTS',
+  'USING',
+  'CHECK',
+  'CONSTRAINT',
+  'PRIMARY',
+  'UNIQUE',
+  'FOREIGN',
+  'REFERENCES',
+  'GENERATED',
+  'AS',
+  'PARTITION',
+  'SUBPARTITION',
+  'SERIES',
+  'RANGE',
+  'HASH',
+  'ROUNDROBIN',
+  'SET',
+]);
+
+const PARAM_MODES = new Set<string>(['IN', 'OUT', 'INOUT']);
+
+const COLUMN_END_MODIFIERS = new Set<string>([
+  'NOT',
+  'NULL',
+  'PRIMARY',
+  'KEY',
+  'UNIQUE',
+  'ARRAY',
+  'COLUMN',
+  'ROW',
+  'PAGE',
+  'LOADABLE',
+  'ONLINE',
+  'INVISIBLE',
+  'HIDDEN',
+  'AUTO',
+  'MERGE',
+  'ENCRYPTED',
+  'DETERMINISTIC',
+  'PRECISION',
+  'VARYING',
+  'TIME',
+  'ZONE',
+  'WITH',
+  'WITHOUT',
+  'LOCAL',
+  'ASC',
+  'DESC',
+]);
+
+const COLUMN_CLAUSE_MODIFIERS = new Set<string>([
+  'DEFAULT',
+  'COMMENT',
+  'CONSTRAINT',
+  'REFERENCES',
+  'AS',
+  'CHECK',
+  'GENERATED',
+  'ALWAYS',
+  'BY',
+  'IDENTITY',
+  'MEMORY',
+  'LOAD',
+  'UNLOAD',
+  'NUMA',
+  'PERSISTENT',
+  'FUZZY',
+  'WITH',
+  'IN',
+  'ON',
+  'MATCH',
+  'DELETE',
+  'UPDATE',
+  'SET',
+  'NO',
+  'GROUP',
+  'SERIES',
+  'PERIOD',
+  'DDIC_ACDAY',
+  'DDIC_ACMONTH',
+  'CS_FIXED',
+  'CS_INT',
+  'CS_DOUBLE',
+  'CS_STRING',
+  'LANGUAGE',
+]);
+
+const SELECT_STOP_CLAUSES = new Set<string>([
+  'FROM',
+  'INTO',
+  'BULK',
+  'WHERE',
+  'GROUP',
+  'HAVING',
+  'ORDER',
+  'UNION',
+  'INTERSECT',
+  'EXCEPT',
+  'MINUS',
+  'WINDOW',
+  'LIMIT',
+  'OFFSET',
+  'FOR',
+  'WITH',
+  'OPTION',
+  'WHEN',
+  'THEN',
+  'ELSE',
+]);
+
+const SELECT_PREFIX_OPS = new Set<string>([
+  '+',
+  '-',
+  '*',
+  '/',
+  '%',
+  '||',
+  '.',
+  '=',
+  '<>',
+  '!=',
+  '<',
+  '>',
+  '<=',
+  '>=',
+  '~=',
+  '^=',
+  '=>',
+  'AND',
+  'OR',
+  'NOT',
+  'IS',
+  'IN',
+  'LIKE',
+  'BETWEEN',
+  'ESCAPE',
+  'CASE',
+  'WHEN',
+  'THEN',
+  'ELSE',
+  'DATE',
+  'TIME',
+  'TIMESTAMP',
+  'INTERVAL',
+  'DISTINCT',
+  'ALL',
+  'PRIOR',
+  'NEW',
+  'CONNECT_BY_ROOT',
+  'OVER',
+  'FILTER',
+  'WITHIN',
+]);
+
+const CALL_INFIX_OR_CLAUSE = new Set<string>([
+  'AS',
+  'AND',
+  'OR',
+  'NOT',
+  'IN',
+  'IS',
+  'LIKE',
+  'BETWEEN',
+  'ESCAPE',
+  'ASC',
+  'DESC',
+  'NULLS',
+  'FIRST',
+  'LAST',
+  'ORDER',
+  'GROUP',
+  'PARTITION',
+  'WITHIN',
+  'OVER',
+  'FILTER',
+  'SEPARATOR',
+  'USING',
+  'FROM',
+  'FOR',
+  'TO',
+  'BY',
+  'DAY',
+  'MONTH',
+  'YEAR',
+  'HOUR',
+  'MINUTE',
+  'SECOND',
+  'ZONE',
+  'AT',
+  'RESPECT',
+  'IGNORE',
+  'NULL',
+]);
+
+const CALL_PREFIX_WORDS = new Set<string>([
+  'NOT',
+  'DATE',
+  'TIME',
+  'TIMESTAMP',
+  'INTERVAL',
+  'DISTINCT',
+  'ALL',
+  'CASE',
+  'WHEN',
+  'THEN',
+  'ELSE',
+  'CAST',
+  'NEW',
+  'PRIOR',
+  'ROW',
+]);
+
+function makeInsertCommaFix(insertAt: number): CodeFixSuggestion {
+  return {
+    title: "Insert ','",
+    kind: 'quickfix',
+    isPreferred: true,
+    edits: [{ start: insertAt, end: insertAt, newText: ',' }],
+  };
+}
+
+function isValueOperandStart(tok: Token, inCall = false): boolean {
+  if (tok.type === 'number' || tok.type === 'string' || tok.type === 'qident' || tok.type === 'var' || tok.type === 'sysvar' || tok.type === 'param') {
+    return true;
+  }
+  if (tok.text === '(' || tok.text === '[') return true;
+  if (tok.type === 'word') {
+    const up = tok.text.toUpperCase();
+    if (inCall && CALL_INFIX_OR_CLAUSE.has(up)) return false;
+    return !SELECT_STOP_CLAUSES.has(up) && !SELECT_PREFIX_OPS.has(up);
+  }
+  return false;
+}
+
+function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'params' | 'columns' | null {
+  let k = openIdx - 1;
+  // Walk back over optional qualified object name `("ns"."fn")` or `name`
+  while (k >= 0 && (codeTokens[k].type === 'word' || codeTokens[k].type === 'qident')) {
+    if (k - 1 >= 0 && codeTokens[k - 1].text === '.') {
+      k -= 2;
+      continue;
+    }
+    break;
+  }
+  if (k < 0) return null;
+
+  const before = codeTokens[k];
+  const beforeUp = before.type === 'word' ? before.text.toUpperCase() : '';
+  if (beforeUp === 'TABLE') {
+    const prevUp = codeTokens[k - 1]?.type === 'word' ? codeTokens[k - 1].text.toUpperCase() : '';
+    if (['RETURNS', 'AS', 'COLUMN', 'ROW', 'TEMPORARY', 'GLOBAL', 'LOCAL', 'HISTORY', 'VIRTUAL', 'CREATE', 'IN', 'OUT', 'INOUT'].includes(prevUp)) {
+      return 'columns';
+    }
+    // Check inside procedure/function parameter declaration: `IN im_tbl TABLE (...)`
+    return 'columns';
+  }
+  if (beforeUp === 'ADD' && openIdx >= 2) {
+    // `ALTER TABLE ... ADD (...)`
+    for (let b = k - 1; b >= Math.max(0, k - 8); b--) {
+      if (codeTokens[b].text === ';') break;
+      if (codeTokens[b].type === 'word' && codeTokens[b].text.toUpperCase() === 'TABLE') {
+        return 'columns';
+      }
+    }
+  }
+  if (before.type === 'word' || before.type === 'qident') {
+    // Check header keyword immediately before object name: `PROCEDURE "name" (...)`, `FUNCTION "name" (...)`, `TABLE "name" (...)`
+    const prevWordIdx = k;
+    let headerIdx = prevWordIdx - 1;
+    // Handle `FUNCTION "pkg::name"` when tokenized as one qident: headerIdx is keyword
+    while (headerIdx >= 0 && codeTokens[headerIdx].text === '.') headerIdx -= 2;
+    const hdr = headerIdx >= 0 && codeTokens[headerIdx].type === 'word' ? codeTokens[headerIdx].text.toUpperCase() : '';
+    if (hdr === 'PROCEDURE' || hdr === 'FUNCTION') return 'params';
+    if (hdr === 'TABLE') return 'columns';
+    // Handle `DO (IN ...)`
+    if (beforeUp === 'DO') return 'params';
+  }
+  return null;
+}
+
+function classifyParenFrame(
+  codeTokens: readonly Token[],
+  openIdx: number,
+  enclosing: { readonly kind: string; readonly declPhase?: string } | undefined
+): 'params' | 'columns' | 'call' | 'skip' {
+  const listKind = isTypeListOpener(codeTokens, openIdx);
+  if (listKind) return listKind;
+
+  // Type parameter list inside a parameter/column declaration, e.g. DECIMAL(3, 2)
+  if ((enclosing?.kind === 'params' || enclosing?.kind === 'columns') && enclosing.declPhase === 'sawType') {
+    return 'call';
+  }
+
+  // Skip parens inside constraint/default/check clauses of CREATE TABLE
+  if (enclosing?.kind === 'columns' || enclosing?.kind === 'params') {
+    return 'skip';
+  }
+
+  const prev = openIdx > 0 ? codeTokens[openIdx - 1] : null;
+  const prevUp = prev?.type === 'word' ? prev.text.toUpperCase() : '';
+  if (prevUp && SPECIAL_CALL_NAMES.has(prevUp)) return 'skip';
+
+  // Skip index definition parens `ON "TBL" ("COL1" ASC, "COL2")` and CTE/table column lists after `WITH name (`
+  const next = codeTokens[openIdx + 1];
+  const nextUp = next?.type === 'word' ? next.text.toUpperCase() : '';
+  if (nextUp === 'SELECT' || nextUp === 'WITH') return 'skip';
+
+  if (prevUp === 'VALUES' || prevUp === 'IN') return 'call';
+
+  // `INSERT INTO "T" ("A", "B")` or DDL clauses `ON "TBL" (...)` / `WITH PARAMETERS (...)`
+  if (prev && (prev.type === 'word' || prev.type === 'qident')) {
+    if (prevUp === 'PARAMETERS' && codeTokens[openIdx - 2]?.type === 'word' && codeTokens[openIdx - 2].text.toUpperCase() === 'WITH') {
+      return 'skip';
+    }
+
+    // Walk back past optional qualified object name `[schema.]name`
+    let preNameIdx = openIdx - 2;
+    while (preNameIdx >= 1 && codeTokens[preNameIdx].text === '.') {
+      preNameIdx -= 2;
+    }
+    const preNameUp =
+      preNameIdx >= 0 && codeTokens[preNameIdx].type === 'word' ? codeTokens[preNameIdx].text.toUpperCase() : '';
+    if (preNameUp === 'REFERENCES') return 'skip';
+    if (preNameUp === 'ON') {
+      for (let b = preNameIdx - 1; b >= Math.max(0, preNameIdx - 10); b--) {
+        if (codeTokens[b].text === ';' || codeTokens[b].text === ')') break;
+        const w = codeTokens[b].type === 'word' ? codeTokens[b].text.toUpperCase() : '';
+        if (['INDEX', 'ADJACENCY', 'GRAPH', 'TRIGGER', 'STATISTICS', 'PROJECTION'].includes(w)) return 'skip';
+        if (w === 'SELECT' || w === 'JOIN' || w === 'WHERE' || w === 'SET') break;
+      }
+    }
+
+    for (let b = openIdx - 1; b >= Math.max(0, openIdx - 6); b--) {
+      if (codeTokens[b].text === ';' || codeTokens[b].text === ')') break;
+      const w = codeTokens[b].type === 'word' ? codeTokens[b].text.toUpperCase() : '';
+      if (w === 'INSERT' || w === 'UPSERT') return 'call';
+      if (w === 'CREATE' || w === 'ALTER' || w === 'ON' || w === 'AS') break;
+    }
+    // Exclude SQL keywords introducing parenthesized expressions or clauses rather than call arg lists
+    if (
+      prevUp &&
+      [
+        'SELECT',
+        'IF',
+        'ELSEIF',
+        'WHILE',
+        'FOR',
+        'WHERE',
+        'WHEN',
+        'THEN',
+        'ELSE',
+        'AND',
+        'OR',
+        'NOT',
+        'CASE',
+        'RETURN',
+        'RETURNS',
+        'ON',
+        'TO',
+        'FROM',
+        'JOIN',
+        'USING',
+        'HAVING',
+        'DO',
+        'UNTIL',
+        'BY',
+        'BETWEEN',
+        'LIKE',
+        'AS',
+        'ANY',
+        'ALL',
+        'SOME',
+        'DISTINCT',
+        'TOP',
+        'LIMIT',
+        'OFFSET',
+        'SET',
+        'INTO',
+        'WITH',
+        'EXISTS',
+        'UNIQUE',
+        'OVER',
+        'FILTER',
+        'WITHIN',
+        'GROUP',
+        'ORDER',
+        'PARTITION',
+        'UNION',
+        'INTERSECT',
+        'EXCEPT',
+        'MINUS',
+      ].includes(prevUp)
+    ) {
+      return 'skip';
+    }
+    return 'call';
+  }
+
+  return 'skip';
+}
+
+interface DeclParenFrame {
+  readonly kind: 'params' | 'columns' | 'call' | 'skip';
+  readonly depth: number;
+  declPhase: 'start' | 'sawName' | 'sawType' | 'inConstraint';
+  lastItemEnd: number;
+  awaitingTypeSegment: boolean;
+  // For 'call' frames:
+  callExpectOperand: boolean;
+  callPrevOperandEnd: number;
+  callDisabled: boolean;
+  caseDepth: number;
+}
+
+interface SelectListFrame {
+  readonly depth: number;
+  caseDepth: number;
+  itemParts: number;
+  skipTopCount: boolean;
+  expectOperand: boolean;
+  expectExplicitAlias: boolean;
+  afterExplicitAlias: boolean;
+  lastItemEnd: number;
+  tentativeAliasTok: Token | null;
+  beforeAliasEnd: number;
+}
+
+/**
+ * Detects missing comma separators (`HANA-SYN-023`) in unambiguous SQL lists:
+ * procedure/function parameter lists, table column definitions, `SELECT` projections,
+ * function call arguments, `VALUES`, `IN`, and `INSERT` column lists.
+ */
+function checkSqlMissingCommas(
+  codeTokens: readonly Token[],
+  baseOffset: number,
+  lineStarts: readonly number[],
+  brokenQidentLines: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const parenStack: DeclParenFrame[] = [];
+  const selectStack: SelectListFrame[] = [];
+  let parenDepth = 0;
+  let bracketDepth = 0;
+
+  const isOnBrokenLine = (tok: Token): boolean =>
+    brokenQidentLines.has(findLineNumber(lineStarts, tok.start));
+
+  const emitMissingComma = (insertPos: number, diagTok: Token, message: string): void => {
+    const absInsert = baseOffset + insertPos;
+    const absStart = baseOffset + diagTok.start;
+    const absEnd = baseOffset + diagTok.end;
+    if (diagnostics.some((d) => d.ruleId === 'HANA-SYN-023' && d.start === absStart)) return;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-023',
+      category: 'syntax',
+      severity: 'error',
+      message,
+      start: absStart,
+      end: absEnd,
+      fixes: [makeInsertCommaFix(absInsert)],
+    });
+  };
+
+  for (let i = 0; i < codeTokens.length; i++) {
+    const tok = codeTokens[i];
+    const up = tok.type === 'word' ? tok.text.toUpperCase() : '';
+    const prev = i > 0 ? codeTokens[i - 1] : null;
+    const prevUp = prev?.type === 'word' ? prev.text.toUpperCase() : prev?.text ?? '';
+
+    if (tok.text === ';') {
+      parenStack.length = 0;
+      selectStack.length = 0;
+      parenDepth = 0;
+      bracketDepth = 0;
+      continue;
+    }
+
+    if (tok.text === '[') {
+      bracketDepth++;
+      continue;
+    }
+    if (tok.text === ']') {
+      bracketDepth = Math.max(0, bracketDepth - 1);
+      if (bracketDepth === 0) {
+        const tp = parenStack[parenStack.length - 1];
+        if (tp && tp.depth === parenDepth) {
+          tp.lastItemEnd = tok.end;
+          tp.callPrevOperandEnd = tok.end;
+          tp.callExpectOperand = false;
+        }
+        const ts = selectStack[selectStack.length - 1];
+        if (ts && ts.depth === parenDepth && ts.caseDepth === 0) {
+          ts.lastItemEnd = tok.end;
+          ts.expectOperand = false;
+          if (ts.itemParts === 0) ts.itemParts = 1;
+        }
+      }
+      continue;
+    }
+    if (bracketDepth > 0) continue;
+
+    if (tok.text === '(') {
+      const topParen = parenStack[parenStack.length - 1];
+      const topSel = selectStack[selectStack.length - 1];
+
+      // Check active SELECT list right before `( ... )`:
+      // e.g. `fn(...)` is part of expression, whereas `"A" AS "X" (1)` or `1 (2)` is invalid.
+      if (topSel && topSel.depth === parenDepth && topSel.caseDepth === 0) {
+        if (topSel.afterExplicitAlias) {
+          if (!isOnBrokenLine(tok)) {
+            emitMissingComma(topSel.lastItemEnd, tok, "Expected ',' before '(' in SELECT list.");
+          }
+          topSel.afterExplicitAlias = false;
+          topSel.itemParts = 1;
+        } else if (!topSel.expectOperand && prev && prev.type !== 'word' && prev.type !== 'qident' && prev.type !== 'sysvar') {
+          if (!isOnBrokenLine(tok)) {
+            emitMissingComma(topSel.lastItemEnd, tok, "Expected ',' before '(' in SELECT list.");
+          }
+        } else if (!topSel.expectOperand && prev && (prev.type === 'word' || prev.type === 'qident') && topSel.tentativeAliasTok === prev) {
+          // Case `SELECT "NAME"\n SUM(x)`: `SUM` was mistakenly held as tentativeAliasTok!
+          if (!isOnBrokenLine(prev)) {
+            emitMissingComma(topSel.beforeAliasEnd, prev, `Expected ',' before '${prev.text}' in SELECT list.`);
+          }
+          topSel.tentativeAliasTok = null;
+          topSel.itemParts = 1;
+        }
+        topSel.expectOperand = false;
+      } else if (topParen && topParen.depth === parenDepth && topParen.kind === 'call' && !topParen.callDisabled) {
+        if (!topParen.callExpectOperand && prev && prev.type !== 'word' && prev.type !== 'qident' && prev.type !== 'sysvar') {
+          if (!isOnBrokenLine(tok)) {
+            emitMissingComma(topParen.callPrevOperandEnd, tok, "Expected ',' before '(' in argument list.");
+          }
+        }
+        topParen.callExpectOperand = false;
+      }
+
+      parenDepth++;
+      const kind = classifyParenFrame(codeTokens, i, topParen);
+      parenStack.push({
+        kind,
+        depth: parenDepth,
+        declPhase: 'start',
+        lastItemEnd: tok.end,
+        awaitingTypeSegment: false,
+        callExpectOperand: true,
+        callPrevOperandEnd: tok.end,
+        callDisabled: false,
+        caseDepth: 0,
+      });
+      continue;
+    }
+
+    if (tok.text === ')') {
+      // Close any SELECT opened at this paren depth
+      while (selectStack.length > 0 && selectStack[selectStack.length - 1].depth >= parenDepth) {
+        selectStack.pop();
+      }
+      const popped = parenStack.length > 0 && parenStack[parenStack.length - 1].depth === parenDepth
+        ? parenStack.pop()
+        : undefined;
+      parenDepth = Math.max(0, parenDepth - 1);
+
+      // Update enclosing frame's last item end to include the closed `(...)`
+      const parentParen = parenStack[parenStack.length - 1];
+      if (parentParen && parentParen.depth === parenDepth && popped) {
+        parentParen.lastItemEnd = tok.end;
+        parentParen.callPrevOperandEnd = tok.end;
+        parentParen.callExpectOperand = false;
+      }
+      const topSelAfter = selectStack[selectStack.length - 1];
+      if (topSelAfter && topSelAfter.depth === parenDepth && topSelAfter.caseDepth === 0) {
+        topSelAfter.lastItemEnd = tok.end;
+        topSelAfter.expectOperand = false;
+        if (topSelAfter.itemParts === 0) topSelAfter.itemParts = 1;
+      }
+      continue;
+    }
+
+    // Track `SELECT` lists cleanly
+    if (up === 'SELECT' && !['GRANT', 'REVOKE', 'ALLOW', 'DENY', 'PRIVILEGE'].includes(prevUp)) {
+      const topParen = parenStack[parenStack.length - 1];
+      if (!topParen || (topParen.kind !== 'params' && topParen.kind !== 'columns')) {
+        selectStack.push({
+          depth: parenDepth,
+          caseDepth: 0,
+          itemParts: 0,
+          skipTopCount: false,
+          expectOperand: true,
+          expectExplicitAlias: false,
+          afterExplicitAlias: false,
+          lastItemEnd: tok.end,
+          tentativeAliasTok: null,
+          beforeAliasEnd: tok.end,
+        });
+        continue;
+      }
+    }
+
+    // Active paren declaration/call handling at exact top paren depth
+    const topParen = parenStack[parenStack.length - 1];
+    if (topParen && topParen.depth === parenDepth) {
+      if (topParen.kind === 'params' || topParen.kind === 'columns') {
+        if (tok.text === ',') {
+          topParen.declPhase = 'start';
+          topParen.lastItemEnd = tok.end;
+          topParen.awaitingTypeSegment = false;
+          continue;
+        }
+
+        if (topParen.kind === 'params' && PARAM_MODES.has(up)) {
+          if (topParen.declPhase !== 'start' && !isOnBrokenLine(tok) && prev) {
+            emitMissingComma(prev.end, tok, `Expected ',' before parameter '${tok.text}'.`);
+          }
+          topParen.declPhase = 'start';
+          topParen.awaitingTypeSegment = false;
+          continue;
+        }
+
+        if (topParen.declPhase === 'start') {
+          if (['CONSTRAINT', 'PRIMARY', 'UNIQUE', 'FOREIGN', 'CHECK', 'PERIOD', 'LIKE'].includes(up)) {
+            topParen.declPhase = 'inConstraint';
+          } else if (tok.type === 'word' || tok.type === 'qident') {
+            topParen.declPhase = 'sawName';
+          }
+          topParen.lastItemEnd = tok.end;
+          continue;
+        }
+
+        if (topParen.declPhase === 'sawName') {
+          topParen.declPhase = 'sawType';
+          topParen.lastItemEnd = tok.end;
+          topParen.awaitingTypeSegment = tok.text === '.';
+          continue;
+        }
+
+        if (topParen.declPhase === 'sawType') {
+          if (tok.text === '.' || tok.text === '::' || tok.text === '[' || tok.text === ']') {
+            topParen.awaitingTypeSegment = tok.text === '.' || tok.text === '::';
+            topParen.lastItemEnd = tok.end;
+            continue;
+          }
+          if (topParen.awaitingTypeSegment) {
+            topParen.awaitingTypeSegment = false;
+            topParen.lastItemEnd = tok.end;
+            continue;
+          }
+          if (COLUMN_END_MODIFIERS.has(up)) {
+            topParen.lastItemEnd = tok.end;
+            continue;
+          }
+          if (COLUMN_CLAUSE_MODIFIERS.has(up) || tok.text === '=>') {
+            topParen.declPhase = 'inConstraint';
+            topParen.lastItemEnd = tok.end;
+            continue;
+          }
+          // Non-modifier word or quoted identifier after `<col> <type>` -> missing comma!
+          if ((tok.type === 'word' || tok.type === 'qident') && !isOnBrokenLine(tok)) {
+            emitMissingComma(
+              topParen.lastItemEnd,
+              tok,
+              `Expected ',' before ${topParen.kind === 'params' ? 'parameter' : 'column'} '${tok.text}'.`
+            );
+            topParen.declPhase = 'sawName';
+            topParen.lastItemEnd = tok.end;
+            continue;
+          }
+          topParen.lastItemEnd = tok.end;
+          continue;
+        }
+
+        // In 'inConstraint' (e.g. DEFAULT ..., REFERENCES ...):
+        // Already catches missing `,` before `IN`/`OUT`/`INOUT` above; skip rest until `,` or `)`
+        topParen.lastItemEnd = tok.end;
+        continue;
+      }
+
+      if (topParen.kind === 'call' && !topParen.callDisabled) {
+        if (up === 'CASE' && prevUp !== 'END') {
+          topParen.caseDepth++;
+          continue;
+        }
+        if (up === 'END') {
+          if (topParen.caseDepth > 0) {
+            topParen.caseDepth--;
+            topParen.callExpectOperand = false;
+            topParen.callPrevOperandEnd = tok.end;
+          }
+          continue;
+        }
+        if (topParen.caseDepth > 0) continue;
+
+        if (tok.text === ',') {
+          topParen.callExpectOperand = true;
+          topParen.callPrevOperandEnd = tok.end;
+          continue;
+        }
+        if (up === 'ORDER' || up === 'GROUP' || up === 'PARTITION') {
+          topParen.callDisabled = true;
+          continue;
+        }
+        if (tok.type === 'op' || tok.text === '.' || tok.text === '::' || tok.text === ']') {
+          topParen.callExpectOperand = true;
+          continue;
+        }
+        if (tok.type === 'word' && (CALL_INFIX_OR_CLAUSE.has(up) || CALL_PREFIX_WORDS.has(up))) {
+          topParen.callExpectOperand = true;
+          continue;
+        }
+        if (isValueOperandStart(tok, true)) {
+          if (!topParen.callExpectOperand && !isOnBrokenLine(tok)) {
+            emitMissingComma(topParen.callPrevOperandEnd, tok, `Expected ',' before '${tok.text}'.`);
+          }
+          topParen.callExpectOperand = false;
+          topParen.callPrevOperandEnd = tok.end;
+        }
+      }
+    }
+
+    // Active SELECT projection list check (at exact select depth)
+    const topSel = selectStack[selectStack.length - 1];
+    if (topSel && topSel.depth === parenDepth) {
+      if (up === 'CASE' && prevUp !== 'END') {
+        topSel.caseDepth++;
+        continue;
+      }
+      if (up === 'END') {
+        if (topSel.caseDepth > 0) {
+          topSel.caseDepth--;
+          topSel.expectOperand = false;
+          topSel.itemParts = Math.max(1, topSel.itemParts);
+          topSel.lastItemEnd = tok.end;
+          continue;
+        }
+        selectStack.pop();
+        continue;
+      }
+      if (topSel.caseDepth > 0) continue;
+
+      // Close SELECT on clause terminators (note `WITHIN GROUP` is not a GROUP BY terminator)
+      if (SELECT_STOP_CLAUSES.has(up) && !(up === 'GROUP' && prevUp === 'WITHIN')) {
+        selectStack.pop();
+        continue;
+      }
+
+      if (tok.text === ',') {
+        topSel.itemParts = 0;
+        topSel.expectOperand = true;
+        topSel.expectExplicitAlias = false;
+        topSel.afterExplicitAlias = false;
+        topSel.tentativeAliasTok = null;
+        topSel.lastItemEnd = tok.end;
+        continue;
+      }
+
+      if (topSel.itemParts === 0 && (up === 'DISTINCT' || up === 'ALL')) {
+        continue;
+      }
+      if (topSel.itemParts === 0 && up === 'TOP') {
+        topSel.skipTopCount = true;
+        continue;
+      }
+      if (topSel.skipTopCount) {
+        topSel.skipTopCount = false;
+        continue;
+      }
+
+      if (topSel.expectExplicitAlias) {
+        topSel.expectExplicitAlias = false;
+        topSel.afterExplicitAlias = true;
+        topSel.lastItemEnd = tok.end;
+        continue;
+      }
+
+      if (up === 'AS') {
+        if (topSel.tentativeAliasTok && !isOnBrokenLine(topSel.tentativeAliasTok)) {
+          // Previous expression had a bare next column followed by `AS`: e.g. `"NAME"\n "PRICE" AS "P"`
+          emitMissingComma(
+            topSel.beforeAliasEnd,
+            topSel.tentativeAliasTok,
+            `Expected ',' before '${topSel.tentativeAliasTok.text}'.`
+          );
+          topSel.tentativeAliasTok = null;
+        }
+        topSel.expectExplicitAlias = true;
+        topSel.afterExplicitAlias = false;
+        continue;
+      }
+
+      if (topSel.afterExplicitAlias) {
+        if (!isOnBrokenLine(tok)) {
+          emitMissingComma(topSel.lastItemEnd, tok, `Expected ',' before '${tok.text}' in SELECT list.`);
+        }
+        topSel.afterExplicitAlias = false;
+        topSel.itemParts = 1;
+        topSel.expectOperand = false;
+        topSel.lastItemEnd = tok.end;
+        continue;
+      }
+
+      // Operators / expression continuations
+      if (tok.type === 'op' || tok.text === '.' || tok.text === '::' || tok.text === '[' || tok.text === ']' || (tok.type === 'word' && SELECT_PREFIX_OPS.has(up))) {
+        if (
+          topSel.tentativeAliasTok &&
+          (tok.type === 'op' || tok.text === '.' || tok.text === '::') &&
+          !isOnBrokenLine(topSel.tentativeAliasTok)
+        ) {
+          // Pattern: `"NAME" "PRICE" * 1.1` -> `"PRICE"` starts a new computed column, not an alias!
+          emitMissingComma(
+            topSel.beforeAliasEnd,
+            topSel.tentativeAliasTok,
+            `Expected ',' before '${topSel.tentativeAliasTok.text}' in SELECT list.`
+          );
+          topSel.tentativeAliasTok = null;
+          topSel.itemParts = 1;
+        }
+        topSel.expectOperand = tok.text !== ']';
+        if (tok.text === '*') {
+          // Could be `SELECT *` or `t.*` or binary multiplication `a * b`
+          if (prevUp === 'SELECT' || prevUp === ',' || prev?.text === '.') {
+            topSel.expectOperand = false;
+            topSel.itemParts = Math.max(1, topSel.itemParts);
+            topSel.lastItemEnd = tok.end;
+          }
+        }
+        continue;
+      }
+
+      if (up === 'TIME' || up === 'ZONE' || up === 'AT' || (up === 'GROUP' && prevUp === 'WITHIN') || ['DAY', 'MONTH', 'YEAR', 'HOUR', 'MINUTE', 'SECOND'].includes(up)) {
+        topSel.expectOperand = up === 'AT' || up === 'TIME' || up === 'ZONE' || up === 'GROUP';
+        topSel.lastItemEnd = tok.end;
+        continue;
+      }
+
+      // Operand token inside SELECT list
+      if (topSel.expectOperand) {
+        topSel.expectOperand = false;
+        topSel.itemParts = 1;
+        topSel.lastItemEnd = tok.end;
+        continue;
+      }
+
+      // Second or third adjacent operand with no separating comma or operator!
+      const isPlainAliasCandidate = tok.type === 'word' || tok.type === 'qident';
+      const nextIsParen = codeTokens[i + 1]?.text === '(';
+      if (topSel.itemParts >= 2 || !isPlainAliasCandidate || nextIsParen) {
+        if (!isOnBrokenLine(tok)) {
+          emitMissingComma(topSel.lastItemEnd, tok, `Expected ',' before '${tok.text}' in SELECT list.`);
+        }
+        topSel.tentativeAliasTok = null;
+        topSel.itemParts = 1;
+        topSel.lastItemEnd = tok.end;
+      } else {
+        // Record tentative implicit alias (`SELECT col alias`) in case a 3rd item or `*`/`+` follows
+        topSel.beforeAliasEnd = topSel.lastItemEnd;
+        topSel.tentativeAliasTok = tok;
+        topSel.itemParts = 2;
+        topSel.lastItemEnd = tok.end;
+      }
+    }
+  }
+}
+
 interface NonSqlToken {
   readonly kind: 'word' | 'string' | 'punct' | 'expr';
   readonly text: string;
@@ -941,7 +1908,7 @@ interface NonSqlToken {
  */
 function scanNonSqlArtifacts(
   text: string,
-  options: { readonly allowCdsExpr?: boolean }
+  options: { readonly allowCdsExpr?: boolean; readonly singleLineDoubleQuote?: boolean }
 ): { tokens: NonSqlToken[]; diagnostics: AnalyzerDiagnostic[] } {
   const diagnostics: AnalyzerDiagnostic[] = [];
   const tokens: NonSqlToken[] = [];
@@ -998,6 +1965,9 @@ function scanNonSqlArtifacts(
       i++;
       let closed = false;
       while (i < n) {
+        if (options.singleLineDoubleQuote && quote === '"' && (text[i] === '\n' || text[i] === '\r')) {
+          break;
+        }
         if (text[i] === '\\') {
           i += 2;
           continue;
@@ -1010,13 +1980,15 @@ function scanNonSqlArtifacts(
         i++;
       }
       if (!closed) {
+        const tailNl = text.slice(start, i).search(/[\r\n]/);
+        const spanEnd = tailNl >= 0 ? start + Math.max(2, tailNl) : Math.min(n, Math.max(i, start + 2));
         diagnostics.push({
           ruleId: 'HANA-SYN-001',
           category: 'syntax',
           severity: 'error',
           message: quote === '"' ? 'Unterminated string or quoted identifier.' : 'Unterminated string literal.',
           start,
-          end: Math.min(n, start + 2),
+          end: Math.min(spanEnd, start + 24),
           fixes: [],
         });
       }
@@ -1163,12 +2135,15 @@ function checkCdsDeclarationTypos(tokens: readonly NonSqlToken[], diagnostics: A
       while (i < tokens.length && tokens[i].text === '.') i += 2;
       if (tokens[i]?.text === ':') {
         i++;
+        const startedBracket = tokens[i]?.text === '{' || tokens[i]?.text === '[' || tokens[i]?.text === '(';
         let annotDepth = 0;
         while (i < tokens.length) {
-          if (tokens[i].text === '{' || tokens[i].text === '[' || tokens[i].text === '(') annotDepth++;
-          else if (tokens[i].text === '}' || tokens[i].text === ']' || tokens[i].text === ')') {
+          if (tokens[i].text === '{' || tokens[i].text === '[' || tokens[i].text === '(') {
+            annotDepth++;
+          } else if (tokens[i].text === '}' || tokens[i].text === ']' || tokens[i].text === ')') {
             if (annotDepth === 0) break;
             annotDepth--;
+            if (annotDepth === 0 && startedBracket) break;
           }
           if (annotDepth === 0) {
             const nxt = tokens[i + 1];
@@ -1233,36 +2208,54 @@ function checkClassicKvStructure(
   languageId: string,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
-  const stack: Array<'top' | 'object' | 'array'> = ['top'];
+  const stack: Array<{ mode: 'top' | 'object' | 'array'; arrayExpectSep: boolean; lastArrayItemEnd: number }> = [
+    { mode: 'top', arrayExpectSep: false, lastArrayItemEnd: 0 },
+  ];
   let state: 'expectKey' | 'expectEq' | 'expectVal' | 'inVal' = 'expectKey';
   let currentKey = '';
   let valDepth = 0;
 
   const isKeyMode = (): boolean => {
-    const mode = stack[stack.length - 1];
+    const mode = stack[stack.length - 1].mode;
     return mode === 'top' || mode === 'object';
   };
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
+    const topFrame = stack[stack.length - 1];
 
     if (t.text === '(' || t.text === '[' || t.text === '{') {
+      if (topFrame.mode === 'array' && (t.text === '{' || t.text === '[') && topFrame.arrayExpectSep) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-023',
+          category: 'syntax',
+          severity: 'error',
+          message: `Expected ',' before '${t.text}' in array literal.`,
+          start: t.start,
+          end: t.end,
+          fixes: [makeInsertCommaFix(topFrame.lastArrayItemEnd)],
+        });
+      }
       if (state === 'expectKey' && t.text === '{') {
-        stack.push('object');
+        stack.push({ mode: 'object', arrayExpectSep: false, lastArrayItemEnd: t.end });
         continue;
       }
       if (state === 'inVal' || state === 'expectVal') {
         state = 'inVal';
         if (t.text === '{') {
-          stack.push('object');
+          stack.push({ mode: 'object', arrayExpectSep: false, lastArrayItemEnd: t.end });
           state = 'expectKey';
         } else if (t.text === '[') {
-          stack.push('array');
+          stack.push({ mode: 'array', arrayExpectSep: false, lastArrayItemEnd: t.end });
         } else {
           valDepth++;
         }
       } else {
-        stack.push(t.text === '[' ? 'array' : t.text === '{' ? 'object' : 'top');
+        stack.push({
+          mode: t.text === '[' ? 'array' : t.text === '{' ? 'object' : 'top',
+          arrayExpectSep: false,
+          lastArrayItemEnd: t.end,
+        });
       }
       continue;
     }
@@ -1272,7 +2265,7 @@ function checkClassicKvStructure(
         valDepth--;
         continue;
       }
-      if (state === 'expectVal') {
+      if (state === 'expectVal' && isKeyMode()) {
         diagnostics.push({
           ruleId: 'HANA-SYN-022',
           category: 'syntax',
@@ -1282,7 +2275,7 @@ function checkClassicKvStructure(
           end: t.end,
           fixes: [],
         });
-      } else if (state === 'expectEq') {
+      } else if (state === 'expectEq' && isKeyMode()) {
         diagnostics.push({
           ruleId: 'HANA-SYN-022',
           category: 'syntax',
@@ -1296,9 +2289,43 @@ function checkClassicKvStructure(
       if (stack.length > 1) {
         stack.pop();
       }
+      const newTop = stack[stack.length - 1];
+      if (newTop.mode === 'array') {
+        newTop.arrayExpectSep = true;
+        newTop.lastArrayItemEnd = t.end;
+      }
       state = isKeyMode() ? (stack.length > 1 ? 'inVal' : 'expectKey') : 'inVal';
       // When an object inside `[ ... ]` or value closes back to enclosing KV block, expect `;` or `,`
       if (stack.length === 1 && t.text === '}') state = 'inVal';
+      continue;
+    }
+
+    if (topFrame.mode === 'array') {
+      if (t.text === ',' || (languageId === 'hdbti' && t.text === ':')) {
+        topFrame.arrayExpectSep = false;
+        topFrame.lastArrayItemEnd = t.end;
+        continue;
+      }
+      if (t.text === '.' || t.text === '-') {
+        topFrame.arrayExpectSep = false;
+        topFrame.lastArrayItemEnd = t.end;
+        continue;
+      }
+      if (t.kind === 'word' || t.kind === 'string') {
+        if (topFrame.arrayExpectSep) {
+          diagnostics.push({
+            ruleId: 'HANA-SYN-023',
+            category: 'syntax',
+            severity: 'error',
+            message: `Expected ',' before '${t.text}' in array literal.`,
+            start: t.start,
+            end: t.end,
+            fixes: [makeInsertCommaFix(topFrame.lastArrayItemEnd)],
+          });
+        }
+        topFrame.arrayExpectSep = true;
+        topFrame.lastArrayItemEnd = t.end;
+      }
       continue;
     }
 
@@ -1503,7 +2530,7 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     if (isHdiJsonHdbrole(text)) {
       return filterSuppressedDiagnostics(text, analyzeJsonArtifactSyntax(text, languageId));
     }
-    const { tokens, diagnostics } = scanNonSqlArtifacts(text, {});
+    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { singleLineDoubleQuote: true });
     if (tokens.length > 0 && tokens[0].kind === 'word' && tokens[0].text.toLowerCase() !== 'role') {
       const fixKw = matchKeywordTypo(tokens[0].text, ['role'], { allowShort: true, lowercase: true });
       if (fixKw) {
@@ -1539,15 +2566,18 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   }
 
   if (CDS_SET.has(languageId)) {
-    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { allowCdsExpr: true });
-    if (!diagnostics.some((d) => d.ruleId === 'HANA-SYN-001' || d.ruleId === 'HANA-SYN-002')) {
+    const { tokens, diagnostics } = scanNonSqlArtifacts(text, {
+      allowCdsExpr: true,
+      singleLineDoubleQuote: true,
+    });
+    if (!diagnostics.some((d) => d.ruleId === 'HANA-SYN-002')) {
       checkCdsDeclarationTypos(tokens, diagnostics);
     }
     return filterSuppressedDiagnostics(text, diagnostics);
   }
 
   if (languageId === 'xsodata') {
-    const { tokens, diagnostics } = scanNonSqlArtifacts(text, {});
+    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { singleLineDoubleQuote: true });
     if (tokens.length > 0 && tokens[0].kind === 'word' && tokens[0].text.toLowerCase() !== 'service') {
       const fixKw = matchKeywordTypo(tokens[0].text, ['service'], { allowShort: false, lowercase: true });
       if (fixKw) {

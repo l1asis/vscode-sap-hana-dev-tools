@@ -817,7 +817,7 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
           severity: 'error',
           message: 'Unterminated string literal.',
           start,
-          end: Math.min(i, start + 2),
+          end: Math.min(Math.max(i, start + 2), start + 24),
           fixes: [],
         });
       }
@@ -1055,10 +1055,11 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
     }
   }
 
-  // Stop keyword spellchecks if a string/comment/template swallowed downstream code
+  // Stop keyword/comma checks if an unclosed string/comment/template swallowed downstream code
   const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-030');
   if (!hasLexicalSwallow) {
     checkJsKeywordTypos(tokens, diagnostics);
+    checkJsMissingCommas(tokens, diagnostics);
   }
 
   return diagnostics;
@@ -1119,7 +1120,14 @@ function checkJsKeywordTypos(tokens: readonly JsSyntaxToken[], diagnostics: Anal
       }
     }
     // 4. Statement-start `retern ...;` / `thrw ...;`
-    else if (next && !['=', '+=', '-=', '(', '.', ':', ','].includes(next.text)) {
+    else if (
+      next &&
+      next.text !== '[' &&
+      next.text !== '++' &&
+      next.text !== '--' &&
+      !['=', '+=', '-=', '*=', '/=', '%=', '(', '.', ':', ','].includes(next.text) &&
+      !(next.kind === 'op' && !['+', '-', '!', '~'].includes(next.text))
+    ) {
       suggestion = matchKeywordTypo(tok.text, ['return', 'throw'], { allowShort: false, lowercase: true });
     }
 
@@ -1137,6 +1145,89 @@ function checkJsKeywordTypos(tokens: readonly JsSyntaxToken[], diagnostics: Anal
             kind: 'quickfix',
             isPreferred: true,
             edits: [{ start: tok.start, end: tok.end, newText: suggestion }],
+          },
+        ],
+      });
+    }
+  }
+}
+
+const JS_OPERAND_PREFIX_WORDS = new Set<string>([
+  'new',
+  'typeof',
+  'delete',
+  'void',
+  'yield',
+  'await',
+  'return',
+  'throw',
+  'case',
+  'in',
+  'instanceof',
+  'of',
+  'function',
+  'class',
+  'async',
+  'else',
+]);
+
+const JS_OPERAND_INFIX_WORDS = new Set<string>(['in', 'instanceof', 'of']);
+
+function checkJsMissingCommas(tokens: readonly JsSyntaxToken[], diagnostics: AnalyzerDiagnostic[]): void {
+  type ContainerKind = 'paren' | 'forParen' | 'bracket' | 'brace';
+  const stack: ContainerKind[] = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const prev = i > 0 ? tokens[i - 1] : null;
+
+    if (tok.text === '(') {
+      stack.push(prev?.text === 'for' ? 'forParen' : 'paren');
+      continue;
+    }
+    if (tok.text === '[') {
+      stack.push('bracket');
+      continue;
+    }
+    if (tok.text === '{') {
+      stack.push('brace');
+      continue;
+    }
+    if (tok.text === ')' || tok.text === ']' || tok.text === '}') {
+      stack.pop();
+      continue;
+    }
+
+    const mode = stack[stack.length - 1];
+    if ((mode !== 'paren' && mode !== 'bracket') || !prev) continue;
+
+    const prevEndedOperand =
+      prev.kind === 'literal' ||
+      prev.text === ')' ||
+      prev.text === ']' ||
+      prev.text === '}' ||
+      prev.text === '++' ||
+      prev.text === '--' ||
+      (prev.kind === 'ident' && !JS_OPERAND_PREFIX_WORDS.has(prev.text));
+
+    const currStartsOperand =
+      tok.kind === 'literal' ||
+      (tok.kind === 'ident' && !JS_OPERAND_INFIX_WORDS.has(tok.text));
+
+    if (prevEndedOperand && currStartsOperand) {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-033',
+        category: 'syntax',
+        severity: 'error',
+        message: `Expected ',' before '${tok.text}'.`,
+        start: tok.start,
+        end: tok.end,
+        fixes: [
+          {
+            title: "Insert ','",
+            kind: 'quickfix',
+            isPreferred: true,
+            edits: [{ start: prev.end, end: prev.end, newText: ',' }],
           },
         ],
       });

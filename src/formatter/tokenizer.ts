@@ -83,6 +83,7 @@ const ON_RE = /^(?:--|\/\*)\s*hanasql-format\s*:?\s*on\b/i;
 export interface TokenizeOptions {
   readonly collapseFormatOff?: boolean;
   readonly slashComments?: boolean;
+  readonly singleLineQident?: boolean;
 }
 
 export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
@@ -139,6 +140,7 @@ export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
     if (ch === '"') {
       let j = i + 1;
       while (j < n) {
+        if (options.singleLineQident && (text[j] === '\n' || text[j] === '\r')) break;
         if (text[j] === '"') {
           if (text[j + 1] === '"') { j += 2; continue; }
           j++;

@@ -379,8 +379,10 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
       }
 
       let hadColon = false;
+      let colonPos = keyNode.end;
       if (text[i] === ':') {
         hadColon = true;
+        colonPos = i;
         i++;
       } else {
         pushError('missing-colon', "Expected ':' after JSON property key.", keyNode.start, keyNode.end);
@@ -394,14 +396,14 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
       skipTrivia();
       if (i >= n) {
         if (hadColon) {
-          pushError('expected-value', 'Expected property value after ":".', keyNode.end, keyNode.end + 1);
+          pushError('expected-value', 'Expected property value after ":".', colonPos, colonPos + 1);
         }
         pushError('unclosed-container', "Unclosed JSON object '{'.", start, start + 1);
         return { kind: 'object', properties, start, end: i };
       }
 
-      if (text[i] === ',' || text[i] === '}') {
-        pushError('expected-value', 'Expected property value after ":".', i, i + 1);
+      if (text[i] === ',' || text[i] === '}' || (hadColon && looksLikeNextPropertyKey())) {
+        pushError('expected-value', 'Expected property value after ":".', colonPos, colonPos + 1);
         if (text[i] === ',') i++;
         continue;
       }
