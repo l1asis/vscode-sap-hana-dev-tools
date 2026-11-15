@@ -1,0 +1,1 @@
+{"plugin_version":"4.0.0.0","minimum_feature_version":"1000","file_suffixes":{"hdbtable":{"plugin_name":"com.sap.hana.di.table"},"hdbview":{"plugin_name":"com.sap.hana.di.view","plugin_version":"4.0.0.0"},"hdbprocedure":{"plugin_name":"com.sap.hana.di.procedure"}}}

@@ -1,0 +1,1 @@
+{"role":{"name":"demo.hdi::SalesReader","schema_privileges":[{"privileges":["SELECT","EXECUTE"],"schema_reference":"DEMO_SCHEMA","privileges_with_grant_option":["SELECT"]}],"global_roles":["PUBLIC"]}}

@@ -1,0 +1,11 @@
+-- classic XSC role demo
+role demo.roles::SalesViewer extends role demo.roles::BaseViewer extends catalog role "PUBLIC_VIEWER" {
+// system & schema privileges
+system privilege: BACKUP ADMIN,USER ADMIN;
+catalog schema "DEMO_SCHEMA": SELECT,INSERT;
+schema demo.app:app.hdbschema:SELECT,UPDATE;
+catalog sql object "DEMO_SCHEMA"."ORDERS": SELECT WITH GRANT OPTION;
+sql object demo.app:V_ORDERS.attributeview,demo.app:P_INIT.hdbprocedure:SELECT,EXECUTE;
+package demo.app: REPO.READ;
+application privilege: demo.app::Display;
+}

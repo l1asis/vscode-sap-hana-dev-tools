@@ -13,3 +13,9 @@ These intentionally compact / inconsistently formatted files let you preview **F
 - `classic-model.hdbdd` — XS Classic CDS model
 - `hdi-model.hdbcds` — HDI / XSA CDS model (`technical configuration`, `mixin`/`into`, view parameters)
 - `service.xsodata` — OData v2 service definition (`entity`, `association`, `navigates`, `modification` exits, `settings`, `annotations`)
+- `classic-role.hdbrole` — XS Classic role DSL (`extends role`, `catalog sql object`, privilege lists)
+- `hdi-role.hdbrole` — HDI JSON role definition
+- `container-config.hdiconfig` — HDI container build plug-in configuration (JSON / JSONC)
+- `migration.hdbmigrationtable` — HDI migration table (`== version` / `== migration` headers + SQL DDL)
+- `destination.xshttpdest` — XS Classic HTTP destination (`key = value;`)
+- `service.xsjs` — XS JavaScript service endpoint (VS Code JS formatter delegation + `hanasql-format off`/`on` pragmas)

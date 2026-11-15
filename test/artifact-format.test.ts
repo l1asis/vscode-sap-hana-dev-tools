@@ -5,9 +5,21 @@ import * as path from 'node:path';
 import { formatClassicKv } from '../src/formatter/classic-kv';
 import { formatCds } from '../src/formatter/cds';
 import { formatXsodata } from '../src/formatter/xsodata';
-import { ARTIFACT_FORMATTER_LANGUAGES, formatDocument, supportsRangeFormatting } from '../src/formatter/dispatch';
+import {
+  ALL_FORMATTER_LANGUAGES,
+  formatDocument,
+  supportsRangeFormatting,
+} from '../src/formatter/dispatch';
 import { format } from '../src/formatter/formatter';
+import { formatClassicHdbrole, isClassicHdbrole } from '../src/formatter/hdbrole';
+import { formatJsonArtifact } from '../src/formatter/json';
+import { formatMigrationTable } from '../src/formatter/migration-table';
 import { EditorOptions, PartialFormatterOptions } from '../src/formatter/options';
+import {
+  applyOffsetEdits,
+  extractJsPragmaRegions,
+  restoreJsPragmaRegions,
+} from '../src/formatter/xsjs';
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const ED: EditorOptions = { tabSize: 4, insertSpaces: true, eol: '\n' };
@@ -385,6 +397,15 @@ test('samples: formatting sample artifacts produces valid, idempotent output wit
     ['hdbdd', 'samples/xs-classic/model.hdbdd'],
     ['xsodata', 'samples/xs-classic/service.xsodata'],
     ['hdbcds', 'samples/hdi/model.hdbcds'],
+    ['hdbrole', 'samples/xs-classic/MyRole.hdbrole'],
+    ['hdbrole', 'samples/hdi/MyRole.hdbrole'],
+    ['hdiconfig', 'samples/hdi/.hdiconfig'],
+    ['hdbmigrationtable', 'samples/hdi/MYTABLE.hdbmigrationtable'],
+    ['xshttpdest', 'samples/xs-classic/yahoo.xshttpdest'],
+    ['xsjob', 'samples/xs-classic/yahoo.xsjob'],
+    ['xssqlcc', 'samples/xs-classic/AdminConn.xssqlcc'],
+    ['hdbtid', 'samples/xs-classic/legacy_data.hdbtid'],
+    ['hdbtim', 'samples/xs-classic/legacy_schema.hdbtim'],
   ];
 
   for (const [lang, rel] of cases) {
@@ -395,6 +416,146 @@ test('samples: formatting sample artifacts produces valid, idempotent output wit
     const second = formatDocument(lang, first, {}, ED);
     assert.strictEqual(second, first, `${rel}: second format pass must be idempotent`);
   }
+});
+
+// ===========================================================================
+// 6. JSON / JSONC, Classic .hdbrole, .hdbmigrationtable, & XSJS Helpers
+// ===========================================================================
+
+test('json: formats HDI .hdiconfig & .hdbgrants, preserves comments/pragmas, tolerates .xssqlcc missing comma', () => {
+  const hdiconfigIn =
+    '{"plugin_version":"4.0.0.0","file_suffixes":{"hdbcollection":{"plugin_name":"com.sap.hana.di.collection"},"hdbfabricvirtualtable":{"plugin_name":"com.sap.hana.di.sharedreplica","plugin_version":"4.0.0.0"}}}';
+  const hdiconfigOut = formatJsonArtifact(hdiconfigIn, {}, ED);
+  assert.ok(hdiconfigOut.includes('    "file_suffixes": {\n'));
+  assert.ok(hdiconfigOut.includes('        "hdbcollection": { "plugin_name": "com.sap.hana.di.collection" },\n'));
+  assert.ok(hdiconfigOut.includes('        "hdbfabricvirtualtable": {\n            "plugin_name": "com.sap.hana.di.sharedreplica",\n'));
+  assert.strictEqual(formatJsonArtifact(hdiconfigOut, {}, ED), hdiconfigOut, 'idempotent');
+
+  // Scalar array stays inline; comments and pragmas preserved verbatim
+  const grantsIn = [
+    '// cross-container grants',
+    '{',
+    '  "ups": {',
+    '    "object_owner": {',
+    '      "schema_privileges": [',
+    '        { "privileges": ["SELECT", "EXECUTE"], "schema": "ERP" }',
+    '      ]',
+    '    }',
+    '  },',
+    '// hanasql-format off',
+    '  "raw":  [  1,   2  ]',
+    '// hanasql-format on',
+    '}',
+  ].join('\n');
+  const grantsOut = formatJsonArtifact(grantsIn, {}, ED);
+  assert.ok(grantsOut.includes('["SELECT", "EXECUTE"]'), 'short scalar array stays inline');
+  assert.ok(grantsOut.includes('"raw":  [  1,   2  ]'), 'pragma region preserved verbatim');
+  assert.strictEqual(formatJsonArtifact(grantsOut, {}, ED), grantsOut, 'grants idempotent');
+
+  // SAP documentation quirk: .xssqlcc omitted comma & unclosed malformed JSON
+  const xssqlccIn = '{\n"description": "Admin connection"\n"role_for_auto_user": "pkg::Role"\n}';
+  const xssqlccOut = formatJsonArtifact(xssqlccIn, {}, ED);
+  assert.ok(xssqlccOut.includes('    "description": "Admin connection"\n    "role_for_auto_user": "pkg::Role"\n'));
+
+  const malformed = '{ "a": [1, 2';
+  const malOut = formatJsonArtifact(malformed, {}, ED);
+  assert.ok(malOut.includes('"a": [\n'));
+  assert.ok(malOut.includes('1,') && malOut.includes('2'));
+});
+
+test('hdbrole: disambiguates HDI JSON vs classic XSC DSL and formats both cleanly', () => {
+  const jsonRole = '{"role":{"name":"pkg::R","global_roles":["PUBLIC"]}}';
+  const dslRole =
+    'role pkg.roles::Child extends role pkg.roles::Base extends catalog role "PUBLIC" {\n' +
+    '-- line comment\n' +
+    'system privilege:BACKUP ADMIN,USER ADMIN;\n' +
+    'schema pkg.app:app.hdbschema:SELECT,INSERT;\n' +
+    'catalog sql object "S"."T": SELECT WITH GRANT OPTION;\n' +
+    '}';
+  const minimalDsl = '{ application privilege: pkg::Execute; }';
+
+  assert.strictEqual(isClassicHdbrole(jsonRole), false);
+  assert.strictEqual(isClassicHdbrole('{}'), false);
+  assert.strictEqual(isClassicHdbrole(dslRole), true);
+  assert.strictEqual(isClassicHdbrole(minimalDsl), true);
+
+  const outDsl = formatDocument('hdbrole', dslRole, {}, ED);
+  assert.ok(outDsl.startsWith('role pkg.roles::Child\nextends role pkg.roles::Base\nextends catalog role "PUBLIC" {\n'));
+  assert.ok(outDsl.includes('    -- line comment\n'));
+  assert.ok(outDsl.includes('    system privilege: BACKUP ADMIN, USER ADMIN;\n'));
+  assert.ok(outDsl.includes('    schema pkg.app:app.hdbschema: SELECT, INSERT;\n'));
+  assert.ok(outDsl.includes('    catalog sql object "S"."T": SELECT WITH GRANT OPTION;\n'));
+  assert.strictEqual(formatClassicHdbrole(outDsl, {}, ED), outDsl, 'classic role idempotent');
+
+  const outJson = formatDocument('hdbrole', jsonRole, {}, ED);
+  assert.ok(outJson.includes('    "role": {\n        "name": "pkg::R",\n        "global_roles": ["PUBLIC"]\n'));
+  assert.strictEqual(supportsRangeFormatting('hdbrole', dslRole), false);
+
+  // Malformed missing semicolon / unclosed brace recovery
+  const brokenDsl = 'role pkg::Broken { catalog schema "S": SELECT\napplication privilege: pkg::Run';
+  const rec = formatClassicHdbrole(brokenDsl, {}, ED);
+  assert.ok(rec.includes('catalog schema "S": SELECT'));
+});
+
+test('hdbmigrationtable & classic-kv extras: sections preserve headerless version DDL and route xshttpdest/hdbtid/hdbtim', () => {
+  const migIn = [
+    '==version=2',
+    'column table "pkg::T" ("ID" integer not null,"NAME" nvarchar(80))',
+    '==migration=2',
+    'alter table "pkg::T" add ("NAME" nvarchar(80));',
+    '-- hanasql-format off',
+    '== migration = 3',
+    'alter   table  "pkg::T"   drop ( "OLD" );',
+    '-- hanasql-format on',
+  ].join('\n');
+
+  const migOut = formatMigrationTable(migIn, { trailingSemicolon: 'add' }, ED);
+  assert.ok(migOut.startsWith('== version = 2\nCOLUMN TABLE "pkg::T" (\n'));
+  assert.ok(!migOut.includes(')\n;\n== migration = 2'), 'version table DDL must not get trailing semicolon');
+  assert.ok(migOut.includes('\n\n== migration = 2\nALTER TABLE "pkg::T" ADD ("NAME" NVARCHAR(80));\n'));
+  assert.ok(migOut.includes('alter   table  "pkg::T"   drop ( "OLD" );'), 'pragma region preserved verbatim');
+  assert.strictEqual(formatMigrationTable(migOut, { trailingSemicolon: 'add' }, ED), migOut, 'idempotent');
+
+  const dest = formatDocument('xshttpdest', 'host="example.org";port=80;', {}, ED);
+  assert.strictEqual(dest, 'host = "example.org";\nport = 80;\n');
+  const hdbtid = formatDocument('hdbtid', 'import=[{table="T";schema="S";file="pkg:d.csv";}];', {}, ED);
+  assert.ok(hdbtid.includes('import = [\n    {\n        table = "T";'));
+  const hdbtim = formatDocument('hdbtim', 'import=[{schema="S";table="T";columns=["A","B"];}];', {}, ED);
+  assert.ok(hdbtim.includes('columns = ["A", "B"];'));
+});
+
+test('xsjs: masks/restores pragmas cleanly, ignores strings, and applies TextEdits safely', () => {
+  const src = [
+    'var note = "// hanasql-format off inside string";',
+    'var tpl = `/* hanasql-format off in template */`;',
+    'function f(a){',
+    '    // hanasql-format off',
+    '    var   x   =  [  1,   2  ];',
+    '    // hanasql-format on',
+    '    return x;',
+    '}',
+  ].join('\n');
+
+  const { sanitized, regions } = extractJsPragmaRegions(src);
+  assert.strictEqual(regions.size, 1, 'should only mask actual comment pragmas, not string literals');
+  assert.ok(sanitized.includes('/* __HANASQL_XSJS_PRAGMA_0__ */'));
+  assert.ok(!sanitized.includes('var   x   =  [  1,   2  ];'));
+
+  // Simulate VS Code JS formatter changing surrounding code & re-indenting sentinel
+  const target = 'function f(a){';
+  const idx = sanitized.indexOf(target);
+  const edited = applyOffsetEdits(sanitized, [
+    { startOffset: idx, endOffset: idx + target.length, newText: 'function f(a) {' },
+  ]);
+  const restored = restoreJsPragmaRegions(edited, regions);
+  assert.ok(restored.includes('function f(a) {'));
+  assert.ok(restored.includes('    // hanasql-format off\n    var   x   =  [  1,   2  ];\n    // hanasql-format on'));
+
+  // Unclosed pragma masks through EOF
+  const unclosed = 'var a=1;\n/* hanasql-format off */\nvar   b  =  2;';
+  const unclosedMask = extractJsPragmaRegions(unclosed);
+  assert.strictEqual(unclosedMask.regions.size, 1);
+  assert.strictEqual(restoreJsPragmaRegions(unclosedMask.sanitized, unclosedMask.regions), unclosed);
 });
 
 test('package.json: binds default formatter and activationEvents for every supported formatter language', () => {
@@ -409,7 +570,7 @@ test('package.json: binds default formatter and activationEvents for every suppo
   const defaults = pkg.contributes.configurationDefaults;
   const activations = new Set(pkg.activationEvents);
 
-  for (const lang of ARTIFACT_FORMATTER_LANGUAGES) {
+  for (const lang of ALL_FORMATTER_LANGUAGES) {
     assert.strictEqual(
       defaults[`[${lang}]`]?.['editor.defaultFormatter'],
       extId,
@@ -432,6 +593,11 @@ test('samples/format-demos: every format demo transforms and formats idempotentl
     ['hdbdd', 'samples/format-demos/classic-model.hdbdd'],
     ['hdbcds', 'samples/format-demos/hdi-model.hdbcds'],
     ['xsodata', 'samples/format-demos/service.xsodata'],
+    ['hdbrole', 'samples/format-demos/classic-role.hdbrole'],
+    ['hdbrole', 'samples/format-demos/hdi-role.hdbrole'],
+    ['hdiconfig', 'samples/format-demos/container-config.hdiconfig'],
+    ['hdbmigrationtable', 'samples/format-demos/migration.hdbmigrationtable'],
+    ['xshttpdest', 'samples/format-demos/destination.xshttpdest'],
   ];
 
   for (const [lang, rel] of demoCases) {
