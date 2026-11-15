@@ -32,6 +32,7 @@
 | `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions, or trailing `,` before `)` / clause keyword (with QuickFix) |
 | `HANA-SYN-025` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Incomplete/empty SQL clause (`SELECT FROM`, `WHERE AND`) or missing `;` between SQLScript statements inside `BEGIN ... END` (with QuickFix) |
 | `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
+| `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -188,6 +189,41 @@
 - **AST / Token Trigger:**
   1. **Header `;` Check:** Top-level `namespace ...` or `using ...` declaration missing terminating `;` before the next top-level keyword (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `@Annotation`).
   2. **Entity / Type Field Declarations:** Inside `entity { ... }` or `type { ... }` (at member brace depth, excluding `view ... as select ...` and `technical configuration { ... }` blocks): field missing `:` before its type (`key ID Integer;`), `:` followed immediately by `;` / `}` (missing type), or missing `;` before the next field declaration on a following line.
+
+### `HANA-SYN-027` — Out-of-Order or Duplicate `SELECT` Query Clause
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (Pages 1130–1160)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md (Pages 44–50)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/033_pages_961_990.md (Pages 961–990)
+
+- **Severity:** `error`
+- **Target Extensions:** `.sql`, `.hanasql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **AST / Token Trigger:** Tracks active `SELECT` queries per `(parenDepth, bracketDepth)` nesting level against canonical SAP HANA query clause precedence:
+  ```ebnf
+  subquery_clause_order ::=
+      "SELECT" [ pre_from_into ]
+      "FROM"
+      [ "WHERE" ]
+      [ "GROUP BY" ]
+      [ "HAVING" ]
+      [ "WINDOW" ]
+      [ ( "UNION" | "INTERSECT" | "EXCEPT" | "MINUS" ) ... ]
+      [ "ORDER BY" ]
+      [ "LIMIT" [ "OFFSET" ] ]
+      [ "FOR UPDATE" | "FOR SHARE LOCK" | "FOR XML" | "FOR JSON" | post_subquery_into ]
+      [ "WITH HINT" ] ;
+  ```
+  1. **Out-of-Order Clause:**
+     - `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` appearing before `FROM`.
+     - `FROM` appearing after `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT`.
+     - Any query-body clause (`WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`) appearing out of canonical sequence (e.g., `ORDER BY` before `WHERE`, `GROUP BY` after `HAVING`, `ORDER BY` after `LIMIT`, `OFFSET` before `LIMIT`, or any query clause after post-`FROM` `INTO` / `FOR UPDATE` / `WITH HINT`).
+     - `ORDER BY`, `LIMIT`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` appearing directly before an unparenthesized set operator (`UNION`, `INTERSECT`, `EXCEPT`, `MINUS`).
+  2. **Duplicate Non-Repeatable Clause:** Duplicate `INTO`, `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY` (SAP HANA SQL Error `398: ERR_SQL_MANY_ORDER_BY`), `LIMIT`, `OFFSET`, `FOR UPDATE`/`SHARE LOCK`/`XML`/`JSON`, or `WITH HINT` within the same query level and set-operator branch. (Set operators reset branch-local state `FROM`..`WINDOW` for the next branch's `SELECT`.)
+  3. **False-Positive Exclusions:** Nested parenthesized subqueries `(SELECT ...)`, CTE headers `WITH cte AS (...)`, `OVER (... ORDER BY ...)`, `WITHIN GROUP (ORDER BY ...)`, `STRING_AGG`/`ARRAY_AGG` argument `ORDER BY`, `FILTER (WHERE ...)`, `EXTRACT`/`TRIM`/`SUBSTRING(... FROM ...)`, `IS [NOT] DISTINCT FROM`, temporal `FOR SYSTEM_TIME FROM ... TO ...`, `CASE ... WHEN ... THEN ... ELSE ... END`, and DDL `TRIGGER ... FOR EACH ROW` are isolated cleanly by paren depth and syntactic context.
+- **Diagnostic Examples:**
+  - `'WHERE' clause must appear after 'FROM' clause in SELECT query.`
+  - `Unexpected 'WHERE' clause after 'ORDER BY' clause in SELECT query.`
+  - `Duplicate 'WHERE' clause in SELECT query.`
 
 ---
 
