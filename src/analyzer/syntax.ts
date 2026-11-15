@@ -725,6 +725,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     if (SQLSCRIPT_BLOCK_LANGUAGES.has(languageId)) {
       checkSqlScriptOrderAndContext({
         languageId,
+        text: slice,
         codeTokens,
         baseOffset,
         lineStarts,
