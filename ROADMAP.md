@@ -42,15 +42,15 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 * [x] Tolerant JSON/JSONC formatter covering 28 JSON-based design-time artifacts (`.hdiconfig`, `.hdbgrants`, `.xsaccess`, `.xsapp`, `.hdbrole` HDI, etc.), classic `.hdbrole` DSL formatter, and `.hdbmigrationtable` section formatter.
 * [x] XSJS / `.xsjslib` formatting via virtual-document delegation to VS Code's built-in JS/TS formatter with `hanasql-format off` pragma masking, plus `package.json` `defaultFormatter` bindings across all formatted languages.
 
-### Phase 3: Offline Language Server (LSP), Static Analyzers & Migration Assistant
+### Phase 3: Offline Language Server (LSP), Static Analyzers & Migration Assistant (Completed)
 
-* [ ] **XSJS IntelliSense:** Inject generated `xsjs.d.ts` definitions (`$.db`, `$.hdb`, `$.net`, `$.session`) into VS Code's JavaScript language service for zero-config autocomplete.
-* [ ] **SQLScript Static Analyzer:**
-  * Flag performance anti-patterns (mixing `CE_*` functions with SQL, cursor loops, `SELECT *` in procedures).
-  * Flag security risks (dynamic SQL string concatenation without `USING` bind variables).
-* [ ] **Interactive XSC -> XSA CodeActions:**
-  * Quick-fix conversion from classic `.hdbtable` (`table.columns = [...]`) to HDI `.hdbtable` (`COLUMN TABLE ...`).
-  * Inline deprecation hints for legacy `$.db` calls and `CE_*` functions.
+* [x] **XSJS IntelliSense:** Inject generated `xsjs.d.ts` definitions (`$.db`, `$.hdb`, `$.net`, `$.session`) into VS Code's JavaScript language service and register zero-config XSJS Completion/Hover/SignatureHelp providers.
+* [x] **SQLScript Static Analyzer:**
+  * Flag performance anti-patterns (mixing `CE_*` functions with SQL, cursor loops, `SELECT *` in procedures, empty `EXIT HANDLER` blocks).
+  * Flag security risks (dynamic SQL string concatenation without `USING` bind variables, `SQL SECURITY DEFINER` escalation, `.xsaccess`, `.hdbrole`, and `.hdbgrants` least-privilege rules) and Calculation View XML schema errors.
+* [x] **Interactive XSC -> XSA CodeActions:**
+  * Bidirectional AST conversion between classic `.hdbtable`/`.hdbview`/`.hdbsequence` and HDI DDL, plus `.hdbrole` / `.hdbdd` / `.hdbstructure` migration CodeActions and Command Palette commands.
+  * Inline deprecation hints and AST QuickFixes for legacy `$.db` calls and `CE_*` functions.
 
 ### Phase 4: Live HANA Connectivity, `_SYS_REPO` & Git Integration
 
