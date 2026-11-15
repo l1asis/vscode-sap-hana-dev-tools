@@ -239,7 +239,7 @@ test('HANA-SYN-030..032: XSJS / XSJSLIB regex-aware lexical, delimiter & keyword
   assert.ok(xsjsDiags.some((d) => d.ruleId === 'HANA-SYN-032' && d.message.includes('whlie')));
   assert.ok(xsjsDiags.some((d) => d.ruleId === 'HANA-SYN-032' && d.message.includes('retern')));
 
-  // Negative checks: regex char classes containing `'"{}[]/`, division, nested templates, `var func`
+  // Negative checks: regex char classes containing `'"{}[]/`, division, nested templates, `var func`, postfix ops
   const cleanXsjs = [
     'var func = 1;',
     'var ratio = (a + b) / 2;',
@@ -248,8 +248,108 @@ test('HANA-SYN-030..032: XSJS / XSJSLIB regex-aware lexical, delimiter & keyword
     'if (ratio > 0) /ok/.test(clean);',
     'function whlie(x) { return x; }',
     'whlie(ratio);',
+    'var retern = [1, 2];',
+    'retern[0]++;',
+    'for (var i = 0; i < retern.length; i++) { ratio += retern[i]; }',
   ].join('\n');
   assert.deepEqual(syntaxDiags('xsjs', cleanXsjs), []);
+
+  // HANA-SYN-033: XSJS missing comma in array & argument list + QuickFix roundtrip
+  const badXsjsComma = 'var x = [1 2];\nvar y = JSON.stringify(a b);';
+  const xsjsCommaDiags = syntaxDiags('xsjs', badXsjsComma).filter((d) => d.ruleId === 'HANA-SYN-033');
+  assert.equal(xsjsCommaDiags.length, 2);
+  const fixedXsjsComma = applyTextEdits(
+    badXsjsComma,
+    xsjsCommaDiags.flatMap((d) => d.fixes[0].edits)
+  );
+  assert.deepEqual(syntaxDiags('xsjs', fixedXsjsComma), []);
+});
+
+test('HANA-SYN-001 & HANA-SYN-023: real test.hdbfunction quote localization, missing commas & SQL edge cases', () => {
+  const fnSample = fs.readFileSync(path.join(ROOT, 'samples', 'test.hdbfunction'), 'utf8');
+  assert.deepEqual(syntaxDiags('hdbfunction', fnSample), []);
+
+  const lineOfOffset = (src: string, offset: number): number =>
+    src.slice(0, offset).split('\n').length;
+  const lineOfSnippet = (src: string, snippet: string): number => {
+    const idx = src.indexOf(snippet);
+    assert.ok(idx >= 0, `Snippet not found in fixture: ${snippet}`);
+    return lineOfOffset(src, idx);
+  };
+
+  // Missing closing quote on `"NAME"` highlights `"NAME` on its own line, NOT downstream `"IS_ACTIVE"`
+  const missingClose = fnSample.replace('"NAME" AS "ITEM_NAME"', '"NAME AS "ITEM_NAME"');
+  const closeDiags = syntaxDiags('hdbfunction', missingClose).filter((d) => d.ruleId === 'HANA-SYN-001');
+  assert.equal(closeDiags.length, 1);
+  assert.equal(lineOfOffset(missingClose, closeDiags[0].start), lineOfSnippet(missingClose, '"NAME AS'));
+  assert.ok(closeDiags[0].start < missingClose.indexOf('"IS_ACTIVE"'));
+
+  // Missing opening quote on `"NAME"` highlights `NAME"` on its own line, NOT `"IS_ACTIVE"`
+  const missingOpen = fnSample.replace('"NAME" AS "ITEM_NAME"', 'NAME" AS "ITEM_NAME"');
+  const openDiags = syntaxDiags('hdbfunction', missingOpen).filter((d) => d.ruleId === 'HANA-SYN-001');
+  assert.equal(openDiags.length, 1);
+  assert.equal(lineOfOffset(missingOpen, openDiags[0].start), lineOfSnippet(missingOpen, 'NAME" AS'));
+  assert.equal(missingOpen.slice(openDiags[0].start, openDiags[0].end), 'NAME"');
+  assert.match(openDiags[0].message, /missing opening/i);
+
+  // Missing opening/closing quote in WHERE stays on WHERE line without swallowing `"IS_ACTIVE"`
+  const brokenWhere = fnSample.replace('WHERE "PRICE"', 'WHERE "PRICE');
+  const whereDiags = syntaxDiags('hdbfunction', brokenWhere).filter((d) => d.ruleId === 'HANA-SYN-001');
+  assert.equal(whereDiags.length, 1);
+  assert.equal(lineOfOffset(brokenWhere, whereDiags[0].start), lineOfSnippet(brokenWhere, 'WHERE "PRICE'));
+
+  // Missing commas across parameters, DECIMAL args, RETURNS TABLE columns, and SELECT list + QuickFix roundtrip
+  const commaMutations = [
+    fnSample.replace('DECIMAL(3, 2),', 'DECIMAL(3, 2)'),
+    fnSample.replace('DECIMAL(3, 2)', 'DECIMAL(3 2)'),
+    fnSample.replace('"ITEM_NAME" NVARCHAR(100),', '"ITEM_NAME" NVARCHAR(100)'),
+    fnSample.replace('"NAME" AS "ITEM_NAME",', '"NAME" AS "ITEM_NAME"'),
+  ];
+  for (const mutated of commaMutations) {
+    const diags = syntaxDiags('hdbfunction', mutated);
+    const commaErr = diags.find((d) => d.ruleId === 'HANA-SYN-023');
+    assert.ok(commaErr, `Expected HANA-SYN-023 for mutation:\n${mutated}`);
+    assert.equal(commaErr.fixes[0]?.title, "Insert ','");
+    const fixed = applyTextEdits(mutated, commaErr.fixes[0].edits);
+    assert.deepEqual(syntaxDiags('hdbfunction', fixed), []);
+  }
+
+  // Positive missing commas in SELECT, VALUES, INSERT, and Classic KV arrays
+  assert.ok(syntaxDiags('hanasql', 'SELECT "NAME"\n "PRICE" * 1.1 FROM T;').some((d) => d.ruleId === 'HANA-SYN-023'));
+  assert.ok(syntaxDiags('hanasql', 'SELECT "NAME" "A" "PRICE" FROM T;').some((d) => d.ruleId === 'HANA-SYN-023'));
+  assert.ok(syntaxDiags('hanasql', 'INSERT INTO T ("A" "B") VALUES (1 2);').some((d) => d.ruleId === 'HANA-SYN-023'));
+  const kvBadArr = 'table.schemaName = "S";\ntable.columns = [{ name = "A"; sqlType = INTEGER; }];\ntable.primaryKey.pkcolumns = ["A" "B"];';
+  const kvComma = syntaxDiags('hdbtable', kvBadArr).find((d) => d.ruleId === 'HANA-SYN-023');
+  assert.ok(kvComma);
+  assert.deepEqual(syntaxDiags('hdbtable', applyTextEdits(kvBadArr, kvComma.fixes[0].edits)), []);
+
+  // Negative SQL guards: implicit alias, typed literals, window functions, WITHIN GROUP, ARRAY subscripts
+  const validComplexSql = [
+    'SELECT "NAME" "ITEM_ALIAS", DATE \'2025-01-01\',',
+    '  SUM("AMOUNT") OVER (PARTITION BY "DEPT" ORDER BY "ID" DESC),',
+    '  STRING_AGG("NAME", \',\' ORDER BY "NAME") WITHIN GROUP (ORDER BY "NAME")',
+    'FROM "T" WHERE "ARR"[1] = 1;',
+  ].join('\n');
+  assert.deepEqual(syntaxDiags('hanasql', validComplexSql), []);
+
+  // Review fixes: JSON missing value before next property + CDS typo after `@Catalog.index: [...]`
+  const missingJsonVal = '{\n  "exposed":\n  "authentication": []\n}';
+  assert.ok(
+    syntaxDiags('xsaccess', missingJsonVal).some(
+      (d) => d.ruleId === 'HANA-SYN-010' && /expected property value/i.test(d.message)
+    )
+  );
+  const jsonRecovery = parseJsonAstWithErrors(missingJsonVal);
+  assert.ok(
+    jsonRecovery.ast?.kind === 'object' &&
+      jsonRecovery.ast.properties.some((p) => p.key === 'authentication')
+  );
+
+  const cdsAfterBracketAnnot = 'namespace demo;\n@Catalog.index: [{ name: \'I\', unique: true }]\nentiy Orders { key ID : Integer; };';
+  const cdsTypos = syntaxDiags('hdbdd', cdsAfterBracketAnnot).filter((d) => d.ruleId === 'HANA-SYN-021');
+  assert.equal(cdsTypos.length, 1);
+  assert.equal(cdsTypos[0].fixes[0]?.edits[0]?.newText, 'entity');
+  assert.deepEqual(syntaxDiags('hdbdd', applyTextEdits(cdsAfterBracketAnnot, cdsTypos[0].fixes[0].edits)), []);
 });
 
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
