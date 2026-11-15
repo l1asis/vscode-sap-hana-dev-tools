@@ -33,6 +33,7 @@
 | `HANA-SYN-025` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Incomplete/empty SQL clause (`SELECT FROM`, `WHERE AND`) or missing `;` between SQLScript statements inside `BEGIN ... END` (with QuickFix) |
 | `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
 | `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
+| `HANA-SYN-028` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Routine header clause placement/compatibility, `USING` library placement, `DECLARE` / `HANDLER` / executable ordering in compound blocks, handler scope conflicts, or unreachable statements |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -224,6 +225,78 @@
   - `'WHERE' clause must appear after 'FROM' clause in SELECT query.`
   - `Unexpected 'WHERE' clause after 'ORDER BY' clause in SELECT query.`
   - `Duplicate 'WHERE' clause in SELECT query.`
+
+---
+
+### `HANA-SYN-028` — SQLScript Header & Block Declaration Ordering
+
+> Source: `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`, `010_8_Imperative_SQLScript_Logic.md`, `014_12_Built-In_Libraries.md`
+
+- **Platform:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** `sql`, `hanasql`, `sqlscript`, `procedure`, `hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbvirtualprocedure`, `hdbvirtualfunction`, `hdbmigrationtable`
+- **Severity:** `error` (`warning` + `unnecessary` tag for unreachable statements)
+- **Category:** `syntax`
+- **Grammar Reference:**
+
+```ebnf
+procedure_header ::= [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" ] "PROCEDURE" <name>
+                     [ "(" <param_list> ")" ]
+                     [ "LANGUAGE" <lang> ] [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
+                     [ "DEFAULT" "SCHEMA" <schema> ] [ "READS" "SQL" "DATA" ]
+                     [ <variable_cache_clause> ] [ "DETERMINISTIC" ] [ "WITH" "ENCRYPTION" ]
+                     [ "AUTOCOMMIT" "DDL" ( "ON" | "OFF" ) ]
+                     "AS" [ "USING" <lib> [ "AS" <alias> ] ";" ... ] ( "BEGIN" ... "END" | "HEADER" "ONLY" ) ;
+
+function_header  ::= [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" | "VIRTUAL" ] "FUNCTION" <name>
+                     [ "(" <in_param_list> ")" ]
+                     "RETURNS" ( <scalar_ret_list> | "TABLE" "(" ... ")" )
+                     [ "LANGUAGE" <lang> ] [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
+                     [ "DEFAULT" "SCHEMA" <schema> ] [ <variable_cache_clause> ]
+                     [ "DETERMINISTIC" ] [ "WITH" "ENCRYPTION" ]
+                     [ [ "NO" ] "STRUCTURED" "FILTER" "CHECK" ]
+                     "AS" [ "USING" <lib> [ "AS" <alias> ] ";" ... ] ( "BEGIN" ... "END" | "HEADER" "ONLY" ) ;
+
+compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTONOMOUS" "TRANSACTION" ]
+                     [ <using_stmt>* ]        /* root BEGIN only */
+                     [ <proc_decl>* ]         /* DECLARE var | table | array | cursor | condition */
+                     [ <proc_handler>* ]      /* DECLARE (EXIT | CONTINUE) HANDLER FOR ... */
+                     [ <proc_stmt>* ] ;       /* executable statements */
+```
+
+- **Conditions:**
+  1. **Routine Header Placement & Duplicates (`error`):**
+     - Header clauses (`RETURNS`, `LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, `READS SQL DATA`, `DETERMINISTIC`, `WITH ENCRYPTION`, `AUTOCOMMIT DDL`, `[NO] STRUCTURED FILTER CHECK`) MUST precede `AS` (and `BEGIN`) and MUST NOT repeat in the same routine header.
+     - On `FUNCTION` headers, `RETURNS` MUST appear after parameters and before trailing options (`LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, `DETERMINISTIC`, `WITH ENCRYPTION`, `STRUCTURED FILTER CHECK`, `AS`). (`RETURNS` is optional on `ALTER FUNCTION`.)
+     - Block modifiers (`SEQUENTIAL EXECUTION`, `PARALLEL EXECUTION`, `AUTONOMOUS TRANSACTION`) MUST NOT appear in the routine header before `AS`.
+  2. **Header Clause & Parameter Compatibility (`error`):**
+     - `OUT` and `INOUT` parameter modes are disallowed in `FUNCTION` parameter lists (only `IN` is permitted).
+     - `RETURNS` and `[NO] STRUCTURED FILTER CHECK` are disallowed in `PROCEDURE` headers.
+     - `READS SQL DATA` is disallowed in `FUNCTION` headers (functions are inherently read-only).
+     - `AUTOCOMMIT DDL ON|OFF` is disallowed in `FUNCTION` headers and in `READS SQL DATA` `PROCEDURE` headers.
+     - `CREATE FUNCTION` / HDI `FUNCTION` / `VIRTUAL FUNCTION` headers MUST declare `RETURNS`.
+  3. **`USING` Library Placement (`error`):**
+     - `USING <library_name> [AS <alias>];` MUST appear either between `AS` and the root `BEGIN`, or at the start of the root `BEGIN` block before any `DECLARE` or executable statement.
+     - `USING` after declarations/statements or inside nested blocks (`IF`, `ELSEIF`, `ELSE`, `FOR`, `WHILE`, `LOOP`, nested `BEGIN`, handler body) is rejected.
+  4. **Compound Block Declaration Order (`error`):**
+     - Every compound scope (`BEGIN ... END`, `IF ... THEN`, `ELSEIF ... THEN`, `ELSE`, `FOR ... DO`, `WHILE ... DO`, `LOOP`, handler `BEGIN ... END`) enforces: block option (`SEQUENTIAL EXECUTION`, etc.) -> `<proc_decl_list>` (`DECLARE <var|table|array|cursor|condition>`) -> `<proc_handler_list>` (`DECLARE EXIT|CONTINUE HANDLER FOR ...`) -> `<proc_stmt_list>` (executables).
+     - Single-statement handler bodies (`DECLARE EXIT HANDLER FOR ... <stmt>;`) remain scoped to `<proc_handler_list>` and do not advance the enclosing block to `<proc_stmt_list>`.
+     - Compound handler bodies (`DECLARE ... HANDLER FOR ... BEGIN ... END;`) open an independent nested child scope allowing local declarations inside the handler.
+  5. **Handler Scope Conflicts & Duplicates (`error`):**
+     - `EXIT HANDLER` and `CONTINUE HANDLER` cannot appear in the same scope regardless of declaration order.
+     - `EXIT HANDLER` cannot be declared in any nested scope inside an ancestor scope that declared a `CONTINUE HANDLER`. (A `CONTINUE HANDLER` nested inside an `EXIT HANDLER` scope is permitted.)
+     - Duplicate condition specifications (e.g., two `SQLEXCEPTION`, two identical `SQL_ERROR_CODE <n>`, or two identical named conditions) within the same scope are rejected.
+  6. **Unreachable Statements (`warning`, tag `unnecessary`):**
+     - Sibling statements appearing after an unconditional control-flow terminator (`RETURN`, `SIGNAL`, `RESIGNAL`, `BREAK`, `CONTINUE`) within the same block/branch statement list (excluding single-statement handler bodies) are flagged as unreachable.
+- **Diagnostic Examples:**
+  - `Header clause 'READS SQL DATA' must appear before 'AS'.`
+  - `Parameter mode 'OUT' is not allowed in a FUNCTION header; use PROCEDURE or RETURNS instead.`
+  - `'AUTOCOMMIT DDL' is not allowed in a READS SQL DATA procedure or a function.`
+  - `'USING' declaration must appear before 'DECLARE' and statements at routine root level.`
+  - `'DECLARE' must appear before executable statements in this block.`
+  - `'DECLARE' variable/cursor/condition must appear before 'DECLARE ... HANDLER' in this block.`
+  - `'EXIT HANDLER' cannot be combined with 'CONTINUE HANDLER' in the same or enclosing scope.`
+  - `Duplicate condition handler for 'SQLEXCEPTION' in this scope.`
+  - `Unreachable statement after 'RETURN'.`
 
 ---
 
