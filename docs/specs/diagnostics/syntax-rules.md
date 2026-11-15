@@ -26,13 +26,17 @@
 | `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
-| `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header keyword (e.g., `CREATE FUNC`, root `FUNC`, `PROC`, `ENTIY`) with QuickFix |
+| `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header or SQL clause keyword (e.g., `CREATE FUNC`, `RETUNS`, `LANUAGE`, `INVOKR`, `SELCT`, `WHRE`, `ENTIY`) with QuickFix |
 | `HANA-SYN-022` | `error` | `syntax` | Classic KV (`.hdbtable`, `.hdbview`, `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.hdbprocedure` KV, etc.) | `[XSC]` | Malformed Classic Key-Value assignment (missing `=`, missing RHS value, or missing `,` in `[ ... ]` array) |
 | `HANA-SYN-023` | `error` | `syntax` | SQL, SQLScript, HDI DDL, Classic KV (`[...]`), `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing `,` separator between parameters, table columns, `SELECT` list items, function arguments, or array elements (with QuickFix) |
+| `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions, or trailing `,` before `)` / clause keyword (with QuickFix) |
+| `HANA-SYN-025` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Incomplete/empty SQL clause (`SELECT FROM`, `WHERE AND`) or missing `;` between SQLScript statements inside `BEGIN ... END` (with QuickFix) |
+| `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
 | `HANA-SYN-033` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Missing `,` separator in JS `[...]` array literal or call argument list `(a b)` (with QuickFix) |
+| `HANA-SYN-034` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Missing, dangling, or consecutive binary operator in JS expressions |
 
 ---
 
@@ -119,14 +123,17 @@
   - `Expected 'END IF' before 'END' (unclosed 'IF' at line 4).`
   - `Unclosed 'BEGIN' block; missing 'END'.`
 
-### `HANA-SYN-021` — Misspelled Declaration Header Keyword
+### `HANA-SYN-021` — Misspelled Declaration Header or SQL Clause Keyword
 - **Severity:** `error`
 - **Target Extensions:** All SQL / SQLScript languages, headerless HDI DDL artifacts, and CDS (`.hdbdd`, `.hdbcds`).
 - **AST / Token Trigger:** Checked strictly at **anchored keyword positions** (Damerau-Levenshtein edit distance `<= 2`, same leading character or clear prefix truncation `len >= 4`, non-keyword unknown word, never matching a known SAP HANA keyword or column/table identifier position):
   1. Immediately following `CREATE`, `CREATE OR REPLACE`, `ALTER`, or `DROP` in SQL / SQLScript: expected object kind (`PROCEDURE`, `FUNCTION`, `TABLE`, `COLUMN`, `ROW`, `VIEW`, `TRIGGER`, `LIBRARY`, `SEQUENCE`, `INDEX`, `SCHEMA`, `SYNONYM`, `ROLE`, `USER`, `TYPE`, `COLLECTION`, `PROJECTION`, `STATISTICS`, `STRUCTURED`, `VIRTUAL`). E.g. `CREATE FUNC`, `CREATE OR REPLACE PROCEDUR`, `CREATE TABEL`.
   2. Document root / first statement token in headerless HDI artifacts (`.hdbtable`, `.hdbview`, `.hdbfunction`, `.hdbtablefunction`, `.hdbprocedure`, `.hdbtrigger`, `.hdblibrary`, `.hdbsequence`, `.hdbindex`, `.hdbconstraint`, `.hdbprojectionview`, `.hdbstructuredprivilege`, `.hdbvirtualtable`, etc.): checks leading token against expected HDI root keyword (`COLUMN`, `ROW`, `VIEW`, `FUNCTION`, `PROCEDURE`, `TRIGGER`, `LIBRARY`, `SEQUENCE`, `INDEX`, `CONSTRAINT`, `PROJECTION`, `STRUCTURED`, `VIRTUAL`, `TYPE`, etc.) — e.g. `FUNC "my_fn"()` -> QuickFix `FUNCTION`. Also skips if token is `@` annotation, comment, or valid KV syntax in dual-mode `.hdbview`/`.hdbtable`.
-  3. Top-level statement starts inside SQLScript body (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `RESIGNAL`) ONLY when immediately at statement start and structurally invalid (not followed by `=` or identifier assignments like `col := ...`).
-  4. Top-level CDS declarations (`.hdbdd`, `.hdbcds`): anchored after optional `@Annotations` / `namespace ...;` / `using ...;` / statement start (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `aspect`, `service`) — e.g. `entiy Customer {` -> QuickFix `entity`.
+  3. Routine signature header keywords between parameter `)` and `AS`/`BEGIN`: `RETURNS` (`RETUNS`, or `RETURN` followed by `TABLE` in a `FUNCTION` header), `LANGUAGE` (`LANUAGE`, `LANGAUGE`), `SECURITY` (`SECURTY`), `INVOKER` (`INVOKR`), `DEFINER` (`DEFINR`).
+  4. Top-level statement starts and unambiguous SQL query clause anchors:
+     - Statement starts inside SQLScript body (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `RESIGNAL`) ONLY when immediately at statement start and structurally invalid (not followed by `=` or identifier assignments like `col := ...`).
+     - Query clause typos at structural boundaries (`SELECT` -> `SELCT`/`SELET`/`SLECT` at statement start or after `RETURN`/`UNION`/`(`; `WHERE` -> `WHRE`/`WHER` at line start or after `FROM <table_ref>`; `GROUP` -> `GROP` before `BY`; `ORDER` -> `ORDR` before `BY`; `HAVING` -> `HAVNG`; `LIMIT` -> `LIMT`).
+  5. Top-level CDS declarations (`.hdbdd`, `.hdbcds`): anchored after optional `@Annotations` / `namespace ...;` / `using ...;` / statement start (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `aspect`, `service`) — e.g. `entiy Customer {` -> QuickFix `entity`.
 - **QuickFix (`Replace with '<KEYWORD>'`):** Single text replacement preserving capitalization convention (`UPPERCASE` for SQL/HDI DDL, `lowercase` for CDS keywords).
   - **Before:** `CREATE FUNC "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`
   - **After:** `CREATE FUNCTION "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`
@@ -152,6 +159,35 @@
   3. **Function Call Arguments, `VALUES`, `IN`, and `INSERT` Column Lists:** Adjacent operands without operators or `,` inside standard function calls `fn(a b)`, `VALUES (1 2)`, `IN (1 2)`, and `INSERT INTO tbl (a b)` (excluding special-syntax calls such as `CAST`, `EXTRACT`, `SUBSTRING`, `TRIM`, `OVER`, type dimensions except adjacent literals like `DECIMAL(3 2)`).
   4. **Classic KV Array Lists:** Adjacent elements inside `[ ... ]` (`.hdbtable`, `.hdbti`, etc.) lacking `,` (respecting `.hdbti` `["K":"V"]` colon pairs).
 - **QuickFix (`Insert ','`):** Inserts `,` immediately after the preceding element token.
+
+### `HANA-SYN-024` — Missing, Dangling, or Consecutive SQL Operator & Trailing Comma
+- **Severity:** `error`
+- **Target Extensions:** SQL, SQLScript, HDI DDL (`.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtable`, `.hdbview`, `.hdbtabletype`, `.hdbindex`, etc.), `.hdbmigrationtable`.
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **AST / Token Trigger:** Emitted inside SQL expression contexts (`SELECT` items, `WHERE`, `ON`, `HAVING`, `WHEN`, `THEN`, `ELSE`, `SET`, `VALUES`, `RETURN`, `:=`, and parenthesized scalar expressions `(...)`):
+  1. **Missing Binary / Comparison / Logical Operator:**
+     - Adjacent value operands without an operator inside `WHERE`, `ON`, `HAVING`, `WHEN`, `THEN`, `ELSE`, `SET`, `RETURN`, `:=`, or parenthesized scalar expressions `(...)` (e.g., `WHERE "PRICE" :im_min_price`, `AND "IS_ACTIVE" TRUE`, `(1.0 :im_tax_rate)`, `WHERE "PRICE" >= :im_min_price "IS_ACTIVE" = TRUE`).
+     - Unqualified double-quoted column identifier `"COL"` (not schema/object-qualified via `.`, not containing `::`, and not preceded by DDL/DML target keywords) followed immediately by `(` inside an expression (e.g., `"PRICE" (1.0 + :im_tax_rate)`).
+     - Preserves valid SQL predicates and multi-token constructs: `IS [NOT] NULL|TRUE|FALSE|UNKNOWN`, `[NOT] BETWEEN ... AND ...`, `[NOT] IN (...)`, `[NOT] LIKE ... [ESCAPE ...]`, `CASE ... WHEN ... THEN ... ELSE ... END`, typed literals (`DATE '...'`, `TIMESTAMP '...'`, `INTERVAL '...' UNIT`), `CAST(... AS ...)`, `EXTRACT(... FROM ...)`, `TRIM(... FROM ...)`, `SUBSTRING(... FROM ... FOR ...)`, `ANY`/`ALL`/`SOME`/`EXISTS`, `OVER (...)`, `WITHIN GROUP (...)`, `FILTER (...)`, `AT TIME ZONE ...`, `COLLATE ...`, `ASC`/`DESC`/`NULLS FIRST|LAST`.
+  2. **Dangling / Leading Binary Operator:** Binary operator (`*`, `/`, `+`, `-`, `||`, `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`) at the end of an expression before `AS`, `,`, `;`, `)`, `END`, or a clause boundary (`FROM`, `WHERE`, `GROUP`, `ORDER`, `HAVING`, `LIMIT`, `UNION`, `AND`, `OR`, `WHEN`, `THEN`, `ELSE`), or non-unary operator (`*`, `/`, `||`, `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`) at expression start.
+  3. **Consecutive Binary Operators:** Two incompatible binary operators side-by-side (`a * / b`, `a >= = b`, `a = = b`), excluding unary `+`, `-`, `NOT`, `PRIOR`, `NEW`, `BINARY`.
+  4. **Trailing Comma (`QuickFix: Remove trailing comma`):** Comma immediately before closing `)` in SQL lists (`DECIMAL(3, 2,)`, `RETURNS TABLE ("A" INT,)`) or before major query clause keywords (`SELECT "A", FROM "T"`).
+
+### `HANA-SYN-025` — Incomplete SQL Clause or Missing Statement Semicolon
+- **Severity:** `error`
+- **Target Extensions:** SQL, SQLScript, HDI DDL, `.hdbmigrationtable`.
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **AST / Token Trigger:**
+  1. **Incomplete / Empty SQL Clauses:** `SELECT` immediately followed by `FROM`/`WHERE`/`;` without a projection list (`SELECT FROM "T"`), `FROM` immediately followed by `WHERE`/`GROUP`/`HAVING`/`ORDER`/`;` without a table reference, or `WHERE` immediately followed by `AND`/`OR`/`GROUP`/`HAVING`/`ORDER`/`;`/`END` without a condition predicate.
+  2. **Missing `;` Between Statements in `BEGIN ... END` (`QuickFix: Insert ';'`):** Inside `BEGIN ... END` compound blocks at `parenDepth === 0`, a complete SQL/SQLScript statement (`SELECT`, `RETURN`, `INSERT`, `UPDATE`, `DELETE`, `UPSERT`, `MERGE`, `CALL`, `SET`, `OPEN`, `FETCH`, `CLOSE`, or `:=` assignment) followed on a subsequent line by a new statement starter (`RETURN`, `DECLARE`, `IF`, `WHILE`, `FOR`, `LOOP`, `INSERT`, `UPDATE`, `DELETE`, `UPSERT`, `MERGE`, `CALL`, `EXEC`, `EXECUTE`, `SIGNAL`, `RESIGNAL`, `OPEN`, `FETCH`, `CLOSE`, `COMMIT`, `ROLLBACK`, or `<ident> :=`) without an intervening `;` or block-flow keyword (`BEGIN`, `THEN`, `ELSE`, `ELSEIF`, `DO`, `LOOP`, `WHEN`, `UNION`, `INTERSECT`, `EXCEPT`, `MINUS`).
+
+### `HANA-SYN-026` — CDS Member & Header Structural Syntax (`.hdbdd` / `.hdbcds`)
+- **Severity:** `error`
+- **Target Extensions:** `.hdbdd`, `.hdbcds`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]`
+- **AST / Token Trigger:**
+  1. **Header `;` Check:** Top-level `namespace ...` or `using ...` declaration missing terminating `;` before the next top-level keyword (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `@Annotation`).
+  2. **Entity / Type Field Declarations:** Inside `entity { ... }` or `type { ... }` (at member brace depth, excluding `view ... as select ...` and `technical configuration { ... }` blocks): field missing `:` before its type (`key ID Integer;`), `:` followed immediately by `;` / `}` (missing type), or missing `;` before the next field declaration on a following line.
 
 ---
 
@@ -193,3 +229,12 @@
 - **Platform Scope:** `[XSC]` `[XSA]`
 - **AST / Token Trigger:** Adjacent value operands without a separating operator, `;`, or `,` inside `[ ... ]` array literals or non-`for` call/grouping parentheses `( ... )` (e.g. `JSON.stringify(a b)`, `[1 2]`).
 - **QuickFix (`Insert ','`):** Inserts `,` after the preceding operand token.
+
+### `HANA-SYN-034` — Missing, Dangling, or Consecutive JS Operator (`.xsjs` / `.xsjslib`)
+- **Severity:** `error`
+- **Target Extensions:** `.xsjs`, `.xsjslib`
+- **Platform Scope:** `[XSC]` `[XSA]`
+- **AST / Token Trigger:**
+  1. **Missing Binary Operator:** Adjacent value operands (`ident`, `number`, `string`, `template`) on the same line inside an expression (including `if (...)`, `while (...)`, `var x = ...`, `return ...`, not preceded by declaration/prefix keywords `function`, `var`, `let`, `const`, `new`, `typeof`, `delete`, `void`, `in`, `instanceof`, `return`, `case`, `throw`, `else`, `of`) without an intervening operator, `,`, `;`, or ternary `?`/`:`.
+  2. **Dangling Binary Operator:** Binary operator (`*`, `/`, `%`, `===`, `!==`, `==`, `!=`, `<=`, `>=`, `<`, `>`, `&&`, `||`, `=`, `+=`, `-=`, `*=`, `/=`) immediately preceding `;`, `)`, `]`, `}`, or `,`.
+  3. **Consecutive Binary Operators:** Two binary-only operators (`*`, `/`, `%`, `===`, `!==`, `==`, `!=`, `<=`, `>=`, `&&`, `||`, `=`) appearing consecutively (e.g. `a * / b`, `a >= = b`).
