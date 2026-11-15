@@ -36,7 +36,7 @@ export function scanBlockCommentEnd(text: string, start: number): number {
  * Scan a double-quoted string literal with backslash escapes (`\"`, `\\`, etc.),
  * used by Classic KV and XSODATA. Unclosed strings run to EOF.
  */
-export function scanBackslashStringEnd(text: string, start: number, quoteChar: '"' | "'"): number {
+export function scanBackslashStringEnd(text: string, start: number, quoteChar: '"' | "'" | '`'): number {
   const n = text.length;
   let j = start + 1;
   while (j < n) {
