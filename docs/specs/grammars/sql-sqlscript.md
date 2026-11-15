@@ -397,7 +397,19 @@ fabric_virtual_table_artifact ::=
 
 ## 6. Formatting & Indentation Rules
 
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(DI)_Reference_en/008_6_SAP_HDI_Artifact_Types_and_Build_Plug-ins_Reference.md (Pages 265–290, 341)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/007_pages_211_245.md (Pages 211–245)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/009_pages_281_291.md (Pages 281–291)
+
 - **Keyword Casing:** Upper-case SQL and SQLScript keywords, built-in types, and built-in function names (`upper` default) while preserving exact casing inside single-quoted strings `'...'`, double-quoted delimited identifiers `"..."`, and comments.
 - **Block Indentation:** Indent statements inside `BEGIN ... END`, `IF ... THEN ... ELSEIF ... ELSE ... END IF`, `CASE ... WHEN ... THEN ... ELSE ... END`, `WHILE ... DO ... END WHILE`, `LOOP ... END LOOP`, `FOR ... DO ... END FOR`, and `DO BEGIN ... END`.
 - **Clause Alignment:** Place major query clauses (`SELECT`, `FROM`, `INNER/LEFT/RIGHT/FULL/CROSS JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `UNION [ALL]`, `INTERSECT`, `EXCEPT`) on their own lines with indented projection lists and predicates.
-- **Safety Guarantees:** Never modify code between `-- hanasql-format off` and `-- hanasql-format on`, never strip comments, and support HDI headerless `.hdbprocedure` / `.hdbfunction` / `.hdbtable` / `.hdbview` bodies that omit `CREATE`.
+- **HDI Headerless Root Semicolon Safety (`trailingSemicolon: 'add'`):**
+  - HDI design-time DDL artifacts omit the leading `CREATE` command and do **not** carry a root trailing `;` (`com.sap.hana.di.*` build plug-ins treat the entire file as a single headerless object definition):
+    - **`.hdbprocedure` (`PROCEDURE ... AS { USING ...; } BEGIN ... END`):** Inner statements inside `BEGIN ... END` (and optional `USING [SYS.]<lib> AS <alias>;` declarations between `AS` and `BEGIN`) are semicolon-terminated, while the root `END` must **not** receive an appended `;` under `trailingSemicolon: 'add'`.
+    - **`.hdbfunction` / `.hdbtablefunction` (`FUNCTION ... RETURNS ... AS { USING ...; } BEGIN ... END`):** Same root `END` semicolon suppression across optional `USING ...;` declarations.
+    - **`.hdbtabletype` (`TYPE "<name>" AS TABLE ( ... )`):** Root `TYPE` headerless table-type definition formats column definitions one per line and must **not** receive an appended `;`.
+    - **`.hdbprojectionview` (`PROJECTION VIEW "<name>" AS SELECT ... FROM ...`):** Root `PROJECTION VIEW` headerless definition formats the `SELECT` query clauses and must **not** receive an appended `;`.
+    - **Other HDI headerless root headers:** `COLUMN TABLE`, `ROW TABLE`, `VIEW`, `SEQUENCE`, `TRIGGER`, `LIBRARY`, `INDEX`, `FULLTEXT INDEX`, `FUZZY SEARCH INDEX`, `UNIQUE ... INDEX`, `HASH INDEX`, `BLOCK RANGE INDEX`, `ADJACENCY INDEX`, `SHARED ... REPLICA`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB`, `VIRTUAL TABLE`, `VIRTUAL PROCEDURE`, `VIRTUAL FUNCTION`, `STATISTICS`, `STRUCTURED PRIVILEGE`, `RESULT CACHE`, `APPLICATION TIME`, `SYSTEM VERSIONING`, `REMOTE TABLE REPLICA`.
+  - Contrast: Catalog DDL (`CREATE PROCEDURE ...;`, `CREATE TYPE ...;`) and standalone DML (`SELECT ...;`) are **not** headerless HDI root statements and **do** receive `;` under `trailingSemicolon: 'add'`.
+- **Safety Guarantees:** Never modify code between `-- hanasql-format off` and `-- hanasql-format on`, never strip comments, and support HDI headerless `.hdbprocedure` / `.hdbfunction` / `.hdbtabletype` / `.hdbprojectionview` / `.hdbtable` / `.hdbview` bodies that omit `CREATE`.

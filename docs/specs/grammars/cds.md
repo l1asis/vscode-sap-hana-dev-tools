@@ -448,8 +448,33 @@ role_def ::=
 
 ---
 
-## 6. Formatting & Indentation Rules
+## 6. Canonical Formatting Rules (Phase 2)
 
-- **Indentation:** Increase indentation inside `{ ... }` blocks (`context`, `entity`, `type`, `table type`, `enum`, `technical configuration`, `select { ... }`, `mixin { ... }`, `accesspolicy`, `role`, `extend`, and multi-line `@Annotation: { ... }` / `[ ... ]`) and inside `series ( ... )`.
-- **Statement Termination:** Terminate `namespace`, `using`, `package`, `in package`, element declarations, `type` declarations, `view` definitions, and top-level/context blocks with `;`.
-- **Identifier Preservation:** Never alter case of identifiers, namespace paths, or string/delimited identifier literals (`"..."`, `![...]`).
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_CDS_Reference_en/006_4_Creating_Data_Persistence_Artifacts_with_CDS_in_XS_Advanced.md (Pages 147–215)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Core_Data_Services_(CDS)_Reference/036_CDS_View_Syntax_Options.md (Pages 80–94)
+
+1. **Header & Packaging (`namespace`, `using`, `package`, `in package`):**
+   - Emit at indent level `0` with no spaces around `.` or `::` and no space before `;` (`namespace acme.com.app1;`, `using acme.com.common::Types.Money as Money;`).
+   - Group consecutive `using` declarations and separate header declarations from top-level artifacts with a blank line.
+2. **`@Annotation` Placement:**
+   - Place each `@Annotation` on its own line immediately preceding its target (`context`, `entity`, `type`, `view`, `annotation`, `extend`, element, or parameter) at the target's indent level.
+   - Format annotation assignments as `@Path: value` (no space before `:`, single space after `:`); preserve marker annotations (`@nokey`, `@WithStructuredPrivilegeCheck`, `@cds.persistence.exists`) without synthesizing `: true`.
+   - Keep short single-line `@Annotation: { ... }` / `[ ... ]` inline when fitting within `maxLineLength` and free of internal comments; otherwise expand multi-line at `+1` indent.
+3. **Block Openers, Closers & Indentation (`context`, `entity`, `type`, `table type`, `enum`, `accesspolicy`, `role`, `extend`):**
+   - Place opening `{` on the declaration header line after a single space (`context Model {`, `entity Employee {`).
+   - Indent all block members by `+1` indent unit; place closing `}` at the block's opening indent level followed immediately by `;` (`};`), or `}` followed by `technical configuration {` on the same line (`} technical configuration { ... };`).
+   - Format empty blocks as `{}` / `{};`.
+   - Format `series ( ... )` clauses with `+1` indent inside parentheses.
+4. **Element & Type Declarations:**
+   - Separate element/type names and type specs with ` : ` (`key id : Integer;`, `name : String(100) not null default 'n/a';`).
+   - Keep type arguments (`String(100)`, `Decimal(15, 2)`, `hana.ST_POINT(4326)`), association cardinalities (`Association[0..1]`), and range operators (`0..1`, `1..*`) free of extraneous inner spaces before `(` / `[` or around `..`.
+   - Keep parameter/constant prefixes (`:PAR1`) attached to their identifier when used in expressions (`= :PAR1`), while still spacing declaration colons (`id:Integer` $\rightarrow$ `id : Integer`).
+5. **Views & `select from` Clauses (`.hdbdd`, `.hdbcds`):**
+   - Format header as `[define] view <Name> [with parameters ...] as select from <DataSource>` (wrapping `select from` when `with parameters` or `union` is present).
+   - Format `mixin { ... } into { ... }` with `+1` indent for mixin association bindings.
+   - Format projection `{ ... }`: keep single-item short projections inline when fitting within `maxLineLength` and free of comments; expand multi-item or long projections one item per line at `+1` indent with closing `}` at view indent level. Preserve `.{` without space around `.` for nested path projections (`orders[status = 'open'].{ id as orderId }`).
+   - Align trailing query clauses (`where`, `group by`, `having`, `order by`, `limit ... offset ...`, `union [all]`, `with structured privilege check`) at view indent level and terminate the view with `;`.
+6. **Identifier, Comment, Pragma & Recovery Guarantees:**
+   - Never alter case of identifiers, namespace paths, annotations, or string/delimited identifier literals (`'...'`, `"..."`, `![...]`).
+   - Preserve `//`, `/* ... */`, and `/** ... */` comments in relative position, and emit regions inside `hanasql-format off ... on` pragmas verbatim.
+   - Recover gracefully from missing `;` or unmatched `{` / `(` without throwing or dropping tokens.

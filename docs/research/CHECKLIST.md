@@ -62,9 +62,9 @@
   Extracted: `research/refs/extracted/hana-cloud-data-lake_SAP_HANA_Cloud,_Data_Lake_Developer_Guide_for_Data_Lake_Rel`
 - [x] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Deployment Infrastructure (HDI) Reference** (291p, 10 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Developer Guide for Cloud Foundry Multitarget Applications (SAP Bu** (395p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [x] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Developer Guide for Cloud Foundry Multitarget Applications (SAP Bu** (395p, 14 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Developer_Guide_for_Cloud_`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Developer Guide for Cloud Foundry Multitarget Applications (SAP We** (547p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [x] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Developer Guide for Cloud Foundry Multitarget Applications (SAP We** (547p, 19 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Developer_Guide_for_Cloud_`
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Modeling Guide for SAP Business Application Studio** (226p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Modeling_Guide_for_SAP_Bus`

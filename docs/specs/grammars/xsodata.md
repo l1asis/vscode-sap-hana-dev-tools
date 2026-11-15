@@ -215,12 +215,27 @@ integer_literal        := digit { digit } ;
 
 ## 6. Canonical Formatting Rules (Phase 2)
 
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/008_6_Defining_Web-based_Data_Access_in_XS_Advanced.md (Pages 541–573)
+
 1. **Block Openers & Closers:**
-   - `service [namespace "..."] {`, `annotations {`, and `settings {` open an indentation block (`+1` indent).
-   - `}` closes the block (`-1` indent) on its own line.
-2. **Entry Continuation Indentation:**
-   - Each `entity` or `association` statement inside `service { ... }` starts at indent level `+1`.
-   - Sub-clauses (`with (...)`, `key (...)`, `concurrencytoken (...)`, `navigates (...)`, `aggregates always (...)`, `parameters via ...`, `principal ...`, `dependent ...`, `over ...`, `storage ...`, `create ...`, `update ...`, `delete ...`) wrap onto continuation lines at indent level `+2` when multi-line.
-3. **Statement Termination:**
-   - Every `entity` and `association` entry inside `service { ... }`, every directive inside `annotations { ... }`, and every setting inside `settings { ... }` must end with `;`.
-   - Top-level blocks (`service { ... }`, `annotations { ... }`, `settings { ... }`) do **not** end with `;`.
+   - `service [namespace "..."] {`, `annotations {`, and `settings {` open an indentation block (`+1` indent) with `{` on the header line after a single space.
+   - `}` closes the block (`-1` indent) on its own line without a trailing `;`. Empty blocks format as `{}` (`service {}`).
+   - Separate consecutive top-level blocks (`service`, `annotations`, `settings`) with a blank line.
+2. **`entity` Exposures & Line Wrapping:**
+   - Each `entity` entry inside `service { ... }` starts at indent level `+1` and ends with `;`.
+   - Catalog object qualifiers keep no spaces around `.` (`"MYSCHEMA"."MY_TABLE"`).
+   - Short single-clause entries that fit within `maxLineLength` and contain no modification clauses or embedded comments stay on one line (`"sample.odata::order" as "Orders";`).
+   - Multi-clause or long `entity` entries wrap major sub-clauses (`with (...)`, `without (...)`, `omitting (...)`, `key (...)` / `keys generate local "..."`, `concurrencytoken` / `etag`, `navigates (...)`, `aggregates always (...)`, `parameters via ...`, `create ...`, `update ...`, `delete ...`) onto continuation lines at indent level `+2`.
+3. **`association` Blocks:**
+   - Each `association [via parameters] "<Name>" [with referential constraint]` entry starts at indent level `+1` and ends with `;`.
+   - Wrap `principal ... multiplicity "..."`, `dependent ... multiplicity "..."`, `over ...`, `principal (...)`, `dependent (...)`, `no storage` / `storage on ...`, and optional modification clauses onto continuation lines at indent level `+2` when multi-line or exceeding `maxLineLength`.
+   - Keep entity-set join column parentheses attached without space (`"Customers"("ID")`), and space keyword-led lists (`navigates (...)`, `with (...)`, `events (...)`).
+4. **`navigates` & `modification` Exit Specifications:**
+   - `navigates (...)` stays single-line when fitting within `maxLineLength`; when exceeding `maxLineLength`, wrap comma-separated navigation entries onto `+1` indent lines (`+3` inside `service`) with closing `)` at `+2`.
+   - Each `create` / `update` / `delete` modification clause (`using "..."`, `events (...)`, `forbidden`) starts on its own continuation line at indent level `+2` when multiple modification clauses or long exit paths are present; `events (...)` wraps comma-separated event handlers when exceeding `maxLineLength`.
+5. **`annotations` & `settings` Entries:**
+   - Place each entry (`enable OData4SAP;`, `support null;`, `content cache-control "...";`, `metadata cache-control "...";`, `hints ...;`, `limits max_records = ..., max_expanded_records = ...;`) at indent level `+1`, terminated with `;`.
+   - Keep hyphenated `cache-control` intact without spaces around `-`, and use single spaces around `=` in `limits`.
+6. **Comment Preservation, Pragmas & Recovery:**
+   - Preserve `//` and `/* ... */` comments in relative position and emit `hanasql-format off ... on` regions verbatim.
+   - Recover gracefully from missing `;` or unclosed parentheses/braces without dropping tokens.
