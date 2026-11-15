@@ -1371,6 +1371,156 @@ test('HANA-SYN-028 / HANA-SYN-029: .hdblibrary member ordering/visibility and .h
   );
 });
 
+test('HANA-SYN-004 / 027 / 028 / 029: edge cases, multiple violations, and QuickFix replacements', () => {
+  const byRule = (lang: string, code: string, rule: string) => syntaxDiags(lang, code).filter((d) => d.ruleId === rule);
+
+  // --- Multiple violations in one document are each reported, at distinct offsets ---
+  const multiTrigger = `TRIGGER "T1" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN
+    COMMIT;
+    ROLLBACK;
+    CREATE COLUMN TABLE "X" ("A" INT);
+    EXEC 'SELECT 1 FROM DUMMY';
+  END`;
+  const trg29 = byRule('hdbtrigger', multiTrigger, 'HANA-SYN-029');
+  assert.equal(trg29.length, 4);
+  assert.equal(new Set(trg29.map((d) => d.start)).size, 4);
+  for (const d of trg29) {
+    assert.ok(/TRIGGER/.test(d.message));
+    assert.ok(['COMMIT', 'ROLLBACK', 'CREATE', 'EXEC'].includes(multiTrigger.slice(d.start, d.end).toUpperCase()));
+  }
+
+  const multiLib = `LIBRARY "L" AS BEGIN
+    PRIVATE VARIABLE "A" INT DEFAULT 1;
+    PRIVATE VARIABLE "B" INT := 2;
+    PUBLIC PROCEDURE "P"() AS BEGIN END;
+    PUBLIC VARIABLE "C" CONSTANT INT := 3;
+  END`;
+  const lib28 = byRule('hdblibrary', multiLib, 'HANA-SYN-028');
+  assert.equal(lib28.filter((d) => /CONSTANT/.test(d.message)).length, 2);
+  assert.equal(lib28.filter((d) => /before member/.test(d.message)).length, 1);
+
+  // Duplicate SELECT clauses in separate statements each flagged (HANA-SYN-027)
+  const dupClauses = 'SELECT A FROM T WHERE A = 1 WHERE A = 2;\nSELECT B FROM T ORDER BY B ORDER BY B;';
+  assert.ok(byRule('hanasql', dupClauses, 'HANA-SYN-027').length >= 2);
+
+  // Several trailing statements in a single-object artifact: at least one HANA-SYN-004, never on root
+  const trailing = 'VIEW "V" AS SELECT 1 AS A FROM DUMMY; SELECT 2 FROM DUMMY; SELECT 3 FROM DUMMY;';
+  const t04 = byRule('hdbview', trailing, 'HANA-SYN-004');
+  assert.ok(t04.length >= 1);
+  assert.ok(t04.every((d) => d.start > trailing.indexOf(';')));
+
+  // --- Boundary / negative edge cases ---
+  // CONSTANT with initializer inside parentheses / CASE expression in a library variable
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `LIBRARY "L" AS BEGIN
+        PUBLIC VARIABLE "D" CONSTANT DECIMAL(10, 2) := (CASE WHEN 1 = 1 THEN 1.5 ELSE 2 END);
+        PUBLIC VARIABLE "E" INT;
+      END`,
+      'HANA-SYN-028'
+    ),
+    []
+  );
+  // '=' inside a nested routine body must not be mistaken for a library variable initializer
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `LIBRARY "L" AS BEGIN
+        PUBLIC FUNCTION "F"(IN x INT) RETURNS r INT AS BEGIN
+          r = CASE WHEN :x = 1 THEN 1 ELSE 0 END;
+        END;
+      END`,
+      'HANA-SYN-028'
+    ),
+    []
+  );
+  // Lowercase keywords and comments between visibility and member keyword
+  assert.deepEqual(
+    byRule(
+      'hdblibrary',
+      `library "L" as begin
+        public /* doc */ variable "c" constant int := 1;
+        private -- helper
+        procedure "p"() as begin end
+      end`,
+      'HANA-SYN-029'
+    ),
+    []
+  );
+  // Nested BEGIN inside trigger keeps trigger restrictions
+  assert.ok(
+    byRule(
+      'hdbtrigger',
+      'TRIGGER "T" AFTER UPDATE ON "TAB" FOR EACH ROW BEGIN IF 1 = 1 THEN BEGIN COMMIT; END; END IF; END',
+      'HANA-SYN-029'
+    ).length === 1
+  );
+  // COMMIT outside a trigger (plain procedure) is allowed
+  assert.deepEqual(byRule('hdbprocedure', 'PROCEDURE "P"() AS BEGIN COMMIT; END', 'HANA-SYN-029'), []);
+  // Strings / comments containing trigger-forbidden words are ignored
+  assert.deepEqual(
+    byRule(
+      'hdbtrigger',
+      `TRIGGER "T" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN
+        -- COMMIT; ROLLBACK;
+        INSERT INTO "LOG" VALUES ('CREATE TABLE x; COMMIT;');
+      END`,
+      'HANA-SYN-029'
+    ),
+    []
+  );
+  // Comments / blank lines after the root END are not trailing statements
+  assert.deepEqual(
+    byRule('hdbprocedure', 'PROCEDURE "P"() AS BEGIN END;\n\n-- trailing comment\n/* block */\n', 'HANA-SYN-004'),
+    []
+  );
+  // CASE ... END and END IF / END LOOP inside body do not prematurely close the root
+  assert.deepEqual(
+    byRule(
+      'hdbprocedure',
+      `PROCEDURE "P"(IN x INT) AS BEGIN
+        DECLARE v INT := CASE WHEN :x > 0 THEN 1 ELSE 0 END;
+        IF :v = 1 THEN v = 2; END IF;
+        WHILE :v < 10 DO v = :v + 1; END WHILE;
+        BEGIN v = 0; END;
+      END`,
+      'HANA-SYN-004'
+    ),
+    []
+  );
+  // Leading comment and annotations before root keyword
+  assert.deepEqual(byRule('hdbview', '-- header\n/* doc */\nVIEW "V" AS SELECT 1 AS A FROM DUMMY', 'HANA-SYN-004'), []);
+  // Empty artifact produces no HANA-SYN-004
+  assert.deepEqual(byRule('hdbprocedure', '', 'HANA-SYN-004'), []);
+  assert.deepEqual(byRule('hdbprocedure', '   \n-- only a comment\n', 'HANA-SYN-004'), []);
+
+  // --- QuickFix replacements: multiple independent typo fixes applied together ---
+  const multiTypo = 'SELCT "A" FROM "T";\nSELCT "B" FROM "T";';
+  const typoDiags = byRule('hanasql', multiTypo, 'HANA-SYN-021');
+  assert.equal(typoDiags.length, 2);
+  const allEdits = typoDiags.flatMap((d) => d.fixes[0].edits);
+  const fixedMulti = applyTextEdits(multiTypo, allEdits);
+  assert.equal(fixedMulti, 'SELECT "A" FROM "T";\nSELECT "B" FROM "T";');
+  assert.deepEqual(syntaxDiags('hanasql', fixedMulti), []);
+
+  // HDI root typo fix yields a valid artifact with no HANA-SYN-004 / 021 remaining
+  const hdiTypo = 'PROCEDUR "P"() AS BEGIN SELECT 1 FROM DUMMY; END';
+  const hdiTypoDiag = byRule('hdbprocedure', hdiTypo, 'HANA-SYN-021');
+  assert.ok(hdiTypoDiag.length === 1 && hdiTypoDiag[0].fixes.length > 0);
+  const hdiFixed = applyTextEdits(hdiTypo, hdiTypoDiag[0].fixes[0].edits);
+  assert.ok(hdiFixed.startsWith('PROCEDURE '));
+  assert.deepEqual(
+    syntaxDiags('hdbprocedure', hdiFixed).filter((d) => d.ruleId === 'HANA-SYN-004' || d.ruleId === 'HANA-SYN-021'),
+    []
+  );
+
+  // Valid-but-wrong root (e.g. GRANT in .hdbtable) must not offer a bogus typo fix
+  const wrongRoot = syntaxDiags('hdbtable', 'GRANT SELECT ON "T" TO "U"');
+  assert.ok(wrongRoot.some((d) => d.ruleId === 'HANA-SYN-004' && d.fixes.length === 0));
+  assert.ok(!wrongRoot.some((d) => d.ruleId === 'HANA-SYN-021'));
+});
+
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
   const brokenProc = 'CREATE FUNC "P"() AS BEGIN SELECT 1 FROM DUMMY; END;';
   // syntax: false disables HANA-SYN-* while leaving semantic diagnostics intact
