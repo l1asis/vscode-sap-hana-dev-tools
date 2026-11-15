@@ -1,0 +1,120 @@
+name: Automated Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (e.g. v0.3.0; defaults to current tag ref or v<package.json version>)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  npm_config_yes: 'true'
+
+jobs:
+  release:
+    name: Package & Publish Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js (LTS)
+        uses: actions/setup-node@v7
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Verify tag matches package.json version
+        id: meta
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          EXPECTED_TAG="v${PKG_VERSION}"
+
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+          elif [ -n "${INPUT_TAG}" ]; then
+            TAG_NAME="${INPUT_TAG}"
+          else
+            TAG_NAME="${EXPECTED_TAG}"
+          fi
+
+          if [ "${TAG_NAME}" != "${EXPECTED_TAG}" ]; then
+            echo "::error::Git tag '${TAG_NAME}' does not match package.json version '${PKG_VERSION}' (expected '${EXPECTED_TAG}')."
+            exit 1
+          fi
+
+          VSIX_PATH="${PKG_NAME}-${PKG_VERSION}.vsix"
+          echo "name=${PKG_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=${PKG_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          echo "vsix=${VSIX_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Package VSIX
+        run: |
+          npx @vscode/vsce package
+          test -f "${{ steps.meta.outputs.vsix }}"
+
+      - name: Extract release notes from CHANGELOG.md
+        env:
+          RELEASE_VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const version = process.env.RELEASE_VERSION;
+            const changelog = fs.readFileSync("CHANGELOG.md", "utf8");
+            const escaped = version.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const headerRe = new RegExp(`^##\\s+(?:\\[v?${escaped}\\]|v?${escaped})(?:\\s+-\\s+.*|\\s*)$`, "m");
+            const match = headerRe.exec(changelog);
+            if (!match) {
+              console.error(`::error::Could not find section for version ${version} in CHANGELOG.md`);
+              process.exit(1);
+            }
+            const rest = changelog.slice(match.index + match[0].length);
+            const nextHeader = /^##\s+/m.exec(rest);
+            const section = (nextHeader ? rest.slice(0, nextHeader.index) : rest).trim();
+            if (!section) {
+              console.error(`::error::Release notes section for version ${version} in CHANGELOG.md is empty`);
+              process.exit(1);
+            }
+            fs.writeFileSync("RELEASE_NOTES.md", section + "\n", "utf8");
+          '
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+          VSIX_FILE: ${{ steps.meta.outputs.vsix }}
+        run: |
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            gh release upload "${TAG_NAME}" "${VSIX_FILE}" --clobber
+            gh release edit "${TAG_NAME}" --title "${TAG_NAME}" --notes-file RELEASE_NOTES.md
+          else
+            gh release create "${TAG_NAME}" "${VSIX_FILE}" \
+              --title "${TAG_NAME}" \
+              --notes-file RELEASE_NOTES.md
+          fi
+
+      - name: Publish to VS Code Marketplace
+        run: npx @vscode/vsce publish --oidc --packagePath "${{ steps.meta.outputs.vsix }}"
