@@ -213,8 +213,28 @@ test('xsjs: XS JavaScript API on top of the JavaScript grammar', () => {
   check(t, 'application/json', 'string.quoted.double.js');
   assert.ok(!has(t, 'application/json', 'support.class.api.xsjs'));
 
-  const neg = tokenize('source.xsjs', 'var x = $.unknown.prop;');
+  const demoSrc = fs.readFileSync(path.join(rootDir, 'samples', 'format-demos', 'service.xsjs'), 'utf8');
+  const demoToks = tokenize('source.xsjs', demoSrc);
+  check(demoToks, 'hdb', 'support.class.api.xsjs');
+  check(demoToks, 'getConnection', 'support.function.xsjs');
+  check(demoToks, 'response', 'support.class.api.xsjs');
+  check(demoToks, 'status', 'support.variable.property.xsjs');
+  check(demoToks, 'net', 'support.class.api.xsjs');
+  check(demoToks, 'http', 'support.variable.property.xsjs');
+  check(demoToks, 'OK', 'support.constant.xsjs');
+  check(demoToks, 'contentType', 'support.variable.property.xsjs');
+  check(demoToks, 'setBody', 'support.function.xsjs');
+  check(demoToks, 'stringify', 'support.function.js');
+
+  const neg = tokenize(
+    'source.xsjs',
+    'function f(){\n  var s = "$.response.status";\n  /* $.response.contentType */\n  // $.response.setBody()\n  var x = $.unknown.prop;\n}'
+  );
   assert.ok(!has(neg, 'unknown', 'support.class.api.xsjs'));
+  assert.ok(!has(neg, 'prop', 'support.variable.property.xsjs'));
+  assert.ok(!has(neg, 'status', 'support.variable.property.xsjs'));
+  assert.ok(!has(neg, 'contentType', 'support.variable.property.xsjs'));
+  assert.ok(!has(neg, 'setBody', 'support.function.xsjs'));
 });
 
 test('HDI: .hdiconfig / .hdinamespace', () => {
@@ -600,7 +620,7 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')) as {
     contributes: {
       languages: Array<{ id: string; extensions: string[]; icon?: { light: string; dark: string } }>;
-      grammars: Array<{ language: string; scopeName: string }>;
+      grammars: Array<{ language?: string; scopeName: string; injectTo?: string[] }>;
     };
   };
   for (const lang of pkg.contributes.languages) {
@@ -621,10 +641,14 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   for (const excluded of ['.properties', '.csv', '.txt', '.jar', '.hdbtabledataprops', '.hdbtabledatatags']) {
     assert.ok(!allExt.has(excluded), `Excluded extension ${excluded} must NOT be registered in package.json`);
   }
-  const grammarMap = new Map(pkg.contributes.grammars.map((g) => [g.language, g.scopeName]));
+  const grammarMap = new Map(
+    pkg.contributes.grammars.filter((g) => g.language).map((g) => [g.language!, g.scopeName])
+  );
   assert.strictEqual(grammarMap.get('hdbdecisiontable'), 'text.xml.hana');
   assert.strictEqual(grammarMap.get('xswidget'), 'text.xml.hana');
   assert.strictEqual(grammarMap.get('hdbfabricvirtualtable'), 'source.hanasql');
+  const xsjsInj = pkg.contributes.grammars.find((g) => g.scopeName === 'xsjs.injection');
+  assert.ok(xsjsInj?.injectTo?.includes('source.xsjs'), 'xsjs.injection must inject into source.xsjs');
 });
 
 if (process.env.DUMP && process.env.FILE) {

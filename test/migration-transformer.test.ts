@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as fs from 'fs';
+import * as path from 'path';
 import { analyzeDocument } from '../src/analyzer/dispatch';
 import {
   convertArtifactDirection,
@@ -162,4 +164,43 @@ END;`;
 if ($.session.hasSystemPrivilege("USER ADMIN")) {}`;
   const xsjsDiags = analyzeDocument({ text: xsjsLegacy, languageId: 'xsjs' });
   assert.equal(xsjsDiags.filter((d) => d.ruleId === 'HANA-MIG-020').length, 2);
+});
+
+test('HANA-MIG-005: inline @Schema, single-line entity @Catalog.tableType / @Catalog.index, and comment safety', () => {
+  const rootDir = fs.existsSync(path.join(__dirname, '..', 'samples'))
+    ? path.join(__dirname, '..')
+    : path.join(__dirname, '..', '..');
+  const demoClassic = fs.readFileSync(
+    path.join(rootDir, 'samples', 'format-demos', 'classic-model.hdbdd'),
+    'utf8'
+  );
+
+  const diags = analyzeDocument({ text: demoClassic, languageId: 'hdbdd' });
+  const mig005 = diags.filter((d) => d.ruleId === 'HANA-MIG-005');
+  assert.equal(mig005.length, 2, 'should flag both @Schema and @Catalog.tableType in classic-model.hdbdd');
+  assert.ok(mig005[0].fixes[0], 'should provide QuickFix on inline @Schema');
+
+  const applied = applyTextEdits(demoClassic, mig005[0].fixes[0].edits);
+  assert.equal(/@Schema/.test(applied), false, 'inline @Schema should be removed');
+  assert.equal(/@Catalog\.tableType/.test(applied), false, '@Catalog.tableType should be removed');
+  assert.match(applied, /^namespace demo\.classic;using demo\.common::Types as T;/);
+  assert.match(applied, /entity Order\{[\s\S]*technical configuration \{ column store; \};/);
+  assert.equal(analyzeDocument({ text: applied, languageId: 'hdbcds' }).filter((d) => d.ruleId === 'HANA-MIG-005').length, 0);
+
+  // @Schema inline before code, plus @Catalog.index + @Catalog.tableType:#ROW + @WithStructuredPrivilegeCheck
+  const inlineBefore = `namespace demo.app; @Schema:'DEMO' context C { @Catalog.tableType:#ROW @Catalog.index:[{name:'IDX_A',unique:true,elementNames:['a']}] entity E { key a : Integer; }; @WithStructuredPrivilegeCheck view V as select from E { a }; };`;
+  const convertedInline = convertHdbddToHdbcds(inlineBefore);
+  assert.equal(/@Schema|@Catalog|@WithStructuredPrivilegeCheck/.test(convertedInline), false);
+  assert.match(convertedInline, /^namespace demo\.app; context C \{/);
+  assert.match(convertedInline, /technical configuration \{ row store; unique index IDX_A on \(a asc\); \};/);
+
+  // Negative case: commented / quoted annotations must NOT trigger HANA-MIG-005 or get mutated
+  const commentedOnly = `namespace demo.hdi;
+// @Schema : 'IGNORED'
+/* @Catalog.tableType : #COLUMN */
+context C {
+  entity E { key note : String(40) default '@Schema'; };
+};`;
+  assert.equal(analyzeDocument({ text: commentedOnly, languageId: 'hdbdd' }).length, 0);
+  assert.equal(convertHdbddToHdbcds(commentedOnly), commentedOnly);
 });

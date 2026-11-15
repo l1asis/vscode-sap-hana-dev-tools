@@ -28,6 +28,7 @@ export interface TmRule {
 export interface TmGrammar {
   name?: string;
   scopeName: string;
+  injectionSelector?: string;
   patterns?: TmRule[];
   repository?: Record<string, TmRule>;
 }
@@ -64,6 +65,19 @@ for (const f of fs.readdirSync(dir)) {
   grammars[g.scopeName] = g;
 }
 
+const rootDir = path.dirname(dir);
+const pkgJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')) as {
+  contributes?: { grammars?: Array<{ scopeName: string; injectTo?: string[] }> };
+};
+const injectionsByScope: Record<string, TmGrammar[]> = {};
+for (const entry of pkgJson.contributes?.grammars ?? []) {
+  const inj = grammars[entry.scopeName];
+  if (!inj || !entry.injectTo) continue;
+  for (const targetScope of entry.injectTo) {
+    (injectionsByScope[targetScope] ??= []).push(inj);
+  }
+}
+
 // VS Code ships source.json; a tiny stand-in is enough for the tests
 grammars['source.json'] = {
   scopeName: 'source.json',
@@ -73,9 +87,14 @@ grammars['source.json'] = {
 grammars['source.js'] = {
   scopeName: 'source.js',
   patterns: [
-    { name: 'string.quoted.double.js', begin: '"', end: '"' },
-    { name: 'keyword.control.js', match: '\\b(?:var|function|return)\\b' },
-    { name: 'support.function.js', match: '\\b[A-Za-z_]\\w*(?=\\()' },
+    { name: 'comment.line.double-slash.js', match: '//.*$' },
+    { name: 'comment.block.js', begin: '/\\*', end: '\\*/' },
+    { name: 'string.quoted.double.js', begin: '"', end: '"', patterns: [{ name: 'constant.character.escape.js', match: '\\\\.' }] },
+    { name: 'string.quoted.single.js', begin: "'", end: "'", patterns: [{ name: 'constant.character.escape.js', match: '\\\\.' }] },
+    { name: 'meta.block.js', begin: '\\{', end: '\\}', patterns: [{ include: '$self' }] },
+    { name: 'meta.parens.js', begin: '\\(', end: '\\)', patterns: [{ include: '$self' }] },
+    { name: 'keyword.control.js', match: '\\b(?:var|let|const|function|return|if|else|for|while|new|try|catch|throw)\\b' },
+    { name: 'support.function.js', match: '\\b[A-Za-z_]\\w*(?=\\s*\\()' },
   ],
 };
 
@@ -101,16 +120,62 @@ function rx(src: string): RegExp {
   return r;
 }
 
+function matchesScopeToken(scopes: readonly string[], token: string): boolean {
+  return scopes.some((s) => s === token || s.startsWith(token + '.'));
+}
+
+function evalInjectionSelector(
+  selector: string | undefined,
+  scopes: readonly string[]
+): { matches: boolean; priority: 'L' | 'R' } {
+  if (!selector) return { matches: false, priority: 'R' };
+  for (const branch of selector.split(',')) {
+    const trimmed = branch.trim();
+    if (!trimmed) continue;
+    let priority: 'L' | 'R' = 'R';
+    let ok = true;
+    for (const rawTok of trimmed.split(/\s+/)) {
+      let tok = rawTok;
+      if (tok.startsWith('L:')) {
+        priority = 'L';
+        tok = tok.slice(2);
+      } else if (tok.startsWith('R:')) {
+        priority = 'R';
+        tok = tok.slice(2);
+      }
+      if (tok.startsWith('-')) {
+        if (matchesScopeToken(scopes, tok.slice(1))) {
+          ok = false;
+          break;
+        }
+      } else if (!matchesScopeToken(scopes, tok)) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) return { matches: true, priority };
+  }
+  return { matches: false, priority: 'R' };
+}
+
 function resolve(
   patterns: readonly TmRule[] | undefined,
   grammar: TmGrammar,
   out: ResolvedRule[],
-  seen = new Set<string>()
+  seen = new Set<string>(),
+  selfGrammar: TmGrammar = grammar
 ): ResolvedRule[] {
   for (const p of patterns || []) {
     if (p.include) {
       let g: TmGrammar | undefined = grammar;
       let name = p.include;
+      if (name === '$self') {
+        const k = selfGrammar.scopeName + '#$self';
+        if (seen.has(k)) continue;
+        seen.add(k);
+        resolve(selfGrammar.patterns, selfGrammar, out, seen, selfGrammar);
+        continue;
+      }
       if (name.startsWith('#')) {
         name = name.slice(1);
       } else {
@@ -118,7 +183,7 @@ function resolve(
         g = grammars[scope];
         if (!g) throw new Error('unknown grammar ' + scope);
         if (!repo) {
-          resolve(g.patterns, g, out, seen);
+          resolve(g.patterns, g, out, seen, g);
           continue;
         }
         name = repo;
@@ -129,7 +194,7 @@ function resolve(
       if (seen.has(k)) continue;
       seen.add(k);
       if (target.match || target.begin) out.push({ rule: target, grammar: g });
-      else resolve(target.patterns, g, out, seen);
+      else resolve(target.patterns, g, out, seen, g);
     } else {
       out.push({ rule: p, grammar });
     }
@@ -181,7 +246,18 @@ function tokenizeLine(line: string, stack: StackEntry[], rootGrammar: TmGrammar)
   while (pos < line.length && guard++ < 10000) {
     const top = stack[stack.length - 1];
     const g = top ? top.grammar : rootGrammar;
-    const pats = resolve(top ? top.rule.patterns : rootGrammar.patterns, g, []);
+    const basePats = resolve(top ? top.rule.patterns : rootGrammar.patterns, g, [], new Set<string>(), g);
+    const currentScopes = [rootGrammar.scopeName, ...scopesOf()];
+    const leftInj: ResolvedRule[] = [];
+    const rightInj: ResolvedRule[] = [];
+    for (const inj of injectionsByScope[rootGrammar.scopeName] || []) {
+      const sel = evalInjectionSelector(inj.injectionSelector, currentScopes);
+      if (!sel.matches) continue;
+      const resolvedInj = resolve(inj.patterns, inj, [], new Set<string>(), inj);
+      if (sel.priority === 'L') leftInj.push(...resolvedInj);
+      else rightInj.push(...resolvedInj);
+    }
+    const pats = leftInj.length > 0 || rightInj.length > 0 ? [...leftInj, ...basePats, ...rightInj] : basePats;
     let best: MatchCandidate | null = null;
     if (top) {
       const r = rx(top.endSrc);
