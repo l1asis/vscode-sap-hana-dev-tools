@@ -23,7 +23,7 @@
 | `HANA-SYN-001` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated string literal, quoted identifier, or CDS expression bracket (`![...]`) |
 | `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`) |
 | `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`) |
-| `HANA-SYN-004` | `error` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword for HDI artifact type, invalid `CREATE` object kind, or extra trailing top-level statement in single-object artifact |
+| `HANA-SYN-004` | `error` / `warning` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword, redundant leading `CREATE`, invalid `CREATE` object kind, or extra trailing top-level statements in single-object artifact (with QuickFixes) |
 | `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
@@ -85,19 +85,21 @@
 
 - **Platform:** `[XSA]` `[HDI]` `[CLOUD]`
 - **Applies To:** Headerless HDI DDL artifact languages in `HDI_ROOT_TARGETS` (`hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbtable`, `hdbstructure`, `hdbtabletype`, `hdbview`, `hdbsequence`, `hdbindex`, `hdbfulltextindex`, `hdbconstraint`, `hdbvirtualtable`, `hdbprojectionview`, `hdbstructuredprivilege`, `hdbstructuredfilter`, `hdbresultcache`, `hdbstatistics`, `hdbsystemversioning`, `hdbapplicationtime`, `hdbschedulerjob`, `hdbremotetablereplica`, `hdbfabricvirtualtable`, `hdbdropcreatetable`, `hdbgraphworkspace`, `hdbvirtualprocedure`, `hdbvirtualfunction`).
-- **Severity:** `error`
+- **Severity:** `error` (`warning` for redundant leading `CREATE` / `CREATE OR REPLACE`)
 - **Category:** `syntax`
 - **Conditions:**
-  1. **Root Declaration Mismatch (`error`):**
-     - When an HDI SQL DDL artifact starts with a non-typo keyword that is not in `HDI_ROOT_TARGETS[languageId]` (e.g., `SELECT`, `DROP`, `INSERT`, or `VIEW` at root of `.hdbprocedure`; `PROCEDURE` at root of `.hdbfunction`), report an unexpected root declaration instead of falling back to generic SQL. (Keyword typos within Damerau-Levenshtein distance `<= 2` continue to report `HANA-SYN-021` with QuickFix.)
-     - When `CREATE [OR REPLACE] <object>` is used in an HDI artifact, `<object>` must match `HDI_ROOT_TARGETS[languageId]` (excluding `'CREATE'`).
+  1. **Root Declaration Mismatch (`error`) & Redundant `CREATE` (`warning`):**
+     - When an HDI SQL DDL artifact starts with a non-typo keyword that is not in `HDI_ROOT_TARGETS[languageId]` (e.g., `SELECT`, `DROP`, `INSERT`, or `VIEW` at root of `.hdbprocedure`; `PROCEDURE` at root of `.hdbfunction`), report an unexpected root declaration (`error`, no QuickFix) instead of falling back to generic SQL. (Keyword typos within Damerau-Levenshtein distance `<= 2` continue to report `HANA-SYN-021` with QuickFix.)
+     - When `CREATE [OR REPLACE] <object>` is used in an HDI artifact, `<object>` must match `HDI_ROOT_TARGETS[languageId]` (excluding `'CREATE'`); wrong object kinds emit `error` without a QuickFix, whereas a redundant `CREATE` / `CREATE OR REPLACE` prefix in front of an allowed headerless root keyword emits a `warning` with a preferred QuickFix (`Remove leading 'CREATE'` / `Remove leading 'CREATE OR REPLACE'`).
      - Classic KV dual-mode artifacts (`table.schemaName = ...`), `.hdbmigrationtable`, `.sql`, and `.hanasql` are excluded.
   2. **Single-Object Artifact Enforcement (`error`):**
-     - Every HDI DDL artifact except `.hdbdropcreatetable` defines a single design-time object. Any non-semicolon top-level statement appearing after the root definition completes (after the root `BEGIN ... END` closes for procedural/library/trigger artifacts, or after the top-level `;` for DDL artifacts, excluding header `AS USING ...;` before `BEGIN`) is flagged.
+     - Every HDI DDL artifact except `.hdbdropcreatetable` defines a single design-time object. Top-level non-comment statements appearing after the root definition completes (after the root `BEGIN ... END` closes for procedural/library/trigger artifacts, or after the top-level `;` for DDL artifacts, excluding header `AS USING ...;` before `BEGIN`) emit one aggregated diagnostic spanning from the first trailing token through the last non-comment trailing token (reporting the count when multiple trailing statements are present), with a preferred QuickFix (`Remove trailing statement` / `Remove trailing statements`) that removes trailing content after the root declaration while preserving comments after the last trailing token.
 - **Diagnostic Examples:**
   - `Unexpected 'SELECT' at root of '.hdbprocedure' artifact; expected PROCEDURE / CREATE.`
   - `Object type 'VIEW' is not valid at root of '.hdbprocedure' artifact; expected PROCEDURE.`
+  - `Headerless '.hdbprocedure' artifact should omit leading 'CREATE'.`
   - `Only one top-level declaration is allowed in '.hdbprocedure'; unexpected trailing statement 'SELECT'.`
+  - `Only one top-level declaration is allowed in '.hdbview'; found 3 unexpected trailing statements.`
 
 ---
 
@@ -311,7 +313,8 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   6. **Unreachable Statements (`warning`, tag `unnecessary`):**
      - Sibling statements appearing after an unconditional control-flow terminator (`RETURN`, `SIGNAL`, `RESIGNAL`, `BREAK`, `CONTINUE`) within the same block/branch statement list (excluding single-statement handler bodies) are flagged as unreachable.
   7. **`.hdblibrary` Member Declaration Order (`error`):**
-     - Inside `LIBRARY ... AS BEGIN ... END`, `PUBLIC` / `PRIVATE VARIABLE` declarations MUST precede any `PROCEDURE` or `FUNCTION` member declaration, and `DEFAULT` / `=` initializers on library variables require `CONSTANT`.
+     - Inside `LIBRARY ... AS BEGIN ... END`, `PUBLIC` / `PRIVATE VARIABLE` declarations MUST precede any `PROCEDURE` or `FUNCTION` member declaration, and `DEFAULT` / `=` / `:=` initializers on library variables (including qualified/quoted variable names) require `CONSTANT`.
+     - **QuickFix / Refactor:** Non-constant initializers offer preferred QuickFix `Add 'CONSTANT'` (inserting `CONSTANT` after the variable name); variables declared after member procedures/functions offer non-preferred `refactor` `Move declaration before first member`.
 - **Diagnostic Examples:**
   - `Header clause 'READS SQL DATA' must appear before 'AS'.`
   - `Parameter mode 'OUT' is not allowed in a FUNCTION header; use PROCEDURE or RETURNS instead.`
@@ -354,10 +357,11 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   7. **`BEGIN AUTONOMOUS TRANSACTION` & `BEGIN PARALLEL EXECUTION` Restrictions (`error`):**
      - Inside `BEGIN PARALLEL EXECUTION`: disallowed in `FUNCTION` and `TRIGGER` bodies; disallow `EXEC` / `EXECUTE IMMEDIATE`, DDL, `COMMIT` / `ROLLBACK` / `SAVEPOINT`, `DECLARE ... HANDLER`, and `RETURN`.
      - Inside `BEGIN AUTONOMOUS TRANSACTION`: disallow `CALL`, DDL, dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`), and cursor operations (`DECLARE ... CURSOR`, `OPEN`, `FETCH`, `CLOSE`). Disallowed in `TRIGGER` bodies.
+     - **Trigger Precedence:** When `BEGIN AUTONOMOUS TRANSACTION` or `BEGIN PARALLEL EXECUTION` is already rejected at the block header inside a `TRIGGER` body, secondary `autonomous`/`parallel` context restrictions are not additionally layered onto inner statements (direct `TRIGGER` restrictions such as DDL, transaction control, and dynamic SQL still apply).
   8. **Top-Level Imperative Statements (`error`):**
      - Imperative SQLScript statements (`DECLARE`, `IF ... THEN`, `LOOP`, `WHILE`, `FOR`, `BREAK`, `CONTINUE`, `SIGNAL`, `RESIGNAL`, `RETURN`) are rejected at top-level SQL script scope outside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO BEGIN ... END`.
   9. **`.hdblibrary` & `.hdbtrigger` Body Restrictions (`error`):**
-     - Inside `LIBRARY ... AS BEGIN ... END`, only `[PUBLIC | PRIVATE] VARIABLE`, `PROCEDURE`, and `FUNCTION` members are permitted (`PUBLIC` or `PRIVATE` required on members; direct executable/declarative statements outside members are rejected).
+     - Inside `LIBRARY ... AS BEGIN ... END`, only `[PUBLIC | PRIVATE] VARIABLE`, `PROCEDURE`, and `FUNCTION` members are permitted (`PUBLIC` or `PRIVATE` required on members; direct executable/declarative statements outside members are rejected). Missing visibility offers QuickFixes `Add 'PRIVATE'` (`isPreferred: true`) and `Add 'PUBLIC'` (`isPreferred: false`).
      - Inside `TRIGGER ... BEGIN ... END`, DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `LOCK TABLE`, `SET TRANSACTION`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), `BEGIN AUTONOMOUS TRANSACTION`, and `BEGIN PARALLEL EXECUTION` are rejected.
 - **Diagnostic Examples:**
   - `'INSERT' on persistent table 'TAB' is not allowed inside a READS SQL DATA procedure or FUNCTION.`
