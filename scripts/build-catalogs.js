@@ -491,6 +491,11 @@ const SQLSCRIPT_LIBRARY_MEMBERS = [
   ['REMOVE_FILTER', 'SQLSCRIPT_LOGGING', ['REMOVE_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))'], 'VOID', 'Removes topic filters from a logging configuration ([XSA]/[HDI]/[CLOUD]).'],
   ['UNSET_FILTER', 'SQLSCRIPT_LOGGING', ['UNSET_FILTER(IN configuration_name NVARCHAR(256))'], 'VOID', 'Clears all topic filters for a logging configuration ([XSA]/[HDI]/[CLOUD]).'],
   ['LOG', 'SQLSCRIPT_LOGGING', ['LOG(IN level VARCHAR(7), IN topic NVARCHAR(256), IN message NVARCHAR(5000) [, IN <arg1> <any>, ...])'], 'VOID', 'Writes a formatted log entry when logging is active for the current object and topic ([XSA]/[HDI]/[CLOUD]).'],
+  ['LEVEL_FATAL', 'SQLSCRIPT_LOGGING', ['LEVEL_FATAL CONSTANT VARCHAR(7)'], 'VARCHAR(7)', 'Fatal log level constant (\'FATAL\') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).'],
+  ['LEVEL_ERROR', 'SQLSCRIPT_LOGGING', ['LEVEL_ERROR CONSTANT VARCHAR(7)'], 'VARCHAR(7)', 'Error log level constant (\'ERROR\') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).'],
+  ['LEVEL_WARNING', 'SQLSCRIPT_LOGGING', ['LEVEL_WARNING CONSTANT VARCHAR(7)'], 'VARCHAR(7)', 'Warning log level constant (\'WARNING\') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).'],
+  ['LEVEL_INFO', 'SQLSCRIPT_LOGGING', ['LEVEL_INFO CONSTANT VARCHAR(7)'], 'VARCHAR(7)', 'Info log level constant (\'INFO\') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).'],
+  ['LEVEL_DEBUG', 'SQLSCRIPT_LOGGING', ['LEVEL_DEBUG CONSTANT VARCHAR(7)'], 'VARCHAR(7)', 'Debug log level constant (\'DEBUG\') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).'],
 
   // SYS.SQLSCRIPT_TEST
   ['LIST_TESTS', 'SQLSCRIPT_TEST', ['LIST_TESTS(IN config_json NCLOB, OUT tests TABLE(...))'], 'VOID', 'Lists all @Test procedures matching the JSON test configuration ([XSA]/[HDI]/[CLOUD]).'],

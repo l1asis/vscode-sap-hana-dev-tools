@@ -165,23 +165,30 @@ function formatParams(params) {
   return { sig: sigParts.join(', '), docParams };
 }
 
-function buildNamespaceTree(entries) {
-  const root = {
-    fullName: '$',
-    entry: entries['$'] || null,
-    children: new Map(),
-  };
+function buildNamespaceTrees(entries) {
+  const roots = new Map();
+
+  function getOrCreateRoot(rootName) {
+    if (!roots.has(rootName)) {
+      roots.set(rootName, {
+        fullName: rootName,
+        entry: entries[rootName] || null,
+        children: new Map(),
+      });
+    }
+    return roots.get(rootName);
+  }
 
   for (const key of Object.keys(entries).sort()) {
-    if (key === '$') continue;
+    const parts = key.split('.').filter(Boolean);
+    if (parts.length === 0) continue;
     const entry = entries[key];
-    const parts = key.replace(/^\$\.?/, '').split('.').filter(Boolean);
-    let cur = root;
-    for (let i = 0; i < parts.length; i++) {
+    let cur = getOrCreateRoot(parts[0]);
+    for (let i = 1; i < parts.length; i++) {
       const part = parts[i];
       if (!cur.children.has(part)) {
         cur.children.set(part, {
-          fullName: parts.slice(0, i + 1).reduce((acc, s) => `${acc}.${s}`, '$'),
+          fullName: parts.slice(0, i + 1).join('.'),
           entry: null,
           children: new Map(),
         });
@@ -191,7 +198,7 @@ function buildNamespaceTree(entries) {
     cur.entry = entry;
   }
 
-  return root;
+  return roots;
 }
 
 function emitMemberProperty(indent, m, isNamespaceScope, pendingAliases) {
@@ -294,7 +301,22 @@ function emitMergedConstants(indent, m) {
   return out;
 }
 
-function emitNode(name, node, indent, mergedMember) {
+function emitImportOverloads(indent, importModules) {
+  if (!importModules || typeof importModules !== 'object') return '';
+  let out = '';
+  for (const key of Object.keys(importModules).sort()) {
+    const colonIdx = key.indexOf(':');
+    if (colonIdx <= 0) continue;
+    const pkg = key.slice(0, colonIdx);
+    const lib = key.slice(colonIdx + 1);
+    const target = importModules[key];
+    out += `${indent}/** Imports SAP HANA XS library \`${pkg}/${lib}\`. */\n`;
+    out += `${indent}function _import(packageName: ${JSON.stringify(pkg)}, libraryName: ${JSON.stringify(lib)}): typeof ${target};\n`;
+  }
+  return out;
+}
+
+function emitNode(name, node, indent, mergedMember, importModules) {
   let out = '';
   const entry = node.entry;
   const childNames = [...node.children.keys()].sort();
@@ -373,7 +395,12 @@ function emitNode(name, node, indent, mergedMember) {
       }
     }
     if (Array.isArray(entry.methods)) {
+      let emittedImportOverloads = false;
       for (const m of entry.methods) {
+        if (node.fullName === '$' && m.name === 'import' && !emittedImportOverloads) {
+          emittedImportOverloads = true;
+          out += emitImportOverloads(bodyIndent, importModules);
+        }
         out += emitMethod(bodyIndent, m, true, pendingAliases);
       }
     }
@@ -386,6 +413,24 @@ function emitNode(name, node, indent, mergedMember) {
     out += emitNode(childName, node.children.get(childName), bodyIndent, mergedChildMembers.get(childName));
   }
   out += `${indent}}\n`;
+  return out;
+}
+
+function emitGlobals(globals) {
+  if (!Array.isArray(globals) || globals.length === 0) return '';
+  let out = '\n// XSUnit / Jasmine global BDD test functions\n';
+  for (const g of globals) {
+    const { sig, docParams } = formatParams(g.params);
+    const retType = g.returns && Array.isArray(g.returns.types) && g.returns.types.length > 0
+      ? formatTypeList(g.returns.types, 'void')
+      : 'void';
+    const doc = formatJsDoc('', g.description, {
+      deprecated: g.deprecated,
+      params: docParams,
+      returnsDesc: g.returns ? g.returns.description : undefined,
+    });
+    out += `${doc}declare function ${g.name}(${sig}): ${retType};\n`;
+  }
   return out;
 }
 
@@ -403,8 +448,17 @@ function buildDts(catalog) {
     dts += `}\n\n`;
   }
 
-  const tree = buildNamespaceTree(catalog.entries);
-  dts += emitNode('$', tree, '');
+  const trees = buildNamespaceTrees(catalog.entries);
+  const rootOrder = Array.isArray(catalog.rootNamespaces)
+    ? [...new Set([...catalog.rootNamespaces, ...trees.keys()])]
+    : [...trees.keys()];
+  for (const rootName of rootOrder) {
+    const tree = trees.get(rootName);
+    if (!tree) continue;
+    dts += emitNode(rootName, tree, '', null, rootName === '$' ? catalog.importModules : null);
+    dts += '\n';
+  }
+  dts += emitGlobals(catalog.globals);
   return dts;
 }
 
@@ -447,7 +501,7 @@ function compactMethod(m) {
 }
 
 function buildTsCatalogModule(catalog) {
-  const tree = buildNamespaceTree(catalog.entries);
+  const trees = buildNamespaceTrees(catalog.entries);
   const compact = {};
 
   function collectChildren(node) {
@@ -539,7 +593,14 @@ function buildTsCatalogModule(catalog) {
     }
   }
 
-  visit(tree, null);
+  for (const tree of trees.values()) {
+    visit(tree, null);
+  }
+
+  const globalsList = Array.isArray(catalog.globals) ? catalog.globals.map(compactMethod) : [];
+  const importModulesMap = catalog.importModules && typeof catalog.importModules === 'object'
+    ? catalog.importModules
+    : {};
 
   const header =
     '// Generated by scripts/build-xsjs-dts.js from docs/specs/catalogs/xsjs-api.json\n' +
@@ -583,7 +644,12 @@ function buildTsCatalogModule(catalog) {
     '  readonly constructors: readonly XsjsMethodDoc[];\n' +
     '}\n\n';
 
-  return `${header}export const XSJS_CATALOG: Readonly<Record<string, XsjsSymbolEntry>> = ${JSON.stringify(compact, null, 2)};\n`;
+  return (
+    `${header}` +
+    `export const XSJS_CATALOG: Readonly<Record<string, XsjsSymbolEntry>> = ${JSON.stringify(compact, null, 2)};\n\n` +
+    `export const XSJS_GLOBALS: readonly XsjsMethodDoc[] = ${JSON.stringify(globalsList, null, 2)};\n\n` +
+    `export const XSJS_IMPORT_MODULES: Readonly<Record<string, string>> = ${JSON.stringify(importModulesMap, null, 2)};\n`
+  );
 }
 
 function main() {

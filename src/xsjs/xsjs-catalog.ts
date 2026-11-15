@@ -5490,5 +5490,3087 @@ export const XSJS_CATALOG: Readonly<Record<string, XsjsSymbolEntry>> = {
         "description": "Represents the HTTP response currently being populated."
       }
     ]
+  },
+  "jasmine": {
+    "fullName": "jasmine",
+    "kind": "namespace",
+    "description": "Top-level namespace for Jasmine / XSUnit, SAP HANA server-side JavaScript BDD testing framework.",
+    "children": [
+      {
+        "name": "CallTracker",
+        "fullName": "jasmine.CallTracker",
+        "kind": "class",
+        "description": "Tracks call history and arguments on a Jasmine Spy (accessed via spy.calls)."
+      },
+      {
+        "name": "Expectation",
+        "fullName": "jasmine.Expectation",
+        "kind": "class",
+        "description": "Jasmine matcher chain returned by expect(actual)."
+      },
+      {
+        "name": "Spec",
+        "fullName": "jasmine.Spec",
+        "kind": "class",
+        "description": "A Jasmine test specification returned by it() / xit()."
+      },
+      {
+        "name": "Spy",
+        "fullName": "jasmine.Spy",
+        "kind": "class",
+        "description": "Jasmine test double for stubs, spies, and mocks."
+      },
+      {
+        "name": "SpyStrategy",
+        "fullName": "jasmine.SpyStrategy",
+        "kind": "class",
+        "description": "Controls invocation behavior of a Jasmine Spy via spy.and.*"
+      },
+      {
+        "name": "Suite",
+        "fullName": "jasmine.Suite",
+        "kind": "class",
+        "description": "A Jasmine test suite returned by describe() / xdescribe()."
+      }
+    ],
+    "members": [
+      {
+        "name": "dbConnection",
+        "type": "$.db.Connection",
+        "description": "Managed legacy database connection rolled back and closed after suite/spec hooks (since 1.7.3)."
+      },
+      {
+        "name": "hdbConnection",
+        "type": "$.hdb.Connection",
+        "description": "Managed $.hdb database connection rolled back and closed automatically after suite/spec hooks (since 1.10.4)."
+      },
+      {
+        "name": "MAX_PRETTY_PRINT_DEPTH",
+        "type": "number",
+        "description": "Maximum levels of nesting included when pretty-printing objects (default 40)."
+      },
+      {
+        "name": "tags",
+        "type": "Record<string, any>",
+        "description": "Container for reusable test tag constants used by jasmine.addProfile()."
+      }
+    ],
+    "methods": [
+      {
+        "name": "addProfile",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the profile"
+          },
+          {
+            "name": "definition",
+            "type": "(...args: any[]) => any | string[] | string",
+            "description": "Predicate function receiving spec tags or single/array of required tag strings"
+          }
+        ],
+        "returnType": "void",
+        "description": "Registers or overwrites a named test profile filter function or tag list."
+      },
+      {
+        "name": "any",
+        "params": [
+          {
+            "name": "clazz",
+            "type": "any",
+            "description": "Constructor or class reference to match"
+          }
+        ],
+        "returnType": "Record<string, any>",
+        "description": "Returns a matchable type matcher for spy expectations when exact values do not matter."
+      },
+      {
+        "name": "callHTTPService",
+        "params": [
+          {
+            "name": "path",
+            "type": "string",
+            "description": "Absolute repository/service path with '/' delimiters"
+          },
+          {
+            "name": "httpMethod",
+            "type": "number",
+            "optional": true,
+            "description": "HTTP method constant (defaults to $.net.http.GET)"
+          },
+          {
+            "name": "body",
+            "type": "any | ArrayBuffer",
+            "optional": true,
+            "description": "Request body for POST/PUT requests"
+          },
+          {
+            "name": "headers",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Additional HTTP headers"
+          },
+          {
+            "name": "cookies",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Cookies to send"
+          }
+        ],
+        "returnType": "$.web.WebResponse",
+        "description": "Calls a local SAP HANA XS HTTP service and returns its WebResponse (since 1.6.5)."
+      },
+      {
+        "name": "createSpy",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Optional spy label for failure reports"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Creates a bare Jasmine spy function with tracking and strategy methods."
+      },
+      {
+        "name": "createSpyObj",
+        "params": [
+          {
+            "name": "baseName",
+            "type": "string",
+            "description": "Name of the mock spy object"
+          },
+          {
+            "name": "methodNames",
+            "type": "string[]",
+            "description": "Method names to turn into spies"
+          }
+        ],
+        "returnType": "Record<string, jasmine.Spy>",
+        "description": "Creates a mock object whose named methods are all Jasmine spies."
+      },
+      {
+        "name": "isSpy",
+        "params": [
+          {
+            "name": "putativeSpy",
+            "type": "any",
+            "description": "Candidate object"
+          }
+        ],
+        "returnType": "boolean",
+        "description": "Determines whether the given object is a Jasmine spy."
+      },
+      {
+        "name": "log",
+        "params": [],
+        "returnType": "void",
+        "description": "Pretty-prints and logs parameters to the current spec's output."
+      },
+      {
+        "name": "objectContaining",
+        "params": [
+          {
+            "name": "sample",
+            "type": "Record<string, any>",
+            "description": "Expected property subset"
+          }
+        ],
+        "returnType": "Record<string, any>",
+        "description": "Returns a partial object matcher for asserting expected key-value subsets."
+      }
+    ],
+    "constructors": []
+  },
+  "jasmine.CallTracker": {
+    "fullName": "jasmine.CallTracker",
+    "kind": "class",
+    "description": "Tracks call history and arguments on a Jasmine Spy (accessed via spy.calls).",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "all",
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "optional": true,
+            "description": "Call index"
+          }
+        ],
+        "returnType": "any[]",
+        "description": "Returns context and arguments passed across all calls to this spy."
+      },
+      {
+        "name": "allArgs",
+        "params": [],
+        "returnType": "any[]",
+        "description": "Returns the argument lists passed to all calls."
+      },
+      {
+        "name": "any",
+        "params": [],
+        "returnType": "boolean",
+        "description": "Returns true if the spy was called at least once."
+      },
+      {
+        "name": "argsFor",
+        "params": [
+          {
+            "name": "index",
+            "type": "number",
+            "description": "Zero-based call index"
+          }
+        ],
+        "returnType": "any[]",
+        "description": "Returns the arguments passed to a specific call."
+      },
+      {
+        "name": "count",
+        "params": [],
+        "returnType": "number",
+        "description": "Returns the number of times the spy was called."
+      },
+      {
+        "name": "first",
+        "params": [],
+        "returnType": "Record<string, any>",
+        "description": "Returns { object, args } for the first call."
+      },
+      {
+        "name": "mostRecent",
+        "params": [],
+        "returnType": "Record<string, any>",
+        "description": "Returns { object, args } for the most recent call."
+      },
+      {
+        "name": "reset",
+        "params": [],
+        "returnType": "void",
+        "description": "Clears all recorded calls on this spy."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "CallTracker",
+        "params": [],
+        "returnType": "jasmine.CallTracker",
+        "description": "CallTracker"
+      }
+    ]
+  },
+  "jasmine.Expectation": {
+    "fullName": "jasmine.Expectation",
+    "kind": "class",
+    "description": "Jasmine matcher chain returned by expect(actual).",
+    "children": [],
+    "members": [
+      {
+        "name": "not",
+        "type": "jasmine.Expectation",
+        "description": "Inverts all matchers in the expectation chain.",
+        "readonly": true
+      }
+    ],
+    "methods": [
+      {
+        "name": "toBe",
+        "params": [
+          {
+            "name": "expected",
+            "type": "any",
+            "description": "Expected value"
+          }
+        ],
+        "returnType": "void",
+        "description": "Compares actual to expected using strict equality (===)."
+      },
+      {
+        "name": "toBeCloseTo",
+        "params": [
+          {
+            "name": "expected",
+            "type": "number",
+            "description": "Expected numeric value"
+          },
+          {
+            "name": "precision",
+            "type": "number",
+            "optional": true,
+            "description": "Decimal places (default 2)"
+          }
+        ],
+        "returnType": "void",
+        "description": "Checks that numeric actual is equal to expected up to precision decimal places."
+      },
+      {
+        "name": "toBeDefined",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual is not undefined."
+      },
+      {
+        "name": "toBeFalsy",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual evaluates to false in boolean context."
+      },
+      {
+        "name": "toBeGreaterThan",
+        "params": [
+          {
+            "name": "expected",
+            "type": "any",
+            "description": "Lower threshold"
+          }
+        ],
+        "returnType": "void",
+        "description": "Asserts actual > expected."
+      },
+      {
+        "name": "toBeLessThan",
+        "params": [
+          {
+            "name": "expected",
+            "type": "any",
+            "description": "Upper threshold"
+          }
+        ],
+        "returnType": "void",
+        "description": "Asserts actual < expected."
+      },
+      {
+        "name": "toBeNaN",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual is NaN."
+      },
+      {
+        "name": "toBeNull",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual is null."
+      },
+      {
+        "name": "toBeTruthy",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual evaluates to true in boolean context."
+      },
+      {
+        "name": "toBeUndefined",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that actual is undefined."
+      },
+      {
+        "name": "toContain",
+        "params": [
+          {
+            "name": "expected",
+            "type": "any",
+            "description": "Expected element or substring"
+          }
+        ],
+        "returnType": "void",
+        "description": "Asserts that actual array or string contains expected."
+      },
+      {
+        "name": "toEqual",
+        "params": [
+          {
+            "name": "expected",
+            "type": "any",
+            "description": "Expected value"
+          }
+        ],
+        "returnType": "void",
+        "description": "Deep-compares actual to expected (handles objects, arrays, primitives)."
+      },
+      {
+        "name": "toEqualObject",
+        "params": [
+          {
+            "name": "expected",
+            "type": "Record<string, any>",
+            "description": "Expected object"
+          }
+        ],
+        "returnType": "void",
+        "description": "Deep-compares two objects and reports missing, extraneous, and mismatched properties clearly (XSUnit extension)."
+      },
+      {
+        "name": "toHaveBeenCalled",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that the Jasmine spy was invoked at least once."
+      },
+      {
+        "name": "toHaveBeenCalledWith",
+        "params": [],
+        "returnType": "void",
+        "description": "Asserts that the Jasmine spy was called with the specified parameters."
+      },
+      {
+        "name": "toMatch",
+        "params": [
+          {
+            "name": "regexp",
+            "type": "RegExp | string",
+            "description": "Pattern to test"
+          },
+          {
+            "name": "modifiers",
+            "type": "string",
+            "optional": true,
+            "description": "RegExp flags if string"
+          }
+        ],
+        "returnType": "void",
+        "description": "Tests actual string against a regular expression."
+      },
+      {
+        "name": "toMatchData",
+        "params": [
+          {
+            "name": "expected",
+            "type": "Record<string, any> | any[] | $.db.ResultSet | $.hdb.ResultSet | sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+            "description": "Expected table-like dataset"
+          },
+          {
+            "name": "keyFields",
+            "type": "string[]",
+            "description": "Key column names for row alignment"
+          }
+        ],
+        "returnType": "void",
+        "description": "XSUnit table data matcher comparing row arrays, column JSON objects, $.db.ResultSet, or TableDataSet against keyFields."
+      },
+      {
+        "name": "toThrow",
+        "params": [
+          {
+            "name": "error",
+            "type": "any",
+            "optional": true,
+            "description": "Expected error"
+          }
+        ],
+        "returnType": "void",
+        "description": "Asserts that the target function throws an exception."
+      },
+      {
+        "name": "toThrowError",
+        "params": [
+          {
+            "name": "typeOrMessage",
+            "type": "(...args: any[]) => any | string",
+            "optional": true,
+            "description": "Error class or message"
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "optional": true,
+            "description": "Error message when class is provided"
+          }
+        ],
+        "returnType": "void",
+        "description": "Asserts that the target function throws an Error of matching type and/or message."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Expectation",
+        "params": [],
+        "returnType": "jasmine.Expectation",
+        "description": "Expectation"
+      }
+    ]
+  },
+  "jasmine.Spec": {
+    "fullName": "jasmine.Spec",
+    "kind": "class",
+    "description": "A Jasmine test specification returned by it() / xit().",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "addTags",
+        "params": [
+          {
+            "name": "tags",
+            "type": "string[] | string",
+            "description": "Tag or array of tags"
+          }
+        ],
+        "returnType": "jasmine.Spec",
+        "description": "Adds one or more profile tags to the spec."
+      },
+      {
+        "name": "ignoreProfiles",
+        "params": [],
+        "returnType": "jasmine.Spec",
+        "description": "Configures the spec to run regardless of active test profiles."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Spec",
+        "params": [],
+        "returnType": "jasmine.Spec",
+        "description": "Spec"
+      }
+    ]
+  },
+  "jasmine.Spy": {
+    "fullName": "jasmine.Spy",
+    "kind": "class",
+    "description": "Jasmine test double for stubs, spies, and mocks.",
+    "children": [],
+    "members": [
+      {
+        "name": "and",
+        "type": "jasmine.SpyStrategy",
+        "description": "Execution strategy controller (since 1.9.0)"
+      },
+      {
+        "name": "calls",
+        "type": "jasmine.CallTracker",
+        "description": "Call tracker for inspecting invocations (since 1.9.0)"
+      },
+      {
+        "name": "argsForCall",
+        "type": "any[]",
+        "description": "Legacy arguments array",
+        "deprecated": "Use spy.calls.allArgs() instead"
+      },
+      {
+        "name": "mostRecentCall",
+        "type": "Record<string, any>",
+        "description": "Legacy most recent call record",
+        "deprecated": "Use spy.calls.mostRecent() instead"
+      }
+    ],
+    "methods": [
+      {
+        "name": "andCallFake",
+        "params": [
+          {
+            "name": "fakeFunc",
+            "type": "(...args: any[]) => any",
+            "description": "Fake function"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Calls an alternate implementation when invoked.",
+        "deprecated": "Use spy.and.callFake() instead"
+      },
+      {
+        "name": "andCallThrough",
+        "params": [],
+        "returnType": "jasmine.Spy",
+        "description": "Delegates to the real implementation.",
+        "deprecated": "Use spy.and.callThrough() instead"
+      },
+      {
+        "name": "andReturn",
+        "params": [
+          {
+            "name": "value",
+            "type": "any",
+            "description": "Value to return"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Sets a static return value.",
+        "deprecated": "Use spy.and.returnValue() instead"
+      },
+      {
+        "name": "andThrow",
+        "params": [
+          {
+            "name": "exceptionMsg",
+            "type": "string",
+            "description": "Exception message"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Throws an exception when invoked.",
+        "deprecated": "Use spy.and.throwError() instead"
+      },
+      {
+        "name": "reset",
+        "params": [],
+        "returnType": "void",
+        "description": "Resets tracked spy calls.",
+        "deprecated": "Use spy.calls.reset() instead"
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Spy",
+        "params": [],
+        "returnType": "jasmine.Spy",
+        "description": "Spy"
+      }
+    ]
+  },
+  "jasmine.SpyStrategy": {
+    "fullName": "jasmine.SpyStrategy",
+    "kind": "class",
+    "description": "Controls invocation behavior of a Jasmine Spy via spy.and.*",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "callFake",
+        "params": [
+          {
+            "name": "fn",
+            "type": "(...args: any[]) => any",
+            "description": "Fake implementation callback"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Delegates spy invocations to an alternate implementation function."
+      },
+      {
+        "name": "callThrough",
+        "params": [],
+        "returnType": "jasmine.Spy",
+        "description": "Delegates spy calls to the original method while still recording calls."
+      },
+      {
+        "name": "returnValue",
+        "params": [
+          {
+            "name": "value",
+            "type": "any",
+            "description": "Return value"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Configures the spy to return a fixed value."
+      },
+      {
+        "name": "stub",
+        "params": [],
+        "returnType": "jasmine.Spy",
+        "description": "Configures the spy as a no-op stub returning undefined (default for spyOn)."
+      },
+      {
+        "name": "throwError",
+        "params": [
+          {
+            "name": "something",
+            "type": "string",
+            "description": "Error message to throw"
+          }
+        ],
+        "returnType": "jasmine.Spy",
+        "description": "Configures the spy to throw an error when called."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "SpyStrategy",
+        "params": [],
+        "returnType": "jasmine.SpyStrategy",
+        "description": "SpyStrategy"
+      }
+    ]
+  },
+  "jasmine.Suite": {
+    "fullName": "jasmine.Suite",
+    "kind": "class",
+    "description": "A Jasmine test suite returned by describe() / xdescribe().",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "addTags",
+        "params": [
+          {
+            "name": "tags",
+            "type": "string[] | string",
+            "description": "Tag or array of tags"
+          }
+        ],
+        "returnType": "jasmine.Suite",
+        "description": "Adds one or more profile tags to every spec in the suite and its nested sub-suites."
+      },
+      {
+        "name": "ignoreProfiles",
+        "params": [],
+        "returnType": "jasmine.Suite",
+        "description": "Configures all specs in this suite to run regardless of active profiles."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Suite",
+        "params": [],
+        "returnType": "jasmine.Suite",
+        "description": "Suite"
+      }
+    ]
+  },
+  "sap": {
+    "fullName": "sap",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "hana",
+        "fullName": "sap.hana",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana": {
+    "fullName": "sap.hana",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "testtools",
+        "fullName": "sap.hana.testtools",
+        "kind": "namespace",
+        "description": ""
+      },
+      {
+        "name": "xs",
+        "fullName": "sap.hana.xs",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools": {
+    "fullName": "sap.hana.testtools",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "mockstar",
+        "fullName": "sap.hana.testtools.mockstar",
+        "kind": "namespace",
+        "description": ""
+      },
+      {
+        "name": "unit",
+        "fullName": "sap.hana.testtools.unit",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.mockstar": {
+    "fullName": "sap.hana.testtools.mockstar",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "mockstar",
+        "fullName": "sap.hana.testtools.mockstar.mockstar",
+        "kind": "namespace",
+        "description": "Low-level Mockstar test isolation module (sap.hana.testtools.mockstar)."
+      },
+      {
+        "name": "mockstarEnvironment",
+        "fullName": "sap.hana.testtools.mockstar.mockstarEnvironment",
+        "kind": "namespace",
+        "description": "MockstarEnvironment factory module for isolated unit testing of HANA views and procedures (since 1.9.2)."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.mockstar.mockstar.TruncOptions": {
+    "fullName": "sap.hana.testtools.mockstar.mockstar.TruncOptions",
+    "kind": "namespace",
+    "description": "Set of package truncation constants.",
+    "children": [],
+    "members": [
+      {
+        "name": "FULL",
+        "type": "string",
+        "description": "Default value: full",
+        "static": true,
+        "readonly": true
+      },
+      {
+        "name": "NONE",
+        "type": "string",
+        "description": "Default value: none",
+        "static": true,
+        "readonly": true
+      }
+    ],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.mockstar.mockstar": {
+    "fullName": "sap.hana.testtools.mockstar.mockstar",
+    "kind": "namespace",
+    "description": "Low-level Mockstar test isolation module (sap.hana.testtools.mockstar).",
+    "children": [],
+    "members": [
+      {
+        "name": "TruncOptions",
+        "type": "sap.hana.testtools.mockstar.mockstar.TruncOptions",
+        "description": "Set of package truncation constants.",
+        "static": true,
+        "readonly": true
+      }
+    ],
+    "methods": [
+      {
+        "name": "createTestModel",
+        "params": [
+          {
+            "name": "originalModel",
+            "type": "string",
+            "description": "Name of the original model"
+          },
+          {
+            "name": "targetPackage",
+            "type": "string",
+            "description": "Target repository package for the test model"
+          },
+          {
+            "name": "dependencySubstitutions",
+            "type": "any[]",
+            "description": "Dependency substitution rules"
+          },
+          {
+            "name": "truncOption",
+            "type": "string",
+            "optional": true,
+            "description": "TruncOptions.FULL or TruncOptions.NONE"
+          }
+        ],
+        "returnType": "Record<string, any>",
+        "description": "Creates and activates a test copy of a view or procedure with substituted dependencies.",
+        "deprecated": "since 1.10.0; use mockstarEnvironment.define or mockstarEnvironment.defineAndCreate instead"
+      }
+    ],
+    "constructors": []
+  },
+  "sap.hana.testtools.mockstar.mockstarEnvironment": {
+    "fullName": "sap.hana.testtools.mockstar.mockstarEnvironment",
+    "kind": "namespace",
+    "description": "MockstarEnvironment factory module for isolated unit testing of HANA views and procedures (since 1.9.2).",
+    "children": [
+      {
+        "name": "MockstarEnvironment",
+        "fullName": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+        "kind": "class",
+        "description": "Isolated test environment managing copied test models and substituted dependency tables."
+      }
+    ],
+    "members": [],
+    "methods": [
+      {
+        "name": "define",
+        "params": [
+          {
+            "name": "definition",
+            "type": "Record<string, any>",
+            "description": "Model and dependency substitution definition"
+          },
+          {
+            "name": "connection",
+            "type": "$.db.Connection | $.hdb.Connection",
+            "optional": true,
+            "description": "Optional connection"
+          }
+        ],
+        "returnType": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+        "description": "Creates a configured MockstarEnvironment instance without activating it immediately."
+      },
+      {
+        "name": "defineAndCreate",
+        "params": [
+          {
+            "name": "definition",
+            "type": "Record<string, any>",
+            "description": "Model and dependency substitution definition"
+          },
+          {
+            "name": "connection",
+            "type": "$.db.Connection | $.hdb.Connection",
+            "optional": true,
+            "description": "Optional connection"
+          }
+        ],
+        "returnType": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+        "description": "Defines a MockstarEnvironment and immediately creates the test model and substitute test tables."
+      }
+    ],
+    "constructors": []
+  },
+  "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment": {
+    "fullName": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+    "kind": "class",
+    "description": "Isolated test environment managing copied test models and substituted dependency tables.",
+    "children": [],
+    "members": [
+      {
+        "name": "onDataInserted",
+        "type": "(...args: any[]) => any",
+        "description": "Event triggered whenever data is inserted into a test table managed by this environment."
+      }
+    ],
+    "methods": [
+      {
+        "name": "addFunctionSubstitution",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique substitution identifier"
+          },
+          {
+            "name": "substitution",
+            "type": "string | Record<string, any>",
+            "description": "Original function name or rule"
+          }
+        ],
+        "returnType": "void",
+        "description": "Defines a table function dependency substitution before create()."
+      },
+      {
+        "name": "addProcedureSubstitution",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique substitution identifier"
+          },
+          {
+            "name": "substitution",
+            "type": "Record<string, any>",
+            "description": "Procedure substitution rule"
+          }
+        ],
+        "returnType": "void",
+        "description": "Defines a procedure dependency substitution before create()."
+      },
+      {
+        "name": "addTableSubstitution",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique substitution identifier"
+          },
+          {
+            "name": "substitution",
+            "type": "string | Record<string, any>",
+            "description": "Original table name or rule"
+          }
+        ],
+        "returnType": "void",
+        "description": "Defines a table dependency substitution before create()."
+      },
+      {
+        "name": "addViewSubstitution",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Unique substitution identifier"
+          },
+          {
+            "name": "substitution",
+            "type": "string | Record<string, any>",
+            "description": "Original view name or rule"
+          }
+        ],
+        "returnType": "void",
+        "description": "Defines a view dependency substitution before create()."
+      },
+      {
+        "name": "clearAllTestTables",
+        "params": [],
+        "returnType": "void",
+        "description": "Clears rows from all substituted test tables in the user schema."
+      },
+      {
+        "name": "clearTestTables",
+        "params": [
+          {
+            "name": "ids",
+            "type": "string[]",
+            "description": "Substitution IDs to clear"
+          }
+        ],
+        "returnType": "void",
+        "description": "Clears rows from the substituted test tables identified by ids."
+      },
+      {
+        "name": "commitData",
+        "params": [],
+        "returnType": "void",
+        "description": "Commits the managed database connection so inserted test table data is visible."
+      },
+      {
+        "name": "create",
+        "params": [],
+        "returnType": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+        "description": "Creates the copied test model, substitute test tables, and loads initial fixture data (once per instance)."
+      },
+      {
+        "name": "createTemporaryTestTable",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          },
+          {
+            "name": "data",
+            "type": "Record<string, any> | any[]",
+            "optional": true,
+            "description": "Initial row data"
+          }
+        ],
+        "returnType": "string",
+        "description": "Creates a temporary test table based on an existing dependency substitution rule."
+      },
+      {
+        "name": "fillTestTable",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          },
+          {
+            "name": "data",
+            "type": "Record<string, any> | any[]",
+            "description": "Row or column-oriented test data"
+          }
+        ],
+        "returnType": "void",
+        "description": "Inserts test data into a substituted test table."
+      },
+      {
+        "name": "fillTestTableFromCsv",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          },
+          {
+            "name": "csvFile",
+            "type": "string",
+            "description": "CSV file name inside configured csvPackage"
+          }
+        ],
+        "returnType": "void",
+        "description": "Loads CSV fixture data from csvPackage into a substituted test table."
+      },
+      {
+        "name": "getFunctionName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the original substituted function."
+      },
+      {
+        "name": "getModelName",
+        "params": [],
+        "returnType": "string",
+        "description": "Returns the fully qualified catalog name of the original model under test."
+      },
+      {
+        "name": "getProcedureName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the original substituted procedure."
+      },
+      {
+        "name": "getTableName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the original substituted table."
+      },
+      {
+        "name": "getTestModelName",
+        "params": [
+          {
+            "name": "suffix",
+            "type": "string",
+            "optional": true,
+            "description": "Optional object name suffix"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified catalog name of the created isolated test model."
+      },
+      {
+        "name": "getTestProcedureName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the substitute stub procedure."
+      },
+      {
+        "name": "getTestTableName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the created substitute test table."
+      },
+      {
+        "name": "getTestTableNames",
+        "params": [],
+        "returnType": "string[]",
+        "description": "Returns the list of all created substitute test table names."
+      },
+      {
+        "name": "getViewName",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "description": "Substitution identifier"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the fully qualified name of the original substituted view."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "MockstarEnvironment",
+        "params": [],
+        "returnType": "sap.hana.testtools.mockstar.mockstarEnvironment.MockstarEnvironment",
+        "description": "Created via mockstarEnvironment.define() or defineAndCreate()."
+      }
+    ]
+  },
+  "sap.hana.testtools.unit": {
+    "fullName": "sap.hana.testtools.unit",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "util",
+        "fullName": "sap.hana.testtools.unit.util",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util": {
+    "fullName": "sap.hana.testtools.unit.util",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "dateUtils",
+        "fullName": "sap.hana.testtools.unit.util.dateUtils",
+        "kind": "namespace",
+        "description": "XSUnit date formatting utility module."
+      },
+      {
+        "name": "sqlExecutor",
+        "fullName": "sap.hana.testtools.unit.util.sqlExecutor",
+        "kind": "namespace",
+        "description": "XSUnit utility module exposing SqlExecutor for test SQL execution."
+      },
+      {
+        "name": "tableDataSet",
+        "fullName": "sap.hana.testtools.unit.util.tableDataSet",
+        "kind": "namespace",
+        "description": "XSUnit TableDataSet module for tabular test data comparison and creation."
+      },
+      {
+        "name": "tableUtils",
+        "fullName": "sap.hana.testtools.unit.util.tableUtils",
+        "kind": "namespace",
+        "description": "XSUnit utility module exposing TableUtils for creating and populating test tables."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util.dateUtils": {
+    "fullName": "sap.hana.testtools.unit.util.dateUtils",
+    "kind": "namespace",
+    "description": "XSUnit date formatting utility module.",
+    "children": [
+      {
+        "name": "DateUtils",
+        "fullName": "sap.hana.testtools.unit.util.dateUtils.DateUtils",
+        "kind": "class",
+        "description": "Convenience utility for deterministic formatted dates in XSUnit tests."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util.dateUtils.DateUtils": {
+    "fullName": "sap.hana.testtools.unit.util.dateUtils.DateUtils",
+    "kind": "class",
+    "description": "Convenience utility for deterministic formatted dates in XSUnit tests.",
+    "children": [],
+    "members": [
+      {
+        "name": "YYYY_MM_DD",
+        "type": "string",
+        "description": "ISO date format constant \"YYYY-MM-DD\" supported by setFormat().",
+        "readonly": true,
+        "static": true
+      }
+    ],
+    "methods": [
+      {
+        "name": "getDateInTheFuture",
+        "params": [
+          {
+            "name": "daysToBeAdded",
+            "type": "number",
+            "description": "Number of days to add"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns a formatted date string N days in the future."
+      },
+      {
+        "name": "getDateInThePast",
+        "params": [
+          {
+            "name": "pastDays",
+            "type": "number",
+            "description": "Number of days to subtract"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns a formatted date string N days in the past."
+      },
+      {
+        "name": "getTodaysDate",
+        "params": [],
+        "returnType": "string",
+        "description": "Returns the formatted reference/current date string."
+      },
+      {
+        "name": "setFormat",
+        "params": [
+          {
+            "name": "dateFormat",
+            "type": "string",
+            "description": "Date format pattern"
+          }
+        ],
+        "returnType": "void",
+        "description": "Overrides the default \"YYYYMMDD\" date output pattern (e.g. DateUtils.YYYY_MM_DD or \"DD.MM.YYYY\")."
+      },
+      {
+        "name": "toString",
+        "params": [],
+        "returnType": "string",
+        "description": "Returns the formatted date string for today."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "DateUtils",
+        "params": [
+          {
+            "name": "todaysDate",
+            "type": "Date",
+            "optional": true,
+            "description": "Fixed reference date for tests"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.dateUtils.DateUtils",
+        "description": "Creates a DateUtils instance optionally anchored to a fixed date."
+      }
+    ]
+  },
+  "sap.hana.testtools.unit.util.sqlExecutor": {
+    "fullName": "sap.hana.testtools.unit.util.sqlExecutor",
+    "kind": "namespace",
+    "description": "XSUnit utility module exposing SqlExecutor for test SQL execution.",
+    "children": [
+      {
+        "name": "SqlExecutor",
+        "fullName": "sap.hana.testtools.unit.util.sqlExecutor.SqlExecutor",
+        "kind": "class",
+        "description": "Provides convenience helpers for executing SQL statements and procedures in XSUnit tests."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util.sqlExecutor.SqlExecutor": {
+    "fullName": "sap.hana.testtools.unit.util.sqlExecutor.SqlExecutor",
+    "kind": "class",
+    "description": "Provides convenience helpers for executing SQL statements and procedures in XSUnit tests.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "callProcedure",
+        "params": [
+          {
+            "name": "sql",
+            "type": "string",
+            "description": "CALL statement to execute"
+          }
+        ],
+        "returnType": "void",
+        "description": "Executes a CALL statement."
+      },
+      {
+        "name": "execQuery",
+        "params": [
+          {
+            "name": "sql",
+            "type": "string",
+            "description": "SELECT SQL query"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "Executes a SELECT query and returns the result wrapped as a TableDataSet."
+      },
+      {
+        "name": "execSingle",
+        "params": [
+          {
+            "name": "sql",
+            "type": "string",
+            "description": "SQL statement to execute"
+          }
+        ],
+        "returnType": "void",
+        "description": "Executes a single SQL DML/DDL statement."
+      },
+      {
+        "name": "execSingleIgnoreFailing",
+        "params": [
+          {
+            "name": "sql",
+            "type": "string",
+            "description": "SQL statement to execute"
+          }
+        ],
+        "returnType": "void",
+        "description": "Executes a SQL statement and ignores any thrown SQL error (e.g. cleanup DROP TABLE)."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "SqlExecutor",
+        "params": [
+          {
+            "name": "connection",
+            "type": "$.db.Connection | $.hdb.Connection",
+            "description": "Database connection"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.sqlExecutor.SqlExecutor",
+        "description": "Creates an SqlExecutor for a database connection."
+      }
+    ]
+  },
+  "sap.hana.testtools.unit.util.tableDataSet": {
+    "fullName": "sap.hana.testtools.unit.util.tableDataSet",
+    "kind": "namespace",
+    "description": "XSUnit TableDataSet module for tabular test data comparison and creation.",
+    "children": [
+      {
+        "name": "TableDataSet",
+        "fullName": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "kind": "class",
+        "description": "In-memory tabular dataset container for XSUnit database assertions."
+      }
+    ],
+    "members": [],
+    "methods": [
+      {
+        "name": "createFromArray",
+        "params": [
+          {
+            "name": "rows",
+            "type": "Record<string, any>[]",
+            "description": "Array of row objects"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "Creates a TableDataSet from an array of row objects."
+      },
+      {
+        "name": "createFromCSVList",
+        "params": [
+          {
+            "name": "csvList",
+            "type": "any[][]",
+            "description": "Array of CSV cell arrays"
+          },
+          {
+            "name": "containsHeaderLine",
+            "type": "boolean",
+            "description": "True when row 0 holds column names"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "Creates a TableDataSet from an array of CSV value rows."
+      },
+      {
+        "name": "createFromJSON",
+        "params": [
+          {
+            "name": "json",
+            "type": "Record<string, any>",
+            "description": "Object mapping column names to values"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "Creates a TableDataSet from a column-oriented JSON object."
+      },
+      {
+        "name": "createFromResultSet",
+        "params": [
+          {
+            "name": "resultSet",
+            "type": "$.db.ResultSet | $.hdb.ResultSet",
+            "description": "Database ResultSet"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "Creates a TableDataSet from a $.db.ResultSet or $.hdb.ResultSet."
+      },
+      {
+        "name": "isTableDataSet",
+        "params": [
+          {
+            "name": "obj",
+            "type": "any",
+            "description": "Candidate object"
+          }
+        ],
+        "returnType": "boolean",
+        "description": "Checks whether obj is a TableDataSet instance."
+      }
+    ],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util.tableDataSet.TableDataSet": {
+    "fullName": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+    "kind": "class",
+    "description": "In-memory tabular dataset container for XSUnit database assertions.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "deleteColumn",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Column name"
+          }
+        ],
+        "returnType": "void",
+        "description": "Removes a column by case-sensitive name."
+      },
+      {
+        "name": "getColumnName",
+        "params": [
+          {
+            "name": "colIndex",
+            "type": "number",
+            "description": "Column index"
+          }
+        ],
+        "returnType": "string",
+        "description": "Returns the column name at 0-based colIndex."
+      },
+      {
+        "name": "getRow",
+        "params": [
+          {
+            "name": "rowIndex",
+            "type": "number",
+            "description": "Zero-based row index"
+          }
+        ],
+        "returnType": "Record<string, any>",
+        "description": "Returns the row object at 0-based rowIndex."
+      },
+      {
+        "name": "getRowCount",
+        "params": [],
+        "returnType": "number",
+        "description": "Returns the number of rows in the dataset."
+      },
+      {
+        "name": "isWellFormed",
+        "params": [],
+        "returnType": "boolean",
+        "description": "Checks whether every row defines a value for each column."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "TableDataSet",
+        "params": [],
+        "returnType": "sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+        "description": "TableDataSet"
+      }
+    ]
+  },
+  "sap.hana.testtools.unit.util.tableUtils": {
+    "fullName": "sap.hana.testtools.unit.util.tableUtils",
+    "kind": "namespace",
+    "description": "XSUnit utility module exposing TableUtils for creating and populating test tables.",
+    "children": [
+      {
+        "name": "TableUtils",
+        "fullName": "sap.hana.testtools.unit.util.tableUtils.TableUtils",
+        "kind": "class",
+        "description": "Provides helper methods for copying, creating, clearing, and filling test tables."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.testtools.unit.util.tableUtils.TableUtils": {
+    "fullName": "sap.hana.testtools.unit.util.tableUtils.TableUtils",
+    "kind": "class",
+    "description": "Provides helper methods for copying, creating, clearing, and filling test tables.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "clearTableInUserSchema",
+        "params": [
+          {
+            "name": "testTableName",
+            "type": "string",
+            "description": "Test table name"
+          }
+        ],
+        "returnType": "void",
+        "description": "Truncates the specified test table in the current user schema."
+      },
+      {
+        "name": "copyIntoUserSchema",
+        "params": [
+          {
+            "name": "tableSchema",
+            "type": "string",
+            "description": "Schema of source table"
+          },
+          {
+            "name": "tableName",
+            "type": "string",
+            "description": "Name of source table"
+          },
+          {
+            "name": "newTableName",
+            "type": "string",
+            "optional": true,
+            "description": "Target table name override"
+          }
+        ],
+        "returnType": "string",
+        "description": "Creates a test table copy of an existing table in the user schema."
+      },
+      {
+        "name": "createTemporaryTable",
+        "params": [
+          {
+            "name": "tableAlias",
+            "type": "string",
+            "description": "Temporary table name"
+          },
+          {
+            "name": "tableSchema",
+            "type": "string",
+            "description": "Schema of existing table/structure type"
+          },
+          {
+            "name": "tableName",
+            "type": "string",
+            "description": "Name of existing table/structure type"
+          },
+          {
+            "name": "data",
+            "type": "Record<string, any> | any[] | sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+            "optional": true,
+            "description": "Optional row data to insert"
+          }
+        ],
+        "returnType": "string",
+        "description": "Creates a temporary table from an existing table or table type structure and optionally fills data."
+      },
+      {
+        "name": "createTestTableFromFunction",
+        "params": [
+          {
+            "name": "schema",
+            "type": "string",
+            "description": "Schema of the table function"
+          },
+          {
+            "name": "functionName",
+            "type": "string",
+            "description": "Name of the table function"
+          },
+          {
+            "name": "testTableName",
+            "type": "string",
+            "optional": true,
+            "description": "Target test table name"
+          },
+          {
+            "name": "keys",
+            "type": "string[]",
+            "optional": true,
+            "description": "Primary key column names"
+          }
+        ],
+        "returnType": "string",
+        "description": "Creates a test table matching a table function's return table type in the user schema (since 1.11.0)."
+      },
+      {
+        "name": "createTestTableFromView",
+        "params": [
+          {
+            "name": "viewName",
+            "type": "string",
+            "description": "Name of view to copy"
+          },
+          {
+            "name": "testTableName",
+            "type": "string",
+            "description": "Target test table name"
+          },
+          {
+            "name": "keys",
+            "type": "string[]",
+            "optional": true,
+            "description": "Primary key column names"
+          },
+          {
+            "name": "viewSchema",
+            "type": "string",
+            "optional": true,
+            "description": "View schema (defaults to _SYS_BIC)"
+          }
+        ],
+        "returnType": "string",
+        "description": "Creates a test table matching a non-OLAP view in the user schema."
+      },
+      {
+        "name": "fillFromCsvFile",
+        "params": [
+          {
+            "name": "fullTableName",
+            "type": "string",
+            "description": "Schema-qualified target table name"
+          },
+          {
+            "name": "csvPackage",
+            "type": "string",
+            "description": "Repository package containing CSV file"
+          },
+          {
+            "name": "csvFile",
+            "type": "string",
+            "description": "CSV file name"
+          },
+          {
+            "name": "csvProperties",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "separator, headers, decSeparator"
+          }
+        ],
+        "returnType": "void",
+        "description": "Populates a test table from a CSV repository resource."
+      },
+      {
+        "name": "getPhysicalSchemaName",
+        "params": [
+          {
+            "name": "schemaName",
+            "type": "string",
+            "description": "Authoring schema name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Resolves schema mapping to physical schema name, returning schemaName if unmapped (since 1.10.3)."
+      },
+      {
+        "name": "insertData",
+        "params": [
+          {
+            "name": "fullTableName",
+            "type": "string",
+            "description": "Schema-qualified target table name"
+          },
+          {
+            "name": "data",
+            "type": "Record<string, any> | any[] | sap.hana.testtools.unit.util.tableDataSet.TableDataSet",
+            "description": "Data rows or columns to insert"
+          }
+        ],
+        "returnType": "void",
+        "description": "Inserts JSON, array, or TableDataSet test data into the test table (since 1.9.1)."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "TableUtils",
+        "params": [
+          {
+            "name": "connection",
+            "type": "$.db.Connection | $.hdb.Connection",
+            "description": "Database connection"
+          }
+        ],
+        "returnType": "sap.hana.testtools.unit.util.tableUtils.TableUtils",
+        "description": "Creates a TableUtils instance."
+      }
+    ]
+  },
+  "sap.hana.xs": {
+    "fullName": "sap.hana.xs",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "libs",
+        "fullName": "sap.hana.xs.libs",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.xs.libs": {
+    "fullName": "sap.hana.xs.libs",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "dbutils",
+        "fullName": "sap.hana.xs.libs.dbutils",
+        "kind": "namespace",
+        "description": ""
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.xs.libs.dbutils": {
+    "fullName": "sap.hana.xs.libs.dbutils",
+    "kind": "namespace",
+    "description": "",
+    "children": [
+      {
+        "name": "procedures",
+        "fullName": "sap.hana.xs.libs.dbutils.procedures",
+        "kind": "namespace",
+        "description": "XS Procedures library for calling SAP HANA stored procedures from XSJS as JavaScript functions (sap.hana.xs.libs.dbutils.procedures)."
+      },
+      {
+        "name": "xsds",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds",
+        "kind": "namespace",
+        "description": "XS Data Services (XSDS) ORM and query builder API for CDS entities and HANA tables (sap.hana.xs.libs.dbutils.xsds)."
+      }
+    ],
+    "members": [],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.xs.libs.dbutils.procedures.configuration": {
+    "fullName": "sap.hana.xs.libs.dbutils.procedures.configuration",
+    "kind": "namespace",
+    "description": "Global configuration object controlling tracing, tempSchema, and argumentPassingMode (ltt | gtt).",
+    "children": [],
+    "members": [
+      {
+        "name": "trace",
+        "type": "Record<string, any>",
+        "description": "",
+        "static": true,
+        "readonly": true
+      },
+      {
+        "name": "argumentPassingMode",
+        "type": "string",
+        "description": "",
+        "static": true,
+        "readonly": true
+      },
+      {
+        "name": "tempSchema",
+        "type": "string",
+        "description": "",
+        "static": true,
+        "readonly": true
+      }
+    ],
+    "methods": [],
+    "constructors": []
+  },
+  "sap.hana.xs.libs.dbutils.procedures": {
+    "fullName": "sap.hana.xs.libs.dbutils.procedures",
+    "kind": "namespace",
+    "description": "XS Procedures library for calling SAP HANA stored procedures from XSJS as JavaScript functions (sap.hana.xs.libs.dbutils.procedures).",
+    "children": [],
+    "members": [
+      {
+        "name": "configuration",
+        "type": "sap.hana.xs.libs.dbutils.procedures.configuration",
+        "description": "Global configuration object controlling tracing, tempSchema, and argumentPassingMode (ltt | gtt).",
+        "static": false,
+        "readonly": true
+      },
+      {
+        "name": "notrace",
+        "type": "Record<string, any>",
+        "description": "Constant for configuration.trace when no tracing is desired.",
+        "readonly": true
+      },
+      {
+        "name": "simpletrace",
+        "type": "Record<string, any>",
+        "description": "Constant for configuration.trace to write simple trace logs via $.trace.",
+        "readonly": true
+      }
+    ],
+    "methods": [
+      {
+        "name": "allProcedures",
+        "params": [
+          {
+            "name": "schema",
+            "type": "string",
+            "description": "Schema containing the stored procedures"
+          },
+          {
+            "name": "package_",
+            "type": "string",
+            "description": "Repository package containing the procedures"
+          }
+        ],
+        "returnType": "Record<string, sap.hana.xs.libs.dbutils.procedures.ProcedureCaller>",
+        "description": "Returns an object mapping every procedure name in schema & package to a callable proxy."
+      },
+      {
+        "name": "procedure",
+        "params": [
+          {
+            "name": "schema",
+            "type": "string",
+            "description": "Schema of the stored procedure"
+          },
+          {
+            "name": "package_",
+            "type": "string",
+            "description": "Package of the stored procedure"
+          },
+          {
+            "name": "proc",
+            "type": "string",
+            "description": "Procedure name"
+          },
+          {
+            "name": "config",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Optional connection, input mappers, and output mappers configuration"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.procedures.ProcedureCaller",
+        "description": "Returns a proxy function calling a single repository stored procedure."
+      },
+      {
+        "name": "procedureOfSchema",
+        "params": [
+          {
+            "name": "schema",
+            "type": "string",
+            "description": "Schema of the stored procedure"
+          },
+          {
+            "name": "proc",
+            "type": "string",
+            "description": "Procedure name"
+          },
+          {
+            "name": "config",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Optional connection, input mappers, and output mappers configuration"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.procedures.ProcedureCaller",
+        "description": "Returns a proxy function calling a catalog stored procedure directly by schema and name."
+      },
+      {
+        "name": "setTempSchema",
+        "params": [
+          {
+            "name": "schemaName",
+            "type": "string",
+            "description": "Target temporary table schema"
+          }
+        ],
+        "returnType": "typeof sap.hana.xs.libs.dbutils.procedures",
+        "description": "Sets the schema into which temporary tables are created during procedure calls."
+      }
+    ],
+    "constructors": []
+  },
+  "sap.hana.xs.libs.dbutils.xsds": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds",
+    "kind": "namespace",
+    "description": "XS Data Services (XSDS) ORM and query builder API for CDS entities and HANA tables (sap.hana.xs.libs.dbutils.xsds).",
+    "children": [
+      {
+        "name": "Entity",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds.Entity",
+        "kind": "class",
+        "description": "Placeholder constructor & managed instance type returned by xsds.$importEntity() / xsds.$defineEntity()."
+      },
+      {
+        "name": "Expr",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "kind": "class",
+        "description": "Fluent SQL expression builder used inside XSDS Query $where, $addFields, and $order."
+      },
+      {
+        "name": "Query",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "kind": "class",
+        "description": "Immutable fluent SQL query builder for XSDS entities."
+      },
+      {
+        "name": "Rename",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds.Rename",
+        "kind": "class",
+        "description": "Predefined column-to-field renaming functions for XSDS entity imports."
+      },
+      {
+        "name": "Transaction",
+        "fullName": "sap.hana.xs.libs.dbutils.xsds.Transaction",
+        "kind": "class",
+        "description": "Static transaction and connection control API for XSDS operations."
+      }
+    ],
+    "members": [],
+    "methods": [
+      {
+        "name": "$defineEntity",
+        "params": [
+          {
+            "name": "entityName",
+            "type": "string",
+            "description": "Logical XSDS entity name"
+          },
+          {
+            "name": "tableName",
+            "type": "string",
+            "description": "Fully qualified schema-prefixed table name"
+          },
+          {
+            "name": "fields",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Field, key & association overrides"
+          },
+          {
+            "name": "options",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Definition options ($renameColumns, $ignoreColumns, $unmanaged)"
+          }
+        ],
+        "returnType": "typeof sap.hana.xs.libs.dbutils.xsds.Entity",
+        "description": "Defines an XSDS entity mapped directly onto an existing SAP HANA catalog table."
+      },
+      {
+        "name": "$getEntity",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Entity name (e.g. \"namespace::entity\")"
+          }
+        ],
+        "returnType": "typeof sap.hana.xs.libs.dbutils.xsds.Entity | null",
+        "description": "Retrieves the constructor of a previously imported or defined XSDS entity."
+      },
+      {
+        "name": "$importEntity",
+        "params": [
+          {
+            "name": "cdsNamespace",
+            "type": "string",
+            "description": "CDS repository package/namespace"
+          },
+          {
+            "name": "cdsName",
+            "type": "string",
+            "description": "CDS context/entity name"
+          },
+          {
+            "name": "fields",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Additional field/association mappings"
+          },
+          {
+            "name": "options",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Import options ($entityName, $schemaName, $tableName, $renameFields)"
+          }
+        ],
+        "returnType": "typeof sap.hana.xs.libs.dbutils.xsds.Entity",
+        "description": "Imports a CDS entity definition as a managed XSDS entity constructor."
+      }
+    ],
+    "constructors": []
+  },
+  "sap.hana.xs.libs.dbutils.xsds.Entity": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds.Entity",
+    "kind": "class",
+    "description": "Placeholder constructor & managed instance type returned by xsds.$importEntity() / xsds.$defineEntity().",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "$build",
+        "params": [
+          {
+            "name": "data",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Unmanaged payload"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Entity",
+        "description": "Creates a managed entity instance (and associated objects) from unmanaged data.",
+        "static": true
+      },
+      {
+        "name": "$delete",
+        "params": [
+          {
+            "name": "condition",
+            "type": "Record<string, any>",
+            "description": "Filter condition"
+          }
+        ],
+        "returnType": "void",
+        "description": "Deletes matching records directly on the database, bypassing the entity cache.",
+        "static": true
+      },
+      {
+        "name": "$deriveEntity",
+        "params": [
+          {
+            "name": "mapping",
+            "type": "Record<string, any>",
+            "description": "Derived field mapping"
+          },
+          {
+            "name": "options",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Field mapping options"
+          }
+        ],
+        "returnType": "typeof sap.hana.xs.libs.dbutils.xsds.Entity",
+        "description": "Defines an ad-hoc derived XSDS entity based on an existing entity.",
+        "static": true
+      },
+      {
+        "name": "$discardAll",
+        "params": [
+          {
+            "name": "instances",
+            "type": "sap.hana.xs.libs.dbutils.xsds.Entity[]",
+            "description": "Instances to delete"
+          }
+        ],
+        "returnType": "void",
+        "description": "Batch discards multiple managed entity instances from the database.",
+        "static": true
+      },
+      {
+        "name": "$field",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Field name"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "Returns a column expression handle for an entity field usable in Query $where/$addFields/$order.",
+        "static": true
+      },
+      {
+        "name": "$find",
+        "params": [
+          {
+            "name": "condition",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Filter criteria"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Entity | null",
+        "description": "Retrieves an arbitrary entity instance matching the condition, or null.",
+        "static": true
+      },
+      {
+        "name": "$findAll",
+        "params": [
+          {
+            "name": "condition",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Filter criteria"
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "optional": true,
+            "description": "Maximum number of instances to return"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Entity[]",
+        "description": "Retrieves all entity instances matching the structured condition.",
+        "static": true
+      },
+      {
+        "name": "$get",
+        "params": [
+          {
+            "name": "key",
+            "type": "Record<string, any>",
+            "description": "Primary key object"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Entity | null",
+        "description": "Retrieves a managed entity instance by primary key from cache or database.",
+        "static": true
+      },
+      {
+        "name": "$query",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Creates a fluent Query builder selecting all local fields of this entity.",
+        "static": true
+      },
+      {
+        "name": "$saveAll",
+        "params": [
+          {
+            "name": "instances",
+            "type": "sap.hana.xs.libs.dbutils.xsds.Entity[]",
+            "description": "Instances to persist"
+          }
+        ],
+        "returnType": "void",
+        "description": "Batch persists multiple entity instances to the database.",
+        "static": true
+      },
+      {
+        "name": "$select",
+        "params": [
+          {
+            "name": "condition",
+            "type": "Record<string, any>",
+            "description": "Filter criteria"
+          },
+          {
+            "name": "options",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Select options ($factorized)"
+          }
+        ],
+        "returnType": "Record<string, any>[]",
+        "description": "Reads unmanaged values matching condition directly from the database.",
+        "static": true
+      },
+      {
+        "name": "$upsert",
+        "params": [
+          {
+            "name": "data",
+            "type": "Record<string, any>",
+            "description": "Value object to upsert"
+          }
+        ],
+        "returnType": "void",
+        "description": "Upserts unmanaged plain values directly into the database, bypassing entity cache.",
+        "static": true
+      },
+      {
+        "name": "$clone",
+        "params": [],
+        "returnType": "Record<string, any>",
+        "description": "Creates a detached, unmanaged deep copy of this entity instance."
+      },
+      {
+        "name": "$discard",
+        "params": [],
+        "returnType": "void",
+        "description": "Deletes this entity instance (and cascaded associations) from the database."
+      },
+      {
+        "name": "$save",
+        "params": [],
+        "returnType": "boolean",
+        "description": "Persists changes on this entity instance and its associations to the database."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Entity",
+        "params": [
+          {
+            "name": "skeleton",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Initial field values"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Entity",
+        "description": "Creates a new managed entity instance initialized with skeleton property values."
+      }
+    ]
+  },
+  "sap.hana.xs.libs.dbutils.xsds.Expr": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds.Expr",
+    "kind": "class",
+    "description": "Fluent SQL expression builder used inside XSDS Query $where, $addFields, and $order.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "$and",
+        "params": [
+          {
+            "name": "expr",
+            "type": "sap.hana.xs.libs.dbutils.xsds.Expr",
+            "description": "Boolean RHS"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL logical AND"
+      },
+      {
+        "name": "$avg",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL AVG() aggregate expression"
+      },
+      {
+        "name": "$count",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL COUNT() aggregate expression"
+      },
+      {
+        "name": "$div",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Divisor expression or literal"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL division (/)"
+      },
+      {
+        "name": "$eq",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL equality (=)"
+      },
+      {
+        "name": "$ge",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL greater-than-or-equal (>=)"
+      },
+      {
+        "name": "$gt",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL greater-than (>)"
+      },
+      {
+        "name": "$infixOp",
+        "params": [
+          {
+            "name": "sqlop",
+            "type": "string",
+            "description": "SQL infix operator"
+          },
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Right-hand expression"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "Applies a custom SQL infix operator"
+      },
+      {
+        "name": "$le",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL less-than-or-equal (<=)"
+      },
+      {
+        "name": "$like",
+        "params": [
+          {
+            "name": "pattern",
+            "type": "any",
+            "description": "LIKE pattern"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL LIKE predicate"
+      },
+      {
+        "name": "$lt",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL less-than (<)"
+      },
+      {
+        "name": "$max",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL MAX() aggregate expression"
+      },
+      {
+        "name": "$min",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL MIN() aggregate expression"
+      },
+      {
+        "name": "$minus",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Subtrahend"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL subtraction (-)"
+      },
+      {
+        "name": "$ne",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Comparison operand"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL inequality (<>)"
+      },
+      {
+        "name": "$not",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL logical NOT"
+      },
+      {
+        "name": "$null",
+        "params": [
+          {
+            "name": "isNull",
+            "type": "boolean",
+            "optional": true,
+            "description": "Pass false for IS NOT NULL"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL IS NULL / IS NOT NULL predicate"
+      },
+      {
+        "name": "$or",
+        "params": [
+          {
+            "name": "expr",
+            "type": "sap.hana.xs.libs.dbutils.xsds.Expr",
+            "description": "Boolean RHS"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL logical OR"
+      },
+      {
+        "name": "$plus",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Addend"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL addition (+)"
+      },
+      {
+        "name": "$prefixOp",
+        "params": [
+          {
+            "name": "sqlOp",
+            "type": "string",
+            "description": "SQL function/prefix operator name"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "Applies a custom SQL prefix function call"
+      },
+      {
+        "name": "$sum",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL SUM() aggregate expression"
+      },
+      {
+        "name": "$times",
+        "params": [
+          {
+            "name": "expr",
+            "type": "any",
+            "description": "Multiplier"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL multiplication (*)"
+      },
+      {
+        "name": "$unlike",
+        "params": [
+          {
+            "name": "pattern",
+            "type": "any",
+            "description": "Pattern"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "SQL NOT LIKE predicate"
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Expr",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Expr",
+        "description": "Expr"
+      }
+    ]
+  },
+  "sap.hana.xs.libs.dbutils.xsds.Query": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds.Query",
+    "kind": "class",
+    "description": "Immutable fluent SQL query builder for XSDS entities.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "$addFields",
+        "params": [
+          {
+            "name": "newFields",
+            "type": "Record<string, any>",
+            "description": "Map of field aliases to Expr expressions"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query adding calculated projection fields."
+      },
+      {
+        "name": "$aggregate",
+        "params": [
+          {
+            "name": "pathSpec",
+            "type": "Record<string, any>",
+            "description": "Grouping and projection specification"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query with GROUP BY and restricted projection based on pathSpec."
+      },
+      {
+        "name": "$defaultProject",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Replaces the projection with all scalar fields of the entity without associations."
+      },
+      {
+        "name": "$execute",
+        "params": [
+          {
+            "name": "config",
+            "type": "Record<string, any>",
+            "optional": true,
+            "description": "Execution formatting flags ($flat, $factorized)"
+          }
+        ],
+        "returnType": "Record<string, any>[]",
+        "description": "Executes the query and transforms results according to CDS/XSDS metadata."
+      },
+      {
+        "name": "$limit",
+        "params": [
+          {
+            "name": "n",
+            "type": "number",
+            "description": "Maximum rows to return"
+          },
+          {
+            "name": "m",
+            "type": "number",
+            "optional": true,
+            "description": "Number of rows to skip (OFFSET)"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query with LIMIT n and optional OFFSET m."
+      },
+      {
+        "name": "$matching",
+        "params": [
+          {
+            "name": "template",
+            "type": "Record<string, any>",
+            "description": "Structured condition object"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query adding a structured filter condition template."
+      },
+      {
+        "name": "$order",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query with ORDER BY criteria."
+      },
+      {
+        "name": "$project",
+        "params": [
+          {
+            "name": "pathSpec",
+            "type": "Record<string, any>",
+            "description": "Projection path structure"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query specifying nested field/association projections."
+      },
+      {
+        "name": "$sql",
+        "params": [],
+        "returnType": "string",
+        "description": "Returns the generated SQL query string without executing it."
+      },
+      {
+        "name": "$where",
+        "params": [
+          {
+            "name": "cond",
+            "type": "sap.hana.xs.libs.dbutils.xsds.Expr",
+            "description": "Boolean filter expression"
+          }
+        ],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Returns a new Query filtered by a fluent Expr predicate."
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Query",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Query",
+        "description": "Query"
+      }
+    ]
+  },
+  "sap.hana.xs.libs.dbutils.xsds.Rename": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds.Rename",
+    "kind": "class",
+    "description": "Predefined column-to-field renaming functions for XSDS entity imports.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "$camelcase",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Column name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Converts a database column name to CamelCase.",
+        "static": true
+      },
+      {
+        "name": "$id",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Column name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Identity function leaving column name unchanged.",
+        "static": true
+      },
+      {
+        "name": "$lowercase",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Column name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Converts a column name to lower case.",
+        "static": true
+      },
+      {
+        "name": "$normalcase",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Column name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Capitalizes only the first character of a column name.",
+        "static": true
+      },
+      {
+        "name": "$uppercase",
+        "params": [
+          {
+            "name": "name",
+            "type": "string",
+            "optional": true,
+            "description": "Column name"
+          }
+        ],
+        "returnType": "string",
+        "description": "Converts a column name to upper case.",
+        "static": true
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Rename",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Rename",
+        "description": "Rename"
+      }
+    ]
+  },
+  "sap.hana.xs.libs.dbutils.xsds.Transaction": {
+    "fullName": "sap.hana.xs.libs.dbutils.xsds.Transaction",
+    "kind": "class",
+    "description": "Static transaction and connection control API for XSDS operations.",
+    "children": [],
+    "members": [],
+    "methods": [
+      {
+        "name": "$commit",
+        "params": [],
+        "returnType": "void",
+        "description": "Explicitly commits the current XSDS database transaction.",
+        "static": true
+      },
+      {
+        "name": "$getConnection",
+        "params": [],
+        "returnType": "$.db.Connection | $.hdb.Connection",
+        "description": "Returns the active database connection used by XSDS.",
+        "static": true
+      },
+      {
+        "name": "$rollback",
+        "params": [],
+        "returnType": "void",
+        "description": "Explicitly rolls back the current transaction and resets the XSDS entity cache.",
+        "static": true
+      },
+      {
+        "name": "$setAutoCommit",
+        "params": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "Whether autocommit is enabled"
+          }
+        ],
+        "returnType": "void",
+        "description": "Enables or disables automatic commits after each $save() operation.",
+        "static": true
+      },
+      {
+        "name": "$setConnection",
+        "params": [
+          {
+            "name": "conn",
+            "type": "$.db.Connection | $.hdb.Connection | Record<string, any>",
+            "description": "Database connection"
+          }
+        ],
+        "returnType": "void",
+        "description": "Assigns an existing database connection for all XSDS operations.",
+        "static": true
+      },
+      {
+        "name": "$setConnectionConfig",
+        "params": [
+          {
+            "name": "config",
+            "type": "Record<string, any>",
+            "description": "Database connection configuration object"
+          }
+        ],
+        "returnType": "void",
+        "description": "Sets connection configuration (e.g. .xssqlcc config) passed to getConnection().",
+        "static": true
+      },
+      {
+        "name": "$setIsolationLevel",
+        "params": [
+          {
+            "name": "level",
+            "type": "number",
+            "description": "Transaction isolation level constant"
+          }
+        ],
+        "returnType": "void",
+        "description": "Sets the transaction isolation level of the XSDS database connection.",
+        "static": true
+      }
+    ],
+    "constructors": [
+      {
+        "name": "Transaction",
+        "params": [],
+        "returnType": "sap.hana.xs.libs.dbutils.xsds.Transaction",
+        "description": "Transaction"
+      }
+    ]
   }
+};
+
+export const XSJS_GLOBALS: readonly XsjsMethodDoc[] = [
+  {
+    "name": "describe",
+    "params": [
+      {
+        "name": "description",
+        "type": "string",
+        "description": "A string, usually the unit or module under test"
+      },
+      {
+        "name": "specDefinitions",
+        "type": "(...args: any[]) => any",
+        "description": "Function that defines specs in the suite"
+      }
+    ],
+    "returnType": "jasmine.Suite",
+    "description": "Defines a suite of specifications in XSUnit. Variables declared are accessible by beforeEach, it, and afterEach."
+  },
+  {
+    "name": "xdescribe",
+    "params": [
+      {
+        "name": "description",
+        "type": "string",
+        "description": "A string, usually the unit under test"
+      },
+      {
+        "name": "specDefinitions",
+        "type": "(...args: any[]) => any",
+        "description": "Function that defines specs in the suite"
+      }
+    ],
+    "returnType": "jasmine.Suite",
+    "description": "Disables a suite of specifications temporarily during development."
+  },
+  {
+    "name": "describeDb",
+    "params": [
+      {
+        "name": "description",
+        "type": "string",
+        "description": "A string, usually the database artifact under test"
+      },
+      {
+        "name": "specDefinitions",
+        "type": "(...args: any[]) => any",
+        "description": "Function that defines specs in the suite"
+      }
+    ],
+    "returnType": "void",
+    "description": "Defines a database test suite that opens and rolls back a connection accessible via this.dbConnection.",
+    "deprecated": "Use describe and jasmine.dbConnection instead"
+  },
+  {
+    "name": "xdescribeDb",
+    "params": [
+      {
+        "name": "description",
+        "type": "string",
+        "description": "A string, usually the database artifact under test"
+      },
+      {
+        "name": "specDefinitions",
+        "type": "(...args: any[]) => any",
+        "description": "Function that defines specs in the suite"
+      }
+    ],
+    "returnType": "void",
+    "description": "Defines a database test suite that is skipped during execution.",
+    "deprecated": "Use xdescribe instead"
+  },
+  {
+    "name": "it",
+    "params": [
+      {
+        "name": "desc",
+        "type": "string",
+        "description": "Description of this specification"
+      },
+      {
+        "name": "func",
+        "type": "(...args: any[]) => any",
+        "description": "Defines preconditions and expectations of the spec"
+      }
+    ],
+    "returnType": "jasmine.Spec",
+    "description": "Creates a Jasmine specification that will be added to the current suite."
+  },
+  {
+    "name": "xit",
+    "params": [
+      {
+        "name": "desc",
+        "type": "string",
+        "description": "Description of this specification"
+      },
+      {
+        "name": "func",
+        "type": "(...args: any[]) => any",
+        "description": "Defines preconditions and expectations of the spec"
+      }
+    ],
+    "returnType": "jasmine.Spec",
+    "description": "Creates a pending Jasmine specification skipped during execution."
+  },
+  {
+    "name": "expect",
+    "params": [
+      {
+        "name": "actual",
+        "type": "any",
+        "description": "Actual value to test against expected value"
+      }
+    ],
+    "returnType": "jasmine.Expectation",
+    "description": "Starts a chain for a Jasmine expectation matcher."
+  },
+  {
+    "name": "spyOn",
+    "params": [
+      {
+        "name": "obj",
+        "type": "Record<string, any>",
+        "description": "Target object containing the method"
+      },
+      {
+        "name": "methodName",
+        "type": "string",
+        "description": "Method name to spy on"
+      }
+    ],
+    "returnType": "jasmine.Spy",
+    "description": "Installs a Jasmine spy on an existing object's method within the current spec."
+  },
+  {
+    "name": "beforeEach",
+    "params": [
+      {
+        "name": "beforeEachFunction",
+        "type": "(...args: any[]) => any",
+        "description": "Setup callback"
+      }
+    ],
+    "returnType": "void",
+    "description": "Registered function called before each spec in a suite for test setup."
+  },
+  {
+    "name": "afterEach",
+    "params": [
+      {
+        "name": "afterEachFunction",
+        "type": "(...args: any[]) => any",
+        "description": "Teardown callback"
+      }
+    ],
+    "returnType": "void",
+    "description": "Registered function called after each spec in a suite for test teardown."
+  },
+  {
+    "name": "beforeOnce",
+    "params": [
+      {
+        "name": "beforeOnceFunction",
+        "type": "(...args: any[]) => any",
+        "description": "Suite setup callback"
+      }
+    ],
+    "returnType": "void",
+    "description": "Registered function called once before any spec in a suite (skipped if no active specs)."
+  },
+  {
+    "name": "afterOnce",
+    "params": [
+      {
+        "name": "afterOnceFunction",
+        "type": "(...args: any[]) => any",
+        "description": "Suite teardown callback"
+      }
+    ],
+    "returnType": "void",
+    "description": "Registered function called once after all specs in a suite (skipped if no active specs)."
+  }
+];
+
+export const XSJS_IMPORT_MODULES: Readonly<Record<string, string>> = {
+  "sap.hana.xs.libs.dbutils:xsds": "sap.hana.xs.libs.dbutils.xsds",
+  "sap.hana.xs.libs.dbutils:procedures": "sap.hana.xs.libs.dbutils.procedures",
+  "sap.hana.testtools.mockstar:mockstar": "sap.hana.testtools.mockstar.mockstar",
+  "sap.hana.testtools.mockstar:apiFacade": "sap.hana.testtools.mockstar.mockstar",
+  "sap.hana.testtools.mockstar:mockstarEnvironment": "sap.hana.testtools.mockstar.mockstarEnvironment",
+  "sap.hana.testtools.unit.util:sqlExecutor": "sap.hana.testtools.unit.util.sqlExecutor",
+  "sap.hana.testtools.unit.util:tableDataSet": "sap.hana.testtools.unit.util.tableDataSet",
+  "sap.hana.testtools.unit.util:tableUtils": "sap.hana.testtools.unit.util.tableUtils",
+  "sap.hana.testtools.unit.util:dateUtils": "sap.hana.testtools.unit.util.dateUtils"
 };

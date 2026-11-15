@@ -2481,7 +2481,8 @@
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node --test out/test/*.test.js",
     "build:grammars": "node scripts/build-grammars.js",
-    "build:keywords": "node scripts/build-keywords.js",
+    "build:keywords": "node scripts/build-keywords.js && node scripts/build-sql-catalog.js",
+    "build:sql-catalog": "node scripts/build-sql-catalog.js",
     "build:xsjs-dts": "node scripts/build-xsjs-dts.js"
   },
   "keywords": [
