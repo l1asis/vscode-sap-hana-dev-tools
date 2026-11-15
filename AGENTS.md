@@ -2,30 +2,75 @@
 
 ## 1. Project Overview
 
-A complete, modern VS Code replacement for SAP HANA Studio (Eclipse), supporting **SAP HANA XS Classic (XSC)**, **XS Advanced (XSA)**, **HDI**, and **SAP HANA Cloud**.
+VS Code language support, formatters, static analyzers, and tooling for **SAP HANA XS Classic (`[XSC]`)**, **XS Advanced (`[XSA]`)**, **HDI (`[HDI]`)**, and **SAP HANA Cloud (`[CLOUD]`)**.
 
-## 2. Repository Architecture
+## 2. Repository Map
 
-- `syntaxes/` — TextMate grammars (`.tmLanguage.json`) for 60+ SAP HANA design-time artifacts.
-- `src/` — Extension source code, AST formatters, offline LSP analyzers, and live DB connectivity.
-- `test/` — Unit and integration test suites.
+- `syntaxes/` — TextMate grammars (`*.tmLanguage.json`).
+- `scripts/` — Code/grammar generators (`build-grammars.js`, `build-keywords.js`).
+- `src/` — Extension source, AST formatters, offline analyzers, and DB connectivity.
+- `test/` — Headless unit and integration tests (`*.test.ts`, run via `npm test`).
 - `samples/` — Sample SAP HANA artifacts for manual and automated testing.
-- `docs/ROADMAP.md` — Master engineering roadmap and phase status matrix.
-- `docs/specs/` — Distilled, version-controlled technical specifications (`artifacts/`, `catalogs/`, `connectivity/`, `diagnostics/`, `grammars/`).
-- `docs/specs/SPEC_RULES.md` — Mandatory formatting and schema rules for creating/updating files in `docs/specs/`.
-- `docs/research/CHECKLIST.md` — Tracking checklist for extracting specs from the local reference corpus.
-- `research/refs/extracted/` — **(Git-ignored local corpus)** 200+ official SAP HANA reference guides split into chapter-level Markdown files with fenced BNF/code blocks.
+- `docs/specs/` — Distilled, version-controlled technical specifications, governed by `docs/specs/SPEC_RULES.md`.
+- `docs/research/CHECKLIST.md` — Extraction tracking checklist for the reference corpus.
+- `research/refs/extracted/` — **(Git-ignored local corpus)** Official SAP HANA reference guides split into chapter-level Markdown files.
 
-## 3. Core Agent Operating Rules
+## 3. Core Operating Rules
 
-1. **Spec-First Development:** Before implementing or modifying any grammar (`syntaxes/`), formatter, linter rule, or API client (`src/`), read the corresponding spec in `docs/specs/`. If the spec is missing or incomplete, extract it from `research/refs/extracted/` first following `docs/specs/SPEC_RULES.md`.
-2. **Search Before Reading:** Never read entire guide folders in `research/refs/extracted/` blindly. Use `ripgrep` (`rg -i "<keyword>" research/refs/extracted/`) to pinpoint the exact chapter `.md` file first.
-3. **Never Commit `research/`:** Everything under root `research/` is local scratchpad data and must remain untracked by Git. Only commit distilled specs under `docs/specs/` and checklist updates in `docs/research/CHECKLIST.md`.
-4. **Platform Tagging:** Always distinguish between `[XSC]`, `[XSA]`, `[HDI]`, and `[CLOUD]` syntax variants in both specs and code comments.
-5. **Zero External Runtime Bloat for Parsers:** Keep lexers, formatters, and static analyzers dependency-free in pure TypeScript so the extension stays fast and lightweight.
+1. **Spec-First Development:** Before implementing or modifying a grammar (`syntaxes/`), formatter, linter rule, or API client (`src/`), read its spec in `docs/specs/`. If missing or incomplete, extract it from `research/refs/extracted/` first following `docs/specs/SPEC_RULES.md`.
+2. **Search Before Reading:** Never read entire folders in `research/refs/extracted/` blindly. Use `ripgrep` (`rg -i "<keyword>" research/refs/extracted/`) to locate the exact chapter `.md` file first.
+3. **Never Commit `research/`:** Everything under root `research/` is local scratchpad data and must remain untracked. Only commit distilled specs in `docs/specs/` and updates to `docs/research/CHECKLIST.md`.
+4. **Platform Tagging:** Always distinguish between `[XSC]`, `[XSA]`, `[HDI]`, and `[CLOUD]` syntax variants in specs and code comments.
+5. **Zero Runtime Dependencies for Parsers:** Keep lexers, formatters, and static analyzers dependency-free in pure TypeScript.
 
-## 4. Coding & TypeScript Conventions
+## 4. Coding & Build Conventions
 
-- **Strict TypeScript:** Use `strict: true` in `tsconfig.json`. Avoid `any`; use discriminated unions for AST nodes and token types.
-- **Formatting Safety:** Formatters must never corrupt valid code, strip comments, or break `-- hanasql-format off` pragmas or HDI headerless procedure bodies.
-- **Testing:** Every new grammar rule, formatter, or diagnostic rule must include positive and negative test cases in `test/`.
+- **Strict TypeScript:** `strict: true` in `tsconfig.json`. Avoid `any`; use discriminated unions for AST nodes and tokens.
+- **Generated Artifacts Sync:**
+  - Never hand-edit generated files in `syntaxes/`. Edit `scripts/build-grammars.js` and run `npm run build:grammars`.
+  - After updating SQL keyword/function lists, run `npm run build:keywords`.
+- **Formatting Safety:** Formatters must never corrupt valid code, strip comments, append semicolons to headerless HDI root statements, or break `-- hanasql-format off` pragmas.
+- **Testing:** Every new grammar rule, formatter feature, or diagnostic rule must include positive and negative test cases in `test/` and pass `npm test`.
+
+## 5. Windows PowerShell 5.1 Terminal Rules (CRITICAL)
+
+The terminal runs **Windows PowerShell 5.1**, NOT Bash or PowerShell 7.
+
+1. **`&&` and `||` Are Forbidden:** PowerShell 5.1 throws a parser error on `&&` and `||`.
+2. **One Command Per Tool Call:** Execute commands as individual, sequential tool calls (e.g., wait for `git add` to finish before `git commit`). Never run parallel `git` commands (prevents `.git/index.lock` collisions and matches the terminal allowlist cleanly).
+3. **Chaining Fallback:** Only if chaining in a single invocation is unavoidable, use `Command1; if ($?) { Command2 }` for dependent commands, or `Command1; Command2` for read-only inspection.
+4. **Backtick Escaping Trap:** In PowerShell, `` ` `` is the escape character inside double quotes (`"..."`).
+   - **Always use single quotes (`'...'`)** for commit messages, issue titles, and PR titles containing Markdown backticks (e.g., `git commit -m 'feat(grammar): ✨ add `.hdbtable` support'`).
+   - For multi-line PR or issue bodies containing code blocks/backticks, use `--body-file` or a single-quoted here-string (`@' ... '@`).
+
+## 6. Git & Branching Workflow
+
+1. **Feature Branches:** Never commit feature or fix work directly to `main`. Branch first using `feat/<slug>`, `fix/<slug>`, or `docs/<slug>`.
+2. **Incremental Atomic Commits:** Commit logical units separately (e.g., 1st: spec in `docs/specs/`; 2nd: implementation + regenerated artifacts; 3rd: samples & tests).
+3. **Conventional Commits with Emojis (Mandatory):**
+   Format all commit messages and PR titles as:
+   `<type>(<scope>): <emoji> <concise description in imperative mood>`
+
+   | Type | Emoji | Usage |
+   | :--- | :---: | :--- |
+   | `feat` | ✨ | New grammar, formatter capability, LSP feature, or artifact support |
+   | `fix` | 🐛 | Bug fix in highlighting, formatting, or parser edge cases |
+   | `docs` | 📝 | Documentation (`README.md`, `ROADMAP.md`, `docs/specs/*`) |
+   | `test` | ✅ | Adding or updating unit tests and sample fixtures |
+   | `refactor` | ♻️ | Internal code restructuring without behavior change |
+   | `perf` | ⚡ | Lexer, parser, or formatter performance optimization |
+   | `build` | 📦 | Build scripts, dependencies, or VSIX packaging |
+   | `ci` | 👷 | GitHub Actions workflows (`.github/workflows/*`) |
+   | `chore` | 🔧 | Maintenance, label setup, config, or release preparation |
+
+## 7. GitHub CLI (`gh`) Issue, Label & PR Management
+
+1. **Labels:** Run `gh label list` before creating issues or PRs and assign accurate existing labels (`area:*`, `platform:*`, `phase:*`). Create missing category labels only when genuinely needed (`gh label create "<name>" --color "<hex>" --description "<desc>" --force`).
+2. **Issues:** Check `gh issue list` to avoid duplicates, create structured issues (`gh issue create --title '...' --label '...'`), and link them (`Closes #N` or `Refs #N`) in PR descriptions.
+3. **Pull Requests:** Verify `npm test` passes and `git status` is clean (`research/` untracked), push (`git push -u origin <branch>`), and open the PR (`gh pr create --title '...' --label '...' --body-file ...`).
+4. **Human-Only Merge Gate (STRICT):** **NEVER** run `gh pr merge` or merge feature branches into `main` locally. Leave all PRs open for human review.
+
+## 8. Changelog & Versioning Policy
+
+1. **Hands Off on Feature Branches:** Never modify `CHANGELOG.md` or bump `"version"` in `package.json` during feature, fix, or spec tasks.
+2. **Release Prep Only:** Update `CHANGELOG.md` and `package.json` version exclusively when explicitly asked to prepare a release (synthesizing `git log <last-tag>..HEAD` into domain-grouped `Added` / `Changed` / `Fixed` sections).
