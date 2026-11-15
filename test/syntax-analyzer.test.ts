@@ -691,6 +691,230 @@ test('HANA-SYN-027: SELECT query clause ordering, duplicate clauses & negative c
   assert.deepEqual(syn27('hanasql', validQueries), []);
 });
 
+test('HANA-SYN-028: SQLScript routine header, USING, block declaration ordering, handler conflicts & unreachable statements', () => {
+  const syn28 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-028');
+
+  // 1. Misplaced header clause after AS, duplicate header options, and RETURNS ordering
+  assert.ok(
+    syn28('hanasql', 'CREATE PROCEDURE p() AS READS SQL DATA BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /before 'AS'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE PROCEDURE p() READS SQL DATA READS SQL DATA AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /Duplicate 'READS SQL DATA'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f(IN x INT) LANGUAGE SQLSCRIPT RETURNS INT AS BEGIN RETURN x; END;').some((d) =>
+      /'RETURNS' clause must appear before/i.test(d.message)
+    )
+  );
+
+  // 2. Parameter & routine header compatibility
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f(OUT x INT) RETURNS INT AS BEGIN x = 1; END;').some((d) =>
+      /'OUT' is not allowed in a FUNCTION header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE FUNCTION f(INOUT x INT) RETURNS INT AS BEGIN RETURN; END;').some((d) =>
+      /'INOUT' is not allowed in a FUNCTION header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hanasql', 'CREATE FUNCTION f(IN x INT) AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /Missing 'RETURNS' clause/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() RETURNS INT AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'RETURNS' clause is not allowed in a PROCEDURE header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f() RETURNS INT READS SQL DATA AS BEGIN RETURN; END;').some((d) =>
+      /'READS SQL DATA' is not allowed in a FUNCTION header/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() READS SQL DATA AUTOCOMMIT DDL ON AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'AUTOCOMMIT DDL' is not allowed in a 'READS SQL DATA' procedure/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() SEQUENTIAL EXECUTION AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'SEQUENTIAL EXECUTION' must appear immediately after 'BEGIN'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN READS SQL DATA; SELECT 1 FROM DUMMY; END').some((d) =>
+      /'READS SQL DATA' must appear before 'AS'/i.test(d.message)
+    )
+  );
+
+  // 3. USING placement
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() USING SYS.SQLSCRIPT_STRING AS LIB; AS BEGIN SELECT 1 FROM DUMMY; END').some((d) =>
+      /'USING' library declaration must appear after 'AS'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN DECLARE v INT; USING SYS.SQLSCRIPT_STRING AS LIB; v = 1; END').some((d) =>
+      /'USING' declaration must appear before 'DECLARE'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN IF 1 = 1 THEN USING SYS.SQLSCRIPT_STRING AS LIB; END IF; END'
+    ).some((d) => /routine root level/i.test(d.message))
+  );
+
+  // 4. Compound block declaration / handler / modifier ordering
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN SELECT 1 FROM DUMMY; DECLARE v INT; v = 1; END').some((d) =>
+      /'DECLARE' must appear before executable statements/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL; DECLARE c CONDITION; SELECT 1 FROM DUMMY; END'
+    ).some((d) => /must appear before 'DECLARE \.\.\. HANDLER'/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      'PROCEDURE p() AS BEGIN SELECT 1 FROM DUMMY; DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL; END'
+    ).some((d) => /'DECLARE \.\.\. HANDLER' must appear before executable statements/i.test(d.message))
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN DECLARE v INT; SEQUENTIAL EXECUTION; v = 1; END').some((d) =>
+      /'SEQUENTIAL EXECUTION' must appear immediately after the block opener/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() AS BEGIN IF 1 = 1 THEN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END IF; END').some(
+      (d) => /'PARALLEL EXECUTION' is only valid on a 'BEGIN' block/i.test(d.message)
+    )
+  );
+
+  // 5. EXIT / CONTINUE handler conflicts and duplicates
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299 RESIGNAL;
+         DECLARE CONTINUE HANDLER FOR SQLEXCEPTION BEGIN END;
+       END`
+    ).some((d) => /cannot appear in the same scope/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 1 FROM DUMMY;
+         IF 1 = 1 THEN
+           DECLARE EXIT HANDLER FOR SQL_ERROR_CODE 1299 RESIGNAL;
+           SELECT 1 FROM DUMMY;
+         END IF;
+       END`
+    ).some((d) => /inside an enclosing 'CONTINUE HANDLER' scope/i.test(d.message))
+  );
+  assert.ok(
+    syn28(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+         DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN END;
+       END`
+    ).some((d) => /Duplicate condition handler for 'SQLEXCEPTION'/i.test(d.message))
+  );
+
+  // 6. Unreachable statements (warning + unnecessary tag)
+  const unreachDiags = syn28(
+    'hdbprocedure',
+    `PROCEDURE p(OUT o INT) AS
+     BEGIN
+       IF 1 = 1 THEN
+         RETURN;
+         o = 99;
+       END IF;
+       LOOP
+         BREAK;
+         o = 2;
+       END LOOP;
+     END`
+  );
+  assert.equal(unreachDiags.length, 2);
+  assert.ok(unreachDiags.every((d) => d.severity === 'warning' && d.tags?.includes('unnecessary')));
+
+  // 7. Negative checks: complex valid SAP HANA SQLScript must yield 0 diagnostics
+  const validComplexProc = `
+    CREATE PROCEDURE "demo::complex_proc" (IN iv_flag INT, OUT ov_res INT)
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER
+    DEFAULT SCHEMA "DEMO"
+    DETERMINISTIC
+    WITH ENCRYPTION
+    AUTOCOMMIT DDL OFF
+    AS
+    USING SYS.SQLSCRIPT_STRING AS STR_LIB;
+    BEGIN SEQUENTIAL EXECUTION
+      DECLARE c_custom CONDITION FOR SQL_ERROR_CODE 10001;
+      DECLARE EXIT HANDLER FOR c_custom
+      BEGIN
+        DECLARE v_err NVARCHAR(100) := 'err';
+        ov_res = 0;
+      END;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+
+      IF CASE WHEN :iv_flag = 1 THEN 1 ELSE 0 END = 1 THEN
+        DECLARE v_local INT DEFAULT 1;
+        DECLARE CONTINUE HANDLER FOR SQLEXCEPTION ov_res = -1;
+        IF :v_local = 1 THEN
+          RETURN;
+        ELSE
+          ov_res = 2;
+        END IF;
+        ov_res = :ov_res + 1;
+      ELSEIF :iv_flag = 2 THEN
+        DECLARE v_loop INT DEFAULT 0;
+        WHILE :v_loop < 3 DO SEQUENTIAL EXECUTION
+          v_loop = :v_loop + 1;
+        END WHILE;
+      ELSE
+        ov_res = -1;
+      END IF;
+
+      MERGE INTO tgt USING src ON tgt.id = src.id
+      WHEN MATCHED THEN UPDATE SET tgt.val = src.val;
+    END;
+  `;
+  assert.deepEqual(syn28('hanasql', validComplexProc), []);
+
+  const validUsingAtRootBegin = `
+    PROCEDURE "demo::using_in_begin" (OUT ov_len INT)
+    LANGUAGE SQLSCRIPT SQL SECURITY INVOKER READS SQL DATA AS
+    BEGIN
+      USING SYS.SQLSCRIPT_STRING AS STR_LIB;
+      DECLARE v_tmp INT := 0;
+      ov_len = LENGTH('abc');
+    END
+  `;
+  assert.deepEqual(syn28('hdbprocedure', validUsingAtRootBegin), []);
+
+  const validAlterAndMisc = `
+    ALTER FUNCTION "demo::fn_alter" () AS BEGIN RETURN 1; END;
+    ALTER PROCEDURE "demo::p_recomp" RECOMPILE;
+    DROP FUNCTION "demo::fn_old";
+    FUNCTION "demo::fn_scalar" (IN a INT) RETURNS b INT DETERMINISTIC STRUCTURED FILTER CHECK AS BEGIN b = :a + 1; END
+  `;
+  assert.deepEqual(syn28('hanasql', validAlterAndMisc), []);
+});
+
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
   const brokenProc = 'CREATE FUNC "P"() AS BEGIN SELECT 1 FROM DUMMY; END;';
   // syntax: false disables HANA-SYN-* while leaving semantic diagnostics intact
