@@ -1,0 +1,51 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  npm_config_yes: 'true'
+
+jobs:
+  ci:
+    name: Build & Test (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['lts/*', 'current']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js (${{ matrix.node-version }})
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify generated grammars and keywords are in sync
+        run: |
+          npm run build:grammars --if-present
+          npm run build:keywords --if-present
+          git diff --exit-code
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Dry-run VSIX package check
+        run: npx @vscode/vsce package -o hana-tools-ci.vsix
