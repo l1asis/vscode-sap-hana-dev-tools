@@ -1,0 +1,5 @@
+==version=2
+column table "demo.hdi::CUSTOMERS" ("ID" integer not null,"NAME" nvarchar(100),"EMAIL" nvarchar(120),primary key("ID"))
+==migration=2
+alter table "demo.hdi::CUSTOMERS" add ("EMAIL" nvarchar(120));
+rename column "demo.hdi::CUSTOMERS"."FULL_NAME" to "NAME";

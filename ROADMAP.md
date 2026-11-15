@@ -15,11 +15,11 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **SQL & SQLScript** (`.sql`, `.hdbprocedure`, `.hdbfunction`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
 | **HDI Headerless SQL** (`.hdbtabletype`, `.hdbprojectionview`, etc.) | 🟢 Complete | 🟢 Complete | 🔵 Planned | ⚪ N/A | ⚪ Phase 4 |
-| **Classic & HDI Tables/Views** (`.hdbtable`, `.hdbview`, `.hdbsequence`) | 🟢 Complete | 🟡 HDI SQL only | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **CDS Models** (`.hdbdd`, `.hdbcds`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **XS JavaScript** (`.xsjs`, `.xsjslib`) | 🟢 Complete | 🔵 Planned | 🔵 Planned (`.d.ts`) | 🔵 Planned | ⚪ Phase 4 |
-| **XS OData** (`.xsodata`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **Roles & Grants** (`.hdbrole`, `.hdbgrants`, `.xsaccess`) | 🟢 Complete | 🔵 Planned | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **Classic & HDI Tables/Views** (`.hdbtable`, `.hdbview`, `.hdbsequence`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **CDS Models** (`.hdbdd`, `.hdbcds`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **XS JavaScript** (`.xsjs`, `.xsjslib`) | 🟢 Complete | 🟢 Complete | 🔵 Planned (`.d.ts`) | 🔵 Planned | ⚪ Phase 4 |
+| **XS OData** (`.xsodata`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **Roles & Grants** (`.hdbrole`, `.hdbgrants`, `.xsaccess`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
 | **Text Analysis (CGUL)** (`.hdbtextrule`, `.hdbtextlexicon`) | 🟢 Complete | ⚪ Backlog | ⚪ Backlog | ⚪ Backlog | ⚪ Phase 4 |
 | **Calculation Views & XML** (`.calculationview`, `.hdbcalculationview`) | 🟢 Complete | ⚪ Backlog | 🔵 Schema XSD | 🔵 Planned | ⚪ Phase 4 |
 
@@ -27,18 +27,20 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 
 ## Engineering Phases
 
-### Phase 1: Universal Syntax Highlighting (Current — Completed)
+### Phase 1: Universal Syntax Highlighting (Completed)
 
 * [x] TextMate grammars for 60+ XS Classic and XS Advanced / HDI file extensions.
 * [x] Embedded SQL highlighting inside classic `.hdbview` and `.hdbsequence` files.
 * [x] HANA Cloud SQL keywords, vector types (`REAL_VECTOR`, `HALF_VECTOR`), and `SQLSCRIPT_*` libraries.
 * [x] Refine edge-case grammar rules for CGUL rule bodies (`.hdbtextrule`) and complex `.xsodata` annotations.
 
-### Phase 2: Formatters Across All Design-Time Artifacts (In Progress)
+### Phase 2: Formatters Across All Design-Time Artifacts (Completed)
 
 * [x] Configurable HANA SQL & SQLScript formatter (`hanasql.format.*`) with HDI procedure semicolon safety and `-- hanasql-format off` pragmas.
-* [ ] Dedicated formatter for classic key-value artifacts (`.hdbtable`, `.hdbview`, `.hdbschema`, `.hdbti`).
-* [ ] AST formatter for `.hdbdd` / `.hdbcds` and `.xsodata` service definitions.
+* [x] Dedicated formatter for classic key-value artifacts (`.hdbtable`, `.hdbstructure`, `.hdbview`, `.hdbsequence`, `.hdbschema`, `.hdbti`, `.hdbtid`, `.hdbtim`, `.xshttpdest`).
+* [x] AST formatter for `.hdbdd` / `.hdbcds` and `.xsodata` service definitions.
+* [x] Tolerant JSON/JSONC formatter covering 28 JSON-based design-time artifacts (`.hdiconfig`, `.hdbgrants`, `.xsaccess`, `.xsapp`, `.hdbrole` HDI, etc.), classic `.hdbrole` DSL formatter, and `.hdbmigrationtable` section formatter.
+* [x] XSJS / `.xsjslib` formatting via virtual-document delegation to VS Code's built-in JS/TS formatter with `hanasql-format off` pragma masking, plus `package.json` `defaultFormatter` bindings across all formatted languages.
 
 ### Phase 3: Offline Language Server (LSP), Static Analyzers & Migration Assistant
 

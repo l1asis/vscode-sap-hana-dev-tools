@@ -1,0 +1,1 @@
+host="api.example.com";port=443;description="SAP HANA outbound HTTP destination";useSSL=true;pathPrefix="/v1/orders";authType=none;useProxy=false;timeout=5000;

@@ -1,0 +1,2 @@
+schema="DEMO_SCHEMA";increment_by=1;start_with=1000;minvalue=1;nomaxvalue=true;cycles=false;
+reset_by="select coalesce(max(order_id),999)+1 from \"DEMO_SCHEMA\".\"ORDERS\"";

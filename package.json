@@ -1943,6 +1943,138 @@
       },
       "[hdbfabricvirtualtable]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtable]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbstructure]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbview]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsequence]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbschema]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbti]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbdd]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbcds]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsodata]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtid]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtim]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xshttpdest]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbrole]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbmigrationtable]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsaccess]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsapp]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsprivileges]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xssecurestore]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xssqlcc]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsjob]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsynonym]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsappsite]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsoauthappconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsoauthclientconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsoauthclientflavor]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbgrants]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbrevokes]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbroleconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsynonymconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbpublicsynonym]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualtableconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdblogicalschemaconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbprojectionviewconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbfabricvirtualtableconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtabledata]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbeshconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdiconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdinamespace]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualpackage]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualpackagehadoop]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualpackagesparksql]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbmrjob]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsjs]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsjslib]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       }
     },
     "configuration": {

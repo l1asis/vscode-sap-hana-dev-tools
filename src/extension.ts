@@ -1,4 +1,11 @@
 import * as vscode from 'vscode';
+import {
+  ARTIFACT_FORMATTER_LANGUAGES,
+  SQL_LANGUAGES,
+  XSJS_LANGUAGES,
+  formatDocument,
+  supportsRangeFormatting,
+} from './formatter/dispatch';
 import { format } from './formatter/formatter';
 import {
   DEFAULTS,
@@ -7,46 +14,35 @@ import {
   PartialFormatterOptions,
   resolveOptions,
 } from './formatter/options';
-import { isKeyValueArtifact } from './formatter/detect';
+import {
+  applyOffsetEdits,
+  extractJsPragmaRegions,
+  restoreJsPragmaRegions,
+} from './formatter/xsjs';
 
-// Languages whose files can contain SQL. For .hdbtable/.hdbview/.hdbsequence/.hdbstructure the same
-// extension is XS Classic `key = value;` syntax in some projects; those files are detected and skipped.
-const SQL_LANGUAGES: readonly string[] = [
-  'hanasql',
-  'hdbprocedure',
-  'hdbfunction',
-  'hdbtablefunction',
-  'hdbtrigger',
-  'hdbindex',
-  'hdbfulltextindex',
-  'hdbconstraint',
-  'hdbvirtualtable',
-  'hdbtabletype',
-  'hdbprojectionview',
-  'hdbstructuredprivilege',
-  'hdbstructuredfilter',
-  'hdbresultcache',
-  'hdbstatistics',
-  'hdbsystemversioning',
-  'hdbschedulerjob',
-  'hdbremotetablereplica',
-  'hdbcollection',
-  'hdbcollectionindex',
-  'hdbcollectionadjindex',
-  'hdbfabricvirtualtable',
-  'hdblibrary',
-  'hdbdropcreatetable',
-  'hdbapplicationtime',
-  'hdbgraphworkspace',
-  'hdbvirtualprocedure',
-  'hdbvirtualfunction',
-  'hdbtable',
-  'hdbstructure',
-  'hdbview',
-  'hdbsequence',
-];
+const XSJS_SCHEME = 'hanasql-xsjs-format';
+const XSJS_DELEGATE_URI = vscode.Uri.parse(`${XSJS_SCHEME}:/delegate.js`);
 
 let output: vscode.OutputChannel | undefined;
+
+class XsjsVirtualContentProvider implements vscode.TextDocumentContentProvider {
+  private readonly emitter = new vscode.EventEmitter<vscode.Uri>();
+  readonly onDidChange = this.emitter.event;
+  private content = '';
+
+  setContent(next: string): void {
+    this.content = next;
+    this.emitter.fire(XSJS_DELEGATE_URI);
+  }
+
+  provideTextDocumentContent(): string {
+    return this.content;
+  }
+
+  dispose(): void {
+    this.emitter.dispose();
+  }
+}
 
 function readSettings(document: vscode.TextDocument): PartialFormatterOptions {
   const cfg = vscode.workspace.getConfiguration('hanasql.format', document);
@@ -70,9 +66,20 @@ function fullRange(document: vscode.TextDocument): vscode.Range {
   return new vscode.Range(0, 0, last.lineNumber, last.text.length);
 }
 
-function safe(fn: () => vscode.TextEdit[]): vscode.TextEdit[] {
+function safe<T>(fn: () => T, fallback: T): T {
   try {
     return fn();
+  } catch (err: unknown) {
+    const detail = err instanceof Error && err.stack ? err.stack : String(err);
+    output?.appendLine(`[format] ${detail}`);
+    vscode.window.showErrorMessage('SAP HANA SQL: formatting failed (see output channel "SAP HANA SQL").');
+    return fallback;
+  }
+}
+
+async function safeAsync(fn: () => Promise<vscode.TextEdit[]>): Promise<vscode.TextEdit[]> {
+  try {
+    return await fn();
   } catch (err: unknown) {
     const detail = err instanceof Error && err.stack ? err.stack : String(err);
     output?.appendLine(`[format] ${detail}`);
@@ -90,10 +97,9 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
     if (raw.enable === false) return [];
     return safe(() => {
       const text = document.getText();
-      if (isKeyValueArtifact(text)) return [];
-      const result = format(text, raw, editorInfo(document, options));
+      const result = formatDocument(document.languageId, text, raw, editorInfo(document, options));
       return result === text ? [] : [vscode.TextEdit.replace(fullRange(document), result)];
-    });
+    }, []);
   },
 
   provideDocumentRangeFormattingEdits(
@@ -104,7 +110,7 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
     const raw = readSettings(document);
     if (raw.enable === false) return [];
     return safe(() => {
-      if (isKeyValueArtifact(document.getText())) return [];
+      if (!supportsRangeFormatting(document.languageId, document.getText())) return [];
       // work on whole lines
       const endLine =
         range.end.character === 0 && range.end.line > range.start.line ? range.end.line - 1 : range.end.line;
@@ -120,17 +126,111 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
       const level = Math.floor(cols / o.indentWidth);
       const result = format(text, o, ed, { fragment: true, initialLevel: level });
       return result === text ? [] : [vscode.TextEdit.replace(lineRange, result)];
-    });
+    }, []);
   },
 };
 
+function createXsjsProvider(
+  virtualContent: XsjsVirtualContentProvider
+): vscode.DocumentFormattingEditProvider & vscode.DocumentRangeFormattingEditProvider {
+  let queue: Promise<void> = Promise.resolve();
+
+  const runSerialized = async (
+    task: () => Promise<vscode.TextEdit[]>
+  ): Promise<vscode.TextEdit[]> => {
+    const prev = queue;
+    let release!: () => void;
+    queue = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await prev;
+    try {
+      return await task();
+    } finally {
+      release();
+    }
+  };
+
+  return {
+    provideDocumentFormattingEdits(
+      document: vscode.TextDocument,
+      options: vscode.FormattingOptions
+    ): Promise<vscode.TextEdit[]> {
+      const raw = readSettings(document);
+      if (raw.enable === false) return Promise.resolve([]);
+      return runSerialized(() =>
+        safeAsync(async () => {
+          const text = document.getText();
+          const { sanitized, regions } = extractJsPragmaRegions(text);
+          virtualContent.setContent(sanitized);
+          const virtualDoc = await vscode.workspace.openTextDocument(XSJS_DELEGATE_URI);
+          const edits = await vscode.commands.executeCommand<vscode.TextEdit[]>(
+            'vscode.executeFormatDocumentProvider',
+            virtualDoc.uri,
+            options
+          );
+          if (!edits || edits.length === 0) return [];
+          const formattedSanitized = applyOffsetEdits(
+            sanitized,
+            edits.map((e) => ({
+              startOffset: virtualDoc.offsetAt(e.range.start),
+              endOffset: virtualDoc.offsetAt(e.range.end),
+              newText: e.newText,
+            }))
+          );
+          const finalText = restoreJsPragmaRegions(formattedSanitized, regions);
+          return finalText === text ? [] : [vscode.TextEdit.replace(fullRange(document), finalText)];
+        })
+      );
+    },
+
+    provideDocumentRangeFormattingEdits(
+      document: vscode.TextDocument,
+      range: vscode.Range,
+      options: vscode.FormattingOptions
+    ): Promise<vscode.TextEdit[]> {
+      const raw = readSettings(document);
+      if (raw.enable === false) return Promise.resolve([]);
+      return runSerialized(() =>
+        safeAsync(async () => {
+          const text = document.getText();
+          const { regions } = extractJsPragmaRegions(text);
+          if (regions.size > 0) {
+            // Avoid corrupting off-pragma regions during partial JS range edits
+            return [];
+          }
+          virtualContent.setContent(text);
+          const virtualDoc = await vscode.workspace.openTextDocument(XSJS_DELEGATE_URI);
+          const edits = await vscode.commands.executeCommand<vscode.TextEdit[]>(
+            'vscode.executeFormatRangeProvider',
+            virtualDoc.uri,
+            range,
+            options
+          );
+          return edits ?? [];
+        })
+      );
+    },
+  };
+}
+
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel('SAP HANA SQL');
-  const selector: vscode.DocumentFilter[] = SQL_LANGUAGES.map((language) => ({ language }));
+  const xsjsVirtual = new XsjsVirtualContentProvider();
+  const xsjsProvider = createXsjsProvider(xsjsVirtual);
+
+  const documentSelector: vscode.DocumentFilter[] = ARTIFACT_FORMATTER_LANGUAGES.map((language) => ({ language }));
+  const rangeSelector: vscode.DocumentFilter[] = SQL_LANGUAGES.map((language) => ({ language }));
+  const xsjsSelector: vscode.DocumentFilter[] = XSJS_LANGUAGES.map((language) => ({ language }));
+
   context.subscriptions.push(
     output,
-    vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
-    vscode.languages.registerDocumentRangeFormattingEditProvider(selector, provider),
+    xsjsVirtual,
+    vscode.workspace.registerTextDocumentContentProvider(XSJS_SCHEME, xsjsVirtual),
+    vscode.languages.registerDocumentFormattingEditProvider(documentSelector, provider),
+    vscode.languages.registerDocumentRangeFormattingEditProvider(rangeSelector, provider),
+    vscode.languages.registerDocumentFormattingEditProvider(xsjsSelector, xsjsProvider),
+    vscode.languages.registerDocumentRangeFormattingEditProvider(xsjsSelector, xsjsProvider),
     vscode.commands.registerCommand('hanasql.openFormatterSettings', () =>
       vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql.format')
     )
