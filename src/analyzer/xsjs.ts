@@ -958,6 +958,15 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
       continue;
     }
 
+    // 3-character operators (`===`, `!==`, `>>>`) before 2-char slice
+    const three = text.slice(i, i + 3);
+    if (three === '===' || three === '!==' || three === '>>>') {
+      pushToken('op', i, i + 3);
+      i += 3;
+      canStartRegex = true;
+      continue;
+    }
+
     // Increment / decrement operators keep postfix `canStartRegex = false`
     const two = text.slice(i, i + 2);
     if (two === '++' || two === '--') {
@@ -1021,11 +1030,12 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
     });
   }
 
-  // Stop keyword/comma checks if an unclosed string/comment/template swallowed downstream code
+  // Stop keyword/comma/operator checks if an unclosed string/comment/template swallowed downstream code
   const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-030');
   if (!hasLexicalSwallow) {
     checkJsKeywordTypos(tokens, diagnostics);
     checkJsMissingCommas(tokens, delimResult.unclosedStarts, delimResult.unmatchedCloseStarts, diagnostics);
+    checkJsExpressionOperators(tokens, delimResult.unclosedStarts, delimResult.unmatchedCloseStarts, diagnostics);
   }
 
   return diagnostics;
@@ -1135,9 +1145,89 @@ const JS_OPERAND_PREFIX_WORDS = new Set<string>([
   'class',
   'async',
   'else',
+  'var',
+  'let',
+  'const',
+  'get',
+  'set',
+  'static',
+  'import',
+  'export',
+  'from',
+  'as',
+  'default',
+  'do',
+  'try',
 ]);
 
-const JS_OPERAND_INFIX_WORDS = new Set<string>(['in', 'instanceof', 'of']);
+const JS_OPERAND_INFIX_WORDS = new Set<string>(['in', 'instanceof', 'of', 'as', 'from']);
+const JS_EXPR_PAREN_KEYWORDS = new Set<string>([
+  'if',
+  'while',
+  'switch',
+  'with',
+  'return',
+  'throw',
+  'typeof',
+  'delete',
+  'void',
+  'await',
+  'yield',
+  'case',
+  'else',
+]);
+const JS_BINARY_ONLY_OPS = new Set<string>([
+  '*',
+  '/',
+  '%',
+  '===',
+  '!==',
+  '==',
+  '!=',
+  '<=',
+  '>=',
+  '<',
+  '>',
+  '&&',
+  '||',
+  '=',
+  '+=',
+  '-=',
+  '*=',
+  '/=',
+  '%=',
+]);
+
+type JsContainerKind = 'callParen' | 'exprParen' | 'forParen' | 'bracket' | 'brace';
+
+function classifyJsParenContainer(prev: JsSyntaxToken | null, prevPrev: JsSyntaxToken | null): JsContainerKind {
+  if (!prev) return 'exprParen';
+  if (prev.text === 'for') return 'forParen';
+  if (prev.kind === 'ident') {
+    if (JS_EXPR_PAREN_KEYWORDS.has(prev.text)) return 'exprParen';
+    // `function (...)` / `function name(...)` / `fn(...)`
+    return 'callParen';
+  }
+  if (prev.text === ')' || prev.text === ']') return 'callParen';
+  // Method definition `{ fn(...) {} }` -> `prevPrev` is `async`/`get`/`set` handled above via ident
+  void prevPrev;
+  return 'exprParen';
+}
+
+function isJsOperandEnd(tok: JsSyntaxToken): boolean {
+  return (
+    tok.kind === 'literal' ||
+    tok.text === ')' ||
+    tok.text === ']' ||
+    tok.text === '++' ||
+    tok.text === '--' ||
+    (tok.kind === 'ident' && !JS_OPERAND_PREFIX_WORDS.has(tok.text))
+  );
+}
+
+function isJsOperandStart(tok: JsSyntaxToken): boolean {
+  return tok.kind === 'literal' || (tok.kind === 'ident' && !JS_OPERAND_INFIX_WORDS.has(tok.text));
+}
 
 function checkJsMissingCommas(
   tokens: readonly JsSyntaxToken[],
@@ -1145,16 +1235,16 @@ function checkJsMissingCommas(
   unmatchedCloseStarts: ReadonlySet<number>,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
-  type ContainerKind = 'paren' | 'forParen' | 'bracket' | 'brace';
-  const stack: ContainerKind[] = [];
+  const stack: JsContainerKind[] = [];
 
   for (let i = 0; i < tokens.length; i++) {
     const tok = tokens[i];
     const prev = i > 0 ? tokens[i - 1] : null;
+    const prevPrev = i > 1 ? tokens[i - 2] : null;
 
     if (tok.text === '(' || tok.text === '[' || tok.text === '{') {
       if (unclosedStarts.has(tok.start)) continue;
-      if (tok.text === '(') stack.push(prev?.text === 'for' ? 'forParen' : 'paren');
+      if (tok.text === '(') stack.push(classifyJsParenContainer(prev, prevPrev));
       else if (tok.text === '[') stack.push('bracket');
       else stack.push('brace');
       continue;
@@ -1166,22 +1256,9 @@ function checkJsMissingCommas(
     }
 
     const mode = stack[stack.length - 1];
-    if ((mode !== 'paren' && mode !== 'bracket') || !prev) continue;
+    if ((mode !== 'callParen' && mode !== 'bracket') || !prev) continue;
 
-    const prevEndedOperand =
-      prev.kind === 'literal' ||
-      prev.text === ')' ||
-      prev.text === ']' ||
-      prev.text === '}' ||
-      prev.text === '++' ||
-      prev.text === '--' ||
-      (prev.kind === 'ident' && !JS_OPERAND_PREFIX_WORDS.has(prev.text));
-
-    const currStartsOperand =
-      tok.kind === 'literal' ||
-      (tok.kind === 'ident' && !JS_OPERAND_INFIX_WORDS.has(tok.text));
-
-    if (prevEndedOperand && currStartsOperand) {
+    if (isJsOperandEnd(prev) && isJsOperandStart(tok)) {
       diagnostics.push({
         ruleId: 'HANA-SYN-033',
         category: 'syntax',
@@ -1198,6 +1275,83 @@ function checkJsMissingCommas(
           },
         ],
       });
+    }
+  }
+}
+
+/**
+ * Validates JS expression operators (`HANA-SYN-034`):
+ * - Dangling binary/arithmetic operators before `;`, `)`, `]`, `}`, or `,` (`var x = 1 + ;`, `if (a >= )`).
+ * - Consecutive binary-only operators (`if (a >= = b)`, `x * / y`).
+ * - Same-line missing binary operators between adjacent operands outside `callParen`/`bracket`
+ *   lists (`var total = price tax;`, `if (a b)`).
+ */
+function checkJsExpressionOperators(
+  tokens: readonly JsSyntaxToken[],
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const stack: JsContainerKind[] = [];
+
+  const pushOpErr = (tok: JsSyntaxToken, message: string): void => {
+    if (diagnostics.some((d) => d.ruleId === 'HANA-SYN-034' && d.start === tok.start)) return;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-034',
+      category: 'syntax',
+      severity: 'error',
+      message,
+      start: tok.start,
+      end: tok.end,
+      fixes: [],
+    });
+  };
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const prev = i > 0 ? tokens[i - 1] : null;
+    const prevPrev = i > 1 ? tokens[i - 2] : null;
+    const next = i + 1 < tokens.length ? tokens[i + 1] : null;
+
+    if (tok.text === '(' || tok.text === '[' || tok.text === '{') {
+      if (unclosedStarts.has(tok.start)) continue;
+      if (tok.text === '(') stack.push(classifyJsParenContainer(prev, prevPrev));
+      else if (tok.text === '[') stack.push('bracket');
+      else stack.push('brace');
+      continue;
+    }
+    if (tok.text === ')' || tok.text === ']' || tok.text === '}') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
+      stack.pop();
+      continue;
+    }
+
+    // 1. Dangling binary or `+`/`-` operator right before `;`, `)`, `]`, `}`, `,`
+    if (tok.kind === 'op' && (JS_BINARY_ONLY_OPS.has(tok.text) || tok.text === '+' || tok.text === '-')) {
+      if (next && [';', ')', ']', '}', ','].includes(next.text)) {
+        pushOpErr(tok, `Dangling operator '${tok.text}' before '${next.text}'.`);
+        continue;
+      }
+      // 2. Consecutive binary-only operators (`a >= = b`, `a * / b`)
+      if (JS_BINARY_ONLY_OPS.has(tok.text) && next && next.kind === 'op' && JS_BINARY_ONLY_OPS.has(next.text)) {
+        pushOpErr(next, `Unexpected operator '${next.text}' after '${tok.text}'.`);
+        continue;
+      }
+    }
+
+    // 3. Same-line missing operator between adjacent operands in expression contexts
+    // (Skip `callParen` and `bracket` where `HANA-SYN-033` already suggests inserting `,`)
+    const mode = stack[stack.length - 1];
+    if (mode === 'callParen' || mode === 'bracket' || !prev || tok.nlBefore > 0) continue;
+    // Do not flag `a) b` or `] b` across ASI boundaries or `function f() {}` / `if (c) stmt`
+    if (prev.text === ')' || prev.text === ']') continue;
+    // Do not flag `x.if` or keyword property names or `{ async foo() }` / `method() {}`
+    if (prev.kind === 'ident' && prevPrev?.text === '.') continue;
+    if (tok.kind === 'ident' && next?.text === '(' && mode === 'brace' && prevPrev?.text !== '=') continue;
+    if (next?.text === ':') continue; // ternary or object key
+
+    if (isJsOperandEnd(prev) && isJsOperandStart(tok)) {
+      pushOpErr(tok, `Missing operator between '${prev.text}' and '${tok.text}'.`);
     }
   }
 }
