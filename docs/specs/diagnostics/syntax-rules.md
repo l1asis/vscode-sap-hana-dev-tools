@@ -27,10 +27,12 @@
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
 | `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header keyword (e.g., `CREATE FUNC`, root `FUNC`, `PROC`, `ENTIY`) with QuickFix |
-| `HANA-SYN-022` | `error` | `syntax` | Classic KV (`.hdbtable`, `.hdbview`, `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.hdbprocedure` KV, etc.) | `[XSC]` | Malformed Classic Key-Value assignment (missing `=`, missing RHS value, or dangling key at top/block level) |
+| `HANA-SYN-022` | `error` | `syntax` | Classic KV (`.hdbtable`, `.hdbview`, `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.hdbprocedure` KV, etc.) | `[XSC]` | Malformed Classic Key-Value assignment (missing `=`, missing RHS value, or missing `,` in `[ ... ]` array) |
+| `HANA-SYN-023` | `error` | `syntax` | SQL, SQLScript, HDI DDL, Classic KV (`[...]`), `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing `,` separator between parameters, table columns, `SELECT` list items, function arguments, or array elements (with QuickFix) |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
+| `HANA-SYN-033` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Missing `,` separator in JS `[...]` array literal or call argument list `(a b)` (with QuickFix) |
 
 ---
 
@@ -42,9 +44,10 @@
 - **Lexical Trigger:**
   - Single-quoted string `'...'` reaching EOF without a closing unescaped `'`.
     - Escaping rule: in SQL/SQLScript/CDS/XSODATA, `''` (and `\'` when applicable in KV/CDS) escapes an interior quote; multiline `'...'` strings are valid in SQL/SQLScript/HDI DDL. In Classic KV strings inside `schemaName = "..."`, `\"` and `\\` are backslash escapes.
-  - Double-quoted identifier or KV string `"..."` reaching EOF without a closing unescaped `"` (or newline inside single-line quoted identifiers unless escaped; NOTE: SQLScript/SQL supports `"..."` with `""` escape, flagged at EOF if unclosed).
+  - Double-quoted identifier `"..."` reaching unescaped newline (`\r`/`\n`) or EOF without a closing `"` in SQL/SQLScript, CDS, `.xsodata`, and Classic `.hdbrole` (Classic KV `"..."` retains multiline allowance for embedded `query`/`sql` SQL blocks).
+    - **Same-Line Quote-Chain Localization:** When a missing opening or closing `"` causes parity inversion with a sibling quoted identifier on the same line (e.g., `"NAME AS "ITEM_NAME",` or `NAME" AS "ITEM_NAME",`), the tokenizer stops at EOL so downstream lines stay intact, and diagnostic span resolution walks backward across the zero-whitespace word/identifier chain (`wsBefore === false`) on that line to highlight the exact broken identifier token instead of blaming a distant identifier lines below.
   - CDS raw SQL expression bracket `![...]` reaching EOF without matching `]`.
-- **Diagnostic Span & Message:** Spans the opening token / unclosed literal head; message: `"Unterminated string literal."`, `"Unterminated quoted identifier."`, or `"Unterminated CDS expression literal '![...]'."`
+- **Diagnostic Span & Message:** Spans the broken identifier / unclosed token head on the offending line; message: `"Unterminated string literal."`, `"Unterminated quoted identifier."`, or `"Unterminated CDS expression literal '![...]'."`
 - **Platform Notes:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` Apply identically; `.hdbmigrationtable` splits sections at `^\s*==\s*(?:version|dev-version|migration)\s*=` before scanning each SQL section independently.
 
 ### `HANA-SYN-002` — Unterminated Block Comment
@@ -70,7 +73,7 @@
 - **Severity:** `error`
 - **Target Extensions:** `.xsaccess`, `.xsapp`, `.xsprivileges`, `.xssqlcc`, `.xsjsjob`, `.hdbgrants`, `.hdbsynonym`, `.hdbsynonymconfig`, `.hdblogicalschema`, `.hdbanalyticprivilege`, `.hdbconfig`, `.hdbhadoopmrjob`, `.hdbflowgraph`, `.hdbreptask`, `.hdbtask`, `.hdbtaskplan`, `.hdbsysauth`, `.hdbroleconfig`, `.hdbsearchruleset`, `.hdbcollection`, `.hdbcollectionindex`, `.hdbstatistics`, `.hdbresultcache`, `.hdbgraphworkspace`, `.hdbremote`, `.hdbvirtualtableconfig`, `.hdbtabledata`, `.hdblogicalschema`, `.hdbmigrationconfig`, `.hdbapplicationtime`, `.hdbsystemversioning`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig`, `.hdbschedulerjob`, `.hdbprojectionviewconfig`, and HDI JSON `.hdbrole` (detected via leading `{`).
 - **AST / Parser Trigger:** `parseJsonAstWithErrors(text, options)` records structured recovery errors without aborting the partial AST needed for `HANA-SEC-*`:
-  - Empty / comment-only document (no root JSON value) — wait: `.xsapp` MUST allow `{}` (empty object) and optionally empty files? Note: standard valid `.xsapp` is `{}`; flag empty non-whitespace-only or completely empty JSON artifacts ONLY if invalid tokens exist? Wait: an empty `.xsapp` (`""` or whitespace-only `.xsapp`) IS valid in SAP HANA XSC (`samples/` and official XSC docs note empty `.xsapp` is a valid marker file!). Therefore `.xsapp` allows empty/whitespace-only content without emitting `HANA-SYN-010`.
+  - Empty / comment-only document (no root JSON value). Note: `.xsapp` marker files permit empty or whitespace-only content without emitting `HANA-SYN-010`.
   - Unterminated string `"..."` (reaches EOF or unescaped newline before closing `"`).
   - Unterminated `/* ... */` block comment.
   - Missing `:` after object property key.
@@ -95,12 +98,12 @@
 - **Target Extensions:** `.sql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable` (per SQL section), `.procedure`, `.sqlscript`, `.hdbscalarfunction`.
 - **AST / Token Trigger:** Tracks SQLScript compound control blocks across uncollapsed SQL tokens (ignoring string/quoted-ident/comment tokens and skipping non-SQL bodies declared with `LANGUAGE R`, `LANGUAGE RLANG`, or `LANGUAGE GRAPH`):
   - **Push:**
-    - `BEGIN` (not preceded by `ATOMIC`? Note `BEGIN [SEQUENTIAL EXECUTION | PARALLEL EXECUTION | AUTONOMOUS TRANSACTION]`, all closed by `END`) — pushes `{ kind: 'BEGIN', start, end }`. Note: `EXEC 'BEGIN ... END'` is inside a string literal and automatically ignored; `ALTER SYSTEM ...` has no bare `BEGIN`.
-    - `IF` (only when inside a SQLScript body / block stack non-empty, or at statement start in procedure/function/trigger; avoid pushing `IF` inside expressions or DDL phrases like `IF EXISTS` / `IF NOT EXISTS`! Specifically: do NOT treat `DROP ... IF EXISTS`, `CREATE ... IF NOT EXISTS`, `EXISTS`, `NULLIF`, or `IF` immediately preceded by `END` (`END IF`) as block openers! Require `IF` inside a `BEGIN` block OR not preceded by `END` / DDL `CREATE`/`DROP`/`ALTER`/`TRUNCATE` and not followed by `EXISTS` or `(` — note HANA SQLScript `IF <cond> THEN` has `THEN` before next `;` or `END`!) — **Critical Guard:** SQL uses `IF EXISTS` / `IF NOT EXISTS` and scalar function `IF(cond, a, b)` (wait: scalar `IF(...)` does not have `END IF`! Wait: let's verify! In SAP HANA SQL, does `IF` function exist or only `CASE` / `IIF`? Even if someone writes `IF(...)`, `IF` followed immediately by `(` with no `THEN` is NOT a SQLScript `IF ... THEN ... END IF` block unless `THEN` appears at paren-depth 0!). Checking that a block-opening `IF` has a matching `THEN` before `;` (at paren depth 0) guarantees **zero false positives** on `IF EXISTS`, `DROP IF EXISTS`, or hypothetical `IF(...)` calls!
-    - `FOR` (statement start when followed by `<ident> IN` or `DECLARE` cursor; NOT `CREATE ... FOR`, `SELECT ... FOR UPDATE`, `LOCK TABLE ... IN ... MODE`, `WAIT FOR`, `END FOR`, `HANDLER FOR`, `TRIGGER ... FOR EACH ROW`! Specifically: push `FOR` ONLY when inside a compound body / statement start, NOT preceded by `END` / `HANDLER` / `LOCK` / `WAIT` / `SELECT` clause / `TRIGGER`, and preceded by `;` / `BEGIN` / `THEN` / `ELSE` / `ELSEIF` / `DO` / comment or start-of-body, AND followed before `;` by `DO` at paren depth 0!). Checking `DO` before `;` and proper preceding delimiter (`;`, `BEGIN`, `THEN`, `ELSE`, `DO`, `:`, statement start) guarantees 100% precision on `FOR ... DO ... END FOR` loops vs `SELECT ... FOR UPDATE` or `HANDLER FOR SQLEXCEPTION` or `GRANT ... ON ... FOR`!
-    - `WHILE` (statement start inside body, preceded by statement boundary / `BEGIN` / `THEN` / `ELSE` / `DO` and not `END`, and followed by `DO` before `;`) -> closed by `END WHILE`.
-    - `LOOP` (statement start inside body, not preceded by `END`) -> closed by `END LOOP`.
-    - `CASE` (expression or statement: whenever keyword `CASE` is encountered not immediately preceded by `END`) -> pushes `{ kind: 'CASE' }` closed by bare `END` (or `END CASE` in SQLScript statement form; note SQL expression `CASE ... END` closes with bare `END`, while statement `CASE ... END CASE` closes with `END CASE`). Wait: handle both cleanly! If `END` is followed by `CASE`, pop `'CASE'`; if `END` is NOT followed by `IF`/`FOR`/`LOOP`/`WHILE`/`CASE`, pop either `'CASE'` or `'BEGIN'` (whichever is on top!).
+    - `BEGIN` (`BEGIN [SEQUENTIAL EXECUTION | PARALLEL EXECUTION | AUTONOMOUS TRANSACTION]`, all closed by `END`) — pushes `{ kind: 'BEGIN', start, end }`. Note: dynamic SQL `EXEC 'BEGIN ... END'` sits inside a string literal and is ignored.
+    - `IF` (inside a compound body or at statement start, not preceded by `END` and not followed by `EXISTS`/`NOT EXISTS`, and containing `THEN` at `parenDepth === 0` before `;`/`BEGIN`/`END`) — pushes `{ kind: 'IF' }`. Guarantees zero false positives on `DROP TABLE IF EXISTS`, `CREATE TABLE IF NOT EXISTS`, or `ELSEIF` clauses.
+    - `FOR` (statement start preceded by `;`/`BEGIN`/`THEN`/`ELSE`/`ELSEIF`/`DO`/`LOOP`/`:` and not `HANDLER` or `END`, containing `DO` at `parenDepth === 0` before `;`/`BEGIN`/`END`) — pushes `{ kind: 'FOR' }`. Excludes `DECLARE EXIT HANDLER FOR SQLEXCEPTION`, `SELECT ... FOR UPDATE`, `DECLARE CURSOR ... FOR SELECT`, and `TRIGGER ... FOR EACH ROW`.
+    - `WHILE` (statement start with `DO` before `;`) -> closed by `END WHILE`.
+    - `LOOP` (statement start inside compound body, not preceded by `END`) -> closed by `END LOOP`.
+    - `CASE` (expression or statement not preceded by `END`) -> pushes `{ kind: 'CASE' }`, closed cleanly by either `END CASE` or bare `END`.
   - **Pop:**
     - `END IF` pops top `'IF'` (error if top is not `'IF'`).
     - `END FOR` pops top `'FOR'` (error if top is not `'FOR'`).
@@ -129,11 +132,24 @@
 ### `HANA-SYN-022` — Malformed Classic Key-Value Artifact
 - **Severity:** `error`
 - **Target Extensions:** Classic XSC KV formats (`hdbtable`, `hdbview`, `hdbschema`, `hdbsequence`, `hdbstructure`, `hdbti`, `hdbtid`, `hdbtim`, `xshttpdest`, Classic KV `hdbprocedure`).
-- **Lexical / Structural Trigger:** At top-level and inside `{ ... }` / `[ ... ]` KV blocks (excluding SQL body inside `/* ... */` or quoted SQL string of `.hdbprocedure`? Wait — Classic KV `.hdbprocedure` assigns `sql = "..."` so keys are still KV!):
-  - Statement/entry inside `{ ... }` or top-level (for files using KV syntax, detected by presence of `=` KV pairs or extension unconditionally KV like `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.xshttpdest`) containing a key identifier followed directly by end-of-line/EOF/`}` without `=` or `:` (in `.hdbti` `keys = ["COL": "VAL"]` colons are valid KV element separators inside `[...]`, whereas top-level entries use `=`!).
-  - Assignment key `foo =` immediately followed by `;`, `}`, `]`, or EOF without a RHS value.
+- **Lexical / Structural Trigger:** At top-level and inside `{ ... }` / `[ ... ]` KV blocks (excluding Classic KV string/comment payloads):
+  - Statement/entry inside `{ ... }` or top-level (for Classic KV files) containing a key identifier not followed by `=` (note `.hdbti` `keys = ["COL": "VAL"]` uses `:` inside `[...]`, whereas object entries use `=`).
+  - Assignment key `foo =` immediately followed by `;`, `}`, `]`, another `<key> =` assignment, or EOF without a RHS value.
+  - Adjacent `[ ... ]` array elements without a separating `,` (also emitted as `HANA-SYN-023` when applicable).
 - **Tolerances (`[XSC]`):**
   - `.hdbview` explicitly permits omitting trailing `;` after the final `public = false` property (`samples/xs-classic/MYVIEW.hdbview`, `samples/format-demos/classic-view.hdbview`) and comma-separated quoted lists after `=`. Never flag missing `;` in KV files!
+
+### `HANA-SYN-023` — Missing Comma Separator (SQL / SQLScript / DDL / KV Arrays)
+- **Severity:** `error`
+- **Target Extensions:** SQL, SQLScript, HDI DDL (`.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtable`, `.hdbview`, `.hdbtabletype`, `.hdbindex`, etc.), `.hdbmigrationtable`, Classic KV `[ ... ]` arrays.
+- **AST / Token Trigger:** Emitted cleanly inside unambiguous comma-separated lists (when not already corrupted by an unclosed quote/comment on the same region):
+  1. **Procedure / Function Parameters & Table Columns:** Inside `( ... )` parameter signatures (`PROCEDURE`, `FUNCTION`, `DO`), `RETURNS TABLE (...)`, `CREATE ... TABLE (...)`, `COLUMN TABLE (...)`, `ROW TABLE (...)`, and `CREATE TYPE ... AS TABLE (...)` when a subsequent `IN`/`OUT`/`INOUT` mode or `<columnName> <type>` follows without `,`.
+  2. **`SELECT` Projection Lists:** Between `SELECT` and its clause terminator (`FROM`, `INTO`, `BULK`, `WHERE`, `GROUP`, `HAVING`, `ORDER`, `UNION`, `INTERSECT`, `EXCEPT`, `MINUS`, `WINDOW`, `LIMIT`, `OFFSET`, `FOR`, `WITH`, `OPTION`, `;`, `)`):
+     - After explicit `AS <alias>` when the next token is neither `,` nor a clause terminator.
+     - After `<expr> <implicitAlias>` when a 3rd adjacent item follows, or when `<implicitAlias>` is immediately followed by an expression continuation operator (`*`, `+`, `-`, `/`, `||`, `.`, `(`, `=`), or when a 2nd adjacent token is a non-alias expression start (`literal`, `:var`, `::sysvar`, `(`, `?`). Preserves valid SQL implicit column aliases (`SELECT col alias FROM t`), typed literals (`DATE '...'`, `INTERVAL '1' DAY`), `OVER (...)`, `FILTER (...)`, and `WITHIN GROUP (...)`.
+  3. **Function Call Arguments, `VALUES`, `IN`, and `INSERT` Column Lists:** Adjacent operands without operators or `,` inside standard function calls `fn(a b)`, `VALUES (1 2)`, `IN (1 2)`, and `INSERT INTO tbl (a b)` (excluding special-syntax calls such as `CAST`, `EXTRACT`, `SUBSTRING`, `TRIM`, `OVER`, type dimensions except adjacent literals like `DECIMAL(3 2)`).
+  4. **Classic KV Array Lists:** Adjacent elements inside `[ ... ]` (`.hdbtable`, `.hdbti`, etc.) lacking `,` (respecting `.hdbti` `["K":"V"]` colon pairs).
+- **QuickFix (`Insert ','`):** Inserts `,` immediately after the preceding element token.
 
 ---
 
@@ -164,7 +180,14 @@
     - an identifier + `(` (without `.` / `=` / `:` in between), where `W` is within edit distance `<= 2` of `function` (e.g., `FUNC handleRequest()`, `functon process()`, `funtion helper()`), **OR**
     - `(` when `W` matches a common typo of `if`, `for`, `while`, `switch`, `catch` (only clear edit-distance-1/2 typos like `whlie`, `swich`, `ctach`, NEVER short valid 2-3 letter names that aren't control-flow keywords! Require minimum token length `>= 4` for edit distance matching, plus exact known shorthand typo `FUNC` / `func` before `<ident>(` -> `function`!), **OR**
     - a `{` block immediately after `W` where `W` is a typo of `else` (`esle {`, `els {`), `try` (`tyr {`), `finally` (`finaly {`, `finallly {`), **OR**
-    - statement-start typo `retern`, `retrun`, `thrw`, `thro`, `var`? No, avoid 3-letter words like `var`/`try`/`new` unless specifically unambiguous like `tyr {` or `retern <expr>;` (`retern`, `retrun` -> `return`).
+    - statement-start typo of `return` or `throw` (`retern`, `retrun`, `thrw`, `thro`) when followed by a return/throw operand or `;` (never when followed by assignment, postfix `++`/`--`, or indexing `[`).
 - **QuickFix (`Replace with '<keyword>'`):** Replaces the misspelled token with the corrected lowercase JS keyword.
   - **Before:** `FUNC handleGet(req) { return $.net.http.OK; }`
   - **After:** `function handleGet(req) { return $.net.http.OK; }`
+
+### `HANA-SYN-033` — Missing Comma Separator in JS Lists (`.xsjs` / `.xsjslib`)
+- **Severity:** `error`
+- **Target Extensions:** `.xsjs`, `.xsjslib`
+- **Platform Scope:** `[XSC]` `[XSA]`
+- **AST / Token Trigger:** Adjacent value operands without a separating operator, `;`, or `,` inside `[ ... ]` array literals or non-`for` call/grouping parentheses `( ... )` (e.g. `JSON.stringify(a b)`, `[1 2]`).
+- **QuickFix (`Insert ','`):** Inserts `,` after the preceding operand token.
