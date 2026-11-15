@@ -1,3 +1,5 @@
+import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
+
 export interface JsonSpan {
   readonly start: number;
   readonly end: number;
@@ -73,6 +75,48 @@ export function parseJsonAst(text: string): JsonAstNode | null {
   return parseJsonAstWithErrors(text).ast;
 }
 
+function scanJsonContainerDelims(text: string, allowComments: boolean): DelimTokenInput[] {
+  const out: DelimTokenInput[] = [];
+  const n = text.length;
+  let i = 0;
+  while (i < n) {
+    const ch = text[i];
+    if (ch === '"' || ch === "'") {
+      const q = ch;
+      i++;
+      while (i < n) {
+        if (text[i] === '\\') {
+          i += 2;
+          continue;
+        }
+        if (text[i] === q) {
+          i++;
+          break;
+        }
+        if (text[i] === '\n' || text[i] === '\r') break;
+        i++;
+      }
+      continue;
+    }
+    if (allowComments && ch === '/' && text[i + 1] === '/') {
+      i += 2;
+      while (i < n && text[i] !== '\n') i++;
+      continue;
+    }
+    if (allowComments && ch === '/' && text[i + 1] === '*') {
+      i += 2;
+      while (i + 1 < n && !(text[i] === '*' && text[i + 1] === '/')) i++;
+      i = Math.min(n, i + 2);
+      continue;
+    }
+    if (ch === '{' || ch === '}' || ch === '[' || ch === ']') {
+      out.push({ ch, start: i, end: i + 1 });
+    }
+    i++;
+  }
+  return out;
+}
+
 /**
  * Parses JSON / JSONC while collecting syntax diagnostics (`HANA-SYN-010`, `HANA-SYN-011`)
  * and preserving a best-effort recovery AST for downstream semantic checks.
@@ -81,6 +125,9 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
   const allowMissingCommas = options.allowMissingCommas ?? false;
   const allowEmpty = options.allowEmpty ?? false;
   const allowComments = options.allowComments ?? true;
+  const delimRecovery = analyzeDelimiters(text, scanJsonContainerDelims(text, allowComments), {
+    fenceSemicolon: 'none',
+  });
 
   let i = 0;
   const n = text.length;
@@ -269,6 +316,7 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
 
   function parseArray(): JsonArrayNode {
     const start = i;
+    const stopBefore = delimRecovery.unclosedStarts.get(start);
     i++; // '['
     const items: JsonAstNode[] = [];
     while (i < n) {
@@ -277,12 +325,23 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
         pushError('unclosed-container', "Unclosed JSON array '['.", start, start + 1);
         return { kind: 'array', items, start, end: i };
       }
-      if (text[i] === ']') {
-        i++;
-        return { kind: 'array', items, start, end: i };
-      }
       if (text[i] === '}') {
         pushError('unexpected-token', "Unexpected '}' inside JSON array; expected ']'.", i, i + 1);
+        return { kind: 'array', items, start, end: i };
+      }
+      if (stopBefore !== undefined && i >= stopBefore) {
+        pushError('unclosed-container', "Unclosed JSON array '['.", start, start + 1);
+        return { kind: 'array', items, start, end: i };
+      }
+      if (text[i] === ']') {
+        if (delimRecovery.unmatchedCloseStarts.has(i)) {
+          pushError('unexpected-token', "Unmatched closing ']' in JSON array.", i, i + 1);
+          i++;
+          skipTrivia();
+          if (text[i] === ',') i++;
+          continue;
+        }
+        i++;
         return { kind: 'array', items, start, end: i };
       }
       const item = parseValue();
@@ -318,12 +377,23 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
         }
         continue;
       }
-      if (text[i] === ']') {
-        i++;
-        return { kind: 'array', items, start, end: i };
-      }
       if (text[i] === '}') {
         pushError('unexpected-token', "Unexpected '}' inside JSON array; expected ']'.", i, i + 1);
+        return { kind: 'array', items, start, end: i };
+      }
+      if (stopBefore !== undefined && i >= stopBefore) {
+        pushError('unclosed-container', "Unclosed JSON array '['.", start, start + 1);
+        return { kind: 'array', items, start, end: i };
+      }
+      if (text[i] === ']') {
+        if (delimRecovery.unmatchedCloseStarts.has(i)) {
+          pushError('unexpected-token', "Unmatched closing ']' in JSON array.", i, i + 1);
+          i++;
+          skipTrivia();
+          if (text[i] === ',') i++;
+          continue;
+        }
+        i++;
         return { kind: 'array', items, start, end: i };
       }
       if (!allowMissingCommas) {
@@ -336,6 +406,7 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
 
   function parseObject(): JsonObjectNode {
     const start = i;
+    const stopBefore = delimRecovery.unclosedStarts.get(start);
     i++; // '{'
     const properties: JsonObjectProperty[] = [];
     while (i < n) {
@@ -344,12 +415,23 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
         pushError('unclosed-container', "Unclosed JSON object '{'.", start, start + 1);
         return { kind: 'object', properties, start, end: i };
       }
-      if (text[i] === '}') {
-        i++;
-        return { kind: 'object', properties, start, end: i };
-      }
       if (text[i] === ']') {
         pushError('unexpected-token', "Unexpected ']' inside JSON object; expected '}'.", i, i + 1);
+        return { kind: 'object', properties, start, end: i };
+      }
+      if (stopBefore !== undefined && i >= stopBefore) {
+        pushError('unclosed-container', "Unclosed JSON object '{'.", start, start + 1);
+        return { kind: 'object', properties, start, end: i };
+      }
+      if (text[i] === '}') {
+        if (delimRecovery.unmatchedCloseStarts.has(i)) {
+          pushError('unexpected-token', "Unmatched closing '}' in JSON object.", i, i + 1);
+          i++;
+          skipTrivia();
+          if (text[i] === ',') i++;
+          continue;
+        }
+        i++;
         return { kind: 'object', properties, start, end: i };
       }
 
@@ -450,12 +532,23 @@ export function parseJsonAstWithErrors(text: string, options: JsonParseOptions =
         }
         continue;
       }
-      if (text[i] === '}') {
-        i++;
-        return { kind: 'object', properties, start, end: i };
-      }
       if (text[i] === ']') {
         pushError('unexpected-token', "Unexpected ']' inside JSON object; expected '}'.", i, i + 1);
+        return { kind: 'object', properties, start, end: i };
+      }
+      if (stopBefore !== undefined && i >= stopBefore) {
+        pushError('unclosed-container', "Unclosed JSON object '{'.", start, start + 1);
+        return { kind: 'object', properties, start, end: i };
+      }
+      if (text[i] === '}') {
+        if (delimRecovery.unmatchedCloseStarts.has(i)) {
+          pushError('unexpected-token', "Unmatched closing '}' in JSON object.", i, i + 1);
+          i++;
+          skipTrivia();
+          if (text[i] === ',') i++;
+          continue;
+        }
+        i++;
         return { kind: 'object', properties, start, end: i };
       }
       if (!allowMissingCommas) {

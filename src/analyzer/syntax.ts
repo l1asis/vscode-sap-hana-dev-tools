@@ -1,6 +1,7 @@
 import { isKeyValueArtifact } from '../formatter/detect';
 import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } from '../formatter/dispatch';
 import { tokenize, type Token } from '../formatter/tokenizer';
+import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { parseJsonAstWithErrors } from './json-parser';
 import {
   filterSuppressedDiagnostics,
@@ -346,17 +347,30 @@ function makeReplaceFix(title: string, start: number, end: number, replacement: 
   };
 }
 
-function matchingCloser(opener: '(' | '[' | '{'): ')' | ']' | '}' {
-  if (opener === '(') return ')';
-  if (opener === '[') return ']';
-  return '}';
-}
+const SQL_TYPE_ARG_NAMES = new Set<string>([
+  'DECIMAL',
+  'DEC',
+  'NUMERIC',
+  'SMALLDECIMAL',
+  'VARCHAR',
+  'NVARCHAR',
+  'CHAR',
+  'NCHAR',
+  'BINARY',
+  'VARBINARY',
+  'ALPHANUM',
+  'SHORTTEXT',
+  'FLOAT',
+  'DOUBLE',
+  'TIME',
+  'TIMESTAMP',
+  'SECONDDATE',
+  'VECTOR',
+  'ST_GEOMETRY',
+  'ST_POINT',
+]);
 
-function matchingOpener(closer: ')' | ']' | '}'): '(' | '[' | '{' {
-  if (closer === ')') return '(';
-  if (closer === ']') return '[';
-  return '{';
-}
+const SQL_TYPE_ARG_UNITS = new Set<string>(['CHAR', 'CHARACTERS', 'BYTE', 'BYTES']);
 
 function isDoubledQuoteClosed(raw: string, quote: "'" | '"'): boolean {
   let k = 1;
@@ -507,13 +521,15 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     foreignBodyStart >= 0 ? allTokens.filter((t) => t.start < foreignBodyStart) : allTokens;
 
   // 1. Lexical checks: unterminated comments/strings/qidents (HANA-SYN-001, HANA-SYN-002) & delimiters (HANA-SYN-003)
-  const delimStack: Array<{ ch: '(' | '[' | '{'; start: number; end: number }> = [];
+  const delimInputs: DelimTokenInput[] = [];
   const lineStarts = getLineStartOffsets(slice);
   const brokenQidentLines = new Set<number>();
+  let prevNonCommentTok: Token | null = null;
   let hasEofSwallow = false;
 
   for (let idx = 0; idx < tokens.length; idx++) {
     const tok = tokens[idx];
+    if (tok.type === 'lineComment') continue;
     if (tok.type === 'blockComment') {
       if (tok.text.length < 4 || !tok.text.endsWith('*/')) {
         hasEofSwallow = true;
@@ -547,6 +563,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
           fixes: [],
         });
       }
+      prevNonCommentTok = tok;
       continue;
     }
 
@@ -565,56 +582,64 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
           fixes: [],
         });
       }
+      prevNonCommentTok = tok;
       continue;
     }
 
     if (tok.type === 'punct') {
       const ch = tok.text;
-      if (ch === '(' || ch === '[' || ch === '{') {
-        delimStack.push({ ch, start: tok.start, end: tok.end });
-      } else if (ch === ')' || ch === ']' || ch === '}') {
-        const expected = matchingOpener(ch);
-        const top = delimStack[delimStack.length - 1];
-        if (!top) {
-          diagnostics.push({
-            ruleId: 'HANA-SYN-003',
-            category: 'syntax',
-            severity: 'error',
-            message: `Unmatched closing delimiter '${ch}'.`,
-            start: baseOffset + tok.start,
-            end: baseOffset + tok.end,
-            fixes: [],
-          });
-        } else if (top.ch !== expected) {
-          diagnostics.push({
-            ruleId: 'HANA-SYN-003',
-            category: 'syntax',
-            severity: 'error',
-            message: `Unexpected closing delimiter '${ch}'. Expected '${matchingCloser(top.ch)}'.`,
-            start: baseOffset + tok.start,
-            end: baseOffset + tok.end,
-            fixes: [],
-          });
-          // Recover stack if an enclosing frame matches this closer
-          const matchIdx = findLastDelimIndex(delimStack, expected);
-          if (matchIdx >= 0) {
-            delimStack.length = matchIdx;
-          }
-        } else {
-          delimStack.pop();
-        }
+      if (ch === '(' || ch === '[' || ch === '{' || ch === ')' || ch === ']' || ch === '}' || ch === ';') {
+        const isTypeArgOpener =
+          ch === '(' &&
+          prevNonCommentTok?.type === 'word' &&
+          SQL_TYPE_ARG_NAMES.has(prevNonCommentTok.text.toUpperCase());
+        delimInputs.push({
+          ch,
+          start: tok.start,
+          end: tok.end,
+          tokenIdx: idx,
+          isTypeArgOpener,
+        });
       }
     }
+    prevNonCommentTok = tok;
   }
 
-  for (const unclosed of delimStack) {
+  const delimResult = analyzeDelimiters(slice, delimInputs, {
+    fenceSemicolon: 'all',
+    lineStarts,
+    spanPenalty: (open, close) => {
+      if (!open.isTypeArgOpener || open.tokenIdx === undefined || close.tokenIdx === undefined) return 0;
+      let innerDepth = 0;
+      for (let t = open.tokenIdx + 1; t < close.tokenIdx; t++) {
+        const inner = tokens[t];
+        if (inner.type === 'lineComment' || inner.type === 'blockComment') continue;
+        if (inner.text === '(') {
+          innerDepth++;
+          continue;
+        }
+        if (inner.text === ')') {
+          if (innerDepth > 0) innerDepth--;
+          continue;
+        }
+        if (innerDepth > 0) continue;
+        if (inner.type === 'qident' || inner.text === ';') return 500;
+        if (inner.type === 'word' && !SQL_TYPE_ARG_UNITS.has(inner.text.toUpperCase())) {
+          return 500;
+        }
+      }
+      return 0;
+    },
+  });
+
+  for (const d of delimResult.diagnostics) {
     diagnostics.push({
       ruleId: 'HANA-SYN-003',
       category: 'syntax',
       severity: 'error',
-      message: `Unclosed delimiter '${unclosed.ch}'.`,
-      start: baseOffset + unclosed.start,
-      end: baseOffset + unclosed.end,
+      message: d.message,
+      start: baseOffset + d.start,
+      end: baseOffset + d.end,
       fixes: [],
     });
   }
@@ -631,20 +656,27 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
 
   // 3. Compound block matching (HANA-SYN-020)
   if (checkBlocks && foreignBodyStart < 0) {
-    checkSqlScriptBlocks(codeTokens, baseOffset, diagnostics);
+    checkSqlScriptBlocks(
+      codeTokens,
+      baseOffset,
+      delimResult.unclosedStarts,
+      delimResult.unmatchedCloseStarts,
+      diagnostics
+    );
   }
 
   // 4. Missing comma separators (HANA-SYN-023)
-  checkSqlMissingCommas(codeTokens, baseOffset, lineStarts, brokenQidentLines, diagnostics);
+  checkSqlMissingCommas(
+    codeTokens,
+    baseOffset,
+    lineStarts,
+    brokenQidentLines,
+    delimResult.unclosedStarts,
+    delimResult.unmatchedCloseStarts,
+    diagnostics
+  );
 
   return diagnostics;
-}
-
-function findLastDelimIndex<T extends { ch: string }>(stack: readonly T[], target: string): number {
-  for (let i = stack.length - 1; i >= 0; i--) {
-    if (stack[i].ch === target) return i;
-  }
-  return -1;
 }
 
 function checkSqlHeaderTypos(
@@ -819,6 +851,8 @@ const COMPOUND_BOUNDARY_PREV = new Set([';', 'BEGIN', 'THEN', 'ELSE', 'ELSEIF', 
 function checkSqlScriptBlocks(
   codeTokens: readonly Token[],
   baseOffset: number,
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
   const stack: BlockFrame[] = [];
@@ -828,12 +862,16 @@ function checkSqlScriptBlocks(
 
   for (let i = 0; i < codeTokens.length; i++) {
     const tok = codeTokens[i];
+    if (tok.text === ';') {
+      parenDepth = 0;
+      continue;
+    }
     if (tok.text === '(') {
-      parenDepth++;
+      if (!unclosedStarts.has(tok.start)) parenDepth++;
       continue;
     }
     if (tok.text === ')') {
-      parenDepth = Math.max(0, parenDepth - 1);
+      if (!unmatchedCloseStarts.has(tok.start)) parenDepth = Math.max(0, parenDepth - 1);
       continue;
     }
     if (tok.type !== 'word') continue;
@@ -1470,6 +1508,8 @@ function checkSqlMissingCommas(
   baseOffset: number,
   lineStarts: readonly number[],
   brokenQidentLines: ReadonlySet<number>,
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
   const parenStack: DeclParenFrame[] = [];
@@ -1511,10 +1551,12 @@ function checkSqlMissingCommas(
     }
 
     if (tok.text === '[') {
+      if (unclosedStarts.has(tok.start)) continue;
       bracketDepth++;
       continue;
     }
     if (tok.text === ']') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
       bracketDepth = Math.max(0, bracketDepth - 1);
       if (bracketDepth === 0) {
         const tp = parenStack[parenStack.length - 1];
@@ -1535,6 +1577,7 @@ function checkSqlMissingCommas(
     if (bracketDepth > 0) continue;
 
     if (tok.text === '(') {
+      if (parenDepth > 0 && unclosedStarts.has(tok.start)) continue;
       const topParen = parenStack[parenStack.length - 1];
       const topSel = selectStack[selectStack.length - 1];
 
@@ -1586,6 +1629,7 @@ function checkSqlMissingCommas(
     }
 
     if (tok.text === ')') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
       // Close any SELECT opened at this paren depth
       while (selectStack.length > 0 && selectStack[selectStack.length - 1].depth >= parenDepth) {
         selectStack.pop();
@@ -1679,7 +1723,7 @@ function checkSqlMissingCommas(
             topParen.lastItemEnd = tok.end;
             continue;
           }
-          if (COLUMN_END_MODIFIERS.has(up)) {
+          if (COLUMN_END_MODIFIERS.has(up) || SQL_TYPE_ARG_UNITS.has(up)) {
             topParen.lastItemEnd = tok.end;
             continue;
           }
@@ -1912,7 +1956,7 @@ function scanNonSqlArtifacts(
 ): { tokens: NonSqlToken[]; diagnostics: AnalyzerDiagnostic[] } {
   const diagnostics: AnalyzerDiagnostic[] = [];
   const tokens: NonSqlToken[] = [];
-  const delimStack: Array<{ ch: '(' | '[' | '{'; start: number; end: number }> = [];
+  const delimInputs: DelimTokenInput[] = [];
   const n = text.length;
   let i = 0;
 
@@ -2047,42 +2091,8 @@ function scanNonSqlArtifacts(
     }
 
     // Delimiters
-    if (ch === '(' || ch === '[' || ch === '{') {
-      delimStack.push({ ch, start: i, end: i + 1 });
-      tokens.push({ kind: 'punct', text: ch, start: i, end: i + 1 });
-      i++;
-      continue;
-    }
-    if (ch === ')' || ch === ']' || ch === '}') {
-      const expected = matchingOpener(ch);
-      const top = delimStack[delimStack.length - 1];
-      if (!top) {
-        diagnostics.push({
-          ruleId: 'HANA-SYN-003',
-          category: 'syntax',
-          severity: 'error',
-          message: `Unmatched closing delimiter '${ch}'.`,
-          start: i,
-          end: i + 1,
-          fixes: [],
-        });
-      } else if (top.ch !== expected) {
-        diagnostics.push({
-          ruleId: 'HANA-SYN-003',
-          category: 'syntax',
-          severity: 'error',
-          message: `Unexpected closing delimiter '${ch}'. Expected '${matchingCloser(top.ch)}'.`,
-          start: i,
-          end: i + 1,
-          fixes: [],
-        });
-        const matchIdx = findLastDelimIndex(delimStack, expected);
-        if (matchIdx >= 0) {
-          delimStack.length = matchIdx;
-        }
-      } else {
-        delimStack.pop();
-      }
+    if (ch === '(' || ch === '[' || ch === '{' || ch === ')' || ch === ']' || ch === '}') {
+      delimInputs.push({ ch, start: i, end: i + 1 });
       tokens.push({ kind: 'punct', text: ch, start: i, end: i + 1 });
       i++;
       continue;
@@ -2092,14 +2102,15 @@ function scanNonSqlArtifacts(
     i++;
   }
 
-  for (const unclosed of delimStack) {
+  const delimResult = analyzeDelimiters(text, delimInputs, { fenceSemicolon: 'none' });
+  for (const d of delimResult.diagnostics) {
     diagnostics.push({
       ruleId: 'HANA-SYN-003',
       category: 'syntax',
       severity: 'error',
-      message: `Unclosed delimiter '${unclosed.ch}'.`,
-      start: unclosed.start,
-      end: unclosed.end,
+      message: d.message,
+      start: d.start,
+      end: d.end,
       fixes: [],
     });
   }

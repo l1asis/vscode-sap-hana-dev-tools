@@ -1,3 +1,4 @@
+import { analyzeDelimiters, matchingOpener, type DelimTokenInput } from './delimiters';
 import { matchKeywordTypo } from './syntax';
 import {
   filterSuppressedDiagnostics,
@@ -666,26 +667,16 @@ type JsStackEntry =
   | { readonly kind: 'template'; readonly start: number }
   | { readonly kind: 'interpBrace'; readonly start: number; readonly end: number };
 
-function jsMatchingCloser(opener: '(' | '[' | '{'): ')' | ']' | '}' {
-  if (opener === '(') return ')';
-  if (opener === '[') return ']';
-  return '}';
-}
-
-function jsMatchingOpener(closer: ')' | ']' | '}'): '(' | '[' | '{' {
-  if (closer === ')') return '(';
-  if (closer === ']') return '[';
-  return '{';
-}
-
 /**
- * Pure-TS XSJS / XSJSLIB syntax analyzer (`HANA-SYN-030`..`032`) with regex-vs-division
+ * Pure-TS XSJS / XSJSLIB syntax analyzer (`HANA-SYN-030`..`033`) with regex-vs-division
  * tracking and nested template interpolation `${...}` awareness.
  */
 function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
   const diagnostics: AnalyzerDiagnostic[] = [];
   const tokens: JsSyntaxToken[] = [];
   const stack: JsStackEntry[] = [];
+  const delimInputs: DelimTokenInput[] = [];
+  const interpBraceStarts = new Set<number>();
   const n = text.length;
   let i = 0;
   let nl = 0;
@@ -720,6 +711,8 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
       }
       if (ch === '$' && text[i + 1] === '{') {
         stack.push({ kind: 'interpBrace', start: i, end: i + 2 });
+        delimInputs.push({ ch: '{', start: i, end: i + 2 });
+        interpBraceStarts.add(i);
         pushToken('punct', i, i + 2);
         i += 2;
         canStartRegex = true;
@@ -907,17 +900,20 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
     if (ch === '(' || ch === '[' || ch === '{') {
       const prevTok = tokens[tokens.length - 1];
       const isControlHeader = ch === '(' && prevTok?.kind === 'ident' && JS_CONTROL_PAREN_KEYWORDS.has(prevTok.text);
+      const forHeader = ch === '(' && prevTok?.kind === 'ident' && prevTok.text === 'for';
       stack.push({ kind: 'delim', ch, start: i, end: i + 1, isControlHeader });
+      delimInputs.push({ ch, start: i, end: i + 1, forHeader });
       pushToken('punct', i, i + 1);
       i++;
       canStartRegex = true;
       continue;
     }
 
-    // Closers `)`, `]`, `}`
+    // Closers `)`, `]`, `}` (keep stack synced for template `${...}` & regex context; diagnostics emitted via analyzeDelimiters)
     if (ch === ')' || ch === ']' || ch === '}') {
-      const expected = jsMatchingOpener(ch);
+      const expected = matchingOpener(ch);
       const top = stack[stack.length - 1];
+      delimInputs.push({ ch, start: i, end: i + 1 });
 
       if (ch === '}' && top?.kind === 'interpBrace') {
         stack.pop();
@@ -927,37 +923,16 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
         continue;
       }
 
-      if (!top || top.kind === 'template') {
-        diagnostics.push({
-          ruleId: 'HANA-SYN-031',
-          category: 'syntax',
-          severity: 'error',
-          message: `Unmatched closing delimiter '${ch}'.`,
-          start: i,
-          end: i + 1,
-          fixes: [],
-        });
-      } else if (top.kind === 'interpBrace') {
-        diagnostics.push({
-          ruleId: 'HANA-SYN-031',
-          category: 'syntax',
-          severity: 'error',
-          message: `Unexpected closing delimiter '${ch}' inside template interpolation '\${...}'.`,
-          start: i,
-          end: i + 1,
-          fixes: [],
-        });
-      } else if (top.ch !== expected) {
-        diagnostics.push({
-          ruleId: 'HANA-SYN-031',
-          category: 'syntax',
-          severity: 'error',
-          message: `Unexpected closing delimiter '${ch}'. Expected '${jsMatchingCloser(top.ch)}'.`,
-          start: i,
-          end: i + 1,
-          fixes: [],
-        });
-        // Recover to matching opener or enclosing template interpolation
+      if (top && top.kind === 'delim' && top.ch === expected) {
+        stack.pop();
+        if (ch === ')') {
+          canStartRegex = !!top.isControlHeader;
+        } else if (ch === '}') {
+          canStartRegex = true;
+        } else {
+          canStartRegex = false;
+        }
+      } else if (top && top.kind !== 'template') {
         let resumedTpl = false;
         for (let s = stack.length - 1; s >= 0; s--) {
           const entry = stack[s];
@@ -976,15 +951,6 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
           }
         }
         if (resumedTpl) continue;
-      } else {
-        stack.pop();
-        if (ch === ')') {
-          canStartRegex = !!top.isControlHeader;
-        } else if (ch === '}') {
-          canStartRegex = true;
-        } else {
-          canStartRegex = false;
-        }
       }
 
       pushToken('punct', i, i + 1);
@@ -1015,6 +981,9 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
       continue;
     }
 
+    if (ch === ';') {
+      delimInputs.push({ ch: ';', start: i, end: i + 1 });
+    }
     const opKind = ',;:?~'.includes(ch) ? 'punct' : 'op';
     pushToken(opKind, i, i + 1);
     i++;
@@ -1032,34 +1001,31 @@ function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
         end: Math.min(n, unclosed.start + 2),
         fixes: [],
       });
-    } else if (unclosed.kind === 'interpBrace') {
-      diagnostics.push({
-        ruleId: 'HANA-SYN-031',
-        category: 'syntax',
-        severity: 'error',
-        message: "Unclosed template interpolation '${'.",
-        start: unclosed.start,
-        end: unclosed.end,
-        fixes: [],
-      });
-    } else {
-      diagnostics.push({
-        ruleId: 'HANA-SYN-031',
-        category: 'syntax',
-        severity: 'error',
-        message: `Unclosed delimiter '${unclosed.ch}'.`,
-        start: unclosed.start,
-        end: unclosed.end,
-        fixes: [],
-      });
     }
+  }
+
+  const delimResult = analyzeDelimiters(text, delimInputs, { fenceSemicolon: 'non-block-non-for' });
+  for (const d of delimResult.diagnostics) {
+    const message =
+      d.kind === 'unclosed-open' && interpBraceStarts.has(d.start)
+        ? "Unclosed template interpolation '${'."
+        : d.message;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-031',
+      category: 'syntax',
+      severity: 'error',
+      message,
+      start: d.start,
+      end: d.end,
+      fixes: [],
+    });
   }
 
   // Stop keyword/comma checks if an unclosed string/comment/template swallowed downstream code
   const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-030');
   if (!hasLexicalSwallow) {
     checkJsKeywordTypos(tokens, diagnostics);
-    checkJsMissingCommas(tokens, diagnostics);
+    checkJsMissingCommas(tokens, delimResult.unclosedStarts, delimResult.unmatchedCloseStarts, diagnostics);
   }
 
   return diagnostics;
@@ -1173,7 +1139,12 @@ const JS_OPERAND_PREFIX_WORDS = new Set<string>([
 
 const JS_OPERAND_INFIX_WORDS = new Set<string>(['in', 'instanceof', 'of']);
 
-function checkJsMissingCommas(tokens: readonly JsSyntaxToken[], diagnostics: AnalyzerDiagnostic[]): void {
+function checkJsMissingCommas(
+  tokens: readonly JsSyntaxToken[],
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
   type ContainerKind = 'paren' | 'forParen' | 'bracket' | 'brace';
   const stack: ContainerKind[] = [];
 
@@ -1181,19 +1152,15 @@ function checkJsMissingCommas(tokens: readonly JsSyntaxToken[], diagnostics: Ana
     const tok = tokens[i];
     const prev = i > 0 ? tokens[i - 1] : null;
 
-    if (tok.text === '(') {
-      stack.push(prev?.text === 'for' ? 'forParen' : 'paren');
-      continue;
-    }
-    if (tok.text === '[') {
-      stack.push('bracket');
-      continue;
-    }
-    if (tok.text === '{') {
-      stack.push('brace');
+    if (tok.text === '(' || tok.text === '[' || tok.text === '{') {
+      if (unclosedStarts.has(tok.start)) continue;
+      if (tok.text === '(') stack.push(prev?.text === 'for' ? 'forParen' : 'paren');
+      else if (tok.text === '[') stack.push('bracket');
+      else stack.push('brace');
       continue;
     }
     if (tok.text === ')' || tok.text === ']' || tok.text === '}') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
       stack.pop();
       continue;
     }
