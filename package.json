@@ -1608,6 +1608,13 @@
         "path": "./syntaxes/xsjs.tmLanguage.json"
       },
       {
+        "scopeName": "xsjs.injection",
+        "path": "./syntaxes/xsjs-injection.tmLanguage.json",
+        "injectTo": [
+          "source.xsjs"
+        ]
+      },
+      {
         "language": "hdbgrants",
         "scopeName": "source.hdbgrants",
         "path": "./syntaxes/hdbgrants.tmLanguage.json"

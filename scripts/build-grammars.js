@@ -749,7 +749,7 @@ write('hdbcds', {
 // ---------------------------------------------------------------------------
 {
   const ns = 'xsjs';
-  const apis = ['application', 'request', 'response', 'db', 'hdb', 'net', 'util', 'web', 'session', 'security', 'jobs', 'trace', 'text', 'repo', 'process'];
+  const apis = ['application', 'request', 'response', 'db', 'hdb', 'net', 'util', 'web', 'session', 'security', 'jobs', 'trace', 'text', 'repo', 'config', 'process'];
   write('xsjs', {
     name: 'SAP HANA XS JavaScript (.xsjs, .xsjslib)',
     scopeName: 'source.xsjs',
@@ -759,7 +759,7 @@ write('hdbcds', {
         patterns: [
           {
             // $.import("package.path", "library")  /  $.require("module")
-            match: R(/(\$)(\.)(import|require)\b/),
+            match: R(/(?<![A-Za-z0-9_$])(\$)(\.)(import|require)\b/),
             captures: {
               1: { name: `variable.language.${ns}` },
               2: { name: `punctuation.accessor.${ns}` },
@@ -767,28 +767,58 @@ write('hdbcds', {
             },
           },
           {
-            // constants such as $.net.http.OK, $.net.Mail.Part.TYPE_TEXT, $.hdb.types.NVARCHAR
-            match: `(\\$)(\\.)(${alt(apis)})((?:\\.[A-Za-z_]\\w*)*)(\\.)([A-Z][A-Z0-9_]+)\\b`,
-            captures: {
-              1: { name: `variable.language.${ns}` },
-              2: { name: `punctuation.accessor.${ns}` },
-              3: { name: `support.class.api.${ns}` },
-              4: { name: `support.class.${ns}` },
-              5: { name: `punctuation.accessor.${ns}` },
-              6: { name: `support.constant.${ns}` },
-            },
-          },
-          {
-            match: `(\\$)(\\.)(${alt(apis)})\\b`,
-            captures: {
+            // $.<api>[.sub...][.member] — matched both at top level and injected inside nested JS scopes
+            begin: `(?<![A-Za-z0-9_$])(\\$)(\\.)(${alt(apis)})\\b`,
+            beginCaptures: {
               1: { name: `variable.language.${ns}` },
               2: { name: `punctuation.accessor.${ns}` },
               3: { name: `support.class.api.${ns}` },
             },
+            end: `(?!\\s*\\.[A-Za-z_])`,
+            patterns: [
+              {
+                // constants such as $.net.http.OK, $.net.Mail.Part.TYPE_TEXT, $.hdb.types.NVARCHAR
+                match: `(\\.)([A-Z][A-Z0-9_]+)\\b(?!\\s*\\()`,
+                captures: {
+                  1: { name: `punctuation.accessor.${ns}` },
+                  2: { name: `support.constant.${ns}` },
+                },
+              },
+              {
+                // PascalCase classes/constructors such as $.net.Mail.Part, $.util.Zip
+                match: `(\\.)([A-Z][A-Za-z0-9_]*)\\b`,
+                captures: {
+                  1: { name: `punctuation.accessor.${ns}` },
+                  2: { name: `support.class.${ns}` },
+                },
+              },
+              {
+                // method calls such as $.response.setBody(...), $.hdb.getConnection()
+                match: `(\\.)([A-Za-z_]\\w*)(?=\\s*\\()`,
+                captures: {
+                  1: { name: `punctuation.accessor.${ns}` },
+                  2: { name: `support.function.${ns}` },
+                },
+              },
+              {
+                // properties and sub-namespaces such as $.response.status, $.response.contentType, $.net.http
+                match: `(\\.)([A-Za-z_]\\w*)\\b`,
+                captures: {
+                  1: { name: `punctuation.accessor.${ns}` },
+                  2: { name: `support.variable.property.${ns}` },
+                },
+              },
+            ],
           },
         ],
       },
     },
+  });
+  write('xsjs-injection', {
+    name: 'SAP HANA XS JavaScript API Injection',
+    scopeName: 'xsjs.injection',
+    injectionSelector: 'L:source.xsjs -comment -string -regexp',
+    patterns: [{ include: 'source.xsjs#xs-api' }],
   });
 }
 
