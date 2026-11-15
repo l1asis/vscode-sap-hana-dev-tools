@@ -1,4 +1,4 @@
-import { cdsTokenize } from '../formatter/cds';
+import { cdsTokenize, type CdsToken } from '../formatter/cds';
 import {
   parseClassicKv,
   type KvAssignmentNode,
@@ -9,10 +9,12 @@ import { isKeyValueArtifact } from '../formatter/detect';
 import { isClassicHdbrole, roleTokenize, type RoleToken } from '../formatter/hdbrole';
 import { tokenize, type Token } from '../formatter/tokenizer';
 import {
+  applyTextEdits,
   filterSuppressedDiagnostics,
   type AnalyzerContext,
   type AnalyzerDiagnostic,
   type CodeFixSuggestion,
+  type TextEditSpan,
 } from './types';
 
 function unquoteKvString(raw: string): string {
@@ -720,46 +722,347 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
 /**
  * Converts XSC `.hdbdd` CDS artifacts into HDI `.hdbcds` syntax (`HANA-MIG-005`).
  */
-export function convertHdbddToHdbcds(text: string): string {
-  const toks = cdsTokenize(text);
-  let out = text;
+function isCdsCodeToken(tok: CdsToken): boolean {
+  return tok.type !== 'lineComment' && tok.type !== 'blockComment' && tok.type !== 'raw';
+}
 
-  // 1. Strip @Schema : '...' lines
-  out = out.replace(/^[ \t]*@Schema\s*:\s*'[^']*'\s*;?[ \t]*\r?\n?/gim, '');
+function removeCdsAnnotationSpan(text: string, start: number, end: number): TextEditSpan {
+  const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+  const eolIdx = text.indexOf('\n', end);
+  const lineEnd = eolIdx === -1 ? text.length : eolIdx;
 
-  // 2. Replace @WithStructuredPrivilegeCheck annotation on views/entities
-  out = out.replace(/@WithStructuredPrivilegeCheck\b[ \t]*\r?\n?/gi, '');
+  const before = text.slice(lineStart, start);
+  const afterRaw = text.slice(end, lineEnd);
+  const after = afterRaw.endsWith('\r') ? afterRaw.slice(0, -1) : afterRaw;
+  const beforeClear = /^[ \t]*$/.test(before);
+  const afterClear = /^[ \t]*$/.test(after);
 
-  // 3. Transform @Catalog.tableType : #COLUMN / #ROW + entity { ... } -> technical configuration inside entity
-  out = out.replace(
-    /(@Catalog\.tableType\s*:\s*#(COLUMN|ROW)\s*;?\s*)([\s\S]*?\bentity\s+[A-Za-z0-9_"]+\s*\{[\s\S]*?)(\n([ \t]*)\})/gi,
-    (_m, _ann: string, storeType: string, entityHead: string, closePart: string, indent: string) => {
-      const storeKeyword = storeType.toUpperCase() === 'ROW' ? 'row store;' : 'column store;';
-      if (/\btechnical\s+configuration\s*\{/i.test(entityHead)) {
-        return `${entityHead}${closePart}`;
+  if (beforeClear && afterClear) {
+    if (eolIdx !== -1) {
+      return { start: lineStart, end: eolIdx + 1, newText: '' };
+    }
+    if (lineStart > 0) {
+      const prevEnd = text[lineStart - 2] === '\r' ? lineStart - 2 : lineStart - 1;
+      return { start: prevEnd, end: text.length, newText: '' };
+    }
+    return { start: 0, end: text.length, newText: '' };
+  }
+
+  if (!beforeClear && afterClear) {
+    let trimLeft = start;
+    while (trimLeft > lineStart && (text[trimLeft - 1] === ' ' || text[trimLeft - 1] === '\t')) {
+      trimLeft--;
+    }
+    const trimRight = eolIdx === -1 ? text.length : text[eolIdx - 1] === '\r' ? eolIdx - 1 : eolIdx;
+    return { start: trimLeft, end: trimRight, newText: '' };
+  }
+
+  let trimRight = end;
+  while (trimRight < lineEnd && (text[trimRight] === ' ' || text[trimRight] === '\t')) {
+    trimRight++;
+  }
+  if (beforeClear) {
+    return { start, end: trimRight, newText: '' };
+  }
+
+  const prevCh = text[start - 1] ?? '';
+  const nextCh = text[trimRight] ?? '';
+  const needsSpace = /[A-Za-z0-9_$]/.test(prevCh) && /[A-Za-z0-9_$]/.test(nextCh);
+  return { start, end: trimRight, newText: needsSpace ? ' ' : '' };
+}
+
+function findMatchingCdsDelimiter(codeToks: readonly CdsToken[], openIdx: number, openCh: string, closeCh: string): number {
+  let depth = 0;
+  for (let i = openIdx; i < codeToks.length; i++) {
+    if (codeToks[i].text === openCh) depth++;
+    else if (codeToks[i].text === closeCh) {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+function skipCdsAnnotation(codeToks: readonly CdsToken[], startIdx: number): number {
+  let i = startIdx + 1;
+  if (codeToks[i]?.text === ':') {
+    i++;
+    const val = codeToks[i];
+    if (!val) return i;
+    if (val.text === '{') {
+      const close = findMatchingCdsDelimiter(codeToks, i, '{', '}');
+      i = close !== -1 ? close + 1 : i + 1;
+    } else if (val.text === '[') {
+      const close = findMatchingCdsDelimiter(codeToks, i, '[', ']');
+      i = close !== -1 ? close + 1 : i + 1;
+    } else if (val.text === '(') {
+      const close = findMatchingCdsDelimiter(codeToks, i, '(', ')');
+      i = close !== -1 ? close + 1 : i + 1;
+    } else {
+      i++;
+    }
+  }
+  if (codeToks[i]?.text === ';') i++;
+  return i;
+}
+
+interface TargetEntityInfo {
+  readonly entityOpen: CdsToken;
+  readonly entityClose: CdsToken;
+  readonly hasTechnicalConfig: boolean;
+}
+
+function findTargetEntityAfterAnnotation(codeToks: readonly CdsToken[], afterIdx: number): TargetEntityInfo | null {
+  let i = afterIdx;
+  while (i < codeToks.length) {
+    const t = codeToks[i];
+    if (t.type === 'annot') {
+      i = skipCdsAnnotation(codeToks, i);
+      continue;
+    }
+    if (t.type === 'word' && t.text.toLowerCase() === 'entity') {
+      let k = i + 1;
+      while (k < codeToks.length && codeToks[k].text !== '{' && codeToks[k].text !== ';') {
+        k++;
       }
-      return `${entityHead}\n${indent}  technical configuration {\n${indent}    ${storeKeyword}\n${indent}  };${closePart}`;
-    }
-  );
+      if (codeToks[k]?.text !== '{') return null;
+      const closeIdx = findMatchingCdsDelimiter(codeToks, k, '{', '}');
+      if (closeIdx === -1) return null;
 
-  // 4. Convert standalone @Catalog.index annotations when not yet in technical configuration
-  out = out.replace(
-    /^[ \t]*@Catalog\.index\s*:\s*\[\s*\{[^}]*name\s*:\s*'([^']+)'[^}]*unique\s*:\s*(true|false)[^}]*elementNames\s*:\s*\[([^\]]+)\][^}]*\}\s*\][ \t]*;?\r?\n?/gim,
-    (match, idxName: string, isUnique: string, elems: string) => {
-      void match;
-      const cols = elems
-        .split(',')
-        .map((e) => e.trim().replace(/^['"]|['"]$/g, ''))
-        .filter(Boolean)
-        .map((c) => `${c} asc`)
-        .join(', ');
-      const uq = isUnique.toLowerCase() === 'true' ? 'unique ' : '';
-      return `/* Converted from @Catalog.index -> place in technical configuration { ${uq}index ${idxName} on (${cols}); }; */\n`;
+      let hasTechnicalConfig = false;
+      for (let b = k + 1; b < closeIdx - 1; b++) {
+        if (
+          codeToks[b].type === 'word' &&
+          codeToks[b].text.toLowerCase() === 'technical' &&
+          codeToks[b + 1]?.type === 'word' &&
+          codeToks[b + 1].text.toLowerCase() === 'configuration'
+        ) {
+          hasTechnicalConfig = true;
+          break;
+        }
+      }
+      return { entityOpen: codeToks[k], entityClose: codeToks[closeIdx], hasTechnicalConfig };
     }
-  );
+    return null;
+  }
+  return null;
+}
 
-  void toks;
-  return out;
+function unquoteCdsString(raw: string): string {
+  if (raw.length >= 2 && raw.startsWith('\'') && raw.endsWith('\'')) {
+    return raw.slice(1, -1).replace(/''/g, '\'');
+  }
+  return raw;
+}
+
+function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: number, arrCloseIdx: number): string[] {
+  const clauses: string[] = [];
+  let i = arrOpenIdx + 1;
+  while (i < arrCloseIdx) {
+    if (codeToks[i].text !== '{') {
+      i++;
+      continue;
+    }
+    const objClose = findMatchingCdsDelimiter(codeToks, i, '{', '}');
+    if (objClose === -1 || objClose >= arrCloseIdx) break;
+
+    let idxName = '';
+    let isUnique = false;
+    let orderDir = 'asc';
+    const elements: string[] = [];
+
+    let p = i + 1;
+    while (p < objClose) {
+      const keyTok = codeToks[p];
+      if (keyTok.type !== 'word' || codeToks[p + 1]?.text !== ':') {
+        p++;
+        continue;
+      }
+      const keyLower = keyTok.text.toLowerCase();
+      const valTok = codeToks[p + 2];
+      if (!valTok) break;
+
+      if (keyLower === 'name' && valTok.type === 'string') {
+        idxName = unquoteCdsString(valTok.text);
+        p += 3;
+      } else if (keyLower === 'unique' && valTok.type === 'word') {
+        isUnique = valTok.text.toLowerCase() === 'true';
+        p += 3;
+      } else if (keyLower === 'order' && valTok.type === 'enumSym') {
+        orderDir = valTok.text.toLowerCase() === '#desc' ? 'desc' : 'asc';
+        p += 3;
+      } else if (keyLower === 'elementnames' && valTok.text === '[') {
+        const elClose = findMatchingCdsDelimiter(codeToks, p + 2, '[', ']');
+        const limit = elClose !== -1 && elClose < objClose ? elClose : objClose;
+        for (let e = p + 3; e < limit; e++) {
+          if (codeToks[e].type === 'string') {
+            const col = unquoteCdsString(codeToks[e].text).trim();
+            if (col) elements.push(col);
+          }
+        }
+        p = limit + 1;
+      } else {
+        p += 3;
+      }
+    }
+
+    if (idxName && elements.length > 0) {
+      const uq = isUnique ? 'unique ' : '';
+      const cols = elements.map((c) => `${c} ${orderDir}`).join(', ');
+      clauses.push(`${uq}index ${idxName} on (${cols});`);
+    }
+    i = objClose + 1;
+  }
+  return clauses;
+}
+
+function buildTechConfigInsertEdit(text: string, target: TargetEntityInfo, clauses: readonly string[]): TextEditSpan {
+  const closeStart = target.entityClose.start;
+  const lineStart = text.lastIndexOf('\n', closeStart - 1) + 1;
+  const beforeCloseOnLine = text.slice(lineStart, closeStart);
+  const bodyHasNewline = text.slice(target.entityOpen.end, closeStart).includes('\n');
+
+  if (bodyHasNewline && /^[ \t]*$/.test(beforeCloseOnLine)) {
+    const indent = beforeCloseOnLine;
+    const inner = clauses.map((c) => `${indent}    ${c}\n`).join('');
+    return {
+      start: lineStart,
+      end: lineStart,
+      newText: `${indent}  technical configuration {\n${inner}${indent}  };\n`,
+    };
+  }
+
+  const prevCh = text[closeStart - 1] ?? '';
+  const leadSpace = prevCh === ' ' || prevCh === '\t' || prevCh === '\n' ? '' : ' ';
+  const trailSpace = prevCh === ' ' || prevCh === '\t' ? ' ' : '';
+  return {
+    start: closeStart,
+    end: closeStart,
+    newText: `${leadSpace}technical configuration { ${clauses.join(' ')} };${trailSpace}`,
+  };
+}
+
+function findHdbddMigrationSpans(text: string): Array<{ start: number; end: number }> {
+  const codeToks = cdsTokenize(text).filter(isCdsCodeToken);
+  const hits: Array<{ start: number; end: number }> = [];
+  for (let i = 0; i < codeToks.length; i++) {
+    const t = codeToks[i];
+    if (t.type !== 'annot') continue;
+    const low = t.text.toLowerCase();
+    if (low === '@schema' && codeToks[i + 1]?.text === ':' && codeToks[i + 2]?.type === 'string') {
+      hits.push({ start: t.start, end: codeToks[i + 2].end });
+      i += 2;
+    } else if (
+      low === '@catalog.tabletype' &&
+      codeToks[i + 1]?.text === ':' &&
+      codeToks[i + 2]?.type === 'enumSym' &&
+      /^#(?:COLUMN|ROW)$/i.test(codeToks[i + 2].text)
+    ) {
+      hits.push({ start: t.start, end: codeToks[i + 2].end });
+      i += 2;
+    } else if (low === '@catalog.index' && codeToks[i + 1]?.text === ':' && codeToks[i + 2]?.text === '[') {
+      const arrClose = findMatchingCdsDelimiter(codeToks, i + 2, '[', ']');
+      const end = arrClose !== -1 ? codeToks[arrClose].end : t.end;
+      hits.push({ start: t.start, end });
+      if (arrClose !== -1) i = arrClose;
+    } else if (low === '@withstructuredprivilegecheck') {
+      hits.push({ start: t.start, end: t.end });
+    }
+  }
+  return hits;
+}
+
+/**
+ * Converts XSC `.hdbdd` CDS artifacts into HDI `.hdbcds` syntax (`HANA-MIG-005`).
+ */
+export function convertHdbddToHdbcds(text: string): string {
+  const codeToks = cdsTokenize(text).filter(isCdsCodeToken);
+  const edits: TextEditSpan[] = [];
+  const techAdditions = new Map<number, { target: TargetEntityInfo; clauses: string[] }>();
+
+  const queueTechClause = (target: TargetEntityInfo, clause: string): void => {
+    let entry = techAdditions.get(target.entityClose.start);
+    if (!entry) {
+      entry = { target, clauses: [] };
+      techAdditions.set(target.entityClose.start, entry);
+    }
+    entry.clauses.push(clause);
+  };
+
+  for (let i = 0; i < codeToks.length; i++) {
+    const tok = codeToks[i];
+    if (tok.type !== 'annot') continue;
+    const low = tok.text.toLowerCase();
+
+    // 1. Strip @Schema : '...' (both standalone lines and inline occurrences)
+    if (low === '@schema' && codeToks[i + 1]?.text === ':' && codeToks[i + 2]?.type === 'string') {
+      const hasSemi = codeToks[i + 3]?.text === ';';
+      const endIdx = hasSemi ? i + 3 : i + 2;
+      edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
+      i = endIdx;
+      continue;
+    }
+
+    // 2. Remove @WithStructuredPrivilegeCheck marker annotation
+    if (low === '@withstructuredprivilegecheck') {
+      const hasSemi = codeToks[i + 1]?.text === ';';
+      const endIdx = hasSemi ? i + 1 : i;
+      edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
+      i = endIdx;
+      continue;
+    }
+
+    // 3. Transform @Catalog.tableType : #COLUMN / #ROW + entity { ... } -> technical configuration
+    if (
+      low === '@catalog.tabletype' &&
+      codeToks[i + 1]?.text === ':' &&
+      codeToks[i + 2]?.type === 'enumSym' &&
+      /^#(?:COLUMN|ROW)$/i.test(codeToks[i + 2].text)
+    ) {
+      const storeKeyword = codeToks[i + 2].text.toUpperCase() === '#ROW' ? 'row store;' : 'column store;';
+      const hasSemi = codeToks[i + 3]?.text === ';';
+      const endIdx = hasSemi ? i + 3 : i + 2;
+      const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
+      if (target) {
+        edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
+        if (!target.hasTechnicalConfig) {
+          queueTechClause(target, storeKeyword);
+        }
+      }
+      i = endIdx;
+      continue;
+    }
+
+    // 4. Convert @Catalog.index : [ ... ] -> technical configuration or comment note
+    if (low === '@catalog.index' && codeToks[i + 1]?.text === ':' && codeToks[i + 2]?.text === '[') {
+      const arrClose = findMatchingCdsDelimiter(codeToks, i + 2, '[', ']');
+      if (arrClose !== -1) {
+        const hasSemi = codeToks[arrClose + 1]?.text === ';';
+        const endIdx = hasSemi ? arrClose + 1 : arrClose;
+        const clauses = parseCatalogIndexClauses(codeToks, i + 2, arrClose);
+        if (clauses.length > 0) {
+          const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
+          if (target && !target.hasTechnicalConfig) {
+            edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
+            for (const c of clauses) queueTechClause(target, c);
+          } else {
+            edits.push({
+              start: tok.start,
+              end: codeToks[endIdx].end,
+              newText: clauses.map((c) => `/* Converted from @Catalog.index -> place in technical configuration { ${c} }; */`).join('\n'),
+            });
+          }
+        }
+        i = endIdx;
+      }
+    }
+  }
+
+  for (const { target, clauses } of techAdditions.values()) {
+    edits.push(buildTechConfigInsertEdit(text, target, clauses));
+  }
+
+  return applyTextEdits(text, edits);
 }
 
 /**
@@ -872,21 +1175,30 @@ export function analyzeMigration(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       end: endOffset,
       fixes: [fullRangeFix('Convert Classic .hdbrole to HDI JSON .hdbrole', converted)],
     });
-  } else if (languageId === 'hdbdd') {
-    const schemaAnn = /@Schema\s*:\s*'[^']*'/i.exec(text);
-    const catTable = /@Catalog\.tableType\s*:\s*#(?:COLUMN|ROW)/i.exec(text);
-    const hit = schemaAnn ?? catTable;
-    if (hit) {
-      diagnostics.push({
-        ruleId: 'HANA-MIG-005',
-        category: 'migration',
-        severity: 'warning',
-        message:
-          'XSC .hdbdd annotations (@Schema / @Catalog.tableType) must be converted for HDI .hdbcds (remove @Schema and use technical configuration).',
-        start: hit.index,
-        end: hit.index + hit[0].length,
-        fixes: [fullRangeFix('Convert .hdbdd annotations to HDI .hdbcds syntax', convertHdbddToHdbcds(text))],
-      });
+  } else if (languageId === 'hdbdd' || languageId === 'hdbcds') {
+    const hits = findHdbddMigrationSpans(text);
+    if (hits.length > 0) {
+      const converted = convertHdbddToHdbcds(text);
+      for (let i = 0; i < hits.length; i++) {
+        const hit = hits[i];
+        diagnostics.push({
+          ruleId: 'HANA-MIG-005',
+          category: 'migration',
+          severity: 'warning',
+          message:
+            'XSC .hdbdd annotations (@Schema / @Catalog.*) must be converted for HDI .hdbcds (remove @Schema and use technical configuration).',
+          start: hit.start,
+          end: hit.end,
+          fixes: [
+            {
+              title: 'Convert .hdbdd annotations to HDI .hdbcds syntax',
+              kind: 'quickfix',
+              isPreferred: i === 0,
+              edits: [{ start: 0, end: text.length, newText: converted }],
+            },
+          ],
+        });
+      }
     }
   } else if (languageId === 'hdbstructure' && isKeyValueArtifact(text)) {
     diagnostics.push({
