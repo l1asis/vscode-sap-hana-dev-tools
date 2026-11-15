@@ -87,7 +87,7 @@ const STMT_EXIT_WORDS = new Set<string>([
   'CLOSE',
 ]);
 
-function findLineNumber(lineStarts: readonly number[], offset: number): number {
+export function findLineNumber(lineStarts: readonly number[], offset: number): number {
   let lo = 0;
   let hi = lineStarts.length - 1;
   while (lo <= hi) {

@@ -4,6 +4,7 @@ import { tokenize, type Token } from '../formatter/tokenizer';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
+import { checkSqlScriptOrderAndContext } from './sql-context';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -23,7 +24,11 @@ const SQLSCRIPT_BLOCK_LANGUAGES = new Set<string>([
   'hdbprocedure',
   'hdbfunction',
   'hdbtablefunction',
+  'hdbscalarfunction',
+  'hdblibrary',
   'hdbtrigger',
+  'hdbvirtualprocedure',
+  'hdbvirtualfunction',
   'hdbmigrationtable',
   'procedure',
   'sqlscript',
@@ -683,6 +688,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
 
   // 5. Expression operators, incomplete clauses & missing body semicolons (HANA-SYN-024, HANA-SYN-025)
   // 6. SELECT query clause ordering & duplicate clause checks (HANA-SYN-027)
+  // 7. SQLScript header & block declaration order checks (HANA-SYN-028)
   if (foreignBodyStart < 0) {
     checkSqlExpressionsAndClauses(
       codeTokens,
@@ -702,6 +708,18 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
       unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
       diagnostics,
     });
+    if (SQLSCRIPT_BLOCK_LANGUAGES.has(languageId)) {
+      checkSqlScriptOrderAndContext({
+        languageId,
+        codeTokens,
+        baseOffset,
+        lineStarts,
+        brokenQidentLines,
+        unclosedStarts: delimResult.unclosedStarts,
+        unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
+        diagnostics,
+      });
+    }
   }
 
   return diagnostics;
