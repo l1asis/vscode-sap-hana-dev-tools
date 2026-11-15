@@ -811,10 +811,12 @@ function buildCeToSqlEdit(
 }
 
 function analyzeHandlerStatement(
-  stmt: IndexedStatement,
+  statements: readonly IndexedStatement[],
+  stmtIdx: number,
   text: string,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
+  const stmt = statements[stmtIdx];
   const toks = stmt.tokens;
   if (
     !isWord(toks[0], 'DECLARE') ||
@@ -824,10 +826,7 @@ function analyzeHandlerStatement(
     return;
   }
 
-  const hasSignal = toks.some((t) => isWord(t, 'RESIGNAL') || isWord(t, 'SIGNAL'));
-  if (hasSignal) return;
-
-  // Locate BEGIN or statement body after FOR <condition>
+  // Locate FOR <condition>
   const forIdx = toks.findIndex((t, idx) => idx >= 3 && isWord(t, 'FOR'));
   if (forIdx === -1) return;
 
@@ -835,14 +834,85 @@ function analyzeHandlerStatement(
   if (isWord(toks[forIdx + 1], 'SQL_ERROR_CODE')) {
     bodyStartIdx = forIdx + 3;
   }
-  if (bodyStartIdx >= toks.length) return;
 
   const indent = lineIndentAt(text, stmt.start);
-  const beginIdx = toks.findIndex((t, idx) => idx >= bodyStartIdx && isWord(t, 'BEGIN'));
   const fixes: CodeFixSuggestion[] = [];
 
+  // Case A: Handler header ends before BEGIN statement in next IndexedStatement
+  if (bodyStartIdx >= toks.length) {
+    const nextStmt = statements[stmtIdx + 1];
+    if (!nextStmt) return;
+    if (isWord(nextStmt.tokens[0], 'BEGIN')) {
+      let depth = 0;
+      let matchingEndTok: Token | null = null;
+      let hasSignal = false;
+      for (let k = stmtIdx + 1; k < statements.length; k++) {
+        for (const t of statements[k].tokens) {
+          if (isWord(t, 'RESIGNAL') || isWord(t, 'SIGNAL')) hasSignal = true;
+          if (isWord(t, 'BEGIN')) depth++;
+          else if (isWord(t, 'END')) {
+            depth--;
+            if (depth === 0) {
+              matchingEndTok = t;
+              break;
+            }
+          }
+        }
+        if (matchingEndTok) break;
+      }
+      if (hasSignal) return;
+      if (matchingEndTok) {
+        const beforeEnd = text.slice(0, matchingEndTok.start);
+        const needsNewline = !/\n[ \t]*$/.test(beforeEnd);
+        const newText = needsNewline
+          ? `\n${indent}  RESIGNAL;\n${indent}`
+          : `  RESIGNAL;\n${indent}`;
+        fixes.push({
+          title: "Add 'RESIGNAL;' to EXIT HANDLER so errors are not silently swallowed",
+          kind: 'quickfix',
+          isPreferred: true,
+          edits: [{ start: matchingEndTok.start, end: matchingEndTok.start, newText }],
+        });
+      }
+    } else {
+      // Single-statement handler body sits in nextStmt
+      const hasSignal = nextStmt.tokens.some((t) => isWord(t, 'RESIGNAL') || isWord(t, 'SIGNAL'));
+      if (hasSignal) return;
+      const bodyRaw = text.slice(nextStmt.start, nextStmt.end).trim();
+      const stmtBody = bodyRaw.endsWith(';') ? bodyRaw : `${bodyRaw};`;
+      fixes.push({
+        title: "Wrap EXIT HANDLER body in 'BEGIN ... RESIGNAL; END;'",
+        kind: 'quickfix',
+        isPreferred: true,
+        edits: [
+          {
+            start: nextStmt.start,
+            end: nextStmt.end,
+            newText: `BEGIN\n${indent}  ${stmtBody}\n${indent}  RESIGNAL;\n${indent}END;`,
+          },
+        ],
+      });
+    }
+
+    diagnostics.push({
+      ruleId: 'HANA-LINT-001',
+      category: 'lint',
+      severity: 'warning',
+      message:
+        "'DECLARE EXIT HANDLER' catches SQL exceptions without propagating them via RESIGNAL/SIGNAL, silently masking failures and partial commits.",
+      start: stmt.start,
+      end: toks[Math.min(3, toks.length - 1)].end,
+      fixes,
+    });
+    return;
+  }
+
+  // Case B: Inline BEGIN ... END or single statement in same token list
+  const hasSignal = toks.some((t) => isWord(t, 'RESIGNAL') || isWord(t, 'SIGNAL'));
+  if (hasSignal) return;
+
+  const beginIdx = toks.findIndex((t, idx) => idx >= bodyStartIdx && isWord(t, 'BEGIN'));
   if (beginIdx !== -1) {
-    // Find the final END token inside this handler statement
     let endIdx = -1;
     for (let i = toks.length - 1; i > beginIdx; i--) {
       if (isWord(toks[i], 'END')) {
@@ -866,7 +936,6 @@ function analyzeHandlerStatement(
       });
     }
   } else {
-    // Single-statement handler without BEGIN ... END
     const bodyStartTok = toks[bodyStartIdx];
     const hasSemi = toks[toks.length - 1]?.text === ';';
     const bodyEndOffset = hasSemi ? toks[toks.length - 2].end : toks[toks.length - 1].end;
@@ -1107,7 +1176,8 @@ export function analyzeSqlScript(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   let hasHandlerInFile = false;
   let lastExecKind: 'select' | 'exec' | 'other' | null = null;
 
-  for (const stmt of statements) {
+  for (let stmtIdx = 0; stmtIdx < statements.length; stmtIdx++) {
+    const stmt = statements[stmtIdx];
     const toks = stmt.tokens;
 
     // 1. Track sanitization calls & variable taint
@@ -1154,7 +1224,7 @@ export function analyzeSqlScript(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     if (isWord(toks[0], 'DECLARE') && (isWord(toks[1], 'EXIT') || isWord(toks[1], 'CONTINUE')) && isWord(toks[2], 'HANDLER')) {
       hasHandlerInFile = true;
       if (checkPerf && isWord(toks[1], 'EXIT')) {
-        analyzeHandlerStatement(stmt, text, diagnostics);
+        analyzeHandlerStatement(statements, stmtIdx, text, diagnostics);
       }
     }
 

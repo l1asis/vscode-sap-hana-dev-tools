@@ -622,7 +622,13 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
 
   for (const stmt of stmts) {
     if (stmt.length === 0) continue;
-    const colonIdx = stmt.findIndex((t) => t.type === 'colon');
+    let colonIdx = -1;
+    for (let k = stmt.length - 1; k >= 0; k--) {
+      if (stmt[k].type === 'colon') {
+        colonIdx = k;
+        break;
+      }
+    }
     const lhs = colonIdx >= 0 ? stmt.slice(0, colonIdx) : stmt;
     const lhsUpper = lhs.map((t) => t.text.toUpperCase()).join(' ');
 

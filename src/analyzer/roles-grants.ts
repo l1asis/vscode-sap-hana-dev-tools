@@ -175,7 +175,13 @@ function analyzeClassicHdbrole(text: string, diagnostics: AnalyzerDiagnostic[]):
 
   for (const stmt of stmts) {
     if (stmt.length === 0) continue;
-    const colonIdx = stmt.findIndex((t) => t.type === 'colon');
+    let colonIdx = -1;
+    for (let k = stmt.length - 1; k >= 0; k--) {
+      if (stmt[k].type === 'colon') {
+        colonIdx = k;
+        break;
+      }
+    }
     const headWords = (colonIdx >= 0 ? stmt.slice(0, colonIdx) : stmt)
       .map((t) => t.text.toUpperCase())
       .join(' ');

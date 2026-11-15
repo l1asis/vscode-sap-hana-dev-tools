@@ -125,15 +125,10 @@ function maskCommentsAndStrings(text: string): MaskedSource {
   return { masked: chars.join('') };
 }
 
-function isInsideMask(text: string, masked: string, offset: number): boolean {
+function isInsideMask(text: string, masked: string, offset: number, allowStrings = false): boolean {
   if (offset <= 0 || offset > text.length) return false;
-  const idx = Math.min(offset - 1, text.length - 1);
-  // If character in masked became space whereas original was non-whitespace/non-newline, inside comment/string.
-  // Also handle cursor right after opening quote or space inside string/comment.
-  if (text[idx] !== masked[idx] && !/\s/.test(text[idx])) {
-    return true;
-  }
-  // Scan current line up to offset on original text to accurately detect cursor inside string/comment whitespace.
+  // Scan source up to offset to determine if cursor lies inside a comment (or string unless allowed)
+  void masked;
   let i = 0;
   let inLineComment = false;
   let inBlockComment = false;
@@ -181,7 +176,7 @@ function isInsideMask(text: string, masked: string, offset: number): boolean {
     }
     i++;
   }
-  return inLineComment || inBlockComment || quote !== null;
+  return inLineComment || inBlockComment || (!allowStrings && quote !== null);
 }
 
 interface ParsedChain {
@@ -655,7 +650,7 @@ export function getXsjsHover(text: string, offset: number): XsjsHoverResult | nu
  */
 export function getXsjsSignatureHelp(text: string, offset: number): XsjsSignatureHelpResult | null {
   const { masked } = maskCommentsAndStrings(text);
-  if (isInsideMask(text, masked, offset)) return null;
+  if (isInsideMask(text, masked, offset, true)) return null;
 
   // Walk backward to find unmatched '(' and count top-level commas
   let depth = 0;
