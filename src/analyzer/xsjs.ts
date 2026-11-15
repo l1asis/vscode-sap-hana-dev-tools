@@ -1,3 +1,5 @@
+import { analyzeDelimiters, matchingOpener, type DelimTokenInput } from './delimiters';
+import { matchKeywordTypo } from './syntax';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -398,16 +400,21 @@ function buildDbToHdbFix(
 }
 
 /**
- * Analyzes XSJS / XSJSLIB documents for security vulnerabilities and XSC->XSA API issues.
+ * Analyzes XSJS / XSJSLIB documents for syntax errors, security vulnerabilities, and XSC->XSA API issues.
  */
 export function analyzeXsjs(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   const { text } = ctx;
   const opts = ctx.options ?? {};
   const checkSec = opts.security ?? true;
   const checkMig = opts.migration ?? true;
+  const checkSyn = opts.syntax ?? true;
+
+  const diagnostics: AnalyzerDiagnostic[] = [];
+  if (checkSyn) {
+    diagnostics.push(...analyzeXsjsSyntax(text));
+  }
 
   const masked = buildMaskedJsCode(text);
-  const diagnostics: AnalyzerDiagnostic[] = [];
 
   // 1. Track DB calls & SQL injection sinks (HANA-SEC-010, HANA-SEC-011)
   const dbConnMatches: Array<{ start: number; end: number; connVar: string | null }> = [];
@@ -583,4 +590,768 @@ export function analyzeXsjs(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   }
 
   return filterSuppressedDiagnostics(text, diagnostics);
+}
+
+const JS_VALID_KEYWORDS = new Set<string>([
+  'function',
+  'var',
+  'let',
+  'const',
+  'if',
+  'else',
+  'for',
+  'while',
+  'do',
+  'switch',
+  'case',
+  'default',
+  'break',
+  'continue',
+  'return',
+  'throw',
+  'try',
+  'catch',
+  'finally',
+  'new',
+  'delete',
+  'typeof',
+  'void',
+  'in',
+  'instanceof',
+  'this',
+  'class',
+  'extends',
+  'import',
+  'export',
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'with',
+  'debugger',
+  'yield',
+  'await',
+  'async',
+  'of',
+]);
+
+const JS_REGEX_PREFIX_KEYWORDS = new Set<string>([
+  'return',
+  'throw',
+  'case',
+  'delete',
+  'void',
+  'typeof',
+  'in',
+  'instanceof',
+  'new',
+  'else',
+  'do',
+  'yield',
+  'await',
+  'of',
+]);
+
+const JS_CONTROL_PAREN_KEYWORDS = new Set<string>(['if', 'while', 'for', 'with']);
+
+interface JsSyntaxToken {
+  readonly kind: 'ident' | 'literal' | 'punct' | 'op';
+  readonly text: string;
+  readonly start: number;
+  readonly end: number;
+  readonly nlBefore: number;
+}
+
+type JsStackEntry =
+  | { readonly kind: 'delim'; readonly ch: '(' | '[' | '{'; readonly start: number; readonly end: number; readonly isControlHeader?: boolean }
+  | { readonly kind: 'template'; readonly start: number }
+  | { readonly kind: 'interpBrace'; readonly start: number; readonly end: number };
+
+/**
+ * Pure-TS XSJS / XSJSLIB syntax analyzer (`HANA-SYN-030`..`033`) with regex-vs-division
+ * tracking and nested template interpolation `${...}` awareness.
+ */
+function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
+  const diagnostics: AnalyzerDiagnostic[] = [];
+  const tokens: JsSyntaxToken[] = [];
+  const stack: JsStackEntry[] = [];
+  const delimInputs: DelimTokenInput[] = [];
+  const interpBraceStarts = new Set<number>();
+  const n = text.length;
+  let i = 0;
+  let nl = 0;
+  let canStartRegex = true;
+
+  const pushToken = (kind: JsSyntaxToken['kind'], start: number, end: number): void => {
+    tokens.push({ kind, text: text.slice(start, end), start, end, nlBefore: nl });
+    nl = 0;
+  };
+
+  const scanTemplateTail = (): void => {
+    while (true) {
+      const topTpl = stack[stack.length - 1];
+      if (!topTpl || topTpl.kind !== 'template') return;
+      if (i >= n) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: "Unterminated template literal '`'.",
+          start: topTpl.start,
+          end: Math.min(n, topTpl.start + 2),
+          fixes: [],
+        });
+        stack.pop();
+        return;
+      }
+      const ch = text[i];
+      if (ch === '\\') {
+        i = Math.min(n, i + 2);
+        continue;
+      }
+      if (ch === '$' && text[i + 1] === '{') {
+        stack.push({ kind: 'interpBrace', start: i, end: i + 2 });
+        delimInputs.push({ ch: '{', start: i, end: i + 2 });
+        interpBraceStarts.add(i);
+        pushToken('punct', i, i + 2);
+        i += 2;
+        canStartRegex = true;
+        return;
+      }
+      if (ch === '`') {
+        i++;
+        stack.pop();
+        pushToken('literal', topTpl.start, i);
+        canStartRegex = false;
+        return;
+      }
+      i++;
+    }
+  };
+
+  while (i < n) {
+    const ch = text[i];
+
+    if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\f' || ch === '\v' || ch === '\ufeff') {
+      i++;
+      continue;
+    }
+    if (ch === '\n') {
+      nl++;
+      i++;
+      continue;
+    }
+
+    // Line comment `//`
+    if (ch === '/' && text[i + 1] === '/') {
+      i += 2;
+      while (i < n && text[i] !== '\n') i++;
+      continue;
+    }
+
+    // Block comment `/* ... */`
+    if (ch === '/' && text[i + 1] === '*') {
+      const start = i;
+      i += 2;
+      let closed = false;
+      while (i + 1 < n) {
+        if (text[i] === '*' && text[i + 1] === '/') {
+          i += 2;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        i = n;
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: "Unterminated block comment '/*'.",
+          start,
+          end: Math.min(n, start + 2),
+          fixes: [],
+        });
+      }
+      continue;
+    }
+
+    // String literals `'...'` / `"..."`
+    if (ch === '\'' || ch === '"') {
+      const quote = ch;
+      const start = i;
+      i++;
+      let closed = false;
+      while (i < n) {
+        const c = text[i];
+        if (c === '\\') {
+          if (text[i + 1] === '\r' && text[i + 2] === '\n') {
+            i += 3;
+          } else {
+            i = Math.min(n, i + 2);
+          }
+          continue;
+        }
+        if (c === quote) {
+          i++;
+          closed = true;
+          break;
+        }
+        if (c === '\n' || c === '\r') {
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: 'Unterminated string literal.',
+          start,
+          end: Math.min(Math.max(i, start + 2), start + 24),
+          fixes: [],
+        });
+      }
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Template literal `` `...` ``
+    if (ch === '`') {
+      stack.push({ kind: 'template', start: i });
+      i++;
+      scanTemplateTail();
+      continue;
+    }
+
+    // Regex literal `/.../flags` when `canStartRegex` is true
+    if (ch === '/' && canStartRegex) {
+      const start = i;
+      i++;
+      let inClass = false;
+      let closed = false;
+      while (i < n) {
+        const c = text[i];
+        if (c === '\\') {
+          if (i + 1 >= n || text[i + 1] === '\n' || text[i + 1] === '\r') break;
+          i += 2;
+          continue;
+        }
+        if (c === '\n' || c === '\r') break;
+        if (c === '[' && !inClass) {
+          inClass = true;
+          i++;
+          continue;
+        }
+        if (c === ']' && inClass) {
+          inClass = false;
+          i++;
+          continue;
+        }
+        if (c === '/' && !inClass) {
+          i++;
+          while (i < n && /[A-Za-z]/.test(text[i])) i++;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: 'Unterminated regular expression literal.',
+          start,
+          end: Math.min(i, start + 2),
+          fixes: [],
+        });
+      }
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Identifiers / keywords
+    if (/[A-Za-z_$]/.test(ch)) {
+      const start = i;
+      i++;
+      while (i < n && /[A-Za-z0-9_$]/.test(text[i])) i++;
+      const word = text.slice(start, i);
+      pushToken('ident', start, i);
+      canStartRegex = JS_REGEX_PREFIX_KEYWORDS.has(word);
+      continue;
+    }
+
+    // Numbers
+    if (/[0-9]/.test(ch)) {
+      const start = i;
+      i++;
+      while (i < n && /[0-9A-Za-z_.]/.test(text[i])) i++;
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Openers `(`, `[`, `{`
+    if (ch === '(' || ch === '[' || ch === '{') {
+      const prevTok = tokens[tokens.length - 1];
+      const isControlHeader = ch === '(' && prevTok?.kind === 'ident' && JS_CONTROL_PAREN_KEYWORDS.has(prevTok.text);
+      const forHeader = ch === '(' && prevTok?.kind === 'ident' && prevTok.text === 'for';
+      stack.push({ kind: 'delim', ch, start: i, end: i + 1, isControlHeader });
+      delimInputs.push({ ch, start: i, end: i + 1, forHeader });
+      pushToken('punct', i, i + 1);
+      i++;
+      canStartRegex = true;
+      continue;
+    }
+
+    // Closers `)`, `]`, `}` (keep stack synced for template `${...}` & regex context; diagnostics emitted via analyzeDelimiters)
+    if (ch === ')' || ch === ']' || ch === '}') {
+      const expected = matchingOpener(ch);
+      const top = stack[stack.length - 1];
+      delimInputs.push({ ch, start: i, end: i + 1 });
+
+      if (ch === '}' && top?.kind === 'interpBrace') {
+        stack.pop();
+        pushToken('punct', i, i + 1);
+        i++;
+        scanTemplateTail();
+        continue;
+      }
+
+      if (top && top.kind === 'delim' && top.ch === expected) {
+        stack.pop();
+        if (ch === ')') {
+          canStartRegex = !!top.isControlHeader;
+        } else if (ch === '}') {
+          canStartRegex = true;
+        } else {
+          canStartRegex = false;
+        }
+      } else if (top && top.kind !== 'template') {
+        let resumedTpl = false;
+        for (let s = stack.length - 1; s >= 0; s--) {
+          const entry = stack[s];
+          if (entry.kind === 'template') break;
+          if (ch === '}' && entry.kind === 'interpBrace') {
+            stack.length = s;
+            pushToken('punct', i, i + 1);
+            i++;
+            scanTemplateTail();
+            resumedTpl = true;
+            break;
+          }
+          if (entry.kind === 'delim' && entry.ch === expected) {
+            stack.length = s;
+            break;
+          }
+        }
+        if (resumedTpl) continue;
+      }
+
+      pushToken('punct', i, i + 1);
+      i++;
+      continue;
+    }
+
+    // 3-character operators (`===`, `!==`, `>>>`) before 2-char slice
+    const three = text.slice(i, i + 3);
+    if (three === '===' || three === '!==' || three === '>>>') {
+      pushToken('op', i, i + 3);
+      i += 3;
+      canStartRegex = true;
+      continue;
+    }
+
+    // Increment / decrement operators keep postfix `canStartRegex = false`
+    const two = text.slice(i, i + 2);
+    if (two === '++' || two === '--') {
+      pushToken('op', i, i + 2);
+      i += 2;
+      canStartRegex = false;
+      continue;
+    }
+
+    if (two === '=>' || two === '==' || two === '!=' || two === '<=' || two === '>=' || two === '&&' || two === '||' || two === '+=' || two === '-=' || two === '*=' || two === '/=' || two === '%=') {
+      pushToken('op', i, i + 2);
+      i += 2;
+      canStartRegex = true;
+      continue;
+    }
+
+    if (ch === '.' && text[i + 1] !== '.') {
+      pushToken('punct', i, i + 1);
+      i++;
+      canStartRegex = false;
+      continue;
+    }
+
+    if (ch === ';') {
+      delimInputs.push({ ch: ';', start: i, end: i + 1 });
+    }
+    const opKind = ',;:?~'.includes(ch) ? 'punct' : 'op';
+    pushToken(opKind, i, i + 1);
+    i++;
+    canStartRegex = true;
+  }
+
+  for (const unclosed of stack) {
+    if (unclosed.kind === 'template') {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-030',
+        category: 'syntax',
+        severity: 'error',
+        message: "Unterminated template literal '`'.",
+        start: unclosed.start,
+        end: Math.min(n, unclosed.start + 2),
+        fixes: [],
+      });
+    }
+  }
+
+  const delimResult = analyzeDelimiters(text, delimInputs, { fenceSemicolon: 'non-block-non-for' });
+  for (const d of delimResult.diagnostics) {
+    const message =
+      d.kind === 'unclosed-open' && interpBraceStarts.has(d.start)
+        ? "Unclosed template interpolation '${'."
+        : d.message;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-031',
+      category: 'syntax',
+      severity: 'error',
+      message,
+      start: d.start,
+      end: d.end,
+      fixes: [],
+    });
+  }
+
+  // Stop keyword/comma/operator checks if an unclosed string/comment/template swallowed downstream code
+  const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-030');
+  if (!hasLexicalSwallow) {
+    checkJsKeywordTypos(tokens, diagnostics);
+    checkJsMissingCommas(tokens, delimResult.unclosedStarts, delimResult.unmatchedCloseStarts, diagnostics);
+    checkJsExpressionOperators(tokens, delimResult.unclosedStarts, delimResult.unmatchedCloseStarts, diagnostics);
+  }
+
+  return diagnostics;
+}
+
+function findMatchingParenTokenIdx(tokens: readonly JsSyntaxToken[], openIdx: number): number {
+  let depth = 0;
+  for (let k = openIdx; k < tokens.length; k++) {
+    if (tokens[k].text === '(') depth++;
+    else if (tokens[k].text === ')') {
+      depth--;
+      if (depth === 0) return k;
+    }
+  }
+  return -1;
+}
+
+function checkJsKeywordTypos(tokens: readonly JsSyntaxToken[], diagnostics: AnalyzerDiagnostic[]): void {
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const tok = tokens[idx];
+    if (tok.kind !== 'ident' || JS_VALID_KEYWORDS.has(tok.text)) continue;
+
+    const prev = idx > 0 ? tokens[idx - 1] : null;
+    const isAnchor =
+      !prev ||
+      prev.text === ';' ||
+      prev.text === '{' ||
+      prev.text === '}' ||
+      (tok.nlBefore > 0 &&
+        prev.kind !== 'op' &&
+        !['(', '[', ',', ':', '.', 'var', 'let', 'const', 'function', 'new', 'return', 'throw'].includes(prev.text));
+    if (!isAnchor) continue;
+
+    const next = tokens[idx + 1];
+    const next2 = tokens[idx + 2];
+    let suggestion: string | null = null;
+
+    // 1. Function declaration header: `FUNC handleGet(...)` / `functon handleGet(...)`
+    if (next?.kind === 'ident' && next2?.text === '(') {
+      suggestion = matchKeywordTypo(tok.text, ['function'], { allowShort: true, lowercase: true });
+    }
+    // 2. Block-introducer before `{`: `esle {`, `tyr {`, `finaly {`
+    else if (next?.text === '{') {
+      if (tok.text.toLowerCase() === 'tyr') {
+        suggestion = 'try';
+      } else {
+        suggestion = matchKeywordTypo(tok.text, ['else', 'finally'], { allowShort: false, lowercase: true });
+      }
+    }
+    // 3. Control-flow header `whlie (...) {`, `swich (...) {`, `ctach (...) {`
+    else if (next?.text === '(') {
+      const closeIdx = findMatchingParenTokenIdx(tokens, idx + 1);
+      if (closeIdx >= 0 && tokens[closeIdx + 1]?.text === '{') {
+        suggestion = matchKeywordTypo(tok.text, ['while', 'switch', 'catch'], {
+          allowShort: false,
+          lowercase: true,
+        });
+      }
+    }
+    // 4. Statement-start `retern ...;` / `thrw ...;`
+    else if (
+      next &&
+      next.text !== '[' &&
+      next.text !== '++' &&
+      next.text !== '--' &&
+      !['=', '+=', '-=', '*=', '/=', '%=', '(', '.', ':', ','].includes(next.text) &&
+      !(next.kind === 'op' && !['+', '-', '!', '~'].includes(next.text))
+    ) {
+      suggestion = matchKeywordTypo(tok.text, ['return', 'throw'], { allowShort: false, lowercase: true });
+    }
+
+    if (suggestion) {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-032',
+        category: 'syntax',
+        severity: 'error',
+        message: `Unknown keyword '${tok.text}'. Did you mean '${suggestion}'?`,
+        start: tok.start,
+        end: tok.end,
+        fixes: [
+          {
+            title: `Replace '${tok.text}' with '${suggestion}'`,
+            kind: 'quickfix',
+            isPreferred: true,
+            edits: [{ start: tok.start, end: tok.end, newText: suggestion }],
+          },
+        ],
+      });
+    }
+  }
+}
+
+const JS_OPERAND_PREFIX_WORDS = new Set<string>([
+  'new',
+  'typeof',
+  'delete',
+  'void',
+  'yield',
+  'await',
+  'return',
+  'throw',
+  'case',
+  'in',
+  'instanceof',
+  'of',
+  'function',
+  'class',
+  'async',
+  'else',
+  'var',
+  'let',
+  'const',
+  'get',
+  'set',
+  'static',
+  'import',
+  'export',
+  'from',
+  'as',
+  'default',
+  'do',
+  'try',
+]);
+
+const JS_OPERAND_INFIX_WORDS = new Set<string>(['in', 'instanceof', 'of', 'as', 'from']);
+const JS_EXPR_PAREN_KEYWORDS = new Set<string>([
+  'if',
+  'while',
+  'switch',
+  'with',
+  'return',
+  'throw',
+  'typeof',
+  'delete',
+  'void',
+  'await',
+  'yield',
+  'case',
+  'else',
+]);
+const JS_BINARY_ONLY_OPS = new Set<string>([
+  '*',
+  '/',
+  '%',
+  '===',
+  '!==',
+  '==',
+  '!=',
+  '<=',
+  '>=',
+  '<',
+  '>',
+  '&&',
+  '||',
+  '=',
+  '+=',
+  '-=',
+  '*=',
+  '/=',
+  '%=',
+]);
+
+type JsContainerKind = 'callParen' | 'exprParen' | 'forParen' | 'bracket' | 'brace';
+
+function classifyJsParenContainer(prev: JsSyntaxToken | null, prevPrev: JsSyntaxToken | null): JsContainerKind {
+  if (!prev) return 'exprParen';
+  if (prev.text === 'for') return 'forParen';
+  if (prev.kind === 'ident') {
+    if (JS_EXPR_PAREN_KEYWORDS.has(prev.text)) return 'exprParen';
+    // `function (...)` / `function name(...)` / `fn(...)`
+    return 'callParen';
+  }
+  if (prev.text === ')' || prev.text === ']') return 'callParen';
+  // Method definition `{ fn(...) {} }` -> `prevPrev` is `async`/`get`/`set` handled above via ident
+  void prevPrev;
+  return 'exprParen';
+}
+
+function isJsOperandEnd(tok: JsSyntaxToken): boolean {
+  return (
+    tok.kind === 'literal' ||
+    tok.text === ')' ||
+    tok.text === ']' ||
+    tok.text === '++' ||
+    tok.text === '--' ||
+    (tok.kind === 'ident' && !JS_OPERAND_PREFIX_WORDS.has(tok.text))
+  );
+}
+
+function isJsOperandStart(tok: JsSyntaxToken): boolean {
+  return tok.kind === 'literal' || (tok.kind === 'ident' && !JS_OPERAND_INFIX_WORDS.has(tok.text));
+}
+
+function checkJsMissingCommas(
+  tokens: readonly JsSyntaxToken[],
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const stack: JsContainerKind[] = [];
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const prev = i > 0 ? tokens[i - 1] : null;
+    const prevPrev = i > 1 ? tokens[i - 2] : null;
+
+    if (tok.text === '(' || tok.text === '[' || tok.text === '{') {
+      if (unclosedStarts.has(tok.start)) continue;
+      if (tok.text === '(') stack.push(classifyJsParenContainer(prev, prevPrev));
+      else if (tok.text === '[') stack.push('bracket');
+      else stack.push('brace');
+      continue;
+    }
+    if (tok.text === ')' || tok.text === ']' || tok.text === '}') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
+      stack.pop();
+      continue;
+    }
+
+    const mode = stack[stack.length - 1];
+    if ((mode !== 'callParen' && mode !== 'bracket') || !prev) continue;
+
+    if (isJsOperandEnd(prev) && isJsOperandStart(tok)) {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-033',
+        category: 'syntax',
+        severity: 'error',
+        message: `Expected ',' before '${tok.text}'.`,
+        start: tok.start,
+        end: tok.end,
+        fixes: [
+          {
+            title: "Insert ','",
+            kind: 'quickfix',
+            isPreferred: true,
+            edits: [{ start: prev.end, end: prev.end, newText: ',' }],
+          },
+        ],
+      });
+    }
+  }
+}
+
+/**
+ * Validates JS expression operators (`HANA-SYN-034`):
+ * - Dangling binary/arithmetic operators before `;`, `)`, `]`, `}`, or `,` (`var x = 1 + ;`, `if (a >= )`).
+ * - Consecutive binary-only operators (`if (a >= = b)`, `x * / y`).
+ * - Same-line missing binary operators between adjacent operands outside `callParen`/`bracket`
+ *   lists (`var total = price tax;`, `if (a b)`).
+ */
+function checkJsExpressionOperators(
+  tokens: readonly JsSyntaxToken[],
+  unclosedStarts: ReadonlyMap<number, number | undefined>,
+  unmatchedCloseStarts: ReadonlySet<number>,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const stack: JsContainerKind[] = [];
+
+  const pushOpErr = (tok: JsSyntaxToken, message: string): void => {
+    if (diagnostics.some((d) => d.ruleId === 'HANA-SYN-034' && d.start === tok.start)) return;
+    diagnostics.push({
+      ruleId: 'HANA-SYN-034',
+      category: 'syntax',
+      severity: 'error',
+      message,
+      start: tok.start,
+      end: tok.end,
+      fixes: [],
+    });
+  };
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const prev = i > 0 ? tokens[i - 1] : null;
+    const prevPrev = i > 1 ? tokens[i - 2] : null;
+    const next = i + 1 < tokens.length ? tokens[i + 1] : null;
+
+    if (tok.text === '(' || tok.text === '[' || tok.text === '{') {
+      if (unclosedStarts.has(tok.start)) continue;
+      if (tok.text === '(') stack.push(classifyJsParenContainer(prev, prevPrev));
+      else if (tok.text === '[') stack.push('bracket');
+      else stack.push('brace');
+      continue;
+    }
+    if (tok.text === ')' || tok.text === ']' || tok.text === '}') {
+      if (unmatchedCloseStarts.has(tok.start)) continue;
+      stack.pop();
+      continue;
+    }
+
+    // 1. Dangling binary or `+`/`-` operator right before `;`, `)`, `]`, `}`, `,`
+    if (tok.kind === 'op' && (JS_BINARY_ONLY_OPS.has(tok.text) || tok.text === '+' || tok.text === '-')) {
+      if (next && [';', ')', ']', '}', ','].includes(next.text)) {
+        pushOpErr(tok, `Dangling operator '${tok.text}' before '${next.text}'.`);
+        continue;
+      }
+      // 2. Consecutive binary-only operators (`a >= = b`, `a * / b`)
+      if (JS_BINARY_ONLY_OPS.has(tok.text) && next && next.kind === 'op' && JS_BINARY_ONLY_OPS.has(next.text)) {
+        pushOpErr(next, `Unexpected operator '${next.text}' after '${tok.text}'.`);
+        continue;
+      }
+    }
+
+    // 3. Same-line missing operator between adjacent operands in expression contexts
+    // (Skip `callParen` and `bracket` where `HANA-SYN-033` already suggests inserting `,`)
+    const mode = stack[stack.length - 1];
+    if (mode === 'callParen' || mode === 'bracket' || !prev || tok.nlBefore > 0) continue;
+    // Do not flag `a) b` or `] b` across ASI boundaries or `function f() {}` / `if (c) stmt`
+    if (prev.text === ')' || prev.text === ']') continue;
+    // Do not flag `x.if` or keyword property names or `{ async foo() }` / `method() {}`
+    if (prev.kind === 'ident' && prevPrev?.text === '.') continue;
+    if (tok.kind === 'ident' && next?.text === '(' && mode === 'brace' && prevPrev?.text !== '=') continue;
+    if (next?.text === ':') continue; // ternary or object key
+
+    if (isJsOperandEnd(prev) && isJsOperandStart(tok)) {
+      pushOpErr(tok, `Missing operator between '${prev.text}' and '${tok.text}'.`);
+    }
+  }
 }

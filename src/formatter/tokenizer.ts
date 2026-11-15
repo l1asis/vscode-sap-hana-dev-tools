@@ -80,7 +80,13 @@ const DIGIT = /[0-9]/;
 const OFF_RE = /^(?:--|\/\*)\s*hanasql-format\s*:?\s*off\b/i;
 const ON_RE = /^(?:--|\/\*)\s*hanasql-format\s*:?\s*on\b/i;
 
-export function tokenize(text: string): Token[] {
+export interface TokenizeOptions {
+  readonly collapseFormatOff?: boolean;
+  readonly slashComments?: boolean;
+  readonly singleLineQident?: boolean;
+}
+
+export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
   const tokens: Token[] = [];
   const n = text.length;
   let i = 0;
@@ -105,7 +111,7 @@ export function tokenize(text: string): Token[] {
     }
 
     // line comment
-    if (ch === '-' && text[i + 1] === '-') {
+    if ((ch === '-' && text[i + 1] === '-') || (options.slashComments && ch === '/' && text[i + 1] === '/')) {
       let j = i + 2;
       while (j < n && text[j] !== '\n' && text[j] !== '\r') j++;
       push('lineComment', i, j);
@@ -134,6 +140,7 @@ export function tokenize(text: string): Token[] {
     if (ch === '"') {
       let j = i + 1;
       while (j < n) {
+        if (options.singleLineQident && (text[j] === '\n' || text[j] === '\r')) break;
         if (text[j] === '"') {
           if (text[j + 1] === '"') { j += 2; continue; }
           j++;
@@ -228,7 +235,7 @@ export function tokenize(text: string): Token[] {
     i++;
   }
 
-  return collapseFormatOff(tokens, text);
+  return options.collapseFormatOff === false ? tokens : collapseFormatOff(tokens, text);
 }
 
 function scanString(text: string, i: number): number {

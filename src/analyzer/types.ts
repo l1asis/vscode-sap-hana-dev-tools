@@ -7,7 +7,8 @@ export type DiagnosticCategory =
   | 'performance'
   | 'lint'
   | 'migration'
-  | 'calculationview';
+  | 'calculationview'
+  | 'syntax';
 
 export type TargetPlatform = 'auto' | 'xsc' | 'hdi' | 'cloud';
 
@@ -41,6 +42,7 @@ export interface AnalyzerOptions {
   readonly performance: boolean;
   readonly migration: boolean;
   readonly calculationView: boolean;
+  readonly syntax: boolean;
   readonly targetPlatform: TargetPlatform;
 }
 
@@ -49,6 +51,7 @@ export const DEFAULT_ANALYZER_OPTIONS: AnalyzerOptions = {
   performance: true,
   migration: true,
   calculationView: true,
+  syntax: true,
   targetPlatform: 'auto',
 };
 
