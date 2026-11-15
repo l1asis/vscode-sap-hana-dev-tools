@@ -734,9 +734,15 @@ test('HANA-SYN-028: SQLScript routine header, USING, block declaration ordering,
     )
   );
   assert.ok(
-    syn28('hdbfunction', 'FUNCTION f() RETURNS INT READS SQL DATA AS BEGIN RETURN; END;').some((d) =>
-      /'READS SQL DATA' is not allowed in a FUNCTION header/i.test(d.message)
+    syn28('hdbfunction', 'FUNCTION f() RETURNS INT STRUCTURED FILTER CHECK AS BEGIN RETURN; END;').length === 0
+  );
+  assert.ok(
+    syn28('hdbprocedure', 'PROCEDURE p() STRUCTURED FILTER CHECK AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>
+      /'STRUCTURED FILTER CHECK' is only supported in FUNCTION/i.test(d.message)
     )
+  );
+  assert.ok(
+    syn28('hdbfunction', 'FUNCTION f() RETURNS x INT LANGUAGE SQLSCRIPT READS SQL DATA AS BEGIN x = 1; END').length === 0
   );
   assert.ok(
     syn28('hdbprocedure', 'PROCEDURE p() READS SQL DATA AUTOCOMMIT DDL ON AS BEGIN SELECT 1 FROM DUMMY; END;').some((d) =>

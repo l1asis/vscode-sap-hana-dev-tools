@@ -251,7 +251,7 @@ function_header  ::= [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" | "VIRTUAL" ] "FUNC
                      [ "(" <in_param_list> ")" ]
                      "RETURNS" ( <scalar_ret_list> | "TABLE" "(" ... ")" )
                      [ "LANGUAGE" <lang> ] [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
-                     [ "DEFAULT" "SCHEMA" <schema> ] [ <variable_cache_clause> ]
+                     [ "DEFAULT" "SCHEMA" <schema> ] [ "READS" "SQL" "DATA" ] [ <variable_cache_clause> ]
                      [ "DETERMINISTIC" ] [ "WITH" "ENCRYPTION" ]
                      [ [ "NO" ] "STRUCTURED" "FILTER" "CHECK" ]
                      "AS" [ "USING" <lib> [ "AS" <alias> ] ";" ... ] ( "BEGIN" ... "END" | "HEADER" "ONLY" ) ;
@@ -271,7 +271,6 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   2. **Header Clause & Parameter Compatibility (`error`):**
      - `OUT` and `INOUT` parameter modes are disallowed in `FUNCTION` parameter lists (only `IN` is permitted).
      - `RETURNS` and `[NO] STRUCTURED FILTER CHECK` are disallowed in `PROCEDURE` headers.
-     - `READS SQL DATA` is disallowed in `FUNCTION` headers (functions are inherently read-only).
      - `AUTOCOMMIT DDL ON|OFF` is disallowed in `FUNCTION` headers and in `READS SQL DATA` `PROCEDURE` headers.
      - `CREATE FUNCTION` / HDI `FUNCTION` / `VIRTUAL FUNCTION` headers MUST declare `RETURNS`.
   3. **`USING` Library Placement (`error`):**

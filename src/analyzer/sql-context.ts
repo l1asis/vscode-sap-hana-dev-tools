@@ -609,15 +609,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       }
 
       if (up === 'READS' && nextUp === 'SQL' && thirdUp === 'DATA') {
-        if (isFunction) {
-          emitDiag(
-            tok,
-            'HANA-SYN-028',
-            `'READS SQL DATA' is not allowed in a FUNCTION header; functions are inherently read-only.`
-          );
-        } else {
-          recordClause(tok, 'READS SQL DATA', 'READS SQL DATA', true);
-        }
+        recordClause(tok, 'READS SQL DATA', 'READS SQL DATA', true);
         hasReadsSqlData = true;
         i += 3;
         continue;
