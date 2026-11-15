@@ -2,6 +2,33 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.5.0] - 2026-11-15
+
+### Added
+
+- **Phase 3 Offline Static Analyzers & QuickFixes (`src/analyzer/`):**
+  - **Security Diagnostics (`HANA-SEC-001` – `HANA-SEC-042`):** Detects SQLScript dynamic SQL concatenation and unsanitized `EXEC` / `EXECUTE IMMEDIATE` / `APPLY_FILTER` inputs, `SQL SECURITY DEFINER` privilege risks, XSJS SQL injection, legacy `$.db` usage, reflected XSS (`$.response.setBody`), `.xsaccess` misconfigurations (`authentication`, `prevent_xsrf`, `anonymous_connection`, `cors`, `force_ssl`, `X-Frame-Options`), and `.hdbrole` / `.hdbgrants` / `.hdbrevokes` over-privileged grants (`WITH GRANT OPTION`, `#` role suffix rules, `ALL PRIVILEGES`, `application_user` DDL/write grants), with automated QuickFixes.
+  - **SQLScript Performance & Lint Rules (`HANA-PERF-001` – `HANA-PERF-007`, `HANA-LINT-001` – `HANA-LINT-002`):** Flags legacy `CE_*` plan operators (escalated to `Error` when `hanasql.analyze.targetPlatform` is `cloud`), mixed `CE_*` and SQL blocks, imperative cursor loops, `SELECT *`, DML inside loops, dynamic SQL/DDL, `CARDINALITY` / `TRACE`, empty `DECLARE EXIT HANDLER` blocks, and unreliable `::ROWCOUNT` usage, with `CE_*` -> SQL and `EXIT HANDLER` QuickFixes plus `@AnalyzerSuppress(...)` and `-- hanasql-analyze-disable` suppression support.
+  - **Calculation View XML Schema & Graph Validation (`HANA-LINT-101` – `HANA-LINT-107`):** Validates `.calculationview` and `.hdbcalculationview` XML structure, `<input node="#...">` resolution and cycle detection, node arity constraints, `<logicalModel>` and `CUBE`/`DIMENSION` measure rules, duplicate IDs, legacy `ANALYTIC_PRIVILEGE` / `NONE` privilege settings, and XSC-only constructs (`columnObject@schemaName`, `defaultSchema`, deprecated `Calculation:ScriptView`) with QuickFixes.
+- **Bidirectional XSC <-> HDI / XSA Migration & Refactoring (`src/analyzer/migrator.ts`):**
+  - **Rules & CodeActions (`HANA-MIG-001` – `HANA-MIG-020`):** Supports bidirectional AST conversion between Classic KV and HDI DDL for `.hdbtable`, `.hdbview`, and `.hdbsequence`, plus XSC -> HDI conversion for classic `.hdbrole`, `.hdbdd` (including inline `@Schema` and single-line entities) -> `.hdbcds`, and `.hdbstructure` -> `.hdbtabletype`, alongside cleanup diagnostics/QuickFixes for `DEFAULT SCHEMA`, `_SYS_BIC`, `.hdbschema` / `.hdbti` / `.xsodata`, and deprecated XSJS `$.repo` APIs.
+  - **Commands & Settings (`package.json`, `src/analyzer/vscode-provider.ts`):** Added `hanasql.migrateArtifactToHdi`, `hanasql.convertArtifactToXsc`, and `hanasql.analyze.*` (`enable`, `security`, `performance`, `migration`, `calculationView`, `targetPlatform`) settings.
+- **Zero-Config Offline IntelliSense & Code Snippets (`src/xsjs/`, `src/sql/`, `snippets/`):**
+  - **XSJS, XSDS & XSUnit IntelliSense:** Added `resources/xsjs.d.ts` generator (`scripts/build-xsjs-dts.js`), `src/xsjs/xsjs-catalog.ts`, and Completion, Hover, and SignatureHelp providers covering `$.*`, `$.import(...)` package/library string completions, `sap.hana.xs.libs.dbutils` (`xsds`, `procedures`), `sap.hana.testtools` (`mockstar`, `unit.util`), and `jasmine` / XSUnit BDD globals, plus `hanasql.installXsjsTypes` and `hanasql.xsjs.enableIntelliSense`.
+  - **SQL, SQLScript & Design-Time Artifact IntelliSense:** Added `src/sql/sql-catalog.ts` (`scripts/build-sql-catalog.js`, `scripts/build-catalogs.js`) and providers for case-adapted SQL keywords/types/functions, `::` SQLScript system variables, `USING [SYS.]SQLSCRIPT_*` library members (`alias:member`), local `:var` parameters/declarations, `.xsaccess` / `.hdiconfig` / `.hdbgrants` / `.hdbrevokes` / JSON `.hdbrole` properties, Classic KV artifact keys, and `hanasql.sql.enableIntelliSense`.
+  - **VS Code Snippets (`snippets/`):** Contributed `sqlscript.code-snippets`, `artifacts.code-snippets`, and `xsjs.code-snippets`.
+- **Phase 3 Specs, Catalogs, Samples & Tests:**
+  - Added specs in `docs/specs/diagnostics/` (`security-rules.md`, `performance-rules.md`, `migration-xsc-to-hdi.md`, `sql-intellisense.md`) and `docs/specs/artifacts/calculationview-schema.md`, plus `docs/specs/catalogs/xsjs-api.json` and expanded `builtin-functions.json`.
+  - Added sample `samples/hdi/CV_SALES_PROJECTION.hdbcalculationview` and 6 new test suites (`security-analyzer`, `performance-analyzer`, `calculationview-validator`, `migration-transformer`, `xsjs-intellisense`, `sql-intellisense`) bringing the test suite to `103/103` passing.
+
+### Changed
+
+- **Build Scripts & Roadmap (`package.json`, `ROADMAP.md`, `docs/research/CHECKLIST.md`):** Added `build:sql-catalog` and `build:xsjs-dts` scripts, chained `build:sql-catalog` into `build:keywords`, and marked Phase 3 complete in `ROADMAP.md`.
+
+### Fixed
+
+- **XSJS Nested Block Highlighting (`syntaxes/xsjs-injection.tmLanguage.json`, `syntaxes/xsjs.tmLanguage.json`, `scripts/build-grammars.js`, `package.json`):** Registered a `xsjs.injection` grammar targeting `source.xsjs` so `$.*` API property and method scopes highlight reliably inside nested JS blocks, verified with nested API highlighting assertions in `test/grammar.test.ts`.
+
 ## [0.4.1] - 2026-11-15
 
 ### Fixed
