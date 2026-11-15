@@ -16031,7 +16031,8 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
         "LEVEL_DEBUG CONSTANT VARCHAR(7)"
       ],
       "returnType": "VARCHAR(7)",
-      "description": "Debug log level constant ('DEBUG') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+      "description": "Debug log level constant ('DEBUG') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).",
+      "isConstant": true
     },
     {
       "name": "LEVEL_ERROR",
@@ -16040,7 +16041,8 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
         "LEVEL_ERROR CONSTANT VARCHAR(7)"
       ],
       "returnType": "VARCHAR(7)",
-      "description": "Error log level constant ('ERROR') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+      "description": "Error log level constant ('ERROR') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).",
+      "isConstant": true
     },
     {
       "name": "LEVEL_FATAL",
@@ -16049,7 +16051,8 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
         "LEVEL_FATAL CONSTANT VARCHAR(7)"
       ],
       "returnType": "VARCHAR(7)",
-      "description": "Fatal log level constant ('FATAL') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+      "description": "Fatal log level constant ('FATAL') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).",
+      "isConstant": true
     },
     {
       "name": "LEVEL_INFO",
@@ -16058,7 +16061,8 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
         "LEVEL_INFO CONSTANT VARCHAR(7)"
       ],
       "returnType": "VARCHAR(7)",
-      "description": "Info log level constant ('INFO') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+      "description": "Info log level constant ('INFO') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).",
+      "isConstant": true
     },
     {
       "name": "LEVEL_WARNING",
@@ -16067,7 +16071,8 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
         "LEVEL_WARNING CONSTANT VARCHAR(7)"
       ],
       "returnType": "VARCHAR(7)",
-      "description": "Warning log level constant ('WARNING') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+      "description": "Warning log level constant ('WARNING') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD]).",
+      "isConstant": true
     },
     {
       "name": "LOG",

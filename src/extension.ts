@@ -8,6 +8,7 @@ import {
   supportsRangeFormatting,
 } from './formatter/dispatch';
 import { installXsjsTypeDeclarations, registerXsjsIntelliSense } from './xsjs/providers';
+import { registerSqlIntelliSense } from './sql/providers';
 import { format } from './formatter/formatter';
 import {
   DEFAULTS,
@@ -234,6 +235,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerDocumentFormattingEditProvider(xsjsSelector, xsjsProvider),
     vscode.languages.registerDocumentRangeFormattingEditProvider(xsjsSelector, xsjsProvider),
     ...registerXsjsIntelliSense(xsjsSelector),
+    ...registerSqlIntelliSense(),
     ...registerAnalyzerFeatures(),
     vscode.commands.registerCommand('hanasql.openFormatterSettings', () =>
       vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql')

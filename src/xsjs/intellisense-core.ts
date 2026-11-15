@@ -1,5 +1,7 @@
 import {
   XSJS_CATALOG,
+  XSJS_GLOBALS,
+  XSJS_IMPORT_MODULES,
   type XsjsChildRef,
   type XsjsMemberDoc,
   type XsjsMethodDoc,
@@ -21,6 +23,8 @@ export interface XsjsCompletionCandidate {
   readonly documentation: string;
   readonly deprecated?: string;
   readonly sortPrefix: string;
+  readonly replaceStart?: number;
+  readonly replaceEnd?: number;
 }
 
 export interface XsjsHoverResult {
@@ -125,14 +129,21 @@ function maskCommentsAndStrings(text: string): MaskedSource {
   return { masked: chars.join('') };
 }
 
-function isInsideMask(text: string, masked: string, offset: number, allowStrings = false): boolean {
-  if (offset <= 0 || offset > text.length) return false;
-  // Scan source up to offset to determine if cursor lies inside a comment (or string unless allowed)
-  void masked;
+interface CursorMaskState {
+  readonly inComment: boolean;
+  readonly quote: string | null;
+  readonly quoteStart: number;
+}
+
+function getCursorMaskState(text: string, offset: number): CursorMaskState {
+  if (offset <= 0 || offset > text.length) {
+    return { inComment: false, quote: null, quoteStart: -1 };
+  }
   let i = 0;
   let inLineComment = false;
   let inBlockComment = false;
   let quote: string | null = null;
+  let quoteStart = -1;
   while (i < offset) {
     const c = text[i];
     const n = text[i + 1] ?? '';
@@ -155,7 +166,10 @@ function isInsideMask(text: string, masked: string, offset: number, allowStrings
         i += 2;
         continue;
       }
-      if (c === quote) quote = null;
+      if (c === quote) {
+        quote = null;
+        quoteStart = -1;
+      }
       i++;
       continue;
     }
@@ -171,17 +185,31 @@ function isInsideMask(text: string, masked: string, offset: number, allowStrings
     }
     if (c === '\'' || c === '"' || c === '`') {
       quote = c;
+      quoteStart = i;
       i++;
       continue;
     }
     i++;
   }
-  return inLineComment || inBlockComment || (!allowStrings && quote !== null);
+  return { inComment: inLineComment || inBlockComment, quote, quoteStart };
+}
+
+function isInsideMask(text: string, masked: string, offset: number, allowStrings = false): boolean {
+  void masked;
+  const state = getCursorMaskState(text, offset);
+  return state.inComment || (!allowStrings && state.quote !== null);
+}
+
+interface ParsedSegment {
+  readonly name: string;
+  readonly isCall: boolean;
+  readonly argsStart?: number;
+  readonly argsEnd?: number;
 }
 
 interface ParsedChain {
   readonly isNew: boolean;
-  readonly segments: readonly { name: string; isCall: boolean }[];
+  readonly segments: readonly ParsedSegment[];
 }
 
 /**
@@ -192,15 +220,18 @@ function extractExpressionChainEndingAt(masked: string, endOffset: number): Pars
   let i = endOffset;
   while (i > 0 && /\s/.test(masked[i - 1])) i--;
 
-  const rawSegments: { name: string; isCall: boolean }[] = [];
+  const rawSegments: ParsedSegment[] = [];
 
   while (i > 0) {
     let isCall = false;
+    let argsStart: number | undefined;
+    let argsEnd: number | undefined;
     while (i > 0 && /\s/.test(masked[i - 1])) i--;
 
     // Check trailing call `(...)`
     if (i > 0 && masked[i - 1] === ')') {
       isCall = true;
+      argsEnd = i - 1;
       let depth = 1;
       i--;
       while (i > 0 && depth > 0) {
@@ -209,6 +240,7 @@ function extractExpressionChainEndingAt(masked: string, endOffset: number): Pars
         i--;
       }
       if (depth !== 0) return null;
+      argsStart = i + 1;
       while (i > 0 && /\s/.test(masked[i - 1])) i--;
     }
 
@@ -217,7 +249,11 @@ function extractExpressionChainEndingAt(masked: string, endOffset: number): Pars
     while (i > 0 && IDENT_CHAR_RE.test(masked[i - 1])) i--;
     if (i === identEnd) return null;
     const name = masked.slice(i, identEnd);
-    rawSegments.unshift({ name, isCall });
+    rawSegments.unshift({
+      name,
+      isCall,
+      ...(argsStart !== undefined ? { argsStart, argsEnd } : {}),
+    });
 
     while (i > 0 && /\s/.test(masked[i - 1])) i--;
     if (i > 0 && masked[i - 1] === '.') {
@@ -267,9 +303,17 @@ function resolveCatalogReturnType(typeExpr: string): ResolvedType | null {
     .filter((p) => p && p !== 'undefined' && p !== 'null' && p !== 'void');
 
   for (const part of parts) {
+    if (part.startsWith('typeof ')) {
+      const target = part.slice('typeof '.length).trim();
+      const targetEntry = XSJS_CATALOG[target];
+      if (targetEntry) {
+        return { typeName: target, isInstance: targetEntry.kind === 'namespace' };
+      }
+    }
     const cleaned = part.replace(/\[\]$/, '').trim();
-    if (XSJS_CATALOG[cleaned]) {
-      return { typeName: cleaned, isInstance: true };
+    const entry = XSJS_CATALOG[cleaned];
+    if (entry) {
+      return { typeName: cleaned, isInstance: entry.kind !== 'class' ? entry.kind === 'namespace' : true };
     }
   }
   return null;
@@ -303,23 +347,63 @@ function collectInheritedMembers(entry: XsjsSymbolEntry): {
   };
 }
 
+function resolveDollarImport(seg: ParsedSegment, rawText: string): ResolvedType | null {
+  if (!seg.isCall || seg.argsStart === undefined || seg.argsEnd === undefined) {
+    return null;
+  }
+  const argsText = rawText.slice(seg.argsStart, seg.argsEnd);
+  const twoArg = /^\s*['"]([^'"]+)['"]\s*,\s*['"]([^'"]+)['"]\s*$/.exec(argsText);
+  if (twoArg) {
+    const key = `${twoArg[1]}:${twoArg[2]}`;
+    const target = XSJS_IMPORT_MODULES[key];
+    const targetEntry = target ? XSJS_CATALOG[target] : undefined;
+    if (target && targetEntry) {
+      return { typeName: target, isInstance: targetEntry.kind === 'namespace' };
+    }
+    return null;
+  }
+  const oneArg = /^\s*['"]([^'"]+)['"]\s*$/.exec(argsText);
+  if (oneArg && XSJS_IMPORT_MODULES[oneArg[1]]) {
+    const target = XSJS_IMPORT_MODULES[oneArg[1]];
+    const targetEntry = XSJS_CATALOG[target];
+    if (targetEntry) {
+      return { typeName: target, isInstance: targetEntry.kind === 'namespace' };
+    }
+  }
+  return null;
+}
+
 function resolveChain(
   chain: ParsedChain,
-  locals: ReadonlyMap<string, ResolvedType>
+  locals: ReadonlyMap<string, ResolvedType>,
+  rawText = ''
 ): ResolvedType | null {
   if (chain.segments.length === 0) return null;
   const first = chain.segments[0];
   let current: ResolvedType | null = null;
 
-  if (first.name === '$') {
-    current = { typeName: '$', isInstance: true };
+  if (!first.isCall && XSJS_CATALOG[first.name]) {
+    const rootEntry = XSJS_CATALOG[first.name];
+    current = { typeName: first.name, isInstance: rootEntry.kind === 'namespace' };
   } else {
     const localType = locals.get(first.name);
-    if (!localType) return null;
-    if (first.isCall) {
+    if (localType) {
+      if (first.isCall) {
+        if (!chain.isNew || XSJS_CATALOG[localType.typeName]?.kind !== 'class') {
+          return null;
+        }
+        current = { typeName: localType.typeName, isInstance: true };
+      } else {
+        current = localType;
+      }
+    } else if (first.isCall) {
+      const globalFn = XSJS_GLOBALS.find((g) => g.name === first.name);
+      if (!globalFn) return null;
+      current = resolveCatalogReturnType(globalFn.returnType);
+      if (!current) return null;
+    } else {
       return null;
     }
-    current = localType;
   }
 
   for (let idx = 1; idx < chain.segments.length; idx++) {
@@ -327,13 +411,22 @@ function resolveChain(
     const entry: XsjsSymbolEntry | undefined = XSJS_CATALOG[current.typeName];
     if (!entry) return null;
 
+    if (current.typeName === '$' && seg.name === 'import' && seg.isCall) {
+      const imported = resolveDollarImport(seg, rawText);
+      if (imported) {
+        current = imported;
+        continue;
+      }
+    }
+
     // 1. Child namespace / class lookup (valid for namespace or static class side)
     const child: XsjsChildRef | undefined = entry.children.find((c) => c.name === seg.name);
     if (child) {
-      const isLast = idx === chain.segments.length - 1;
+      const isLast: boolean = idx === chain.segments.length - 1;
+      const instantiated: boolean = chain.isNew && child.kind === 'class' && (isLast || seg.isCall);
       current = {
         typeName: child.fullName,
-        isInstance: isLast && chain.isNew ? true : child.kind === 'namespace',
+        isInstance: instantiated ? true : child.kind === 'namespace',
       };
       continue;
     }
@@ -376,7 +469,11 @@ function resolveChain(
  * Infers types of local `var`/`let`/`const` bindings and simple reassignments prior to `offset`.
  * Example: `var conn = $.hdb.getConnection();` -> `conn: $.hdb.Connection (instance)`.
  */
-export function inferXsjsLocalVariables(masked: string, limitOffset: number): Map<string, ResolvedType> {
+export function inferXsjsLocalVariables(
+  masked: string,
+  limitOffset: number,
+  rawText = masked
+): Map<string, ResolvedType> {
   const locals = new Map<string, ResolvedType>();
   const slice = masked.slice(0, limitOffset);
   const assignRe = /(?:^|[;{}\n])\s*(?:(?:var|let|const)\s+)?([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=\s*([^;\n]+)(?=[;\n]|$)/g;
@@ -388,16 +485,16 @@ export function inferXsjsLocalVariables(masked: string, limitOffset: number): Ma
     const rhsOffset = m.index + m[0].length;
     const chain = extractExpressionChainEndingAt(slice, rhsOffset);
     if (chain) {
-      const resolved = resolveChain(chain, locals);
+      const resolved = resolveChain(chain, locals, rawText);
       if (resolved) {
         locals.set(varName, resolved);
         continue;
       }
     }
-    if (rhsRaw.startsWith('$') || rhsRaw.startsWith('new ')) {
-      const subChain = extractExpressionChainEndingAt(rhsRaw, rhsRaw.length);
+    if (rhsRaw.startsWith('$') || rhsRaw.startsWith('new ') || rhsRaw.startsWith('jasmine') || rhsRaw.startsWith('sap')) {
+      const subChain = extractExpressionChainEndingAt(slice, rhsOffset);
       if (subChain) {
-        const resolved = resolveChain(subChain, locals);
+        const resolved = resolveChain(subChain, locals, rawText);
         if (resolved) locals.set(varName, resolved);
       }
     }
@@ -449,12 +546,89 @@ function isConstantMember(entry: XsjsSymbolEntry, member: XsjsMemberDoc): boolea
   return false;
 }
 
+function getImportStringCompletions(
+  text: string,
+  masked: string,
+  quoteStart: number,
+  offset: number
+): readonly XsjsCompletionCandidate[] {
+  const prefix = text.slice(quoteStart + 1, offset);
+  if (prefix.includes('\n')) return [];
+  const lowerPrefix = prefix.toLowerCase();
+  const beforeQuote = masked.slice(0, quoteStart);
+
+  // 1st argument: $.import("sap.hana...", "...")
+  if (/(?:^|[^a-zA-Z0-9_$])\$\s*\.\s*import\s*\(\s*$/.test(beforeQuote)) {
+    const packages = new Map<string, string[]>();
+    for (const [key, target] of Object.entries(XSJS_IMPORT_MODULES)) {
+      const idx = key.indexOf(':');
+      if (idx <= 0) continue;
+      const pkg = key.slice(0, idx);
+      const lib = key.slice(idx + 1);
+      const libs = packages.get(pkg) ?? [];
+      libs.push(`${lib} -> ${target}`);
+      packages.set(pkg, libs);
+    }
+
+    const candidates: XsjsCompletionCandidate[] = [];
+    for (const [pkg, libs] of [...packages.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      if (lowerPrefix && !pkg.toLowerCase().startsWith(lowerPrefix)) continue;
+      candidates.push({
+        label: pkg,
+        kind: 'namespace',
+        detail: 'SAP HANA XS package',
+        documentation: `Available libraries: ${libs.map((l) => `\`${l}\``).join(', ')}`,
+        sortPrefix: '0',
+        replaceStart: quoteStart + 1,
+        replaceEnd: offset,
+      });
+    }
+    return candidates;
+  }
+
+  // 2nd argument: $.import("sap.hana.xs.libs.dbutils", "xsds")
+  const secondArgMatch = /(?:^|[^a-zA-Z0-9_$])\$\s*\.\s*import\s*\(\s*(['"])[^\n'"]*\1\s*,\s*$/.exec(beforeQuote);
+  if (secondArgMatch) {
+    const pkgCallMatch = /(?:^|[^a-zA-Z0-9_$])\$\s*\.\s*import\s*\(\s*['"]([^'"]+)['"]\s*,\s*$/.exec(
+      text.slice(Math.max(0, quoteStart - 256), quoteStart)
+    );
+    if (!pkgCallMatch) return [];
+    const pkg = pkgCallMatch[1];
+    const prefixKey = `${pkg}:`;
+    const candidates: XsjsCompletionCandidate[] = [];
+    for (const [key, target] of Object.entries(XSJS_IMPORT_MODULES).sort((a, b) => a[0].localeCompare(b[0]))) {
+      if (!key.startsWith(prefixKey)) continue;
+      const lib = key.slice(prefixKey.length);
+      if (lowerPrefix && !lib.toLowerCase().startsWith(lowerPrefix)) continue;
+      const entry = XSJS_CATALOG[target];
+      candidates.push({
+        label: lib,
+        kind: 'namespace',
+        detail: target,
+        documentation: entry?.description ?? `SAP HANA XS library \`${target}\``,
+        sortPrefix: '0',
+        replaceStart: quoteStart + 1,
+        replaceEnd: offset,
+      });
+    }
+    return candidates;
+  }
+
+  return [];
+}
+
+const ROOT_NAMESPACE_NAMES = ['$', 'jasmine', 'sap'] as const;
+
 /**
  * Computes completion candidates at `offset` inside an XSJS/XSJSLIB document.
  */
 export function getXsjsCompletions(text: string, offset: number): readonly XsjsCompletionCandidate[] {
   const { masked } = maskCommentsAndStrings(text);
-  if (isInsideMask(text, masked, offset)) return [];
+  const maskState = getCursorMaskState(text, offset);
+  if (maskState.inComment) return [];
+  if (maskState.quote !== null) {
+    return getImportStringCompletions(text, masked, maskState.quoteStart, offset);
+  }
 
   // Identify optional partial word currently being typed right before cursor.
   let wordStart = offset;
@@ -468,21 +642,38 @@ export function getXsjsCompletions(text: string, offset: number): readonly XsjsC
     beforeWord--;
   }
 
-  // Case 1: Root `$` completion when user types `$` or `$` before dot
+  // Case 1: Root namespace (`$`, `jasmine`, `sap`) and XSUnit globals when typing top-level identifier
   if (beforeWord === 0 || masked[beforeWord - 1] !== '.') {
-    if (typedPrefix === '$') {
-      const rootEntry = XSJS_CATALOG['$'];
-      return rootEntry
-        ? [{
-            label: '$',
-            kind: 'namespace',
-            detail: 'namespace $',
-            documentation: rootEntry.description,
-            sortPrefix: '0',
-          }]
-        : [];
+    if (!typedPrefix) return [];
+    const lowerPrefix = typedPrefix.toLowerCase();
+    const candidates: XsjsCompletionCandidate[] = [];
+
+    for (const rootName of ROOT_NAMESPACE_NAMES) {
+      const rootEntry = XSJS_CATALOG[rootName];
+      if (!rootEntry) continue;
+      if (!rootName.toLowerCase().startsWith(lowerPrefix)) continue;
+      candidates.push({
+        label: rootName,
+        kind: 'namespace',
+        detail: `namespace ${rootName}`,
+        documentation: rootEntry.description,
+        sortPrefix: '0',
+      });
     }
-    return [];
+
+    for (const g of XSJS_GLOBALS) {
+      if (!g.name.toLowerCase().startsWith(lowerPrefix)) continue;
+      candidates.push({
+        label: g.name,
+        kind: 'function',
+        detail: formatMethodSignature(g.name, g),
+        documentation: buildMethodDocumentation([g]),
+        ...(g.deprecated ? { deprecated: g.deprecated } : {}),
+        sortPrefix: '1',
+      });
+    }
+
+    return candidates;
   }
 
   // Case 2: Member completion `<receiver>.<partial>`
@@ -490,8 +681,8 @@ export function getXsjsCompletions(text: string, offset: number): readonly XsjsC
   const chain = extractExpressionChainEndingAt(masked, dotIndex);
   if (!chain) return [];
 
-  const locals = inferXsjsLocalVariables(masked, dotIndex);
-  const resolved = resolveChain(chain, locals);
+  const locals = inferXsjsLocalVariables(masked, dotIndex, text);
+  const resolved = resolveChain(chain, locals, text);
   if (!resolved) return [];
 
   const entry = XSJS_CATALOG[resolved.typeName];
@@ -574,35 +765,47 @@ export function getXsjsHover(text: string, offset: number): XsjsHoverResult | nu
   let before = start;
   while (before > 0 && /\s/.test(masked[before - 1])) before--;
 
-  // Root `$` hover
-  if (ident === '$' && (before === 0 || masked[before - 1] !== '.')) {
-    const rootEntry = XSJS_CATALOG['$'];
-    if (!rootEntry) return null;
-    return {
-      markdown: `\`\`\`ts\ndeclare namespace $\n\`\`\`\n\n${rootEntry.description}`,
-      start,
-      end,
-    };
-  }
-
-  // Hover on a typed local variable (e.g. `conn`)
+  // Top-level identifier hover (`$`, `jasmine`, `sap`, local variable, or XSUnit global function)
   if (before === 0 || masked[before - 1] !== '.') {
-    const locals = inferXsjsLocalVariables(masked, start);
+    if (ROOT_NAMESPACE_NAMES.includes(ident as (typeof ROOT_NAMESPACE_NAMES)[number])) {
+      const rootEntry = XSJS_CATALOG[ident];
+      if (rootEntry) {
+        return {
+          markdown: `\`\`\`ts\ndeclare namespace ${ident}\n\`\`\`\n\n${rootEntry.description}`,
+          start,
+          end,
+        };
+      }
+    }
+
+    const locals = inferXsjsLocalVariables(masked, start, text);
     const localResolved = locals.get(ident);
-    if (!localResolved) return null;
-    const entry = XSJS_CATALOG[localResolved.typeName];
-    return {
-      markdown: `\`\`\`ts\nvar ${ident}: ${localResolved.typeName}\n\`\`\`${entry?.description ? `\n\n${entry.description}` : ''}`,
-      start,
-      end,
-    };
+    if (localResolved) {
+      const entry = XSJS_CATALOG[localResolved.typeName];
+      return {
+        markdown: `\`\`\`ts\nvar ${ident}: ${localResolved.typeName}\n\`\`\`${entry?.description ? `\n\n${entry.description}` : ''}`,
+        start,
+        end,
+      };
+    }
+
+    const globalFns = XSJS_GLOBALS.filter((g) => g.name === ident);
+    if (globalFns.length > 0) {
+      return {
+        markdown: buildMethodDocumentation(globalFns),
+        start,
+        end,
+      };
+    }
+
+    return null;
   }
 
   // Member hover (`receiver.ident`)
   const chain = extractExpressionChainEndingAt(masked, before - 1);
   if (!chain) return null;
-  const locals = inferXsjsLocalVariables(masked, before - 1);
-  const resolved = resolveChain(chain, locals);
+  const locals = inferXsjsLocalVariables(masked, before - 1, text);
+  const resolved = resolveChain(chain, locals, text);
   if (!resolved) return null;
   const entry = XSJS_CATALOG[resolved.typeName];
   if (!entry) return null;
@@ -677,11 +880,11 @@ export function getXsjsSignatureHelp(text: string, offset: number): XsjsSignatur
   const chain = extractExpressionChainEndingAt(masked, openParen);
   if (!chain || chain.segments.length === 0) return null;
 
-  const locals = inferXsjsLocalVariables(masked, openParen);
+  const locals = inferXsjsLocalVariables(masked, openParen, text);
 
-  // Constructor invocation: `new $.net.Mail(...)`
+  // Constructor invocation: `new $.net.Mail(...)` or `new TableUtils(...)`
   if (chain.isNew) {
-    const resolvedClass = resolveChain({ isNew: false, segments: chain.segments }, locals);
+    const resolvedClass = resolveChain({ isNew: false, segments: chain.segments }, locals, text);
     if (!resolvedClass) return null;
     const entry = XSJS_CATALOG[resolvedClass.typeName];
     if (!entry || entry.constructors.length === 0) return null;
@@ -694,11 +897,22 @@ export function getXsjsSignatureHelp(text: string, offset: number): XsjsSignatur
     };
   }
 
+  // Top-level XSUnit global invocation: `describe(...)`, `expect(...)`, `spyOn(...)`
+  if (chain.segments.length === 1) {
+    const fnName = chain.segments[0].name;
+    const globalMatches = XSJS_GLOBALS.filter((g) => g.name === fnName);
+    if (globalMatches.length === 0) return null;
+    return {
+      signatures: globalMatches.map((g) => toSignatureInfo(g.name, g)),
+      activeSignature: selectBestOverload(globalMatches, commaCount),
+      activeParameter: commaCount,
+    };
+  }
+
   // Method / function invocation: `receiver.method(...)`
-  if (chain.segments.length < 2) return null;
   const methodSeg = chain.segments[chain.segments.length - 1];
   const receiverChain: ParsedChain = { isNew: false, segments: chain.segments.slice(0, -1) };
-  const resolvedReceiver = resolveChain(receiverChain, locals);
+  const resolvedReceiver = resolveChain(receiverChain, locals, text);
   if (!resolvedReceiver) return null;
 
   const entry = XSJS_CATALOG[resolvedReceiver.typeName];

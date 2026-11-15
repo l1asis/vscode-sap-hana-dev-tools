@@ -2372,10 +2372,26 @@
         "hanasql.xsjs.enableIntelliSense": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Enable built-in Completion, Hover, and SignatureHelp IntelliSense for the XSJS `$` API in `.xsjs` and `.xsjslib` files."
+          "markdownDescription": "Enable built-in Completion, Hover, and SignatureHelp IntelliSense for XSJS, XSDS (`xsds`/`procedures`), and XSUnit (`jasmine`/`Mockstar`) APIs in `.xsjs` and `.xsjslib` files."
+        },
+        "hanasql.sql.enableIntelliSense": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline Completion, Hover, and SignatureHelp IntelliSense for SAP HANA SQL, SQLScript (`SYS.SQLSCRIPT_*`, `::` variables, local `:var`), Design-Time JSON configs, and Classic KV artifacts."
         }
       }
-    }
+    },
+    "snippets": [
+      {
+        "path": "./snippets/sqlscript.code-snippets"
+      },
+      {
+        "path": "./snippets/artifacts.code-snippets"
+      },
+      {
+        "path": "./snippets/xsjs.code-snippets"
+      }
+    ]
   },
   "main": "./out/src/extension.js",
   "activationEvents": [

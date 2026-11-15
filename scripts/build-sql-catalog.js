@@ -85,7 +85,7 @@ function buildSqlCatalogTs() {
 
   for (const f of fnRaw.functions || []) {
     const sigs = Array.isArray(f.signatures) ? f.signatures : [f.name];
-    const isConstant = sigs.length > 0 && !sigs[0].includes('(');
+    const isConstant = sigs.length > 0 && (/CONSTANT\b/i.test(sigs[0]) || !sigs[0].includes('('));
     const entry = {
       name: f.name,
       library: f.library || 'SYS',

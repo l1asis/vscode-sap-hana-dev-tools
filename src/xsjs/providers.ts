@@ -50,6 +50,12 @@ export function registerXsjsIntelliSense(selector: vscode.DocumentSelector): vsc
         if (c.deprecated) {
           item.tags = [vscode.CompletionItemTag.Deprecated];
         }
+        if (c.replaceStart !== undefined && c.replaceEnd !== undefined) {
+          item.range = new vscode.Range(
+            document.positionAt(c.replaceStart),
+            document.positionAt(c.replaceEnd)
+          );
+        }
         return item;
       });
     },
@@ -100,7 +106,7 @@ export function registerXsjsIntelliSense(selector: vscode.DocumentSelector): vsc
   };
 
   return [
-    vscode.languages.registerCompletionItemProvider(selector, completionProvider, '.', '$'),
+    vscode.languages.registerCompletionItemProvider(selector, completionProvider, '.', '$', '"', '\''),
     vscode.languages.registerHoverProvider(selector, hoverProvider),
     vscode.languages.registerSignatureHelpProvider(selector, signatureProvider, '(', ','),
   ];
