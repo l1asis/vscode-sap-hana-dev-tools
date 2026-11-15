@@ -1153,6 +1153,224 @@ test('HANA-SYN-029: context-sensitive SQLScript statement legality & DETERMINIST
   assert.deepEqual(syn29('hanasql', validContextCases), []);
 });
 
+test('HANA-SYN-004: strict HDI artifact roots, invalid CREATE objects, and single-object trailing statements', () => {
+  const syn04 = (lang: string, code: string) => syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-004');
+
+  // Wrong root keywords or mismatched CREATE object kinds in HDI artifacts
+  assert.ok(syn04('hdbprocedure', 'SELECT 1 FROM DUMMY;').length >= 1);
+  assert.ok(syn04('hdbprocedure', 'CREATE VIEW "V" AS SELECT 1 AS A FROM DUMMY;').length >= 1);
+  assert.ok(syn04('hdbfunction', 'PROCEDURE "P"() AS BEGIN END').length >= 1);
+  assert.ok(syn04('hdbview', 'COLUMN TABLE "T" ("ID" INT);').length >= 1);
+
+  // Trailing statements after a single-object HDI declaration (with and without `;` after END)
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END; SELECT 2 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END SELECT 2 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04('hdbprocedure', 'PROCEDURE "P"() LANGUAGE SQLSCRIPT AS HEADER ONLY; SELECT 1 FROM DUMMY;').length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdbfunction',
+      'FUNCTION "F1"() RETURNS r INT AS BEGIN r = 1; END; FUNCTION "F2"() RETURNS r INT AS BEGIN r = 2; END'
+    ).length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdblibrary',
+      'LIBRARY "L" AS BEGIN PUBLIC VARIABLE c CONSTANT INT := 1; END; SELECT 1 FROM DUMMY;'
+    ).length >= 1
+  );
+  assert.ok(
+    syn04(
+      'hdbtrigger',
+      'TRIGGER "TRG" AFTER INSERT ON "T" FOR EACH ROW BEGIN END; SELECT 1 FROM DUMMY;'
+    ).length >= 1
+  );
+  assert.ok(syn04('hdbtable', 'COLUMN TABLE "T1" ("ID" INT); COLUMN TABLE "T2" ("ID" INT);').length >= 1);
+  assert.ok(
+    syn04('hdbview', 'VIEW "V1" AS SELECT 1 AS A FROM DUMMY; VIEW "V2" AS SELECT 2 AS B FROM DUMMY;').length >= 1
+  );
+
+  // Negative checks: keyword typos keep HANA-SYN-021 QuickFixes without spurious HANA-SYN-004
+  const typoFn = syntaxDiags('hdbfunction', 'FUNC "my_fn"() RETURNS r INT AS BEGIN r = 1; END');
+  assert.ok(typoFn.some((d) => d.ruleId === 'HANA-SYN-021' && d.fixes.length > 0));
+  assert.deepEqual(
+    typoFn.filter((d) => d.ruleId === 'HANA-SYN-004'),
+    []
+  );
+
+  const typoCreateProc = syntaxDiags('hanasql', 'CREATE PROCEDUR "P"() AS BEGIN END;');
+  assert.ok(typoCreateProc.some((d) => d.ruleId === 'HANA-SYN-021' && d.fixes.length > 0));
+  assert.deepEqual(
+    typoCreateProc.filter((d) => d.ruleId === 'HANA-SYN-004'),
+    []
+  );
+
+  // Negative checks: valid single-object HDI constructs (USING before BEGIN, foreign bodies, Cloud variants)
+  assert.deepEqual(
+    syn04('hdbprocedure', 'PROCEDURE "P"() LANGUAGE SQLSCRIPT AS USING "LIB" AS L; BEGIN SELECT 1 FROM DUMMY; END'),
+    []
+  );
+  assert.deepEqual(
+    syn04(
+      'hdbprocedure',
+      `PROCEDURE "P"() LANGUAGE R AS
+BEGIN
+  result <- data.frame(A = 1);
+END`
+    ),
+    []
+  );
+  assert.deepEqual(
+    syn04(
+      'hdbvirtualfunction',
+      'VIRTUAL FUNCTION "VF"() RETURNS TABLE ("ID" INT) CONFIGURATION \'{"remote":true}\''
+    ),
+    []
+  );
+  assert.deepEqual(syn04('hdbcollectionindex', 'HASH INDEX "IDX1" ON "COL1"($."lastName")'), []);
+  assert.deepEqual(syn04('hdbcollectionindex', 'BLOCK RANGE INDEX "IDX2" ON "COL1"($."ts")'), []);
+  assert.deepEqual(syn04('hdbfabricvirtualtable', 'SHARED SNAPSHOT REPLICA PAGE LOADABLE ON "MY_VT"'), []);
+
+  // Multi-statement contexts excluded from single-object HANA-SYN-004 restriction
+  assert.deepEqual(syn04('hdbdropcreatetable', 'DROP TABLE "T"; COLUMN TABLE "T" ("ID" INT)'), []);
+  assert.deepEqual(
+    syn04('hanasql', 'SELECT 1 FROM DUMMY; SELECT 2 FROM DUMMY; CREATE PROCEDURE "P"() AS BEGIN END;'),
+    []
+  );
+  assert.deepEqual(
+    syn04('hdbmigrationtable', '== version=1\nDROP TABLE "T";\nCOLUMN TABLE "T" ("ID" INT);'),
+    []
+  );
+});
+
+test('HANA-SYN-028 / HANA-SYN-029: .hdblibrary member ordering/visibility and .hdbtrigger body restrictions', () => {
+  const synLibTrg = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-004' || d.ruleId === 'HANA-SYN-028' || d.ruleId === 'HANA-SYN-029');
+
+  // .hdblibrary: VARIABLE after PROCEDURE (HANA-SYN-028)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END;
+        PUBLIC VARIABLE "V_LATE" CONSTANT INT := 1;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-028' && /before member/i.test(d.message))
+  );
+
+  // .hdblibrary: USING after VARIABLE (HANA-SYN-028)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC VARIABLE "V_C" CONSTANT INT := 1;
+        USING "pkg::other" AS other;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-028' && /USING/i.test(d.message))
+  );
+
+  // .hdblibrary: DEFAULT / = / := initializer on non-CONSTANT library variable (HANA-SYN-028)
+  for (const initClause of ['DEFAULT 1', '= 1', ':= 1']) {
+    assert.ok(
+      synLibTrg(
+        'hdblibrary',
+        `LIBRARY "pkg::lib" AS BEGIN
+          PRIVATE VARIABLE "V_BAD" INT ${initClause};
+        END`
+      ).some((d) => d.ruleId === 'HANA-SYN-028' && /CONSTANT/i.test(d.message))
+    );
+  }
+
+  // .hdblibrary: missing PUBLIC/PRIVATE visibility and direct statements outside members (HANA-SYN-029)
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        VARIABLE "V_NO_VIS" CONSTANT INT := 1;
+        FUNCTION "F_NO_VIS"() RETURNS res INT AS BEGIN res = 1; END;
+        SELECT 1 FROM DUMMY;
+        DECLARE "V_LOCAL" INT;
+      END`
+    ).filter((d) => d.ruleId === 'HANA-SYN-029').length >= 4
+  );
+
+  // .hdblibrary: member bodies still get nested HANA-SYN-029 checks
+  assert.ok(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" AS BEGIN
+        PUBLIC FUNCTION "F_BAD"() RETURNS res INT AS BEGIN
+          INSERT INTO "PERSISTENT_TAB" VALUES (1);
+          res = 1;
+        END;
+      END`
+    ).some((d) => d.ruleId === 'HANA-SYN-029' && /PERSISTENT_TAB/i.test(d.message))
+  );
+
+  // .hdblibrary valid complete artifact (mixed omitted/present `;` after member END)
+  assert.deepEqual(
+    synLibTrg(
+      'hdblibrary',
+      `LIBRARY "pkg::lib" LANGUAGE SQLSCRIPT AS BEGIN
+        USING "pkg::other" AS other;
+        PUBLIC VARIABLE "C_RATE" CONSTANT DECIMAL(10, 2) := 0.19;
+        PRIVATE VARIABLE "V_CACHE" INT;
+        PRIVATE FUNCTION "F_HELPER"(IN x INT) RETURNS res INT AS BEGIN
+          res = :x + 1;
+        END
+        PUBLIC PROCEDURE "P_RUN"(IN x INT, OUT y INT) AS BEGIN
+          DECLARE v_tmp INT := :x;
+          y = :v_tmp;
+        END;
+      END`
+    ),
+    []
+  );
+
+  // .hdbtrigger: disallowed DDL, TCL, dynamic SQL, AUTONOMOUS, PARALLEL, RETURN <expr> (HANA-SYN-029)
+  const triggerBodyBad = (stmt: string) =>
+    `TRIGGER "pkg::trg" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN ${stmt} END`;
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('COMMIT;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('ROLLBACK;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('CREATE COLUMN TABLE "TMP" ("A" INT);')).some((d) => d.ruleId === 'HANA-SYN-029')
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad("EXECUTE IMMEDIATE 'DROP TABLE \"X\"';")).some((d) => d.ruleId === 'HANA-SYN-029')
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('BEGIN AUTONOMOUS TRANSACTION INSERT INTO "LOG" VALUES (1); END;')).some(
+      (d) => d.ruleId === 'HANA-SYN-029'
+    )
+  );
+  assert.ok(
+    synLibTrg('hdbtrigger', triggerBodyBad('BEGIN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END;')).some(
+      (d) => d.ruleId === 'HANA-SYN-029'
+    )
+  );
+  assert.ok(synLibTrg('hdbtrigger', triggerBodyBad('RETURN 1;')).some((d) => d.ruleId === 'HANA-SYN-029'));
+
+  // .hdbtrigger valid artifact allowing DML writes, CALL, and bare RETURN;
+  assert.deepEqual(
+    synLibTrg(
+      'hdbtrigger',
+      `TRIGGER "pkg::trg_audit" AFTER INSERT ON "ORDERS" REFERENCING NEW ROW mynew FOR EACH ROW BEGIN
+        IF :mynew.ID IS NULL THEN
+          RETURN;
+        END IF;
+        INSERT INTO "AUDIT_LOG" ("ORDER_ID") VALUES (:mynew.ID);
+        CALL "pkg::notify_order"(:mynew.ID);
+      END`
+    ),
+    []
+  );
+});
+
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
   const brokenProc = 'CREATE FUNC "P"() AS BEGIN SELECT 1 FROM DUMMY; END;';
   // syntax: false disables HANA-SYN-* while leaving semantic diagnostics intact
