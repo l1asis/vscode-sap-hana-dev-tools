@@ -2,6 +2,12 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.4.1] - 2026-11-15
+
+### Fixed
+
+- **XSJS Grammar (`syntaxes/xsjs.tmLanguage.json`, `scripts/build-grammars.js`):** Added `$.application` (`$.Application`) to the highlighted XS JavaScript API root namespaces, alongside positive and negative grammar test coverage (`samples/xs-classic/lib.xsjs`, `test/grammar.test.ts`).
+
 ## [0.4.0] - 2026-11-15
 
 ### Added
