@@ -749,7 +749,7 @@ write('hdbcds', {
 // ---------------------------------------------------------------------------
 {
   const ns = 'xsjs';
-  const apis = ['request', 'response', 'db', 'hdb', 'net', 'util', 'web', 'session', 'security', 'jobs', 'trace', 'text', 'repo', 'process'];
+  const apis = ['application', 'request', 'response', 'db', 'hdb', 'net', 'util', 'web', 'session', 'security', 'jobs', 'trace', 'text', 'repo', 'process'];
   write('xsjs', {
     name: 'SAP HANA XS JavaScript (.xsjs, .xsjslib)',
     scopeName: 'source.xsjs',

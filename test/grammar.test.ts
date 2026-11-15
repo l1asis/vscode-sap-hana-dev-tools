@@ -203,6 +203,7 @@ test('xsjs: XS JavaScript API on top of the JavaScript grammar', () => {
   const t = tokenize('source.xsjs', sample('lib.xsjs'));
   check(t, '$', 'variable.language.xsjs');
   check(t, 'import', 'support.function.import');
+  check(t, 'application', 'support.class.api.xsjs');
   check(t, 'hdb', 'support.class.api.xsjs');
   check(t, 'response', 'support.class.api.xsjs');
   check(t, 'session', 'support.class.api.xsjs');
@@ -210,6 +211,10 @@ test('xsjs: XS JavaScript API on top of the JavaScript grammar', () => {
   check(t, 'TYPE_TEXT', 'support.constant.xsjs');
   check(t, 'var', 'keyword.control.js'); // falls through to the JavaScript grammar
   check(t, 'application/json', 'string.quoted.double.js');
+  assert.ok(!has(t, 'application/json', 'support.class.api.xsjs'));
+
+  const neg = tokenize('source.xsjs', 'var x = $.unknown.prop;');
+  assert.ok(!has(neg, 'unknown', 'support.class.api.xsjs'));
 });
 
 test('HDI: .hdiconfig / .hdinamespace', () => {
