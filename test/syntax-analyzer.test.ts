@@ -352,6 +352,99 @@ test('HANA-SYN-001 & HANA-SYN-023: real test.hdbfunction quote localization, mis
   assert.deepEqual(syntaxDiags('hdbdd', applyTextEdits(cdsAfterBracketAnnot, cdsTypos[0].fixes[0].edits)), []);
 });
 
+test('HANA-SYN-003 / 010 / 031: nested delimiter blame localization & non-cascading recovery', () => {
+  const fnSample = fs.readFileSync(path.join(ROOT, 'samples', 'test.hdbfunction'), 'utf8');
+  const lineOfOffset = (src: string, offset: number): number => src.slice(0, offset).split('\n').length;
+  const lineOfSnippet = (src: string, snippet: string): number => {
+    const idx = src.indexOf(snippet);
+    assert.ok(idx >= 0, `Snippet missing: ${snippet}`);
+    return lineOfOffset(src, idx);
+  };
+
+  // 1. User's exact example: missing closing ')' in DECIMAL(3, 2 inside parameter list (...)
+  const missingInnerClose = fnSample.replace('DECIMAL(3, 2)', 'DECIMAL(3, 2');
+  const diags1 = syntaxDiags('hdbfunction', missingInnerClose);
+  assert.equal(diags1.filter((d) => d.ruleId === 'HANA-SYN-023').length, 0, 'No cascading comma errors');
+  const syn3a = diags1.filter((d) => d.ruleId === 'HANA-SYN-003');
+  assert.equal(syn3a.length, 1);
+  assert.equal(lineOfOffset(missingInnerClose, syn3a[0].start), lineOfSnippet(missingInnerClose, 'DECIMAL(3, 2'));
+
+  // 2. Missing opening '(' in DECIMAL3, 2) inside parameter list (...)
+  const missingInnerOpen = fnSample.replace('DECIMAL(3, 2)', 'DECIMAL3, 2)');
+  const diags2 = syntaxDiags('hdbfunction', missingInnerOpen);
+  assert.equal(diags2.filter((d) => d.ruleId === 'HANA-SYN-023').length, 0, 'No cascading comma errors');
+  const syn3b = diags2.filter((d) => d.ruleId === 'HANA-SYN-003');
+  assert.equal(syn3b.length, 1);
+  assert.equal(lineOfOffset(missingInnerOpen, syn3b[0].start), lineOfSnippet(missingInnerOpen, 'DECIMAL3, 2)'));
+
+  // 3. Same inside RETURNS TABLE (...) (`NVARCHAR(100,` and `NVARCHAR100),`)
+  const missingTblClose = fnSample.replace('NVARCHAR(100)', 'NVARCHAR(100');
+  const syn3c = syntaxDiags('hdbfunction', missingTblClose);
+  assert.equal(syn3c.length, 1);
+  assert.equal(syn3c[0].ruleId, 'HANA-SYN-003');
+  assert.equal(lineOfOffset(missingTblClose, syn3c[0].start), lineOfSnippet(missingTblClose, 'NVARCHAR(100'));
+
+  const missingTblOpen = fnSample.replace('NVARCHAR(100)', 'NVARCHAR100)');
+  const syn3d = syntaxDiags('hdbfunction', missingTblOpen);
+  assert.equal(syn3d.length, 1);
+  assert.equal(syn3d[0].ruleId, 'HANA-SYN-003');
+  assert.equal(lineOfOffset(missingTblOpen, syn3d[0].start), lineOfSnippet(missingTblOpen, 'NVARCHAR100)'));
+
+  // 4. Single-line type precision opener (`DECIMAL(3, 2, IN b`) does not blame outer signature '('
+  const singleLineTypeErr = 'FUNCTION "f" (IN a DECIMAL(3, 2, IN b DECIMAL(15, 2)) RETURNS INT AS BEGIN RETURN 1; END';
+  const syn3e = syntaxDiags('hdbfunction', singleLineTypeErr).filter((d) => d.ruleId === 'HANA-SYN-003');
+  assert.equal(syn3e.length, 1);
+  assert.equal(syn3e[0].start, singleLineTypeErr.indexOf('DECIMAL(3') + 'DECIMAL'.length);
+
+  // 5. SQL semicolon fences unclosed '(' in stmt 1 from unmatched ')' in stmt 2
+  const fencedSql = syntaxDiags('hanasql', 'SELECT (1 + 2 FROM DUMMY;\nSELECT 3 + 4) FROM DUMMY;').filter(
+    (d) => d.ruleId === 'HANA-SYN-003'
+  );
+  assert.equal(fencedSql.length, 2);
+
+  // 6. Mixed bracket types: `([1, 2)` reports unclosed `'['`, while `[1, 2)` reports unexpected `')'`
+  const mixedInner = syntaxDiags('hanasql', 'SELECT ([1, 2) FROM DUMMY;').filter((d) => d.ruleId === 'HANA-SYN-003');
+  assert.equal(mixedInner.length, 1);
+  assert.match(mixedInner[0].message, /Unclosed delimiter '\['\./);
+  const directMismatch = syntaxDiags('hanasql', 'SELECT [1, 2) FROM DUMMY;').filter((d) => d.ruleId === 'HANA-SYN-003');
+  assert.equal(directMismatch.length, 1);
+  assert.match(directMismatch[0].message, /Expected '\]'/);
+
+  // 7. XSJS nested braces, unmatched inner brace, and semicolon-fenced paren call
+  const jsMissingInnerBrace = 'function f() {\n  if (x) {\n    return 1;\n}';
+  const jsBraceDiags = syntaxDiags('xsjs', jsMissingInnerBrace).filter((d) => d.ruleId === 'HANA-SYN-031');
+  assert.equal(jsBraceDiags.length, 1);
+  assert.equal(lineOfOffset(jsMissingInnerBrace, jsBraceDiags[0].start), 2);
+
+  const jsExtraInnerBrace = 'function f() {\n  if (x)\n    return 1;\n  }\n}';
+  const jsExtraDiags = syntaxDiags('xsjs', jsExtraInnerBrace).filter((d) => d.ruleId === 'HANA-SYN-031');
+  assert.equal(jsExtraDiags.length, 1);
+  assert.equal(lineOfOffset(jsExtraInnerBrace, jsExtraDiags[0].start), 4);
+
+  const jsCallSemi = 'function f() {\n  foo(1, 2;\n  return bar(3);\n}';
+  const jsCallDiags = syntaxDiags('xsjs', jsCallSemi);
+  assert.equal(jsCallDiags.filter((d) => d.ruleId === 'HANA-SYN-033').length, 0);
+  const jsCallSyn = jsCallDiags.filter((d) => d.ruleId === 'HANA-SYN-031');
+  assert.equal(jsCallSyn.length, 1);
+  assert.equal(lineOfOffset(jsCallSemi, jsCallSyn[0].start), 2);
+
+  // 8. JSON nested object/array missing closer or opener localizes to inner container
+  const jsonInnerObj = '{\n  "object_owner": {\n    "roles": ["R1"],\n  "application_user": {\n    "roles": ["R2"]\n  }\n}';
+  const jsonObjErr = syntaxDiags('hdbgrants', jsonInnerObj).filter((d) => d.ruleId === 'HANA-SYN-010');
+  assert.equal(jsonObjErr.length, 1);
+  assert.equal(lineOfOffset(jsonInnerObj, jsonObjErr[0].start), 2);
+
+  const jsonInnerArr = '{\n  "m": [\n    [1, 2,\n    [3, 4]\n  ]\n}';
+  const jsonArrErr = syntaxDiags('hdiconfig', jsonInnerArr).filter((d) => d.ruleId === 'HANA-SYN-010');
+  assert.equal(jsonArrErr.length, 1);
+  assert.equal(lineOfOffset(jsonInnerArr, jsonArrErr[0].start), 3);
+
+  const jsonExtraArrClose = '{\n  "m": [\n    1, 2],\n    [3, 4]\n  ]\n}';
+  const jsonArrExtra = syntaxDiags('hdiconfig', jsonExtraArrClose).filter((d) => d.ruleId === 'HANA-SYN-010');
+  assert.equal(jsonArrExtra.length, 1);
+  assert.equal(lineOfOffset(jsonExtraArrClose, jsonArrExtra[0].start), 3);
+});
+
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
   const brokenProc = 'CREATE FUNC "P"() AS BEGIN SELECT 1 FROM DUMMY; END;';
   // syntax: false disables HANA-SYN-* while leaving semantic diagnostics intact
