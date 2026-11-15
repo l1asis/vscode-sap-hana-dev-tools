@@ -141,9 +141,9 @@ const JOIN_STARTERS: ReadonlySet<string> = new Set(['JOIN', 'INNER', 'LEFT', 'RI
 const JOIN_PHRASE: ReadonlySet<string> = new Set(['NATURAL', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS']);
 const BEGIN_MODS: ReadonlySet<string> = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL', 'EXECUTION', 'ATOMIC']);
 const END_SUFFIX: ReadonlySet<string> = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
-const OBJ_TYPES: ReadonlySet<string> = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
+const OBJ_TYPES: ReadonlySet<string> = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'LIBRARY', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
 const STMT_VERBS: ReadonlySet<string> = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
-const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'BLOCK', 'ADJACENCY', 'INVERTED', 'SEQUENCE', 'TRIGGER', 'SHARED']);
+const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'TYPE', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'BLOCK', 'ADJACENCY', 'INVERTED', 'SEQUENCE', 'TRIGGER', 'SHARED']);
 const HEADER_WORDS: ReadonlySet<string> = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
 // keywords after which a following + - * is unary / a wildcard, not a binary operator
 const NON_VALUE: ReadonlySet<string> = new Set([
@@ -212,6 +212,8 @@ class Layout {
   private frames: Frame[];
   private stmt: StatementState | null;
   private atStmtStart: boolean;
+  private pendingHdiBody: boolean;
+  private afterHeaderAs: boolean;
   private lastEnd: LastEndState;
   private lastTok: LayoutToken | null;
   private prevCode: LayoutToken | null;
@@ -229,6 +231,8 @@ class Layout {
     this.frames = [];
     this.stmt = null;
     this.atStmtStart = true;
+    this.pendingHdiBody = false;
+    this.afterHeaderAs = false;
     this.lastEnd = 'start'; // start | stmtEnd | blockOpen
     this.lastTok = null;
     this.prevCode = null;
@@ -443,7 +447,7 @@ class Layout {
         case 'UPDATE': return 'update';
         case 'DELETE': return 'delete';
         case 'MERGE': return 'merge';
-        case 'CREATE': case 'PROCEDURE': case 'FUNCTION': case 'VIEW': case 'COLUMN': case 'ROW': case 'TABLE': case 'VIRTUAL': return 'create';
+        case 'CREATE': case 'PROCEDURE': case 'FUNCTION': case 'VIEW': case 'COLUMN': case 'ROW': case 'TABLE': case 'VIRTUAL': case 'PROJECTION': case 'TYPE': case 'LIBRARY': case 'TRIGGER': return 'create';
         case 'DECLARE': return 'declare';
         default: break;
       }
@@ -458,6 +462,13 @@ class Layout {
 
   beginStatement(tok: Token, i: number): void {
     const up = this.upOf(tok);
+    if (this.blocks.length === 0 && up !== 'USING' && up !== 'BEGIN') {
+      this.pendingHdiBody = false;
+      this.afterHeaderAs = false;
+    }
+    const hdiRoot =
+      this.blocks.length === 0 &&
+      (HDI_FIRST.has(up) || (this.pendingHdiBody && (up === 'USING' || up === 'BEGIN')));
     this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
     this.stmt = {
       kind: this.stmtKind(tok, up, i),
@@ -465,7 +476,7 @@ class Layout {
       first: up,
       alterSystem: false,
       createKind: null,
-      hdiRoot: HDI_FIRST.has(up) && this.blocks.length === 0,
+      hdiRoot,
       paramsSeen: false,
       colsSeen: false,
       insColsSeen: false,
@@ -481,6 +492,7 @@ class Layout {
     this.atStmtStart = true;
     this.stmt = null;
     this.frames = [];
+    this.afterHeaderAs = false;
     this.lastEnd = 'stmtEnd';
   }
 
@@ -923,8 +935,29 @@ class Layout {
         break;
     }
 
-    // ---- statement header of CREATE PROCEDURE / FUNCTION ----------------
-    if (stmtLevel && o.procedureHeaderOnSeparateLines && st.kind === 'create' && (st.createKind === 'PROCEDURE' || st.createKind === 'FUNCTION') && HEADER_WORDS.has(up) && st.count > 0) {
+    // ---- statement header of CREATE / HDI PROCEDURE / FUNCTION / LIBRARY ---
+    if (stmtLevel && this.blocks.length === 0 && this.afterHeaderAs && up === 'USING') {
+      const keepHdiRoot = st.hdiRoot;
+      this.afterHeaderAs = false;
+      if (this.cur && this.cur.toks.length) this.breakLine(f.level);
+      this.beginStatement(tok, i);
+      this.stmt!.hdiRoot = keepHdiRoot;
+      return this.plain(tok, i);
+    }
+    if (
+      stmtLevel &&
+      this.blocks.length === 0 &&
+      st.kind === 'create' &&
+      up === 'AS' &&
+      st.count > 0 &&
+      (st.createKind === 'PROCEDURE' || st.createKind === 'FUNCTION' || st.createKind === 'LIBRARY' || st.createKind === 'TRIGGER') &&
+      this.prevCode &&
+      this.prevCode.t !== '('
+    ) {
+      this.afterHeaderAs = true;
+      if (st.hdiRoot) this.pendingHdiBody = true;
+    }
+    if (stmtLevel && o.procedureHeaderOnSeparateLines && st.kind === 'create' && (st.createKind === 'PROCEDURE' || st.createKind === 'FUNCTION' || st.createKind === 'LIBRARY') && HEADER_WORDS.has(up) && st.count > 0) {
       const ok =
         up === 'DEFAULT' ? nup === 'SCHEMA' :
         up === 'SQL' ? nup === 'SECURITY' && pup !== 'READS' && pup !== 'MODIFIES' :
@@ -986,7 +1019,9 @@ class Layout {
     const f = this.top()!;
     const anonymous = this.cur && this.cur.toks.length === 1 && this.prevCode && this.prevCode.up === 'DO';
     if (this.o.beginOnNewLine && !anonymous && this.cur && this.cur.toks.length) this.breakLine(f.level);
-    this.blocks.push({ kind: 'begin', level: this.level, frame: f, hdiRoot: !!(this.stmt && this.stmt.hdiRoot) });
+    this.blocks.push({ kind: 'begin', level: this.level, frame: f, hdiRoot: !!(this.stmt && this.stmt.hdiRoot) || this.pendingHdiBody });
+    this.pendingHdiBody = false;
+    this.afterHeaderAs = false;
     this.emit(tok, i);
     let consumed = 0;
     for (;;) {

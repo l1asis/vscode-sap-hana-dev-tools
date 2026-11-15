@@ -1,4 +1,10 @@
 import * as vscode from 'vscode';
+import {
+  ARTIFACT_FORMATTER_LANGUAGES,
+  SQL_LANGUAGES,
+  formatDocument,
+  supportsRangeFormatting,
+} from './formatter/dispatch';
 import { format } from './formatter/formatter';
 import {
   DEFAULTS,
@@ -7,44 +13,6 @@ import {
   PartialFormatterOptions,
   resolveOptions,
 } from './formatter/options';
-import { isKeyValueArtifact } from './formatter/detect';
-
-// Languages whose files can contain SQL. For .hdbtable/.hdbview/.hdbsequence/.hdbstructure the same
-// extension is XS Classic `key = value;` syntax in some projects; those files are detected and skipped.
-const SQL_LANGUAGES: readonly string[] = [
-  'hanasql',
-  'hdbprocedure',
-  'hdbfunction',
-  'hdbtablefunction',
-  'hdbtrigger',
-  'hdbindex',
-  'hdbfulltextindex',
-  'hdbconstraint',
-  'hdbvirtualtable',
-  'hdbtabletype',
-  'hdbprojectionview',
-  'hdbstructuredprivilege',
-  'hdbstructuredfilter',
-  'hdbresultcache',
-  'hdbstatistics',
-  'hdbsystemversioning',
-  'hdbschedulerjob',
-  'hdbremotetablereplica',
-  'hdbcollection',
-  'hdbcollectionindex',
-  'hdbcollectionadjindex',
-  'hdbfabricvirtualtable',
-  'hdblibrary',
-  'hdbdropcreatetable',
-  'hdbapplicationtime',
-  'hdbgraphworkspace',
-  'hdbvirtualprocedure',
-  'hdbvirtualfunction',
-  'hdbtable',
-  'hdbstructure',
-  'hdbview',
-  'hdbsequence',
-];
 
 let output: vscode.OutputChannel | undefined;
 
@@ -90,8 +58,7 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
     if (raw.enable === false) return [];
     return safe(() => {
       const text = document.getText();
-      if (isKeyValueArtifact(text)) return [];
-      const result = format(text, raw, editorInfo(document, options));
+      const result = formatDocument(document.languageId, text, raw, editorInfo(document, options));
       return result === text ? [] : [vscode.TextEdit.replace(fullRange(document), result)];
     });
   },
@@ -104,7 +71,7 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
     const raw = readSettings(document);
     if (raw.enable === false) return [];
     return safe(() => {
-      if (isKeyValueArtifact(document.getText())) return [];
+      if (!supportsRangeFormatting(document.languageId, document.getText())) return [];
       // work on whole lines
       const endLine =
         range.end.character === 0 && range.end.line > range.start.line ? range.end.line - 1 : range.end.line;
@@ -126,11 +93,12 @@ const provider: vscode.DocumentFormattingEditProvider & vscode.DocumentRangeForm
 
 export function activate(context: vscode.ExtensionContext): void {
   output = vscode.window.createOutputChannel('SAP HANA SQL');
-  const selector: vscode.DocumentFilter[] = SQL_LANGUAGES.map((language) => ({ language }));
+  const documentSelector: vscode.DocumentFilter[] = ARTIFACT_FORMATTER_LANGUAGES.map((language) => ({ language }));
+  const rangeSelector: vscode.DocumentFilter[] = SQL_LANGUAGES.map((language) => ({ language }));
   context.subscriptions.push(
     output,
-    vscode.languages.registerDocumentFormattingEditProvider(selector, provider),
-    vscode.languages.registerDocumentRangeFormattingEditProvider(selector, provider),
+    vscode.languages.registerDocumentFormattingEditProvider(documentSelector, provider),
+    vscode.languages.registerDocumentRangeFormattingEditProvider(rangeSelector, provider),
     vscode.commands.registerCommand('hanasql.openFormatterSettings', () =>
       vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql.format')
     )
