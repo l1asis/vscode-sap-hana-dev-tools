@@ -118,6 +118,51 @@
       "description": "Drops a SQLScript logging configuration ([XSA]/[HDI]/[CLOUD])."
     },
     {
+      "name": "LEVEL_DEBUG",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LEVEL_DEBUG CONSTANT VARCHAR(7)"
+      ],
+      "returnType": "VARCHAR(7)",
+      "description": "Debug log level constant ('DEBUG') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEVEL_ERROR",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LEVEL_ERROR CONSTANT VARCHAR(7)"
+      ],
+      "returnType": "VARCHAR(7)",
+      "description": "Error log level constant ('ERROR') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEVEL_FATAL",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LEVEL_FATAL CONSTANT VARCHAR(7)"
+      ],
+      "returnType": "VARCHAR(7)",
+      "description": "Fatal log level constant ('FATAL') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEVEL_INFO",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LEVEL_INFO CONSTANT VARCHAR(7)"
+      ],
+      "returnType": "VARCHAR(7)",
+      "description": "Info log level constant ('INFO') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
+      "name": "LEVEL_WARNING",
+      "library": "SQLSCRIPT_LOGGING",
+      "signatures": [
+        "LEVEL_WARNING CONSTANT VARCHAR(7)"
+      ],
+      "returnType": "VARCHAR(7)",
+      "description": "Warning log level constant ('WARNING') for SQLSCRIPT_LOGGING ([XSA]/[HDI]/[CLOUD])."
+    },
+    {
       "name": "LOG",
       "library": "SQLSCRIPT_LOGGING",
       "signatures": [

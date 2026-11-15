@@ -121,10 +121,14 @@
 - [x] **SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en** (170p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/migration-xsc-to-hdi.md`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en`
 
-## Phase 3 & 4: API & System View Catalogs (xsjs.d.ts, SYS.*, BIMC, PAL/APL) (13 unique guides)
+## Phase 3 & 4: API & System View Catalogs (xsjs.d.ts, SYS.*, BIMC, PAL/APL) (15 unique guides)
 
 - [x] **SAP HANA XS Classic JavaScript API Reference (`$.*`, 57 classes/namespaces)** $\rightarrow$ `docs/specs/catalogs/xsjs-api.json`  
   Extracted: `research/xs/xs_classic_js_api/`
+- [x] **SAP HANA XS DB Utilities JavaScript API Reference (`sap.hana.xs.libs.dbutils.{xsds,procedures}`)** $\rightarrow$ `docs/specs/catalogs/xsjs-api.json`  
+  Extracted: `research/xs/xs_db_utilities_api/`
+- [x] **SAP HANA Test Tools API Reference (`jasmine`, XSUnit, `mockstar`, `SqlExecutor`, `TableUtils`, `TableDataSet`, `DateUtils`)** $\rightarrow$ `docs/specs/catalogs/xsjs-api.json`  
+  Extracted: `research/xs/test_tools_api/`
 
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Analytics Catalog (BIMC Views) Reference** (43p, 42 chapters) $\rightarrow$ `docs/specs/catalogs/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Analytics_Catalog_(BIMC_Views)_Refe`
