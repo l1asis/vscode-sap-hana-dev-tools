@@ -166,7 +166,7 @@ test('HANA-SYN-020: SQLScript compound blocks, CASE..END, IF EXISTS & loops', ()
 
 test('HANA-SYN-021 & HANA-SYN-022: anchored header keyword typos, QuickFixes & Classic KV', () => {
   // User's exact scenario: `CREATE FUNC` / root `FUNC` in `.hdbfunction`
-  const badCreateFunc = 'CREATE FUNC "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;';
+  const badCreateFunc = 'CREATE FUNC "MY_FN"() RETURNS x INT AS BEGIN x = 1; END;';
   const diags1 = syntaxDiags('hanasql', badCreateFunc);
   const f1 = diags1.find((d) => d.ruleId === 'HANA-SYN-021');
   assert.ok(f1);

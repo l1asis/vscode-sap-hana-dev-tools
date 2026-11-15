@@ -23,7 +23,29 @@ export interface RoutineContext {
   readonly hasDeterministic: boolean;
   readonly hasAutocommitDdl: boolean;
   readonly hasForeignLanguage: boolean;
+  readonly hasExplicitReturns: boolean;
   readonly returnVarNames: ReadonlySet<string>;
+  hasSawReturnExpr: boolean;
+}
+
+function createRoutineContext(
+  kind: RoutineKind,
+  opts: Partial<Omit<RoutineContext, 'kind' | 'returnVarNames'>> & {
+    readonly returnVarNames?: ReadonlySet<string>;
+  } = {}
+): RoutineContext {
+  return {
+    kind,
+    isAlter: opts.isAlter ?? false,
+    isVirtual: opts.isVirtual ?? false,
+    hasReadsSqlData: opts.hasReadsSqlData ?? false,
+    hasDeterministic: opts.hasDeterministic ?? false,
+    hasAutocommitDdl: opts.hasAutocommitDdl ?? false,
+    hasForeignLanguage: opts.hasForeignLanguage ?? false,
+    hasExplicitReturns: opts.hasExplicitReturns ?? false,
+    returnVarNames: opts.returnVarNames ?? new Set<string>(),
+    hasSawReturnExpr: opts.hasSawReturnExpr ?? false,
+  };
 }
 
 const enum BlockPhase {
@@ -50,6 +72,8 @@ interface BlockScope {
   readonly isRoutineRoot: boolean;
   readonly inLoop: boolean;
   readonly inHandler: boolean;
+  readonly inAutonomous: boolean;
+  readonly inParallel: boolean;
   readonly routine: RoutineContext | undefined;
   phase: BlockPhase;
   terminated: boolean;
@@ -60,6 +84,33 @@ interface BlockScope {
 
 const TERMINATOR_KEYWORDS = new Set<string>(['RETURN', 'SIGNAL', 'RESIGNAL', 'BREAK', 'CONTINUE']);
 const END_COMPOUND_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
+const TOP_LEVEL_IMPERATIVE_KEYWORDS = new Set<string>([
+  'DECLARE',
+  'IF',
+  'LOOP',
+  'WHILE',
+  'FOR',
+  'BREAK',
+  'CONTINUE',
+  'SIGNAL',
+  'RESIGNAL',
+  'RETURN',
+]);
+const DML_WRITE_KEYWORDS = new Set<string>(['INSERT', 'UPDATE', 'DELETE', 'UPSERT', 'MERGE', 'REPLACE']);
+const DDL_KEYWORDS = new Set<string>(['CREATE', 'ALTER', 'DROP', 'RENAME', 'TRUNCATE']);
+const NONDETERMINISTIC_CALLS = new Set<string>(['RAND', 'RAND_SECURE', 'SESSION_CONTEXT', 'NOW']);
+const NONDETERMINISTIC_NILADIC = new Set<string>([
+  'SYSUUID',
+  'SESSION_USER',
+  'CURRENT_TIMESTAMP',
+  'CURRENT_UTCTIMESTAMP',
+  'CURRENT_DATE',
+  'CURRENT_TIME',
+  'CURRENT_UTCDATE',
+  'CURRENT_UTCTIME',
+  'CURRENT_MVCC_SNAPSHOT_TIMESTAMP',
+  'CURRENT_TRANSACTION_ISOLATION_LEVEL',
+]);
 
 function wordUpper(tok: Token | undefined): string {
   return tok && tok.type === 'word' ? tok.text.toUpperCase() : '';
@@ -277,16 +328,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
             handled: true,
             nextIdx: cur + 1,
             openedKind: 'begin',
-            openedRoutine: {
-              kind: 'do',
-              isAlter: false,
-              isVirtual: false,
-              hasReadsSqlData: false,
-              hasDeterministic: false,
-              hasAutocommitDdl: false,
-              hasForeignLanguage: false,
-              returnVarNames: new Set<string>(),
-            },
+            openedRoutine: createRoutineContext('do'),
           };
         }
       }
@@ -303,16 +345,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
             handled: true,
             nextIdx: i + 1,
             openedKind: 'begin',
-            openedRoutine: {
-              kind: 'trigger',
-              isAlter,
-              isVirtual: false,
-              hasReadsSqlData: false,
-              hasDeterministic: false,
-              hasAutocommitDdl: false,
-              hasForeignLanguage: false,
-              returnVarNames: new Set<string>(),
-            },
+            openedRoutine: createRoutineContext('trigger', { isAlter }),
           };
         }
         if (codeTokens[i].text === '(') {
@@ -338,16 +371,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
             handled: true,
             nextIdx: i + 1,
             openedKind: 'library_root',
-            openedRoutine: {
-              kind: 'library',
-              isAlter,
-              isVirtual: false,
-              hasReadsSqlData: false,
-              hasDeterministic: false,
-              hasAutocommitDdl: false,
-              hasForeignLanguage: false,
-              returnVarNames: new Set<string>(),
-            },
+            openedRoutine: createRoutineContext('library', { isAlter }),
           };
         }
         i++;
@@ -478,16 +502,16 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           handled: true,
           nextIdx: i + 1,
           openedKind: 'begin',
-          openedRoutine: {
-            kind: routineKind,
+          openedRoutine: createRoutineContext(routineKind, {
             isAlter,
             isVirtual,
             hasReadsSqlData,
             hasDeterministic,
             hasAutocommitDdl,
             hasForeignLanguage,
+            hasExplicitReturns: sawReturns,
             returnVarNames,
-          },
+          }),
         };
       }
 
@@ -792,7 +816,9 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
     isRoutineRoot: boolean,
     routine: RoutineContext | undefined,
     inLoop: boolean,
-    inHandler: boolean
+    inHandler: boolean,
+    inAutonomous = false,
+    inParallel = false
   ): void => {
     scopeStack.push({
       kind,
@@ -800,6 +826,8 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       isRoutineRoot,
       inLoop,
       inHandler,
+      inAutonomous,
+      inParallel,
       routine,
       phase: kind === 'single_handler' ? BlockPhase.EXECUTABLE : BlockPhase.START,
       terminated: false,
@@ -821,6 +849,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
   while (i < codeTokens.length) {
     const tok = codeTokens[i];
     const up = wordUpper(tok);
+    const prevTok = i > 0 ? codeTokens[i - 1] : undefined;
     const nextTok = codeTokens[i + 1];
     const nextUp = wordUpper(nextTok);
     const topScope = scopeStack.length > 0 ? scopeStack[scopeStack.length - 1] : undefined;
@@ -839,7 +868,12 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       continue;
     }
     if (tok.text === ';') {
-      while (scopeStack.length > 0 && scopeStack[scopeStack.length - 1].kind === 'single_handler' && parenDepth === scopeStack[scopeStack.length - 1].parenDepth && caseDepth === 0) {
+      while (
+        scopeStack.length > 0 &&
+        scopeStack[scopeStack.length - 1].kind === 'single_handler' &&
+        parenDepth === scopeStack[scopeStack.length - 1].parenDepth &&
+        caseDepth === 0
+      ) {
         scopeStack.pop();
       }
       atStmtStart = true;
@@ -869,7 +903,11 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           const idxMatch = (() => {
             for (let s = scopeStack.length - 1; s >= 0; s--) {
               if (scopeStack[s].kind === expectedKind) return s;
-              if (scopeStack[s].kind === 'begin' || scopeStack[s].kind === 'handler_begin' || scopeStack[s].kind === 'library_root') {
+              if (
+                scopeStack[s].kind === 'begin' ||
+                scopeStack[s].kind === 'handler_begin' ||
+                scopeStack[s].kind === 'library_root'
+              ) {
                 return -1;
               }
             }
@@ -878,7 +916,11 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           if (idxMatch >= 0) {
             scopeStack.length = idxMatch;
           }
-          if (scopeStack.length > 0 && scopeStack[scopeStack.length - 1].kind === 'single_handler' && codeTokens[i + 2]?.text !== ';') {
+          if (
+            scopeStack.length > 0 &&
+            scopeStack[scopeStack.length - 1].kind === 'single_handler' &&
+            codeTokens[i + 2]?.text !== ';'
+          ) {
             scopeStack.pop();
           }
           atStmtStart = false;
@@ -897,8 +939,16 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           ) {
             scopeStack.pop();
           }
-          if (scopeStack.length > 0) {
-            scopeStack.pop();
+          const popped = scopeStack.length > 0 ? scopeStack.pop() : undefined;
+          if (
+            popped?.isRoutineRoot &&
+            popped.routine?.kind === 'table_function' &&
+            !popped.routine.isVirtual &&
+            !popped.routine.hasForeignLanguage &&
+            popped.routine.hasExplicitReturns &&
+            !popped.routine.hasSawReturnExpr
+          ) {
+            emitDiag(tok, 'HANA-SYN-029', `Table UDF body is missing a 'RETURN <query_or_table_var>;' statement.`);
           }
           atStmtStart = false;
           i++;
@@ -923,6 +973,32 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       continue;
     }
 
+    // 2b. Non-deterministic expressions inside DETERMINISTIC routines (`HANA-SYN-029`)
+    if (topScope && topScope.kind !== 'library_root' && topScope.routine?.hasDeterministic && tok.type === 'word') {
+      if (prevTok?.text === '.' && (up === 'NEXTVAL' || up === 'CURRVAL')) {
+        emitDiag(
+          tok,
+          'HANA-SYN-029',
+          `Sequence pseudo-column '.${up}' is non-deterministic and should not be used in a DETERMINISTIC routine.`,
+          'warning'
+        );
+      } else if (
+        prevTok?.text !== '.' &&
+        ((NONDETERMINISTIC_CALLS.has(up) && nextTok?.text === '(') ||
+          (NONDETERMINISTIC_NILADIC.has(up) &&
+            nextTok?.text !== ':=' &&
+            nextTok?.text !== '=' &&
+            nextTok?.text !== '.'))
+      ) {
+        emitDiag(
+          tok,
+          'HANA-SYN-029',
+          `Non-deterministic built-in '${up}' used inside a DETERMINISTIC routine.`,
+          'warning'
+        );
+      }
+    }
+
     // 3. Top-level outside any block scope: recognize CREATE/ALTER/VIRTUAL PROCEDURE|FUNCTION|LIBRARY|TRIGGER|DO
     if (!topScope) {
       if (atStmtStart && parenDepth === 0) {
@@ -934,6 +1010,41 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           i = res.nextIdx;
           atStmtStart = true;
           continue;
+        }
+        if (
+          TOP_LEVEL_IMPERATIVE_KEYWORDS.has(up) &&
+          nextTok?.text !== '=' &&
+          nextTok?.text !== ':=' &&
+          nextTok?.text !== '.'
+        ) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Imperative statement '${up}' is only allowed inside a routine or 'DO BEGIN ... END' block.`
+          );
+          if (up === 'IF') {
+            const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'THEN');
+            pushScope('if', false, undefined, false, false);
+            i = nextIdx;
+            continue;
+          }
+          if (up === 'WHILE') {
+            const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'DO');
+            pushScope('while', false, undefined, true, false);
+            i = nextIdx;
+            continue;
+          }
+          if (up === 'FOR') {
+            const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'DO');
+            pushScope('for', false, undefined, true, false);
+            i = nextIdx;
+            continue;
+          }
+          if (up === 'LOOP') {
+            pushScope('loop', false, undefined, true, false);
+            i++;
+            continue;
+          }
         }
       }
       atStmtStart = false;
@@ -966,12 +1077,33 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
     }
 
     // 5a. Block modifiers (`SEQUENTIAL EXECUTION`, `PARALLEL EXECUTION`, `AUTONOMOUS TRANSACTION`)
-    if (((up === 'SEQUENTIAL' || up === 'PARALLEL') && nextUp === 'EXECUTION') || (up === 'AUTONOMOUS' && nextUp === 'TRANSACTION')) {
+    if (
+      ((up === 'SEQUENTIAL' || up === 'PARALLEL') && nextUp === 'EXECUTION') ||
+      (up === 'AUTONOMOUS' && nextUp === 'TRANSACTION')
+    ) {
       const modName = up === 'AUTONOMOUS' ? 'AUTONOMOUS TRANSACTION' : `${up} EXECUTION`;
       const isBeginKind = topScope.kind === 'begin' || topScope.kind === 'handler_begin';
+      const routine = topScope.routine;
+      const isFunctionRoutine = Boolean(
+        routine && (routine.kind === 'scalar_function' || routine.kind === 'table_function')
+      );
       if (topScope.phase === BlockPhase.START) {
         if (!isBeginKind && up !== 'SEQUENTIAL') {
           emitDiag(tok, 'HANA-SYN-028', `'${modName}' is only valid on a 'BEGIN' block.`);
+        } else if (up === 'AUTONOMOUS') {
+          (topScope as { inAutonomous: boolean }).inAutonomous = true;
+          if (isFunctionRoutine || routine?.hasReadsSqlData) {
+            emitDiag(
+              tok,
+              'HANA-SYN-029',
+              `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+            );
+          }
+        } else if (up === 'PARALLEL') {
+          (topScope as { inParallel: boolean }).inParallel = true;
+          if (isFunctionRoutine) {
+            emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION.`);
+          }
         }
         topScope.phase = BlockPhase.AFTER_MODIFIER;
       } else {
@@ -995,11 +1127,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       (up === 'LANGUAGE' && nextUp === 'SQLSCRIPT')
     ) {
       const label =
-        up === 'READS'
-          ? 'READS SQL DATA'
-          : up === 'LANGUAGE'
-            ? 'LANGUAGE'
-            : `${up} ${nextUp}`;
+        up === 'READS' ? 'READS SQL DATA' : up === 'LANGUAGE' ? 'LANGUAGE' : `${up} ${nextUp}`;
       emitDiag(tok, 'HANA-SYN-028', `Header clause '${label}' must appear before 'AS' in the routine header.`);
       atStmtStart = false;
       i++;
@@ -1037,6 +1165,9 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       if (isHandler || isBareHandler) {
         const hKind: 'EXIT' | 'CONTINUE' | null =
           nextUp === 'EXIT' ? 'EXIT' : nextUp === 'CONTINUE' ? 'CONTINUE' : null;
+        if (topScope.inParallel) {
+          emitDiag(tok, 'HANA-SYN-029', `'DECLARE ... HANDLER' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        }
         if (topScope.phase >= BlockPhase.EXECUTABLE) {
           emitDiag(
             tok,
@@ -1049,11 +1180,27 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
         const forIdx = isHandler ? i + 3 : i + 2;
         const bodyIdx = parseHandlerForClause(tok, hKind, forIdx, scopeStack);
         if (wordUpper(codeTokens[bodyIdx]) === 'BEGIN') {
-          pushScope('handler_begin', false, topScope.routine, false, true);
+          pushScope(
+            'handler_begin',
+            false,
+            topScope.routine,
+            false,
+            true,
+            topScope.inAutonomous,
+            topScope.inParallel
+          );
           i = bodyIdx + 1;
           atStmtStart = true;
         } else {
-          pushScope('single_handler', false, topScope.routine, false, true);
+          pushScope(
+            'single_handler',
+            false,
+            topScope.routine,
+            false,
+            true,
+            topScope.inAutonomous,
+            topScope.inParallel
+          );
           i = bodyIdx;
           atStmtStart = true;
         }
@@ -1061,6 +1208,13 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       }
 
       // Variable / Table / Array / Cursor / Condition declaration
+      if (topScope.inAutonomous && wordUpper(codeTokens[i + 2]) === 'CURSOR') {
+        emitDiag(
+          tok,
+          'HANA-SYN-029',
+          `Cursor declarations ('DECLARE ... CURSOR') are not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`
+        );
+      }
       if (topScope.phase === BlockPhase.HANDLER) {
         emitDiag(
           tok,
@@ -1085,13 +1239,155 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
     }
     topScope.phase = BlockPhase.EXECUTABLE;
 
+    const routine = topScope.routine;
+    const isFunctionRoutine = Boolean(
+      routine && (routine.kind === 'scalar_function' || routine.kind === 'table_function')
+    );
+    const isReadOnlyRoutine = Boolean(isFunctionRoutine || routine?.hasReadsSqlData);
+    const notAssigned = nextTok?.text !== '=' && nextTok?.text !== ':=' && nextTok?.text !== '.';
+
+    // Context-sensitive legality checks (`HANA-SYN-029`)
+    if (notAssigned) {
+      if (up === 'RETURN') {
+        const isBareReturn =
+          !nextTok ||
+          nextTok.text === ';' ||
+          nextUp === 'END' ||
+          nextUp === 'ELSE' ||
+          nextUp === 'ELSEIF';
+        if (topScope.inParallel) {
+          emitDiag(tok, 'HANA-SYN-029', `'RETURN' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        } else if (routine?.kind === 'table_function') {
+          if (isBareReturn) {
+            emitDiag(
+              tok,
+              'HANA-SYN-029',
+              `Table UDF cannot use bare 'RETURN;'; return a table expression via 'RETURN <query_or_table_var>;'.`
+            );
+          } else {
+            routine.hasSawReturnExpr = true;
+          }
+        } else if (routine?.kind === 'trigger') {
+          emitDiag(tok, 'HANA-SYN-029', `'RETURN' is not allowed inside a TRIGGER body.`);
+        } else if (!isBareReturn && routine) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `'RETURN <expr>' is only allowed in a Table UDF; use return parameter assignment or bare 'RETURN;' instead.`
+          );
+        }
+      } else if ((up === 'BREAK' || up === 'CONTINUE') && !topScope.inLoop) {
+        emitDiag(tok, 'HANA-SYN-029', `'${up}' is only allowed inside a 'LOOP', 'WHILE', or 'FOR' statement.`);
+      } else if (up === 'RESIGNAL' && !topScope.inHandler) {
+        emitDiag(tok, 'HANA-SYN-029', `'RESIGNAL' is only allowed inside a 'DECLARE ... HANDLER' exception handler.`);
+      } else if (up === 'SIGNAL' && nextUp === 'SQL_ERROR_CODE' && codeTokens[i + 2]?.type === 'number') {
+        const codeNum = Number(codeTokens[i + 2].text);
+        if (!Number.isInteger(codeNum) || codeNum < 10000 || codeNum > 19999) {
+          emitDiag(
+            codeTokens[i + 2],
+            'HANA-SYN-029',
+            `'SIGNAL SQL_ERROR_CODE' code ${codeTokens[i + 2].text} must be a user-defined error code between 10000 and 19999.`
+          );
+        }
+      } else if (up === 'DO' && (nextTok?.text === '(' || nextUp === 'BEGIN')) {
+        emitDiag(tok, 'HANA-SYN-029', `Nested 'DO BEGIN ... END' anonymous blocks are not allowed inside a routine.`);
+        let cur = i + 1;
+        if (nextTok?.text === '(') {
+          const closeIdx = findMatchingParen(codeTokens, cur);
+          cur = closeIdx >= 0 ? closeIdx + 1 : cur + 1;
+        }
+        if (wordUpper(codeTokens[cur]) === 'BEGIN') {
+          pushScope(
+            'begin',
+            false,
+            topScope.routine,
+            topScope.inLoop,
+            topScope.inHandler,
+            topScope.inAutonomous,
+            topScope.inParallel
+          );
+          atStmtStart = true;
+          i = cur + 1;
+          continue;
+        }
+      } else if (DML_WRITE_KEYWORDS.has(up)) {
+        const targetTok =
+          (up === 'INSERT' || up === 'MERGE') && nextUp === 'INTO'
+            ? codeTokens[i + 2]
+            : up === 'DELETE' && nextUp === 'FROM'
+              ? codeTokens[i + 2]
+              : nextTok;
+        if (isReadOnlyRoutine && targetTok && targetTok.type !== 'var') {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `'${up}' on persistent table '${targetTok.text}' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+          );
+        }
+      } else if (DDL_KEYWORDS.has(up) && (nextTok?.type === 'word' || nextTok?.type === 'qident')) {
+        if (isReadOnlyRoutine) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `DDL statement '${up}' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+          );
+        } else if (topScope.inAutonomous) {
+          emitDiag(tok, 'HANA-SYN-029', `DDL statement '${up}' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
+        } else if (topScope.inParallel) {
+          emitDiag(tok, 'HANA-SYN-029', `DDL statement '${up}' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        }
+      } else if (
+        up === 'COMMIT' ||
+        up === 'ROLLBACK' ||
+        up === 'SAVEPOINT' ||
+        (up === 'LOCK' && nextUp === 'TABLE') ||
+        (up === 'SET' && nextUp === 'TRANSACTION')
+      ) {
+        if (isReadOnlyRoutine) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Transaction control statement '${up}' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+          );
+        } else if (topScope.inParallel) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Transaction control statement '${up}' is not allowed inside 'BEGIN PARALLEL EXECUTION'.`
+          );
+        }
+      } else if ((up === 'EXEC' && nextTok && nextTok.text !== ';') || (up === 'EXECUTE' && nextUp === 'IMMEDIATE')) {
+        const dynLabel = up === 'EXECUTE' ? 'EXECUTE IMMEDIATE' : 'EXEC';
+        if (isReadOnlyRoutine) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Dynamic SQL ('${dynLabel}') is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+          );
+        } else if (topScope.inAutonomous) {
+          emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
+        } else if (topScope.inParallel) {
+          emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside 'BEGIN PARALLEL EXECUTION'.`);
+        }
+      } else if (up === 'CALL' && nextTok) {
+        if (isFunctionRoutine) {
+          emitDiag(tok, 'HANA-SYN-029', `'CALL' procedure invocation is not allowed inside a FUNCTION.`);
+        } else if (topScope.inAutonomous) {
+          emitDiag(tok, 'HANA-SYN-029', `'CALL' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
+        }
+      } else if ((up === 'OPEN' || up === 'FETCH' || up === 'CLOSE') && nextTok && nextTok.text !== '(') {
+        if (topScope.inAutonomous) {
+          emitDiag(
+            tok,
+            'HANA-SYN-029',
+            `Cursor statement '${up}' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`
+          );
+        }
+      }
+    }
+
     // Terminator keywords (`RETURN`, `SIGNAL`, `RESIGNAL`, `BREAK`, `CONTINUE`)
-    if (
-      TERMINATOR_KEYWORDS.has(up) &&
-      nextTok?.text !== '=' &&
-      nextTok?.text !== ':=' &&
-      nextTok?.text !== '.'
-    ) {
+    if (TERMINATOR_KEYWORDS.has(up) && notAssigned) {
       topScope.terminated = true;
       topScope.terminatedBy = up;
       atStmtStart = false;
@@ -1101,34 +1397,74 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
 
     // Nested compound blocks (`BEGIN`, `IF`, `WHILE`, `FOR`, `LOOP`)
     if (up === 'BEGIN') {
-      pushScope('begin', false, topScope.routine, topScope.inLoop, topScope.inHandler);
+      pushScope(
+        'begin',
+        false,
+        topScope.routine,
+        topScope.inLoop,
+        topScope.inHandler,
+        topScope.inAutonomous,
+        topScope.inParallel
+      );
       atStmtStart = true;
       i++;
       continue;
     }
     if (up === 'IF') {
       const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'THEN');
-      pushScope('if', false, topScope.routine, topScope.inLoop, topScope.inHandler);
+      pushScope(
+        'if',
+        false,
+        topScope.routine,
+        topScope.inLoop,
+        topScope.inHandler,
+        topScope.inAutonomous,
+        topScope.inParallel
+      );
       atStmtStart = true;
       i = nextIdx;
       continue;
     }
     if (up === 'WHILE') {
       const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'DO');
-      pushScope('while', false, topScope.routine, true, topScope.inHandler);
+      pushScope(
+        'while',
+        false,
+        topScope.routine,
+        true,
+        topScope.inHandler,
+        topScope.inAutonomous,
+        topScope.inParallel
+      );
       atStmtStart = true;
       i = nextIdx;
       continue;
     }
     if (up === 'FOR') {
       const { nextIdx } = scanUntilClauseKeyword(codeTokens, i + 1, 'DO');
-      pushScope('for', false, topScope.routine, true, topScope.inHandler);
+      pushScope(
+        'for',
+        false,
+        topScope.routine,
+        true,
+        topScope.inHandler,
+        topScope.inAutonomous,
+        topScope.inParallel
+      );
       atStmtStart = true;
       i = nextIdx;
       continue;
     }
     if (up === 'LOOP') {
-      pushScope('loop', false, topScope.routine, true, topScope.inHandler);
+      pushScope(
+        'loop',
+        false,
+        topScope.routine,
+        true,
+        topScope.inHandler,
+        topScope.inAutonomous,
+        topScope.inParallel
+      );
       atStmtStart = true;
       i++;
       continue;
