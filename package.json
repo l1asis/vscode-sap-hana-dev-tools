@@ -1857,6 +1857,18 @@
       {
         "command": "hanasql.openFormatterSettings",
         "title": "SAP HANA SQL: Open Formatter Settings"
+      },
+      {
+        "command": "hanasql.migrateArtifactToHdi",
+        "title": "SAP HANA: Convert Artifact from XSC to HDI / XSA Syntax"
+      },
+      {
+        "command": "hanasql.convertArtifactToXsc",
+        "title": "SAP HANA: Convert Artifact from HDI to XSC Classic Syntax"
+      },
+      {
+        "command": "hanasql.installXsjsTypes",
+        "title": "SAP HANA XSJS: Configure Workspace xsjs.d.ts Type Definitions"
       }
     ],
     "configurationDefaults": {
@@ -2320,6 +2332,47 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Turn `--comment` into `-- comment`."
+        },
+        "hanasql.analyze.enable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline security, performance, Calculation View, and migration diagnostics for SAP HANA artifacts."
+        },
+        "hanasql.analyze.security": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline security checks (SQL injection, `SQL SECURITY DEFINER`, XSJS `$.db`/`$.hdb`, `.xsaccess`, `.hdbrole`, `.hdbgrants`)."
+        },
+        "hanasql.analyze.performance": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable SQLScript performance and error-handling checks (`CE_*` operators, cursors, `SELECT *`, `DECLARE EXIT HANDLER`)."
+        },
+        "hanasql.analyze.migration": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable XSC <-> XSA/HDI migration hints and refactoring actions."
+        },
+        "hanasql.analyze.calculationView": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable XML schema and semantic validation for `.calculationview` and `.hdbcalculationview` artifacts."
+        },
+        "hanasql.analyze.targetPlatform": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "xsc",
+            "hdi",
+            "cloud"
+          ],
+          "default": "auto",
+          "markdownDescription": "Target SAP HANA platform controlling platform-specific rules (`cloud` escalates `CE_*` operators to errors; `xsc` suppresses HDI migration hints)."
+        },
+        "hanasql.xsjs.enableIntelliSense": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable built-in Completion, Hover, and SignatureHelp IntelliSense for the XSJS `$` API in `.xsjs` and `.xsjslib` files."
         }
       }
     }
