@@ -27,7 +27,7 @@
           }
         },
         {
-          "match": "(\\$)(\\.)(request|response|db|hdb|net|util|web|session|security|jobs|trace|text|repo|process)((?:\\.[A-Za-z_]\\w*)*)(\\.)([A-Z][A-Z0-9_]+)\\b",
+          "match": "(\\$)(\\.)(application|request|response|db|hdb|net|util|web|session|security|jobs|trace|text|repo|process)((?:\\.[A-Za-z_]\\w*)*)(\\.)([A-Z][A-Z0-9_]+)\\b",
           "captures": {
             "1": {
               "name": "variable.language.xsjs"
@@ -50,7 +50,7 @@
           }
         },
         {
-          "match": "(\\$)(\\.)(request|response|db|hdb|net|util|web|session|security|jobs|trace|text|repo|process)\\b",
+          "match": "(\\$)(\\.)(application|request|response|db|hdb|net|util|web|session|security|jobs|trace|text|repo|process)\\b",
           "captures": {
             "1": {
               "name": "variable.language.xsjs"
