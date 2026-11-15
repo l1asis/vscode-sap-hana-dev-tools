@@ -2,6 +2,26 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.6.0] - 2026-11-15
+
+### Added
+
+- **Offline Lexical & Structural Syntax Error Diagnostics (`HANA-SYN-*`):**
+  - **Shared Delimiter & Recovery Engine (`src/analyzer/delimiters.ts`):** Pure-TypeScript bracket matcher (`()`, `[]`, `{}`) with statement/type-dimension boundary fencing and indentation- and nesting-aware minimum-cost alignment to pinpoint inner unbalanced delimiters without cascading false positives (`HANA-SYN-003`, `HANA-SYN-010`, `HANA-SYN-031`).
+  - **SQL, SQLScript, CDS, Classic KV, `.xsodata`, `.hdbrole` & `.hdbmigrationtable` (`src/analyzer/syntax.ts`, `HANA-SYN-001` – `HANA-SYN-003`, `HANA-SYN-020` – `HANA-SYN-026`):**
+    - Lexical checks for unterminated strings (preserving valid multiline SQL `'...'` and `''` / backslash escapes), single-line quoted identifiers with same-line quote-chain localization, CDS `![...]` expressions, and unterminated `/* ... */` block comments (`HANA-SYN-001` – `HANA-SYN-002`), scanning `-- hanasql-format off` regions and isolating `.hdbmigrationtable` `== version` / `== dev-version` / `== migration` sections.
+    - SQLScript compound block matching (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) skipping `LANGUAGE R` / `RLANG` / `GRAPH` bodies and DDL `IF EXISTS` (`HANA-SYN-020`).
+    - Anchored header, signature, SQL clause, and CDS keyword typo detection with QuickFixes (`HANA-SYN-021`), Classic Key-Value validation preserving `.hdbview` and `.hdbti` tolerances (`HANA-SYN-022`), missing comma checks with QuickFixes (`HANA-SYN-023`), missing/dangling/consecutive SQL operators and trailing commas with QuickFixes (`HANA-SYN-024`), incomplete SQL clauses and missing `;` between statements inside `BEGIN..END` with QuickFixes (`HANA-SYN-025`), and CDS `.hdbdd` / `.hdbcds` missing `:`, type, and `;` checks (`HANA-SYN-026`).
+  - **Strict JSON / JSONC Parser with Recovery AST (`src/analyzer/json-parser.ts`, `HANA-SYN-010` – `HANA-SYN-011`):** Added `parseJsonAstWithErrors` across JSON/JSONC artifacts and HDI JSON `.hdbrole` to preserve partial ASTs for downstream security checks (`HANA-SEC-*`) while diagnosing syntax errors (`HANA-SYN-010`, honoring `.xssqlcc` omitted commas and `.xsapp` empty marker files) and trailing commas with a 1-click QuickFix (`HANA-SYN-011`).
+  - **XSJS / XSJSLIB Regex-Aware Syntax Diagnostics (`src/analyzer/xsjs.ts`, `HANA-SYN-030` – `HANA-SYN-034`):** Detects unterminated strings, regex literals (disambiguated from division `/`), template literals with nested `${...}` expressions, and block comments (`HANA-SYN-030`), unmatched/unclosed JS delimiters and `${...}` interpolations (`HANA-SYN-031`), anchored JS keyword typos with QuickFixes (`HANA-SYN-032`), missing commas in call/array lists with QuickFixes (`HANA-SYN-033`), and missing, dangling, or consecutive binary operators (`HANA-SYN-034`).
+- **Analyzer Settings, Spec & Tests:**
+  - Added `hanasql.analyze.syntax` setting (`package.json`, `src/analyzer/types.ts`, `src/analyzer/vscode-provider.ts`) and expanded `ANALYZER_LANGUAGES` in `src/analyzer/dispatch.ts` across all SQL, JSON, dedicated DDL/KV, and XSJS language IDs, honoring `@AnalyzerSuppress` / `hanasql-analyze-disable` pragmas.
+  - Added `docs/specs/diagnostics/syntax-rules.md` and `test/syntax-analyzer.test.ts` (positive, negative, QuickFix, quote/delimiter localization, and zero-false-positive sample audit across `samples/`), bringing the test suite to `116/116` passing.
+
+### Changed
+
+- **SQL Tokenizer Options (`src/formatter/tokenizer.ts`):** Extended `tokenize` with `TokenizeOptions` (`collapseFormatOff`, `slashComments`, `singleLineQident`) so syntax analysis inspects `-- hanasql-format off` regions verbatim, recognizes `//` comments in Classic KV / CDS / `.xsodata` / `.hdbrole`, and stops runaway double-quoted identifiers at line breaks without changing formatter behavior.
+
 ## [0.5.0] - 2026-11-15
 
 ### Added
