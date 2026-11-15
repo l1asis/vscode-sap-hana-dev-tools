@@ -913,12 +913,244 @@ test('HANA-SYN-028: SQLScript routine header, USING, block declaration ordering,
   assert.deepEqual(syn28('hdbprocedure', validUsingAtRootBegin), []);
 
   const validAlterAndMisc = `
-    ALTER FUNCTION "demo::fn_alter" () AS BEGIN RETURN 1; END;
+    ALTER FUNCTION "demo::fn_alter" () AS BEGIN x = 1; END;
     ALTER PROCEDURE "demo::p_recomp" RECOMPILE;
     DROP FUNCTION "demo::fn_old";
     FUNCTION "demo::fn_scalar" (IN a INT) RETURNS b INT DETERMINISTIC STRUCTURED FILTER CHECK AS BEGIN b = :a + 1; END
   `;
   assert.deepEqual(syn28('hanasql', validAlterAndMisc), []);
+});
+
+test('HANA-SYN-029: context-sensitive SQLScript statement legality & DETERMINISTIC checks', () => {
+  const syn29 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-029');
+
+  // 1. Read-only restrictions in FUNCTION & READS SQL DATA PROCEDURE
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN INSERT INTO MY_TAB VALUES (1); END').some((d) =>
+      /'INSERT' on persistent table 'MY_TAB' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS r INT AS BEGIN UPDATE MY_TAB SET a = 1; r = 1; END').some((d) =>
+      /'UPDATE' on persistent table 'MY_TAB' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN DELETE FROM MY_TAB; END').some((d) =>
+      /'DELETE' on persistent table/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN CREATE TABLE T (A INT); END').some((d) =>
+      /DDL statement 'CREATE' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() READS SQL DATA AS BEGIN COMMIT; END').some((d) =>
+      /Transaction control statement 'COMMIT' is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', "PROCEDURE p() READS SQL DATA AS BEGIN EXECUTE IMMEDIATE 'DROP TABLE T'; END").some((d) =>
+      /Dynamic SQL \('EXECUTE IMMEDIATE'\) is not allowed/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      'PROCEDURE p() READS SQL DATA AS BEGIN BEGIN AUTONOMOUS TRANSACTION INSERT INTO LOG_TAB VALUES (1); END; END'
+    ).some((d) => /'BEGIN AUTONOMOUS TRANSACTION' is not allowed/i.test(d.message))
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS r INT AS BEGIN CALL other_proc(); r = 1; END').some((d) =>
+      /'CALL' procedure invocation is not allowed inside a FUNCTION/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbfunction',
+      'FUNCTION f() RETURNS r INT AS BEGIN BEGIN PARALLEL EXECUTION SELECT 1 FROM DUMMY; END; r = 1; END'
+    ).some((d) => /'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION/i.test(d.message))
+  );
+
+  // 2. DETERMINISTIC non-deterministic built-in & sequence warnings
+  const detDiags = syn29(
+    'hdbfunction',
+    `FUNCTION f() RETURNS r NVARCHAR(64) DETERMINISTIC AS
+     BEGIN
+       DECLARE u INT;
+       SELECT MY_SEQ.NEXTVAL INTO u FROM DUMMY;
+       r = CAST(RAND() AS NVARCHAR(64)) || TO_NVARCHAR(CURRENT_TIMESTAMP) || SESSION_CONTEXT('XS_USER');
+     END`
+  );
+  assert.equal(detDiags.length, 4);
+  assert.ok(detDiags.every((d) => d.severity === 'warning'));
+
+  // 3. RETURN rules by routine kind
+  assert.ok(
+    syn29('hdbtablefunction', 'FUNCTION f() RETURNS TABLE (A INT) AS BEGIN DECLARE x INT := 1; END').some((d) =>
+      /Table UDF body is missing a 'RETURN/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbtablefunction', 'FUNCTION f() RETURNS TABLE (A INT) AS BEGIN RETURN; END').some((d) =>
+      /Table UDF cannot use bare 'RETURN;'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbfunction', 'FUNCTION f() RETURNS x INT AS BEGIN RETURN 1; END').some((d) =>
+      /'RETURN <expr>' is only allowed in a Table UDF/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN RETURN 1; END').some((d) =>
+      /'RETURN <expr>' is only allowed in a Table UDF/i.test(d.message)
+    )
+  );
+
+  // 4. BREAK / CONTINUE outside loop, RESIGNAL outside handler, SIGNAL code range
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN BREAK; END').some((d) =>
+      /'BREAK' is only allowed inside a 'LOOP', 'WHILE', or 'FOR'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN CONTINUE; END').some((d) =>
+      /'CONTINUE' is only allowed inside a 'LOOP', 'WHILE', or 'FOR'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN RESIGNAL; END').some((d) =>
+      /'RESIGNAL' is only allowed inside a 'DECLARE \.\.\. HANDLER'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN SIGNAL SQL_ERROR_CODE 500; END').some((d) =>
+      /between 10000 and 19999/i.test(d.message)
+    )
+  );
+
+  // 5. Nested DO BEGIN, AUTONOMOUS TRANSACTION & PARALLEL EXECUTION restrictions
+  assert.ok(
+    syn29('hdbprocedure', 'PROCEDURE p() AS BEGIN DO BEGIN SELECT 1 FROM DUMMY; END; END').some((d) =>
+      /Nested 'DO BEGIN \.\.\. END'/i.test(d.message)
+    )
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         BEGIN AUTONOMOUS TRANSACTION
+           DECLARE CURSOR c FOR SELECT 1 FROM DUMMY;
+           CALL helper_proc();
+           CREATE TABLE T_TMP (A INT);
+           OPEN c;
+         END;
+       END`
+    ).length === 4
+  );
+  assert.ok(
+    syn29(
+      'hdbprocedure',
+      `PROCEDURE p() AS BEGIN
+         BEGIN PARALLEL EXECUTION
+           DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+           CREATE TABLE T_PAR (A INT);
+           COMMIT;
+           EXEC 'SELECT 1 FROM DUMMY';
+         END;
+       END`
+    ).length === 4
+  );
+
+  // 6. Top-level imperative statements outside routine / DO BEGIN
+  assert.ok(
+    syn29('hanasql', 'DECLARE v INT := 1;\nRETURN;').length === 2
+  );
+  assert.ok(
+    syn29('hanasql', 'IF 1 = 1 THEN SELECT 1 FROM DUMMY; END IF;').some((d) =>
+      /Imperative statement 'IF' is only allowed inside a routine/i.test(d.message)
+    )
+  );
+
+  // 7. Negative checks: all valid SQLScript contexts must yield 0 HANA-SYN-029 diagnostics
+  const validContextCases = `
+    CREATE PROCEDURE "demo::ro_tablevar_proc" (OUT ot TABLE (ID INT))
+    LANGUAGE SQLSCRIPT READS SQL DATA AS
+    BEGIN
+      DECLARE lt TABLE (ID INT);
+      :lt.INSERT((1), 1);
+      INSERT INTO :lt VALUES (2);
+      UPDATE :lt SET ID = 3 WHERE ID = 2;
+      DELETE FROM :lt WHERE ID = 1;
+      SELECT 1 FROM DUMMY;
+      ot = SELECT * FROM :lt;
+      RETURN;
+    END;
+
+    CREATE PROCEDURE "demo::rw_full_proc" () LANGUAGE SQLSCRIPT AS
+    BEGIN
+      DECLARE c_dup CONDITION FOR SQL_ERROR_CODE 301;
+      DECLARE c_user CONDITION FOR SQL_ERROR_CODE 10001;
+      DECLARE EXIT HANDLER FOR SQLEXCEPTION RESIGNAL;
+      DECLARE i INT := 0;
+
+      WHILE :i < 5 DO
+        i = :i + 1;
+        IF :i = 2 THEN
+          CONTINUE;
+        ELSEIF :i = 4 THEN
+          BREAK;
+        END IF;
+      END WHILE;
+
+      BEGIN AUTONOMOUS TRANSACTION
+        INSERT INTO "AUDIT_LOG" VALUES ('ok');
+        COMMIT;
+        BEGIN AUTONOMOUS TRANSACTION
+          ROLLBACK;
+        END;
+      END;
+
+      BEGIN PARALLEL EXECUTION
+        UPDATE "CTAB1" SET A = 1;
+        CALL "demo::sub_rw_1"();
+      END;
+
+      IF 1 = 0 THEN
+        SIGNAL SQL_ERROR_CODE 10001 SET MESSAGE_TEXT = 'bad';
+      END IF;
+    END;
+
+    CREATE FUNCTION "demo::det_scalar_fn" (IN a INT, IN b INT)
+    RETURNS res INT DETERMINISTIC AS
+    BEGIN
+      IF :a < 0 THEN
+        res = 0;
+        RETURN;
+      END IF;
+      res = :a + :b;
+    END;
+
+    CREATE FUNCTION "demo::tudf_branch" (IN flag INT)
+    RETURNS TABLE (A INT) AS
+    BEGIN
+      DECLARE buf TABLE (A INT);
+      :buf.INSERT((1), 1);
+      IF :flag > 0 THEN
+        RETURN SELECT A FROM :buf;
+      ELSE
+        RETURN SELECT 0 AS A FROM DUMMY;
+      END IF;
+    END;
+
+    DO BEGIN
+      DECLARE v_x INT := 1;
+      v_x = :v_x + 1;
+    END;
+  `;
+  assert.deepEqual(syn29('hanasql', validContextCases), []);
 });
 
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {

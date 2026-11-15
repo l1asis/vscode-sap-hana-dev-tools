@@ -1208,7 +1208,10 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       }
 
       // Variable / Table / Array / Cursor / Condition declaration
-      if (topScope.inAutonomous && wordUpper(codeTokens[i + 2]) === 'CURSOR') {
+      if (
+        topScope.inAutonomous &&
+        (wordUpper(codeTokens[i + 1]) === 'CURSOR' || wordUpper(codeTokens[i + 2]) === 'CURSOR')
+      ) {
         emitDiag(
           tok,
           'HANA-SYN-029',
