@@ -116,12 +116,15 @@
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_HDBTable_Syntax_Reference_en`
 - [ ] **SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_Web_Workbench_en** (132p, 12 chapters) $\rightarrow$ `docs/specs/artifacts/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_Web_Workbench_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_XS_Advanced_Model_en** (242p, 9 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [x] **SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_XS_Advanced_Model_en** (242p, 9 chapters) $\rightarrow$ `docs/specs/artifacts/calculationview-schema.md`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Modeling_Guide_for_SAP_HANA_XS_Advanced_Model_en`
-- [~] **SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en** (170p, 8 chapters) $\rightarrow$ `docs/specs/artifacts/`  
+- [x] **SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en** (170p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/migration-xsc-to-hdi.md`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide_en`
 
-## Phase 3 & 4: API & System View Catalogs (xsjs.d.ts, SYS.*, BIMC, PAL/APL) (12 unique guides)
+## Phase 3 & 4: API & System View Catalogs (xsjs.d.ts, SYS.*, BIMC, PAL/APL) (13 unique guides)
+
+- [x] **SAP HANA XS Classic JavaScript API Reference (`$.*`, 57 classes/namespaces)** $\rightarrow$ `docs/specs/catalogs/xsjs-api.json`  
+  Extracted: `research/xs/xs_classic_js_api/`
 
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Analytics Catalog (BIMC Views) Reference** (43p, 42 chapters) $\rightarrow$ `docs/specs/catalogs/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Analytics_Catalog_(BIMC_Views)_Refe`
@@ -162,7 +165,7 @@
   Extracted: `research/refs/extracted/hana-cloud-data-lake_SAP_HANA_Cloud,_Data_Lake_Security_for_Data_Lake_Relational`
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Data Anonymization Guide** (68p, 40 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Data_Anonymization_Guide`
-- [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Performance Guide for Developers** (238p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
+- [x] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Performance Guide for Developers** (238p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/performance-rules.md`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Performance_Guide_for_Deve`
 - [ ] **hana-cloud-database_SAP HANA Cloud, SAP HANA Database Security Guide** (191p, 7 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
   Extracted: `research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Security_Guide`
@@ -186,9 +189,9 @@
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Troubleshooting_and_Performance_Analysis_Guide`
 - [ ] **SAP_HANA_PLATFORM_SAP_HANA_Client-Side_Data_Encryption_Guide_en** (58p, 15 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Client-Side_Data_Encryption_Guide_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Security_Checklists_and_Recommendations_en** (38p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
+- [x] **SAP_HANA_PLATFORM_SAP_HANA_Security_Checklists_and_Recommendations_en** (38p, 8 chapters) $\rightarrow$ `docs/specs/diagnostics/security-rules.md`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Security_Checklists_and_Recommendations_en`
-- [ ] **SAP_HANA_PLATFORM_SAP_HANA_Security_Guide_en** (442p, 24 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
+- [x] **SAP_HANA_PLATFORM_SAP_HANA_Security_Guide_en** (442p, 24 chapters) $\rightarrow$ `docs/specs/diagnostics/security-rules.md`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Security_Guide_en`
 - [ ] **SAP_HANA_PLATFORM_SAP_HANA_Troubleshooting_and_Performance_Analysis_Guide_en** (360p, 12 chapters) $\rightarrow$ `docs/specs/diagnostics/`  
   Extracted: `research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Troubleshooting_and_Performance_Analysis_Guide_en`
