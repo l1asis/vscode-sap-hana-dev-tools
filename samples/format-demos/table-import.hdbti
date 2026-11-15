@@ -1,0 +1,1 @@
+import=[{hdbtable="demo.app::ORDERS";file="demo.app:orders.csv";header=true;delimField=";";delimEnclosing="\"";keys=["MANDT":"100","STATUS":"OPEN"];},{schema="DEMO_SCHEMA";table="COUNTRY_CODES";file="demo.app:countries.csv";header=false;useHeaderNames=false;}];

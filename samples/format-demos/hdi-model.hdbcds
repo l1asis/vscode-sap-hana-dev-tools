@@ -1,0 +1,4 @@
+namespace demo.hdi;
+context CatalogModel{@Catalog.tableType:#COLUMN entity Item{key id:Integer;title:String(120) not null;tags:String(80);price:Decimal(15,2);} technical configuration{column store;partition by hash(id) partitions 4;};
+type ItemState:String(10){draft='D';active='A';archived='X';};
+view ActiveItems with parameters p_minPrice:Decimal(15,2) as select from Item{id,title,price} where price>=:p_minPrice group by id,title,price order by price desc;};

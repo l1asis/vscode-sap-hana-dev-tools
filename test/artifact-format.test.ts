@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { formatClassicKv } from '../src/formatter/classic-kv';
 import { formatCds } from '../src/formatter/cds';
 import { formatXsodata } from '../src/formatter/xsodata';
-import { formatDocument, supportsRangeFormatting } from '../src/formatter/dispatch';
+import { ARTIFACT_FORMATTER_LANGUAGES, formatDocument, supportsRangeFormatting } from '../src/formatter/dispatch';
 import { format } from '../src/formatter/formatter';
 import { EditorOptions, PartialFormatterOptions } from '../src/formatter/options';
 
@@ -394,5 +394,51 @@ test('samples: formatting sample artifacts produces valid, idempotent output wit
     assert.ok(first.trim().length > 0, `${rel}: formatted output should be non-empty`);
     const second = formatDocument(lang, first, {}, ED);
     assert.strictEqual(second, first, `${rel}: second format pass must be idempotent`);
+  }
+});
+
+test('package.json: binds default formatter and activationEvents for every supported formatter language', () => {
+  const pkgPath = path.join(ROOT, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as {
+    publisher: string;
+    name: string;
+    activationEvents: string[];
+    contributes: { configurationDefaults: Record<string, Record<string, string>> };
+  };
+  const extId = `${pkg.publisher}.${pkg.name}`;
+  const defaults = pkg.contributes.configurationDefaults;
+  const activations = new Set(pkg.activationEvents);
+
+  for (const lang of ARTIFACT_FORMATTER_LANGUAGES) {
+    assert.strictEqual(
+      defaults[`[${lang}]`]?.['editor.defaultFormatter'],
+      extId,
+      `missing configurationDefaults[${lang}] defaultFormatter binding`
+    );
+    assert.ok(activations.has(`onLanguage:${lang}`), `missing onLanguage:${lang} activationEvent`);
+  }
+});
+
+test('samples/format-demos: every format demo transforms and formats idempotently', () => {
+  const demoCases: Array<[string, string]> = [
+    ['hanasql', 'samples/format-demos/query-and-proc.sql'],
+    ['hdbprocedure', 'samples/format-demos/hdi-procedure.hdbprocedure'],
+    ['hdbtabletype', 'samples/format-demos/hdi-tabletype.hdbtabletype'],
+    ['hdbtable', 'samples/format-demos/classic-table.hdbtable'],
+    ['hdbview', 'samples/format-demos/classic-view.hdbview'],
+    ['hdbsequence', 'samples/format-demos/classic-sequence.hdbsequence'],
+    ['hdbschema', 'samples/format-demos/classic-schema.hdbschema'],
+    ['hdbti', 'samples/format-demos/table-import.hdbti'],
+    ['hdbdd', 'samples/format-demos/classic-model.hdbdd'],
+    ['hdbcds', 'samples/format-demos/hdi-model.hdbcds'],
+    ['xsodata', 'samples/format-demos/service.xsodata'],
+  ];
+
+  for (const [lang, rel] of demoCases) {
+    const abs = path.join(ROOT, rel);
+    const src = fs.readFileSync(abs, 'utf8');
+    const formatted = formatDocument(lang, src, {}, ED);
+    assert.notStrictEqual(formatted, src, `${rel}: format demo should demonstrate formatting changes`);
+    assert.strictEqual(formatDocument(lang, formatted, {}, ED), formatted, `${rel}: idempotent`);
   }
 });

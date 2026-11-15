@@ -1,0 +1,5 @@
+// Format Document aligns key = value, expands table.columns structs, and preserves identifier case
+table.schemaName="DEMO_SCHEMA";table.tableType=COLUMNSTORE;table.description="Customer orders";
+table.columns=[{name="ORDER_ID";sqlType=BIGINT;nullable=false;comment="Primary key";},{name="CUSTOMER_ID";sqlType=NVARCHAR;length=20;nullable=false;},{name="AMOUNT";sqlType=DECIMAL;precision=15;scale=2;defaultValue="0";},{name="STATUS";sqlType=NVARCHAR;length=10;defaultValue="OPEN";}];
+table.primaryKey.pkcolumns=["ORDER_ID"];
+table.indexes=[{name="IDX_CUSTOMER";unique=false;indexColumns=["CUSTOMER_ID"];}];

@@ -1,0 +1,4 @@
+namespace demo.classic;using demo.common::Types as T;@Schema:'DEMO_SCHEMA'
+context Sales{@Catalog.tableType:#COLUMN
+entity Order{key id:Integer;customerId:String(20) not null;amount:Decimal(15,2);status:String(10) default 'OPEN';};
+view OpenOrders as select from Order{id,customerId,amount} where status='OPEN' order by id asc;};

@@ -1,0 +1,4 @@
+schema="DEMO_SCHEMA";
+query="select o.order_id,o.customer_id,o.amount,c.name from \"DEMO_SCHEMA\".\"ORDERS\" o inner join \"DEMO_SCHEMA\".\"CUSTOMERS\" c on o.customer_id=c.id where o.status='OPEN' order by o.order_id;";
+depends_on="demo.app::ORDERS","demo.app::CUSTOMERS";
+public=false

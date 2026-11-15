@@ -1,0 +1,7 @@
+PROCEDURE "demo.app::normalize_customer" ( IN iv_raw NVARCHAR(100), OUT ov_clean NVARCHAR(100) ) LANGUAGE SQLSCRIPT SQL SECURITY INVOKER READS SQL DATA AS
+USING SYS.SQLSCRIPT_STRING AS STR_LIB;
+BEGIN
+    declare lv_trimmed nvarchar(100);
+    lv_trimmed = STR_LIB:TRIM(:iv_raw);
+    if :lv_trimmed = '' then ov_clean = 'UNKNOWN'; else ov_clean = upper(:lv_trimmed); end if;
+END

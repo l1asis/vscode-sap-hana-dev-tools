@@ -1,0 +1,5 @@
+service namespace "demo.app"{"demo.app::Countries" as "Countries";
+"DEMO_SCHEMA"."ORDERS" as "Orders" with("ORDER_ID","CUSTOMER_ID","AMOUNT","STATUS") keys("ORDER_ID") concurrencytoken navigates("OrderItems" as "Items") create using "demo.app:orders.xsjslib::createOrder" update events(before "demo.app:orders.xsjslib::validateOrder",after "demo.app:orders.xsjslib::auditOrder") delete forbidden;
+association "OrderItems" principal "Orders"("ORDER_ID") multiplicity "1" dependent "Items"("ORDER_ID") multiplicity "*";
+settings{support null;content cache-control "max-age=300";limits max_records=1000,max_expanded_records=5000;}}
+annotations{enable OData4SAP;}
