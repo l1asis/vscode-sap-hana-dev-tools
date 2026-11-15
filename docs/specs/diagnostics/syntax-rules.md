@@ -34,6 +34,7 @@
 | `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
 | `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
 | `HANA-SYN-028` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Routine header clause placement/compatibility, `USING` library placement, `DECLARE` / `HANDLER` / executable ordering in compound blocks, handler scope conflicts, or unreachable statements |
+| `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -296,6 +297,51 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   - `'EXIT HANDLER' cannot be combined with 'CONTINUE HANDLER' in the same or enclosing scope.`
   - `Duplicate condition handler for 'SQLEXCEPTION' in this scope.`
   - `Unreachable statement after 'RETURN'.`
+
+---
+
+### `HANA-SYN-029` — SQLScript Context-Sensitive Statement Rules
+
+> Source: `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`, `010_8_Imperative_SQLScript_Logic.md`, `006_4_SQL_Reference.md`
+
+- **Platform:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** `sql`, `hanasql`, `sqlscript`, `procedure`, `hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbmigrationtable`
+- **Severity:** `error` (`warning` for `DETERMINISTIC` non-deterministic built-in usage)
+- **Category:** `syntax`
+- **Conditions:**
+  1. **Read-Only Restrictions (`FUNCTION` & `READS SQL DATA` `PROCEDURE`) (`error`):**
+     - Disallow DML modifying persistent catalog tables (`INSERT`, `UPDATE`, `DELETE`, `UPSERT`, `MERGE`, `REPLACE`) inside `FUNCTION` (scalar or table UDF) and `READS SQL DATA` `PROCEDURE` bodies. DML targeting local `:table_var` table variables (`:lt.INSERT(...)`, `INSERT INTO :lt ...`, `UPDATE :lt ...`, `DELETE FROM :lt ...`) IS permitted.
+     - Disallow DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`, `LOCK TABLE`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), and `BEGIN AUTONOMOUS TRANSACTION`.
+     - Inside `FUNCTION` bodies, additionally disallow `CALL <proc>` and `BEGIN PARALLEL EXECUTION`.
+  2. **`DETERMINISTIC` Routine Side-Effect / Nondeterminism Check (`warning`):**
+     - Inside `DETERMINISTIC` procedures or functions, warn on non-deterministic functions/values (`RAND`, `RAND_SECURE`, `SYSUUID`, `SESSION_CONTEXT`, `SESSION_USER`, `CURRENT_TIMESTAMP`, `CURRENT_UTCTIMESTAMP`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_UTCDATE`, `CURRENT_UTCTIME`, `CURRENT_MVCC_SNAPSHOT_TIMESTAMP`, `CURRENT_TRANSACTION_ISOLATION_LEVEL`, `NOW`) and sequence access (`.NEXTVAL`, `.CURRVAL`).
+  3. **`RETURN` Statement Semantics by Routine Kind (`error`):**
+     - **Table UDF (`RETURNS TABLE (...)`):** A concrete SQLScript `BEGIN ... END` body (excluding `VIRTUAL`, `HEADER ONLY`, foreign language, and `ALTER FUNCTION` without `RETURNS`) MUST execute at least one `RETURN <table_expr_or_select>;` and MUST NOT use bare `RETURN;`.
+     - **Scalar UDF / `PROCEDURE` / `DO`:** `RETURN <expr>;` returning an expression is rejected; Scalar UDFs assign return variables directly and optionally exit with bare `RETURN;`, and `PROCEDURE`/`DO` only allow bare `RETURN;`.
+  4. **Loop Control (`BREAK` / `CONTINUE`) (`error`):**
+     - `BREAK` and `CONTINUE` are rejected outside `LOOP`, `WHILE`, and `FOR` loop bodies (and inside exception handlers unless nested inside a handler-local loop).
+  5. **Exception Handling Statements (`RESIGNAL` / `SIGNAL`) (`error`):**
+     - `RESIGNAL` is rejected outside an exception handler body (`DECLARE EXIT|CONTINUE HANDLER`).
+     - `SIGNAL SQL_ERROR_CODE <n>` requires user-defined error code `<n>` in range `10000..19999`. (`DECLARE <cond> CONDITION FOR SQL_ERROR_CODE <n>` permits built-in SQL error codes.)
+  6. **Nested Anonymous Blocks (`DO BEGIN`) (`error`):**
+     - Anonymous `DO [(...)] BEGIN ... END` blocks cannot be nested inside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO` bodies.
+  7. **`BEGIN AUTONOMOUS TRANSACTION` & `BEGIN PARALLEL EXECUTION` Restrictions (`error`):**
+     - Inside `BEGIN PARALLEL EXECUTION`: disallowed in `FUNCTION` bodies; disallow `EXEC` / `EXECUTE IMMEDIATE`, DDL, `COMMIT` / `ROLLBACK` / `SAVEPOINT`, `DECLARE ... HANDLER`, and `RETURN`.
+     - Inside `BEGIN AUTONOMOUS TRANSACTION`: disallow `CALL`, DDL, dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`), and cursor operations (`DECLARE ... CURSOR`, `OPEN`, `FETCH`, `CLOSE`).
+  8. **Top-Level Imperative Statements (`error`):**
+     - Imperative SQLScript statements (`DECLARE`, `IF ... THEN`, `LOOP`, `WHILE`, `FOR`, `BREAK`, `CONTINUE`, `SIGNAL`, `RESIGNAL`, `RETURN`) are rejected at top-level SQL script scope outside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO BEGIN ... END`.
+- **Diagnostic Examples:**
+  - `'INSERT' on persistent table 'TAB' is not allowed inside a READS SQL DATA procedure or FUNCTION.`
+  - `Dynamic SQL ('EXECUTE IMMEDIATE') is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+  - `Non-deterministic expression 'RAND' used inside a DETERMINISTIC routine.`
+  - `Table UDF must return a table expression via 'RETURN <query_or_table_var>;'.`
+  - `'RETURN <expr>' is only allowed in a Table UDF; use return parameter assignment or bare 'RETURN;' instead.`
+  - `'BREAK' is only allowed inside a 'LOOP', 'WHILE', or 'FOR' statement.`
+  - `'RESIGNAL' is only allowed inside a 'DECLARE ... HANDLER' exception handler.`
+  - `'SIGNAL SQL_ERROR_CODE' code 500 must be a user-defined error code between 10000 and 19999.`
+  - `Nested 'DO BEGIN ... END' anonymous blocks are not allowed inside a routine.`
+  - `'CALL' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`
+  - `Imperative statement 'DECLARE' is only allowed inside a routine or 'DO BEGIN ... END' block.`
 
 ---
 
