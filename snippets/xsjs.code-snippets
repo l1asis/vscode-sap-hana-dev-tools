@@ -1,0 +1,82 @@
+{
+  "XSJS $.hdb Parameterized Query": {
+    "scope": "xsjs,xsjslib",
+    "prefix": "xsjs-hdb-query",
+    "description": "Parameterized $.hdb.getConnection() query with automatic close in finally block",
+    "body": [
+      "var conn = $.hdb.getConnection();",
+      "try {",
+      "  var rs = conn.executeQuery(\"SELECT * FROM \\\"${1:SCHEMA}\\\".\\\"${2:TABLE}\\\" WHERE \\\"ID\\\" = ?\", ${3:id});",
+      "  $.response.contentType = \"application/json\";",
+      "  $.response.setBody(JSON.stringify(rs));",
+      "} finally {",
+      "  conn.close();",
+      "}"
+    ]
+  },
+  "XSJS Import XS Data Services (XSDS)": {
+    "scope": "xsjs,xsjslib",
+    "prefix": "xsjs-xsds",
+    "description": "Import SAP HANA XSDS library and map a CDS entity",
+    "body": [
+      "var XSDS = $.import(\"sap.hana.xs.libs.dbutils\", \"xsds\");",
+      "var ${1:EntityClass} = XSDS.$importEntity(\"${2:my.app.data}\", \"${3:Context.Entity}\");",
+      "$0"
+    ]
+  },
+  "XSJS Import XS Procedures Library": {
+    "scope": "xsjs,xsjslib",
+    "prefix": "xsjs-xsproc",
+    "description": "Import SAP HANA XS Procedures library and bind stored procedure caller",
+    "body": [
+      "var XSProc = $.import(\"sap.hana.xs.libs.dbutils\", \"procedures\");",
+      "var ${1:callProc} = XSProc.procedure(\"${2:SCHEMA}\", \"${3:my.app.procedures}\", \"${4:PR_NAME}\");",
+      "$0"
+    ]
+  },
+  "XSUnit Jasmine Test Suite": {
+    "scope": "xsjs,xsjslib",
+    "prefix": "xsunit-suite",
+    "description": "XSUnit BDD test suite using jasmine.hdbConnection",
+    "body": [
+      "describe(\"${1:UnitUnderTest}\", function() {",
+      "  beforeEach(function() {",
+      "    $2",
+      "  });",
+      "",
+      "  it(\"should ${3:behave as expected}\", function() {",
+      "    var actual = ${4:null};",
+      "    expect(actual).${5|toBe,toEqual,toEqualObject,toBeDefined,toMatchData|}(${6:expected});",
+      "  });",
+      "});"
+    ]
+  },
+  "XSUnit Mockstar Environment Setup": {
+    "scope": "xsjs,xsjslib",
+    "prefix": "xsunit-mockstar",
+    "description": "XSUnit Mockstar test model isolation with MockstarEnvironment.defineAndCreate and SqlExecutor",
+    "body": [
+      "var mockstarEnvironment = $.import(\"sap.hana.testtools.mockstar\", \"mockstarEnvironment\");",
+      "var SqlExecutor = $.import(\"sap.hana.testtools.unit.util\", \"sqlExecutor\").SqlExecutor;",
+      "var testEnv;",
+      "",
+      "beforeOnce(function() {",
+      "  testEnv = mockstarEnvironment.defineAndCreate({",
+      "    schema: \"${1:TEST_SCHEMA}\",",
+      "    model: { package: \"${2:my.app.models}\", name: \"${3:CV_MY_VIEW}\" },",
+      "    substituteTables: {",
+      "      \"${4:SRC_TABLE}\": { name: \"${5:my.app.data::SRC_TABLE}\" }",
+      "    }",
+      "  });",
+      "});",
+      "",
+      "it(\"should query isolated test table data\", function() {",
+      "  testEnv.clearAllTestTables();",
+      "  testEnv.fillTestTable(\"${4:SRC_TABLE}\", [{ ID: 1 }]);",
+      "  var sqlExecutor = new SqlExecutor(jasmine.hdbConnection);",
+      "  var rs = sqlExecutor.execQuery(\"SELECT * FROM \" + testEnv.getTestModelName());",
+      "  expect(rs).toMatchData({ ID: [1] }, [\"ID\"]);",
+      "});"
+    ]
+  }
+}

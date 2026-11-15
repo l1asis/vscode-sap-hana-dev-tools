@@ -1,0 +1,143 @@
+{
+  "HDI Table Definition": {
+    "scope": "hdbtable",
+    "prefix": "hdi-table",
+    "description": "Headerless HDI COLUMN TABLE artifact (.hdbtable)",
+    "body": [
+      "COLUMN TABLE \"${1:MY_TABLE}\" (",
+      "  \"${2:ID}\" NVARCHAR(36) NOT NULL,",
+      "  \"${3:NAME}\" NVARCHAR(128),",
+      "  \"CREATED_AT\" TIMESTAMP DEFAULT CURRENT_UTCTIMESTAMP,",
+      "  PRIMARY KEY (\"${2:ID}\")",
+      ")"
+    ]
+  },
+  "HDI View Definition": {
+    "scope": "hdbview",
+    "prefix": "hdi-view",
+    "description": "Headerless HDI VIEW artifact (.hdbview)",
+    "body": [
+      "VIEW \"${1:V_MY_VIEW}\" AS",
+      "SELECT",
+      "  \"${2:ID}\",",
+      "  \"${3:NAME}\"",
+      "FROM \"${4:MY_TABLE}\""
+    ]
+  },
+  "Classic XS Table Definition": {
+    "scope": "hdbtable",
+    "prefix": "xsc-table",
+    "description": "XS Classic Key-Value .hdbtable definition",
+    "body": [
+      "table.schemaName = \"${1:MY_SCHEMA}\";",
+      "table.tableType = COLUMNSTORE;",
+      "table.columns = [",
+      "  { name = \"${2:ID}\"; sqlType = NVARCHAR; length = 36; nullable = false; },",
+      "  { name = \"${3:NAME}\"; sqlType = NVARCHAR; length = 128; nullable = true; }",
+      "];",
+      "table.primaryKey.pkcolumns = [\"${2:ID}\"];"
+    ]
+  },
+  "HANA CDS Entity": {
+    "scope": "hdbdd,hdbcds",
+    "prefix": "cds-entity",
+    "description": "SAP HANA CDS entity definition (.hdbdd / .hdbcds)",
+    "body": [
+      "entity ${1:SalesOrder} {",
+      "  key ${2:ID} : String(36);",
+      "  ${3:Amount} : Decimal(15, 2);",
+      "  CreatedAt : UTCTimestamp;",
+      "} technical configuration {",
+      "  column store;",
+      "};"
+    ]
+  },
+  "XS OData Service": {
+    "scope": "xsodata",
+    "prefix": "xsodata-service",
+    "description": "XS OData service exposing a table, view, or calculation view (.xsodata)",
+    "body": [
+      "service {",
+      "  \"${1:my.pkg::MY_TABLE}\" as \"${2:Items}\";",
+      "}"
+    ]
+  },
+  "HDI JSON Role (Least Privilege)": {
+    "scope": "hdbrole",
+    "prefix": "hdi-role",
+    "description": "HDI JSON role granting object privileges (.hdbrole)",
+    "body": [
+      "{",
+      "  \"role\": {",
+      "    \"name\": \"${1:my.ns::ReaderRole}\",",
+      "    \"object_privileges\": [",
+      "      {",
+      "        \"name\": \"${2:MY_VIEW}\",",
+      "        \"type\": \"${3|VIEW,TABLE,PROCEDURE|}\",",
+      "        \"privileges\": [\"${4|SELECT,EXECUTE|}\"]",
+      "      }",
+      "    ]",
+      "  }",
+      "}"
+    ]
+  },
+  "HDI External Grants (.hdbgrants)": {
+    "scope": "hdbgrants",
+    "prefix": "hdi-grants",
+    "description": "HDI .hdbgrants separating #OO object_owner and least-privilege #RT application_user",
+    "body": [
+      "{",
+      "  \"${1:my-ups-or-grantor-service}\": {",
+      "    \"object_owner\": {",
+      "      \"object_privileges\": [",
+      "        {",
+      "          \"reference\": \"${2:EXT_TABLE}\",",
+      "          \"privileges_with_grant_option\": [\"SELECT\"]",
+      "        }",
+      "      ]",
+      "    },",
+      "    \"application_user\": {",
+      "      \"object_privileges\": [",
+      "        {",
+      "          \"reference\": \"${2:EXT_TABLE}\",",
+      "          \"privileges\": [\"SELECT\"]",
+      "        }",
+      "      ]",
+      "    }",
+      "  }",
+      "}"
+    ]
+  },
+  "XS Access Security Config (.xsaccess)": {
+    "scope": "xsaccess",
+    "prefix": "xsc-xsaccess",
+    "description": "Security-hardened .xsaccess configuration (authentication, XSRF protection, SSL)",
+    "body": [
+      "{",
+      "  \"exposed\": true,",
+      "  \"authentication\": [",
+      "    { \"method\": \"${1|Form,SAML,Basic,X509|}\" }",
+      "  ],",
+      "  \"prevent_xsrf\": true,",
+      "  \"force_ssl\": true,",
+      "  \"headers\": {",
+      "    \"x_frame_options\": \"SAMEORIGIN\"",
+      "  }",
+      "}"
+    ]
+  },
+  "HDI Container Config (.hdiconfig)": {
+    "scope": "hdiconfig",
+    "prefix": "hdi-config",
+    "description": "Standard HDI .hdiconfig mapping file extensions to build plug-ins",
+    "body": [
+      "{",
+      "  \"plugin_version\": \"${1:2.0.40.0}\",",
+      "  \"minimum_feature_version\": \"1000\",",
+      "  \"file_suffixes\": {",
+      "    \"${2:hdbtable}\": { \"plugin_name\": \"com.sap.hana.di.${3:table}\" }",
+      "  }",
+      "}"
+    ]
+  }
+}

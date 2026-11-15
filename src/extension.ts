@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { registerAnalyzerFeatures, runMigrationCommand } from './analyzer/vscode-provider';
 import {
   ARTIFACT_FORMATTER_LANGUAGES,
   SQL_LANGUAGES,
@@ -6,6 +7,8 @@ import {
   formatDocument,
   supportsRangeFormatting,
 } from './formatter/dispatch';
+import { installXsjsTypeDeclarations, registerXsjsIntelliSense } from './xsjs/providers';
+import { registerSqlIntelliSense } from './sql/providers';
 import { format } from './formatter/formatter';
 import {
   DEFAULTS,
@@ -231,8 +234,16 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerDocumentRangeFormattingEditProvider(rangeSelector, provider),
     vscode.languages.registerDocumentFormattingEditProvider(xsjsSelector, xsjsProvider),
     vscode.languages.registerDocumentRangeFormattingEditProvider(xsjsSelector, xsjsProvider),
+    ...registerXsjsIntelliSense(xsjsSelector),
+    ...registerSqlIntelliSense(),
+    ...registerAnalyzerFeatures(),
     vscode.commands.registerCommand('hanasql.openFormatterSettings', () =>
-      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql.format')
+      vscode.commands.executeCommand('workbench.action.openSettings', '@ext:l1asis.sap-hana-dev-tools hanasql')
+    ),
+    vscode.commands.registerCommand('hanasql.migrateArtifactToHdi', () => runMigrationCommand('toHdi')),
+    vscode.commands.registerCommand('hanasql.convertArtifactToXsc', () => runMigrationCommand('toXsc')),
+    vscode.commands.registerCommand('hanasql.installXsjsTypes', () =>
+      installXsjsTypeDeclarations(context.extensionPath)
     )
   );
 }

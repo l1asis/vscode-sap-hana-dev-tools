@@ -1608,6 +1608,13 @@
         "path": "./syntaxes/xsjs.tmLanguage.json"
       },
       {
+        "scopeName": "xsjs.injection",
+        "path": "./syntaxes/xsjs-injection.tmLanguage.json",
+        "injectTo": [
+          "source.xsjs"
+        ]
+      },
+      {
         "language": "hdbgrants",
         "scopeName": "source.hdbgrants",
         "path": "./syntaxes/hdbgrants.tmLanguage.json"
@@ -1857,6 +1864,18 @@
       {
         "command": "hanasql.openFormatterSettings",
         "title": "SAP HANA SQL: Open Formatter Settings"
+      },
+      {
+        "command": "hanasql.migrateArtifactToHdi",
+        "title": "SAP HANA: Convert Artifact from XSC to HDI / XSA Syntax"
+      },
+      {
+        "command": "hanasql.convertArtifactToXsc",
+        "title": "SAP HANA: Convert Artifact from HDI to XSC Classic Syntax"
+      },
+      {
+        "command": "hanasql.installXsjsTypes",
+        "title": "SAP HANA XSJS: Configure Workspace xsjs.d.ts Type Definitions"
       }
     ],
     "configurationDefaults": {
@@ -2320,9 +2339,66 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Turn `--comment` into `-- comment`."
+        },
+        "hanasql.analyze.enable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline security, performance, Calculation View, and migration diagnostics for SAP HANA artifacts."
+        },
+        "hanasql.analyze.security": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline security checks (SQL injection, `SQL SECURITY DEFINER`, XSJS `$.db`/`$.hdb`, `.xsaccess`, `.hdbrole`, `.hdbgrants`)."
+        },
+        "hanasql.analyze.performance": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable SQLScript performance and error-handling checks (`CE_*` operators, cursors, `SELECT *`, `DECLARE EXIT HANDLER`)."
+        },
+        "hanasql.analyze.migration": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable XSC <-> XSA/HDI migration hints and refactoring actions."
+        },
+        "hanasql.analyze.calculationView": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable XML schema and semantic validation for `.calculationview` and `.hdbcalculationview` artifacts."
+        },
+        "hanasql.analyze.targetPlatform": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "xsc",
+            "hdi",
+            "cloud"
+          ],
+          "default": "auto",
+          "markdownDescription": "Target SAP HANA platform controlling platform-specific rules (`cloud` escalates `CE_*` operators to errors; `xsc` suppresses HDI migration hints)."
+        },
+        "hanasql.xsjs.enableIntelliSense": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable built-in Completion, Hover, and SignatureHelp IntelliSense for XSJS, XSDS (`xsds`/`procedures`), and XSUnit (`jasmine`/`Mockstar`) APIs in `.xsjs` and `.xsjslib` files."
+        },
+        "hanasql.sql.enableIntelliSense": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline Completion, Hover, and SignatureHelp IntelliSense for SAP HANA SQL, SQLScript (`SYS.SQLSCRIPT_*`, `::` variables, local `:var`), Design-Time JSON configs, and Classic KV artifacts."
         }
       }
-    }
+    },
+    "snippets": [
+      {
+        "path": "./snippets/sqlscript.code-snippets"
+      },
+      {
+        "path": "./snippets/artifacts.code-snippets"
+      },
+      {
+        "path": "./snippets/xsjs.code-snippets"
+      }
+    ]
   },
   "main": "./out/src/extension.js",
   "activationEvents": [
@@ -2428,7 +2504,9 @@
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node --test out/test/*.test.js",
     "build:grammars": "node scripts/build-grammars.js",
-    "build:keywords": "node scripts/build-keywords.js"
+    "build:keywords": "node scripts/build-keywords.js && node scripts/build-sql-catalog.js",
+    "build:sql-catalog": "node scripts/build-sql-catalog.js",
+    "build:xsjs-dts": "node scripts/build-xsjs-dts.js"
   },
   "keywords": [
     "SAP HANA",

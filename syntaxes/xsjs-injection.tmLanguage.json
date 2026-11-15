@@ -1,0 +1,10 @@
+{
+  "name": "SAP HANA XS JavaScript API Injection",
+  "scopeName": "xsjs.injection",
+  "injectionSelector": "L:source.xsjs -comment -string -regexp",
+  "patterns": [
+    {
+      "include": "source.xsjs#xs-api"
+    }
+  ]
+}

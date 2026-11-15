@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore"
+    schemaVersion="2.3"
+    id="app.analytics::CV_SALES_PROJECTION"
+    outputViewType="Aggregation"
+    dataCategory="CUBE"
+    applyPrivilegeType="SQL_ANALYTIC_PRIVILEGE"
+    defaultClient="$$client$$">
+  <descriptions defaultDescription="Sales projection cube"/>
+  <dataSources>
+    <DataSource id="DS_ORDERS" type="DATA_BASE_TABLE">
+      <resourceUri>app.data::ORDERS</resourceUri>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1">
+      <viewAttributes>
+        <viewAttribute id="CUST_ID"/>
+        <viewAttribute id="AMOUNT"/>
+      </viewAttributes>
+      <input node="#DS_ORDERS">
+        <mapping xsi:type="Calculation:AttributeMapping" target="CUST_ID" source="CUST_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="AMOUNT" source="AMOUNT"/>
+      </input>
+    </calculationView>
+    <calculationView xsi:type="Calculation:AggregationView" id="Aggregation_1">
+      <viewAttributes>
+        <viewAttribute id="CUST_ID"/>
+        <viewAttribute id="AMOUNT" aggregationType="sum"/>
+      </viewAttributes>
+      <input node="#Projection_1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="CUST_ID" source="CUST_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="AMOUNT" source="AMOUNT"/>
+      </input>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Aggregation_1">
+    <attributes>
+      <attribute id="CUST_ID">
+        <keyMapping columnObjectName="Aggregation_1" columnName="CUST_ID"/>
+      </attribute>
+    </attributes>
+    <baseMeasures>
+      <measure id="AMOUNT" aggregationType="sum">
+        <measureMapping columnObjectName="Aggregation_1" columnName="AMOUNT"/>
+      </measure>
+    </baseMeasures>
+  </logicalModel>
+</Calculation:scenario>

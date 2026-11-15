@@ -1,0 +1,124 @@
+{
+  "SAP HANA SQLScript Procedure (HDI, Secure)": {
+    "scope": "hanasql,sql,hdbprocedure",
+    "prefix": "hana-proc",
+    "description": "Headerless HDI SQLScript PROCEDURE with SQL SECURITY INVOKER and SQLEXCEPTION handler",
+    "body": [
+      "PROCEDURE \"${1:PR_DO_WORK}\" (",
+      "  IN ${2:iv_id} ${3:NVARCHAR(36)},",
+      "  OUT ${4:et_result} ${5:TABLE (\"ID\" NVARCHAR(36))}",
+      ")",
+      "LANGUAGE SQLSCRIPT",
+      "SQL SECURITY INVOKER",
+      "DEFAULT SCHEMA \"${6:SCHEMA_NAME}\"",
+      "READS SQL DATA",
+      "AS",
+      "BEGIN",
+      "  DECLARE EXIT HANDLER FOR SQLEXCEPTION",
+      "  BEGIN",
+      "    -- Record diagnostics via ::SQL_ERROR_CODE and ::SQL_ERROR_MESSAGE before rethrowing",
+      "    RESIGNAL;",
+      "  END;",
+      "",
+      "  ${4:et_result} = SELECT",
+      "    \"ID\"",
+      "  FROM \"${7:MY_TABLE}\"",
+      "  WHERE \"ID\" = :${2:iv_id};",
+      "END"
+    ]
+  },
+  "SAP HANA SQLScript Parameterized Dynamic SQL": {
+    "scope": "hanasql,sql,hdbprocedure,hdbfunction,hdbtrigger,hdblibrary",
+    "prefix": "hana-exec-using",
+    "description": "Parameterized EXECUTE IMMEDIATE ... USING statement safe against SQL injection",
+    "body": [
+      "DECLARE lv_sql NVARCHAR(5000) := 'SELECT * FROM \"' || REPLACE(:${1:iv_table}, '\"', '\"\"') || '\" WHERE \"ID\" = ?';",
+      "EXECUTE IMMEDIATE :lv_sql INTO ${2:lt_rows} USING :${3:iv_id};"
+    ]
+  },
+  "SAP HANA SQLScript Exit Handler": {
+    "scope": "hanasql,sql,hdbprocedure,hdblibrary,hdbtrigger",
+    "prefix": "hana-exit-handler",
+    "description": "DECLARE EXIT HANDLER FOR SQLEXCEPTION capturing ::SQL_ERROR_CODE and ::SQL_ERROR_MESSAGE",
+    "body": [
+      "DECLARE EXIT HANDLER FOR SQLEXCEPTION",
+      "BEGIN",
+      "  DECLARE lv_code INTEGER := ::SQL_ERROR_CODE;",
+      "  DECLARE lv_message NVARCHAR(5000) := ::SQL_ERROR_MESSAGE;",
+      "  $0",
+      "  RESIGNAL;",
+      "END;"
+    ]
+  },
+  "SAP HANA HDI Table Function": {
+    "scope": "hanasql,sql,hdbfunction,hdbtablefunction",
+    "prefix": "hana-tfunc",
+    "description": "Headerless HDI SQLScript TABLE FUNCTION with SQL SECURITY INVOKER",
+    "body": [
+      "FUNCTION \"${1:TF_GET_ITEMS}\" (",
+      "  IN ${2:iv_filter} ${3:NVARCHAR(64)}",
+      ")",
+      "RETURNS TABLE (",
+      "  \"ID\" NVARCHAR(36),",
+      "  \"AMOUNT\" DECIMAL(15, 2)",
+      ")",
+      "LANGUAGE SQLSCRIPT",
+      "SQL SECURITY INVOKER",
+      "AS",
+      "BEGIN",
+      "  RETURN SELECT",
+      "    \"ID\",",
+      "    \"AMOUNT\"",
+      "  FROM \"${4:MY_TABLE}\"",
+      "  WHERE \"CATEGORY\" = :${2:iv_filter};",
+      "END"
+    ]
+  },
+  "SAP HANA HDI Scalar Function": {
+    "scope": "hanasql,sql,hdbfunction",
+    "prefix": "hana-sfunc",
+    "description": "Headerless HDI SQLScript SCALAR FUNCTION with SQL SECURITY INVOKER",
+    "body": [
+      "FUNCTION \"${1:SF_CALC_DISCOUNT}\" (",
+      "  IN ${2:iv_amount} DECIMAL(15, 2),",
+      "  IN ${3:iv_rate} DECIMAL(5, 4)",
+      ")",
+      "RETURNS ${4:rv_net} DECIMAL(15, 2)",
+      "LANGUAGE SQLSCRIPT",
+      "SQL SECURITY INVOKER",
+      "DETERMINISTIC",
+      "AS",
+      "BEGIN",
+      "  ${4:rv_net} = :${2:iv_amount} * (1 - :${3:iv_rate});",
+      "END"
+    ]
+  },
+  "SAP HANA HDI SQLScript Library": {
+    "scope": "hanasql,sql,hdblibrary",
+    "prefix": "hana-lib",
+    "description": "Headerless HDI SQLScript LIBRARY with public member function and procedure",
+    "body": [
+      "LIBRARY \"${1:LIB_UTILS}\"",
+      "LANGUAGE SQLSCRIPT",
+      "AS",
+      "BEGIN",
+      "  PUBLIC VARIABLE ${2:gc_default_limit} CONSTANT INTEGER := 100;",
+      "",
+      "  PUBLIC FUNCTION \"${3:FN_NORMALIZE}\" (IN iv_text NVARCHAR(256))",
+      "  RETURNS rv_out NVARCHAR(256)",
+      "  AS",
+      "  BEGIN",
+      "    rv_out = UPPER(TRIM(:iv_text));",
+      "  END;",
+      "END"
+    ]
+  },
+  "SAP HANA SQLScript Built-In Library Import": {
+    "scope": "hanasql,sql,hdbprocedure,hdbfunction,hdbtablefunction,hdblibrary",
+    "prefix": "hana-using-lib",
+    "description": "Import a built-in SYS.SQLSCRIPT_* library with local alias",
+    "body": [
+      "USING SYS.${1|SQLSCRIPT_STRING,SQLSCRIPT_LOGGING,SQLSCRIPT_PRINT,SQLSCRIPT_SYNC,SQLSCRIPT_TEST|} AS ${2:LIB_ALIAS};"
+    ]
+  }
+}

@@ -11,17 +11,17 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 * 🔵 **Planned (Next Up)** — Scheduled for upcoming milestones
 * ⚪ **Backlog / N/A** — Future phase or not applicable to this artifact
 
-| Artifact Family | Syntax Highlighting | AST Formatter | Offline LSP & Linter | XSC <-> XSA Migrator | Live DB Activate / Deploy |
+| Artifact Family | Syntax Highlighting | AST Formatter | Offline LSP, Linter & Suggestions | XSC <-> XSA Migrator | Live DB Activate / Deploy |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **SQL & SQLScript** (`.sql`, `.hdbprocedure`, `.hdbfunction`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **HDI Headerless SQL** (`.hdbtabletype`, `.hdbprojectionview`, etc.) | 🟢 Complete | 🟢 Complete | 🔵 Planned | ⚪ N/A | ⚪ Phase 4 |
-| **Classic & HDI Tables/Views** (`.hdbtable`, `.hdbview`, `.hdbsequence`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **CDS Models** (`.hdbdd`, `.hdbcds`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **XS JavaScript** (`.xsjs`, `.xsjslib`) | 🟢 Complete | 🟢 Complete | 🔵 Planned (`.d.ts`) | 🔵 Planned | ⚪ Phase 4 |
-| **XS OData** (`.xsodata`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
-| **Roles & Grants** (`.hdbrole`, `.hdbgrants`, `.xsaccess`) | 🟢 Complete | 🟢 Complete | 🔵 Planned | 🔵 Planned | ⚪ Phase 4 |
+| **SQL & SQLScript** (`.sql`, `.hdbprocedure`, `.hdbfunction`) | 🟢 Complete | 🟢 Complete | 🟢 Complete | 🟡 QuickFixes | ⚪ Phase 4 |
+| **HDI Headerless SQL** (`.hdbtabletype`, `.hdbprojectionview`, etc.) | 🟢 Complete | 🟢 Complete | 🟢 Complete | ⚪ N/A | ⚪ Phase 4 |
+| **Classic & HDI Tables/Views** (`.hdbtable`, `.hdbview`, `.hdbsequence`) | 🟢 Complete | 🟢 Complete | 🟢 Complete | 🟢 Complete | ⚪ Phase 4 |
+| **CDS Models** (`.hdbdd`, `.hdbcds`) | 🟢 Complete | 🟢 Complete | 🟡 Hints & Snippets | 🟢 Complete | ⚪ Phase 4 |
+| **XS JavaScript** (`.xsjs`, `.xsjslib`) | 🟢 Complete | 🟢 Complete | 🟢 Complete | 🟡 `$.db`/`$.repo` | ⚪ Phase 4 |
+| **XS OData** (`.xsodata`) | 🟢 Complete | 🟢 Complete | 🟡 Hints & Snippets | 🟡 Guidance | ⚪ Phase 4 |
+| **Roles, Grants & Config** (`.hdbrole`, `.hdbgrants`, `.xsaccess`, `.hdiconfig`) | 🟢 Complete | 🟢 Complete | 🟢 Complete | 🟢 Complete | ⚪ Phase 4 |
 | **Text Analysis (CGUL)** (`.hdbtextrule`, `.hdbtextlexicon`) | 🟢 Complete | ⚪ Backlog | ⚪ Backlog | ⚪ Backlog | ⚪ Phase 4 |
-| **Calculation Views & XML** (`.calculationview`, `.hdbcalculationview`) | 🟢 Complete | ⚪ Backlog | 🔵 Schema XSD | 🔵 Planned | ⚪ Phase 4 |
+| **Calculation Views & XML** (`.calculationview`, `.hdbcalculationview`) | 🟢 Complete | ⚪ Backlog | 🟢 Schema & Graph | 🟡 QuickFixes | ⚪ Phase 4 |
 
 ---
 
@@ -42,18 +42,20 @@ Our goal is to provide a complete, modern replacement for SAP HANA Studio (Eclip
 * [x] Tolerant JSON/JSONC formatter covering 28 JSON-based design-time artifacts (`.hdiconfig`, `.hdbgrants`, `.xsaccess`, `.xsapp`, `.hdbrole` HDI, etc.), classic `.hdbrole` DSL formatter, and `.hdbmigrationtable` section formatter.
 * [x] XSJS / `.xsjslib` formatting via virtual-document delegation to VS Code's built-in JS/TS formatter with `hanasql-format off` pragma masking, plus `package.json` `defaultFormatter` bindings across all formatted languages.
 
-### Phase 3: Offline Language Server (LSP), Static Analyzers & Migration Assistant
+### Phase 3: Offline Language Server (LSP), Static Analyzers & Migration Assistant (Completed)
 
-* [ ] **XSJS IntelliSense:** Inject generated `xsjs.d.ts` definitions (`$.db`, `$.hdb`, `$.net`, `$.session`) into VS Code's JavaScript language service for zero-config autocomplete.
-* [ ] **SQLScript Static Analyzer:**
-  * Flag performance anti-patterns (mixing `CE_*` functions with SQL, cursor loops, `SELECT *` in procedures).
-  * Flag security risks (dynamic SQL string concatenation without `USING` bind variables).
-* [ ] **Interactive XSC -> XSA CodeActions:**
-  * Quick-fix conversion from classic `.hdbtable` (`table.columns = [...]`) to HDI `.hdbtable` (`COLUMN TABLE ...`).
-  * Inline deprecation hints for legacy `$.db` calls and `CE_*` functions.
+* [x] **XSJS, XSDS & XSUnit IntelliSense:** Inject generated `xsjs.d.ts` definitions (`$.*`, `sap.hana.xs.libs.dbutils.*`, `sap.hana.testtools.*`, `jasmine.*`, XSUnit BDD globals) and register zero-config Completion, Hover, SignatureHelp, and `$.import(...)` module resolution for `.xsjs` and `.xsjslib`.
+* [x] **SQL, SQLScript & Artifact Suggestions:** Keyword/type/function/system-variable completions, hover docs, signature help, `USING [SYS.]SQLSCRIPT_*` library member resolution (`alias:member`), local `DECLARE`/parameter `:var` completions, JSON/Classic KV property suggestions, and native SAP HANA code snippets.
+* [x] **SQLScript Static Analyzer:**
+  * Flag performance anti-patterns (mixing `CE_*` functions with SQL, cursor loops, `SELECT *` in procedures, empty `EXIT HANDLER` blocks).
+  * Flag security risks (dynamic SQL string concatenation without `USING` bind variables, `SQL SECURITY DEFINER` escalation, `.xsaccess`, `.hdbrole`, and `.hdbgrants` least-privilege rules) and Calculation View XML schema errors.
+* [x] **Interactive XSC -> XSA CodeActions:**
+  * Bidirectional AST conversion between classic `.hdbtable`/`.hdbview`/`.hdbsequence` and HDI DDL, plus `.hdbrole` / `.hdbdd` / `.hdbstructure` migration CodeActions and Command Palette commands.
+  * Inline deprecation hints and AST QuickFixes for legacy `$.db` calls and `CE_*` functions.
 
-### Phase 4: Live HANA Connectivity, `_SYS_REPO` & Git Integration
+### Phase 4: Workspace Schema Index, Live HANA Connectivity, `_SYS_REPO` & Git Integration
 
+* [ ] **Offline Workspace Schema Index:** Cross-file table/view/CDS entity symbol indexing for table & column suggestions in SQL/SQLScript/XSDS.
 * [ ] Secure connection manager powered by `@sap/hana-client` and VS Code `SecretStorage`.
 * [ ] Live catalog explorer and schema-aware SQL autocomplete (`SYS.TABLES`, `SYS.VIEWS`, `SYS.PROCEDURES`).
 * [ ] **XS Classic Repository Engine:** Check, Save Inactive, and Activate directly against `_SYS_REPO` / `SYS.REPOSITORY_REST` with line-level error diagnostics.

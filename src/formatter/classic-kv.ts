@@ -1030,6 +1030,15 @@ class KvRenderer {
 // ---------------------------------------------------------------------------
 
 /**
+ * Parse an XS Classic key-value design-time artifact into its tolerant AST.
+ */
+export function parseClassicKv(text: string): KvDocument {
+  const tokens = kvTokenize(text);
+  if (tokens.length === 0) return { kind: 'document', items: [] };
+  return new KvParser(tokens, text).parseDocument();
+}
+
+/**
  * Format an XS Classic key-value design-time artifact
  * (`.hdbtable`, `.hdbstructure`, `.hdbview`, `.hdbsequence`, `.hdbschema`, `.hdbti`).
  */
