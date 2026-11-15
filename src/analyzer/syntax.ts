@@ -3,6 +3,7 @@ import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } 
 import { tokenize, type Token } from '../formatter/tokenizer';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { parseJsonAstWithErrors } from './json-parser';
+import { checkSqlSelectClauseOrder } from './sql-order';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -681,6 +682,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
   );
 
   // 5. Expression operators, incomplete clauses & missing body semicolons (HANA-SYN-024, HANA-SYN-025)
+  // 6. SELECT query clause ordering & duplicate clause checks (HANA-SYN-027)
   if (foreignBodyStart < 0) {
     checkSqlExpressionsAndClauses(
       codeTokens,
@@ -691,6 +693,15 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
       delimResult.unmatchedCloseStarts,
       diagnostics
     );
+    checkSqlSelectClauseOrder({
+      codeTokens,
+      baseOffset,
+      lineStarts,
+      brokenQidentLines,
+      unclosedStarts: delimResult.unclosedStarts,
+      unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
+      diagnostics,
+    });
   }
 
   return diagnostics;
