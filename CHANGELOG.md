@@ -2,6 +2,22 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.7.0] - 2026-11-15
+
+### Added
+
+- **SQL & SQLScript Order, Context & HDI Root Diagnostics (`HANA-SYN-004`, `HANA-SYN-027` – `HANA-SYN-029`):**
+  - **`SELECT` Clause Ordering & Duplicates (`src/analyzer/sql-order.ts`, `HANA-SYN-027`):** Pure-TypeScript query analyzer tracking `(parenDepth, bracketDepth)` nesting levels to enforce canonical SAP HANA clause precedence (`SELECT` [pre-`FROM` `INTO`] -> `FROM` -> `WHERE` -> `GROUP BY` -> `HAVING` -> `WINDOW` -> `UNION`/`INTERSECT`/`EXCEPT`/`MINUS` -> `ORDER BY` -> `LIMIT` -> `OFFSET` -> `FOR UPDATE`/`FOR SHARE LOCK`/`FOR XML`/`FOR JSON` -> post-`FROM` `INTO` -> `WITH HINT`) and detect duplicate non-repeatable clauses, isolating subqueries, `CASE ... END`, `OVER`/`WITHIN GROUP`, temporal `FROM`, `IS DISTINCT FROM`, `FOR ... DO` cursor loops, and privilege/audit statements.
+  - **SQLScript Routine Header, Block Declaration & `.hdblibrary` Ordering (`src/analyzer/sql-context.ts`, `HANA-SYN-028`):** Validates routine header clause placement before `AS` without duplicates (`RETURNS`, `LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, `READS SQL DATA` [permitted optionally in `FUNCTION` headers], `DETERMINISTIC`, `WITH ENCRYPTION`, `AUTOCOMMIT DDL`, `[NO] STRUCTURED FILTER CHECK`), rejects incompatible header options and `OUT`/`INOUT` modes on `FUNCTION`, restricts `USING` library imports to routine root level, enforces compound block declaration ordering (`BEGIN` modifier -> `DECLARE` variables/cursors/conditions -> `DECLARE EXIT|CONTINUE HANDLER` -> executable statements), detects `EXIT`/`CONTINUE` handler scope conflicts and duplicate condition handlers, flags unreachable statements after `RETURN`/`SIGNAL`/`RESIGNAL`/`BREAK`/`CONTINUE` (`warning` with `unnecessary` tag), and validates `.hdblibrary` member ordering (`USING` -> `VARIABLE` -> `PROCEDURE`/`FUNCTION`) and `CONSTANT` initializers.
+  - **Context-Sensitive SQL & SQLScript Legality (`src/analyzer/sql-context.ts`, `HANA-SYN-029`):** Enforces read-only restrictions inside `FUNCTION` and `READS SQL DATA` `PROCEDURE` bodies (disallowing persistent DML writes while permitting `:table_var` mutations, DDL, transaction control, dynamic SQL, `BEGIN AUTONOMOUS TRANSACTION`, plus `CALL` and `BEGIN PARALLEL EXECUTION` inside `FUNCTION`), warns on non-deterministic built-ins and `.NEXTVAL`/`.CURRVAL` inside `DETERMINISTIC` routines, checks `RETURN` / `RETURN <expr>` semantics across Table UDFs vs Scalar UDFs / procedures / triggers / `DO`, validates `BREAK`/`CONTINUE` loop nesting, `RESIGNAL` handler scope, `SIGNAL SQL_ERROR_CODE` (`10000..19999`), nested `DO BEGIN`, `BEGIN PARALLEL EXECUTION` / `BEGIN AUTONOMOUS TRANSACTION` restrictions, top-level imperative statements, `.hdblibrary` `PUBLIC`/`PRIVATE` member visibility and direct-statement prohibitions, and `.hdbtrigger` body restrictions.
+  - **Strict HDI Artifact Root & Single-Object Enforcement (`src/analyzer/syntax.ts`, `HANA-SYN-004`):** Flags unexpected non-typo root keywords and mismatched `CREATE [OR REPLACE] <object>` targets in headerless HDI SQL DDL artifacts (preserving `HANA-SYN-021` typo QuickFixes), and adds `checkSingleObjectHdiTrailing` to reject trailing top-level statements after the single object completes (allowing `USING ...;` headers before root `BEGIN` and excluding `.hdbdropcreatetable`, `.sql`/`.hanasql`, and `.hdbmigrationtable`).
+- **Specs & Tests:**
+  - Documented `HANA-SYN-004` and `HANA-SYN-027` – `HANA-SYN-029` in `docs/specs/diagnostics/syntax-rules.md` and expanded `test/syntax-analyzer.test.ts` (positive, negative, edge-case, multi-violation, and QuickFix coverage), bringing the test suite to `122/122` passing.
+
+### Changed
+
+- **HDI Syntax Analyzer Coverage (`src/analyzer/syntax.ts`):** Expanded `SQLSCRIPT_BLOCK_LANGUAGES` with `hdbscalarfunction`, `hdblibrary`, `hdbvirtualprocedure`, and `hdbvirtualfunction`, and updated `HDI_ROOT_TARGETS` (`hdbscalarfunction`, `HASH`/`BLOCK` for `hdbcollectionindex`, and `SHARED` for `hdbfabricvirtualtable`).
+
 ## [0.6.0] - 2026-11-15
 
 ### Added
