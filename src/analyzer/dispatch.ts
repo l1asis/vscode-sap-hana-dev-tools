@@ -1,8 +1,14 @@
 import { isKeyValueArtifact } from '../formatter/detect';
+import {
+  DEDICATED_ARTIFACT_LANGUAGES,
+  SQL_LANGUAGES,
+  XSJS_LANGUAGES,
+} from '../formatter/dispatch';
 import { analyzeCalculationView } from './calculationview';
 import { analyzeMigration } from './migrator';
 import { analyzeRolesAndGrants, analyzeXsodata } from './roles-grants';
 import { analyzeSqlScript } from './sqlscript';
+import { analyzeSyntax } from './syntax';
 import { type AnalyzerContext, type AnalyzerDiagnostic } from './types';
 import { analyzeXsaccess } from './xsaccess';
 import { analyzeXsjs } from './xsjs';
@@ -17,38 +23,18 @@ const SQLSCRIPT_ANALYZER_LANGUAGES = new Set([
   'hdbtrigger',
 ]);
 
-export const ANALYZER_LANGUAGES: readonly string[] = [
-  'hanasql',
-  'sql',
-  'hdbprocedure',
-  'hdbfunction',
-  'hdbtablefunction',
-  'hdbtrigger',
-  'hdblibrary',
-  'hdbview',
-  'hdbtable',
-  'hdbstructure',
-  'hdbsequence',
-  'hdbschema',
-  'hdbti',
-  'hdbdd',
-  'hdbcds',
-  'hdbrole',
-  'hdbgrants',
-  'hdbrevokes',
-  'xsjs',
-  'xsjslib',
-  'xsaccess',
-  'xsodata',
-  'calculationview',
-  'hdbcalculationview',
-];
+export const ANALYZER_LANGUAGES: readonly string[] = Array.from(
+  new Set<string>([
+    'sql',
+    ...SQL_LANGUAGES,
+    ...DEDICATED_ARTIFACT_LANGUAGES,
+    ...XSJS_LANGUAGES,
+    'calculationview',
+    'hdbcalculationview',
+  ])
+);
 
-/**
- * Runs all relevant Phase 3 static analyzers (Security, Performance, Calculation View, Migration)
- * on a document in pure TypeScript without any VS Code runtime dependency.
- */
-export function analyzeDocument(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
+function analyzeSemantics(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   const { languageId, text } = ctx;
 
   if (SQLSCRIPT_ANALYZER_LANGUAGES.has(languageId)) {
@@ -82,10 +68,6 @@ export function analyzeDocument(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     return analyzeRolesAndGrants(ctx);
   }
 
-  if (languageId === 'xsjs' || languageId === 'xsjslib') {
-    return analyzeXsjs(ctx);
-  }
-
   if (languageId === 'xsaccess') {
     return analyzeXsaccess(ctx);
   }
@@ -94,9 +76,25 @@ export function analyzeDocument(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     return analyzeXsodata(ctx);
   }
 
+  return [];
+}
+
+/**
+ * Runs all relevant Phase 3 static analyzers (Syntax, Security, Performance, Calculation View, Migration)
+ * on a document in pure TypeScript without any VS Code runtime dependency.
+ */
+export function analyzeDocument(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
+  const { languageId } = ctx;
+
+  if (languageId === 'xsjs' || languageId === 'xsjslib') {
+    return analyzeXsjs(ctx);
+  }
+
   if (languageId === 'calculationview' || languageId === 'hdbcalculationview') {
     return analyzeCalculationView(ctx);
   }
 
-  return [];
+  const semantic = analyzeSemantics(ctx);
+  const syntax = analyzeSyntax(ctx);
+  return semantic.length === 0 ? syntax : syntax.length === 0 ? semantic : [...syntax, ...semantic];
 }

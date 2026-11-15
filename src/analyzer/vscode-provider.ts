@@ -28,6 +28,7 @@ function readAnalyzerOptions(): { enabled: boolean; options: AnalyzerOptions } {
       performance: cfg.performance !== false,
       migration: cfg.migration !== false,
       calculationView: cfg.calculationView !== false,
+      syntax: cfg.syntax !== false,
       targetPlatform,
     },
   };

@@ -2365,6 +2365,11 @@
           "default": true,
           "markdownDescription": "Enable XML schema and semantic validation for `.calculationview` and `.hdbcalculationview` artifacts."
         },
+        "hanasql.analyze.syntax": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Enable offline lexical and structural syntax error diagnostics (`HANA-SYN-*`) across SQL, SQLScript, JSON, CDS, Classic KV, and XSJS artifacts."
+        },
         "hanasql.analyze.targetPlatform": {
           "type": "string",
           "enum": [

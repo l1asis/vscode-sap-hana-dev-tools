@@ -1,3 +1,4 @@
+import { matchKeywordTypo } from './syntax';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -398,16 +399,21 @@ function buildDbToHdbFix(
 }
 
 /**
- * Analyzes XSJS / XSJSLIB documents for security vulnerabilities and XSC->XSA API issues.
+ * Analyzes XSJS / XSJSLIB documents for syntax errors, security vulnerabilities, and XSC->XSA API issues.
  */
 export function analyzeXsjs(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   const { text } = ctx;
   const opts = ctx.options ?? {};
   const checkSec = opts.security ?? true;
   const checkMig = opts.migration ?? true;
+  const checkSyn = opts.syntax ?? true;
+
+  const diagnostics: AnalyzerDiagnostic[] = [];
+  if (checkSyn) {
+    diagnostics.push(...analyzeXsjsSyntax(text));
+  }
 
   const masked = buildMaskedJsCode(text);
-  const diagnostics: AnalyzerDiagnostic[] = [];
 
   // 1. Track DB calls & SQL injection sinks (HANA-SEC-010, HANA-SEC-011)
   const dbConnMatches: Array<{ start: number; end: number; connVar: string | null }> = [];
@@ -583,4 +589,557 @@ export function analyzeXsjs(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   }
 
   return filterSuppressedDiagnostics(text, diagnostics);
+}
+
+const JS_VALID_KEYWORDS = new Set<string>([
+  'function',
+  'var',
+  'let',
+  'const',
+  'if',
+  'else',
+  'for',
+  'while',
+  'do',
+  'switch',
+  'case',
+  'default',
+  'break',
+  'continue',
+  'return',
+  'throw',
+  'try',
+  'catch',
+  'finally',
+  'new',
+  'delete',
+  'typeof',
+  'void',
+  'in',
+  'instanceof',
+  'this',
+  'class',
+  'extends',
+  'import',
+  'export',
+  'true',
+  'false',
+  'null',
+  'undefined',
+  'with',
+  'debugger',
+  'yield',
+  'await',
+  'async',
+  'of',
+]);
+
+const JS_REGEX_PREFIX_KEYWORDS = new Set<string>([
+  'return',
+  'throw',
+  'case',
+  'delete',
+  'void',
+  'typeof',
+  'in',
+  'instanceof',
+  'new',
+  'else',
+  'do',
+  'yield',
+  'await',
+  'of',
+]);
+
+const JS_CONTROL_PAREN_KEYWORDS = new Set<string>(['if', 'while', 'for', 'with']);
+
+interface JsSyntaxToken {
+  readonly kind: 'ident' | 'literal' | 'punct' | 'op';
+  readonly text: string;
+  readonly start: number;
+  readonly end: number;
+  readonly nlBefore: number;
+}
+
+type JsStackEntry =
+  | { readonly kind: 'delim'; readonly ch: '(' | '[' | '{'; readonly start: number; readonly end: number; readonly isControlHeader?: boolean }
+  | { readonly kind: 'template'; readonly start: number }
+  | { readonly kind: 'interpBrace'; readonly start: number; readonly end: number };
+
+function jsMatchingCloser(opener: '(' | '[' | '{'): ')' | ']' | '}' {
+  if (opener === '(') return ')';
+  if (opener === '[') return ']';
+  return '}';
+}
+
+function jsMatchingOpener(closer: ')' | ']' | '}'): '(' | '[' | '{' {
+  if (closer === ')') return '(';
+  if (closer === ']') return '[';
+  return '{';
+}
+
+/**
+ * Pure-TS XSJS / XSJSLIB syntax analyzer (`HANA-SYN-030`..`032`) with regex-vs-division
+ * tracking and nested template interpolation `${...}` awareness.
+ */
+function analyzeXsjsSyntax(text: string): AnalyzerDiagnostic[] {
+  const diagnostics: AnalyzerDiagnostic[] = [];
+  const tokens: JsSyntaxToken[] = [];
+  const stack: JsStackEntry[] = [];
+  const n = text.length;
+  let i = 0;
+  let nl = 0;
+  let canStartRegex = true;
+
+  const pushToken = (kind: JsSyntaxToken['kind'], start: number, end: number): void => {
+    tokens.push({ kind, text: text.slice(start, end), start, end, nlBefore: nl });
+    nl = 0;
+  };
+
+  const scanTemplateTail = (): void => {
+    while (true) {
+      const topTpl = stack[stack.length - 1];
+      if (!topTpl || topTpl.kind !== 'template') return;
+      if (i >= n) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: "Unterminated template literal '`'.",
+          start: topTpl.start,
+          end: Math.min(n, topTpl.start + 2),
+          fixes: [],
+        });
+        stack.pop();
+        return;
+      }
+      const ch = text[i];
+      if (ch === '\\') {
+        i = Math.min(n, i + 2);
+        continue;
+      }
+      if (ch === '$' && text[i + 1] === '{') {
+        stack.push({ kind: 'interpBrace', start: i, end: i + 2 });
+        pushToken('punct', i, i + 2);
+        i += 2;
+        canStartRegex = true;
+        return;
+      }
+      if (ch === '`') {
+        i++;
+        stack.pop();
+        pushToken('literal', topTpl.start, i);
+        canStartRegex = false;
+        return;
+      }
+      i++;
+    }
+  };
+
+  while (i < n) {
+    const ch = text[i];
+
+    if (ch === ' ' || ch === '\t' || ch === '\r' || ch === '\f' || ch === '\v' || ch === '\ufeff') {
+      i++;
+      continue;
+    }
+    if (ch === '\n') {
+      nl++;
+      i++;
+      continue;
+    }
+
+    // Line comment `//`
+    if (ch === '/' && text[i + 1] === '/') {
+      i += 2;
+      while (i < n && text[i] !== '\n') i++;
+      continue;
+    }
+
+    // Block comment `/* ... */`
+    if (ch === '/' && text[i + 1] === '*') {
+      const start = i;
+      i += 2;
+      let closed = false;
+      while (i + 1 < n) {
+        if (text[i] === '*' && text[i + 1] === '/') {
+          i += 2;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        i = n;
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: "Unterminated block comment '/*'.",
+          start,
+          end: Math.min(n, start + 2),
+          fixes: [],
+        });
+      }
+      continue;
+    }
+
+    // String literals `'...'` / `"..."`
+    if (ch === '\'' || ch === '"') {
+      const quote = ch;
+      const start = i;
+      i++;
+      let closed = false;
+      while (i < n) {
+        const c = text[i];
+        if (c === '\\') {
+          if (text[i + 1] === '\r' && text[i + 2] === '\n') {
+            i += 3;
+          } else {
+            i = Math.min(n, i + 2);
+          }
+          continue;
+        }
+        if (c === quote) {
+          i++;
+          closed = true;
+          break;
+        }
+        if (c === '\n' || c === '\r') {
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: 'Unterminated string literal.',
+          start,
+          end: Math.min(i, start + 2),
+          fixes: [],
+        });
+      }
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Template literal `` `...` ``
+    if (ch === '`') {
+      stack.push({ kind: 'template', start: i });
+      i++;
+      scanTemplateTail();
+      continue;
+    }
+
+    // Regex literal `/.../flags` when `canStartRegex` is true
+    if (ch === '/' && canStartRegex) {
+      const start = i;
+      i++;
+      let inClass = false;
+      let closed = false;
+      while (i < n) {
+        const c = text[i];
+        if (c === '\\') {
+          if (i + 1 >= n || text[i + 1] === '\n' || text[i + 1] === '\r') break;
+          i += 2;
+          continue;
+        }
+        if (c === '\n' || c === '\r') break;
+        if (c === '[' && !inClass) {
+          inClass = true;
+          i++;
+          continue;
+        }
+        if (c === ']' && inClass) {
+          inClass = false;
+          i++;
+          continue;
+        }
+        if (c === '/' && !inClass) {
+          i++;
+          while (i < n && /[A-Za-z]/.test(text[i])) i++;
+          closed = true;
+          break;
+        }
+        i++;
+      }
+      if (!closed) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-030',
+          category: 'syntax',
+          severity: 'error',
+          message: 'Unterminated regular expression literal.',
+          start,
+          end: Math.min(i, start + 2),
+          fixes: [],
+        });
+      }
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Identifiers / keywords
+    if (/[A-Za-z_$]/.test(ch)) {
+      const start = i;
+      i++;
+      while (i < n && /[A-Za-z0-9_$]/.test(text[i])) i++;
+      const word = text.slice(start, i);
+      pushToken('ident', start, i);
+      canStartRegex = JS_REGEX_PREFIX_KEYWORDS.has(word);
+      continue;
+    }
+
+    // Numbers
+    if (/[0-9]/.test(ch)) {
+      const start = i;
+      i++;
+      while (i < n && /[0-9A-Za-z_.]/.test(text[i])) i++;
+      pushToken('literal', start, i);
+      canStartRegex = false;
+      continue;
+    }
+
+    // Openers `(`, `[`, `{`
+    if (ch === '(' || ch === '[' || ch === '{') {
+      const prevTok = tokens[tokens.length - 1];
+      const isControlHeader = ch === '(' && prevTok?.kind === 'ident' && JS_CONTROL_PAREN_KEYWORDS.has(prevTok.text);
+      stack.push({ kind: 'delim', ch, start: i, end: i + 1, isControlHeader });
+      pushToken('punct', i, i + 1);
+      i++;
+      canStartRegex = true;
+      continue;
+    }
+
+    // Closers `)`, `]`, `}`
+    if (ch === ')' || ch === ']' || ch === '}') {
+      const expected = jsMatchingOpener(ch);
+      const top = stack[stack.length - 1];
+
+      if (ch === '}' && top?.kind === 'interpBrace') {
+        stack.pop();
+        pushToken('punct', i, i + 1);
+        i++;
+        scanTemplateTail();
+        continue;
+      }
+
+      if (!top || top.kind === 'template') {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-031',
+          category: 'syntax',
+          severity: 'error',
+          message: `Unmatched closing delimiter '${ch}'.`,
+          start: i,
+          end: i + 1,
+          fixes: [],
+        });
+      } else if (top.kind === 'interpBrace') {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-031',
+          category: 'syntax',
+          severity: 'error',
+          message: `Unexpected closing delimiter '${ch}' inside template interpolation '\${...}'.`,
+          start: i,
+          end: i + 1,
+          fixes: [],
+        });
+      } else if (top.ch !== expected) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-031',
+          category: 'syntax',
+          severity: 'error',
+          message: `Unexpected closing delimiter '${ch}'. Expected '${jsMatchingCloser(top.ch)}'.`,
+          start: i,
+          end: i + 1,
+          fixes: [],
+        });
+        // Recover to matching opener or enclosing template interpolation
+        let resumedTpl = false;
+        for (let s = stack.length - 1; s >= 0; s--) {
+          const entry = stack[s];
+          if (entry.kind === 'template') break;
+          if (ch === '}' && entry.kind === 'interpBrace') {
+            stack.length = s;
+            pushToken('punct', i, i + 1);
+            i++;
+            scanTemplateTail();
+            resumedTpl = true;
+            break;
+          }
+          if (entry.kind === 'delim' && entry.ch === expected) {
+            stack.length = s;
+            break;
+          }
+        }
+        if (resumedTpl) continue;
+      } else {
+        stack.pop();
+        if (ch === ')') {
+          canStartRegex = !!top.isControlHeader;
+        } else if (ch === '}') {
+          canStartRegex = true;
+        } else {
+          canStartRegex = false;
+        }
+      }
+
+      pushToken('punct', i, i + 1);
+      i++;
+      continue;
+    }
+
+    // Increment / decrement operators keep postfix `canStartRegex = false`
+    const two = text.slice(i, i + 2);
+    if (two === '++' || two === '--') {
+      pushToken('op', i, i + 2);
+      i += 2;
+      canStartRegex = false;
+      continue;
+    }
+
+    if (two === '=>' || two === '==' || two === '!=' || two === '<=' || two === '>=' || two === '&&' || two === '||' || two === '+=' || two === '-=' || two === '*=' || two === '/=' || two === '%=') {
+      pushToken('op', i, i + 2);
+      i += 2;
+      canStartRegex = true;
+      continue;
+    }
+
+    if (ch === '.' && text[i + 1] !== '.') {
+      pushToken('punct', i, i + 1);
+      i++;
+      canStartRegex = false;
+      continue;
+    }
+
+    const opKind = ',;:?~'.includes(ch) ? 'punct' : 'op';
+    pushToken(opKind, i, i + 1);
+    i++;
+    canStartRegex = true;
+  }
+
+  for (const unclosed of stack) {
+    if (unclosed.kind === 'template') {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-030',
+        category: 'syntax',
+        severity: 'error',
+        message: "Unterminated template literal '`'.",
+        start: unclosed.start,
+        end: Math.min(n, unclosed.start + 2),
+        fixes: [],
+      });
+    } else if (unclosed.kind === 'interpBrace') {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-031',
+        category: 'syntax',
+        severity: 'error',
+        message: "Unclosed template interpolation '${'.",
+        start: unclosed.start,
+        end: unclosed.end,
+        fixes: [],
+      });
+    } else {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-031',
+        category: 'syntax',
+        severity: 'error',
+        message: `Unclosed delimiter '${unclosed.ch}'.`,
+        start: unclosed.start,
+        end: unclosed.end,
+        fixes: [],
+      });
+    }
+  }
+
+  // Stop keyword spellchecks if a string/comment/template swallowed downstream code
+  const hasLexicalSwallow = diagnostics.some((d) => d.ruleId === 'HANA-SYN-030');
+  if (!hasLexicalSwallow) {
+    checkJsKeywordTypos(tokens, diagnostics);
+  }
+
+  return diagnostics;
+}
+
+function findMatchingParenTokenIdx(tokens: readonly JsSyntaxToken[], openIdx: number): number {
+  let depth = 0;
+  for (let k = openIdx; k < tokens.length; k++) {
+    if (tokens[k].text === '(') depth++;
+    else if (tokens[k].text === ')') {
+      depth--;
+      if (depth === 0) return k;
+    }
+  }
+  return -1;
+}
+
+function checkJsKeywordTypos(tokens: readonly JsSyntaxToken[], diagnostics: AnalyzerDiagnostic[]): void {
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const tok = tokens[idx];
+    if (tok.kind !== 'ident' || JS_VALID_KEYWORDS.has(tok.text)) continue;
+
+    const prev = idx > 0 ? tokens[idx - 1] : null;
+    const isAnchor =
+      !prev ||
+      prev.text === ';' ||
+      prev.text === '{' ||
+      prev.text === '}' ||
+      (tok.nlBefore > 0 &&
+        prev.kind !== 'op' &&
+        !['(', '[', ',', ':', '.', 'var', 'let', 'const', 'function', 'new', 'return', 'throw'].includes(prev.text));
+    if (!isAnchor) continue;
+
+    const next = tokens[idx + 1];
+    const next2 = tokens[idx + 2];
+    let suggestion: string | null = null;
+
+    // 1. Function declaration header: `FUNC handleGet(...)` / `functon handleGet(...)`
+    if (next?.kind === 'ident' && next2?.text === '(') {
+      suggestion = matchKeywordTypo(tok.text, ['function'], { allowShort: true, lowercase: true });
+    }
+    // 2. Block-introducer before `{`: `esle {`, `tyr {`, `finaly {`
+    else if (next?.text === '{') {
+      if (tok.text.toLowerCase() === 'tyr') {
+        suggestion = 'try';
+      } else {
+        suggestion = matchKeywordTypo(tok.text, ['else', 'finally'], { allowShort: false, lowercase: true });
+      }
+    }
+    // 3. Control-flow header `whlie (...) {`, `swich (...) {`, `ctach (...) {`
+    else if (next?.text === '(') {
+      const closeIdx = findMatchingParenTokenIdx(tokens, idx + 1);
+      if (closeIdx >= 0 && tokens[closeIdx + 1]?.text === '{') {
+        suggestion = matchKeywordTypo(tok.text, ['while', 'switch', 'catch'], {
+          allowShort: false,
+          lowercase: true,
+        });
+      }
+    }
+    // 4. Statement-start `retern ...;` / `thrw ...;`
+    else if (next && !['=', '+=', '-=', '(', '.', ':', ','].includes(next.text)) {
+      suggestion = matchKeywordTypo(tok.text, ['return', 'throw'], { allowShort: false, lowercase: true });
+    }
+
+    if (suggestion) {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-032',
+        category: 'syntax',
+        severity: 'error',
+        message: `Unknown keyword '${tok.text}'. Did you mean '${suggestion}'?`,
+        start: tok.start,
+        end: tok.end,
+        fixes: [
+          {
+            title: `Replace '${tok.text}' with '${suggestion}'`,
+            kind: 'quickfix',
+            isPreferred: true,
+            edits: [{ start: tok.start, end: tok.end, newText: suggestion }],
+          },
+        ],
+      });
+    }
+  }
 }
