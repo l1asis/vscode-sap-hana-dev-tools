@@ -23,6 +23,7 @@
 | `HANA-SYN-001` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated string literal, quoted identifier, or CDS expression bracket (`![...]`) |
 | `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`) |
 | `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`) |
+| `HANA-SYN-004` | `error` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword for HDI artifact type, invalid `CREATE` object kind, or extra trailing top-level statement in single-object artifact |
 | `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
@@ -75,6 +76,28 @@
 - **Diagnostic Span & Message:**
   - Stray/mismatched closer: `"Unexpected closing delimiter ')'. Expected ']'."` or `"Unmatched closing delimiter ')'."`
   - Unclosed opener: `"Unclosed delimiter '('."`
+
+---
+
+### `HANA-SYN-004` — Invalid HDI Artifact Root or Multiple Top-Level Statements
+
+> Source: `docs/specs/grammars/sql-sqlscript.md` (§5 HDI Headerless Artifacts), `SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md`
+
+- **Platform:** `[XSA]` `[HDI]` `[CLOUD]`
+- **Applies To:** Headerless HDI DDL artifact languages in `HDI_ROOT_TARGETS` (`hdbprocedure`, `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction`, `hdblibrary`, `hdbtrigger`, `hdbtable`, `hdbstructure`, `hdbtabletype`, `hdbview`, `hdbsequence`, `hdbindex`, `hdbfulltextindex`, `hdbconstraint`, `hdbvirtualtable`, `hdbprojectionview`, `hdbstructuredprivilege`, `hdbstructuredfilter`, `hdbresultcache`, `hdbstatistics`, `hdbsystemversioning`, `hdbapplicationtime`, `hdbschedulerjob`, `hdbremotetablereplica`, `hdbfabricvirtualtable`, `hdbdropcreatetable`, `hdbgraphworkspace`, `hdbvirtualprocedure`, `hdbvirtualfunction`).
+- **Severity:** `error`
+- **Category:** `syntax`
+- **Conditions:**
+  1. **Root Declaration Mismatch (`error`):**
+     - When an HDI SQL DDL artifact starts with a non-typo keyword that is not in `HDI_ROOT_TARGETS[languageId]` (e.g., `SELECT`, `DROP`, `INSERT`, or `VIEW` at root of `.hdbprocedure`; `PROCEDURE` at root of `.hdbfunction`), report an unexpected root declaration instead of falling back to generic SQL. (Keyword typos within Damerau-Levenshtein distance `<= 2` continue to report `HANA-SYN-021` with QuickFix.)
+     - When `CREATE [OR REPLACE] <object>` is used in an HDI artifact, `<object>` must match `HDI_ROOT_TARGETS[languageId]` (excluding `'CREATE'`).
+     - Classic KV dual-mode artifacts (`table.schemaName = ...`), `.hdbmigrationtable`, `.sql`, and `.hanasql` are excluded.
+  2. **Single-Object Artifact Enforcement (`error`):**
+     - Every HDI DDL artifact except `.hdbdropcreatetable` defines a single design-time object. Any non-semicolon top-level statement appearing after the root definition completes (after the root `BEGIN ... END` closes for procedural/library/trigger artifacts, or after the top-level `;` for DDL artifacts, excluding header `AS USING ...;` before `BEGIN`) is flagged.
+- **Diagnostic Examples:**
+  - `Unexpected 'SELECT' at root of '.hdbprocedure' artifact; expected PROCEDURE / CREATE.`
+  - `Object type 'VIEW' is not valid at root of '.hdbprocedure' artifact; expected PROCEDURE.`
+  - `Only one top-level declaration is allowed in '.hdbprocedure'; unexpected trailing statement 'SELECT'.`
 
 ---
 
@@ -287,6 +310,8 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
      - Duplicate condition specifications (e.g., two `SQLEXCEPTION`, two identical `SQL_ERROR_CODE <n>`, or two identical named conditions) within the same scope are rejected.
   6. **Unreachable Statements (`warning`, tag `unnecessary`):**
      - Sibling statements appearing after an unconditional control-flow terminator (`RETURN`, `SIGNAL`, `RESIGNAL`, `BREAK`, `CONTINUE`) within the same block/branch statement list (excluding single-statement handler bodies) are flagged as unreachable.
+  7. **`.hdblibrary` Member Declaration Order (`error`):**
+     - Inside `LIBRARY ... AS BEGIN ... END`, `PUBLIC` / `PRIVATE VARIABLE` declarations MUST precede any `PROCEDURE` or `FUNCTION` member declaration, and `DEFAULT` / `=` initializers on library variables require `CONSTANT`.
 - **Diagnostic Examples:**
   - `Header clause 'READS SQL DATA' must appear before 'AS'.`
   - `Parameter mode 'OUT' is not allowed in a FUNCTION header; use PROCEDURE or RETURNS instead.`
@@ -296,6 +321,7 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   - `'DECLARE' variable/cursor/condition must appear before 'DECLARE ... HANDLER' in this block.`
   - `'EXIT HANDLER' cannot be combined with 'CONTINUE HANDLER' in the same or enclosing scope.`
   - `Duplicate condition handler for 'SQLEXCEPTION' in this scope.`
+  - `Library variable declarations must appear before member procedures and functions.`
   - `Unreachable statement after 'RETURN'.`
 
 ---
@@ -317,7 +343,7 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
      - Inside `DETERMINISTIC` procedures or functions, warn on non-deterministic functions/values (`RAND`, `RAND_SECURE`, `SYSUUID`, `SESSION_CONTEXT`, `SESSION_USER`, `CURRENT_TIMESTAMP`, `CURRENT_UTCTIMESTAMP`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_UTCDATE`, `CURRENT_UTCTIME`, `CURRENT_MVCC_SNAPSHOT_TIMESTAMP`, `CURRENT_TRANSACTION_ISOLATION_LEVEL`, `NOW`) and sequence access (`.NEXTVAL`, `.CURRVAL`).
   3. **`RETURN` Statement Semantics by Routine Kind (`error`):**
      - **Table UDF (`RETURNS TABLE (...)`):** A concrete SQLScript `BEGIN ... END` body (excluding `VIRTUAL`, `HEADER ONLY`, foreign language, and `ALTER FUNCTION` without `RETURNS`) MUST execute at least one `RETURN <table_expr_or_select>;` and MUST NOT use bare `RETURN;`.
-     - **Scalar UDF / `PROCEDURE` / `DO`:** `RETURN <expr>;` returning an expression is rejected; Scalar UDFs assign return variables directly and optionally exit with bare `RETURN;`, and `PROCEDURE`/`DO` only allow bare `RETURN;`.
+     - **Scalar UDF / `PROCEDURE` / `TRIGGER` / `DO`:** `RETURN <expr>;` returning an expression is rejected; Scalar UDFs assign return variables directly and optionally exit with bare `RETURN;`, and `PROCEDURE`/`TRIGGER`/`DO` only allow bare `RETURN;`.
   4. **Loop Control (`BREAK` / `CONTINUE`) (`error`):**
      - `BREAK` and `CONTINUE` are rejected outside `LOOP`, `WHILE`, and `FOR` loop bodies (and inside exception handlers unless nested inside a handler-local loop).
   5. **Exception Handling Statements (`RESIGNAL` / `SIGNAL`) (`error`):**
@@ -326,10 +352,13 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   6. **Nested Anonymous Blocks (`DO BEGIN`) (`error`):**
      - Anonymous `DO [(...)] BEGIN ... END` blocks cannot be nested inside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO` bodies.
   7. **`BEGIN AUTONOMOUS TRANSACTION` & `BEGIN PARALLEL EXECUTION` Restrictions (`error`):**
-     - Inside `BEGIN PARALLEL EXECUTION`: disallowed in `FUNCTION` bodies; disallow `EXEC` / `EXECUTE IMMEDIATE`, DDL, `COMMIT` / `ROLLBACK` / `SAVEPOINT`, `DECLARE ... HANDLER`, and `RETURN`.
-     - Inside `BEGIN AUTONOMOUS TRANSACTION`: disallow `CALL`, DDL, dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`), and cursor operations (`DECLARE ... CURSOR`, `OPEN`, `FETCH`, `CLOSE`).
+     - Inside `BEGIN PARALLEL EXECUTION`: disallowed in `FUNCTION` and `TRIGGER` bodies; disallow `EXEC` / `EXECUTE IMMEDIATE`, DDL, `COMMIT` / `ROLLBACK` / `SAVEPOINT`, `DECLARE ... HANDLER`, and `RETURN`.
+     - Inside `BEGIN AUTONOMOUS TRANSACTION`: disallow `CALL`, DDL, dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`), and cursor operations (`DECLARE ... CURSOR`, `OPEN`, `FETCH`, `CLOSE`). Disallowed in `TRIGGER` bodies.
   8. **Top-Level Imperative Statements (`error`):**
      - Imperative SQLScript statements (`DECLARE`, `IF ... THEN`, `LOOP`, `WHILE`, `FOR`, `BREAK`, `CONTINUE`, `SIGNAL`, `RESIGNAL`, `RETURN`) are rejected at top-level SQL script scope outside `PROCEDURE`, `FUNCTION`, `TRIGGER`, or `DO BEGIN ... END`.
+  9. **`.hdblibrary` & `.hdbtrigger` Body Restrictions (`error`):**
+     - Inside `LIBRARY ... AS BEGIN ... END`, only `[PUBLIC | PRIVATE] VARIABLE`, `PROCEDURE`, and `FUNCTION` members are permitted (`PUBLIC` or `PRIVATE` required on members; direct executable/declarative statements outside members are rejected).
+     - Inside `TRIGGER ... BEGIN ... END`, DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `LOCK TABLE`, `SET TRANSACTION`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), `BEGIN AUTONOMOUS TRANSACTION`, and `BEGIN PARALLEL EXECUTION` are rejected.
 - **Diagnostic Examples:**
   - `'INSERT' on persistent table 'TAB' is not allowed inside a READS SQL DATA procedure or FUNCTION.`
   - `Dynamic SQL ('EXECUTE IMMEDIATE') is not allowed inside a FUNCTION or READS SQL DATA procedure.`
@@ -342,6 +371,8 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   - `Nested 'DO BEGIN ... END' anonymous blocks are not allowed inside a routine.`
   - `'CALL' is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`
   - `Imperative statement 'DECLARE' is only allowed inside a routine or 'DO BEGIN ... END' block.`
+  - `Library member 'FUNCTION' must specify 'PUBLIC' or 'PRIVATE' visibility.`
+  - `DDL statement 'CREATE' is not allowed inside a TRIGGER body.`
 
 ---
 
