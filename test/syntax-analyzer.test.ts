@@ -647,6 +647,50 @@ test('HANA-SYN-034: XSJS missing, dangling, and consecutive operators & negative
   assert.deepEqual(syntaxDiags('xsjs', validJs), []);
 });
 
+test('HANA-SYN-027: SELECT query clause ordering, duplicate clauses & negative checks', () => {
+  const syn27 = (lang: string, code: string) =>
+    syntaxDiags(lang, code).filter((d) => d.ruleId === 'HANA-SYN-027');
+
+  // 1. Out-of-order clauses
+  const whereBeforeFrom = syn27('hanasql', 'SELECT "A" WHERE "A" = 1 FROM "T";');
+  assert.equal(whereBeforeFrom.length, 1);
+  assert.match(whereBeforeFrom[0].message, /after 'FROM'/);
+
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" ORDER BY "A" WHERE "B" = 1;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A", COUNT(*) FROM "T" HAVING COUNT(*) > 1 GROUP BY "A";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" LIMIT 10 ORDER BY "A";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" OFFSET 5;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" INTO #TMP WHERE "A" = 1;').length, 1);
+
+  // 2. Duplicate non-repeatable clauses
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" WHERE "A" = 1 WHERE "B" = 2;').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T" ORDER BY "A" ORDER BY "B";').length, 1);
+  assert.equal(syn27('hanasql', 'SELECT "A" INTO lv_a FROM "T" INTO lv_b;').length, 1);
+
+  // 3. Unparenthesized ORDER BY before UNION & bad clause inside CTE
+  assert.equal(syn27('hanasql', 'SELECT "A" FROM "T1" ORDER BY "A" UNION SELECT "A" FROM "T2";').length, 1);
+  assert.equal(syn27('hanasql', 'WITH c AS (SELECT "A" WHERE "A" = 1 FROM "T") SELECT * FROM c;').length, 1);
+
+  // 4. Negative tests: complex valid HANA queries must emit ZERO HANA-SYN-027 diagnostics
+  const validQueries = [
+    'WITH cte AS (SELECT "ID", "CAT", "VAL" FROM "BASE" WHERE "ACTIVE" = 1)',
+    'SELECT "CAT", COUNT(*) AS "CNT", STRING_AGG("ID", \',\' ORDER BY "ID") AS "IDS",',
+    '  ROW_NUMBER() OVER (PARTITION BY "CAT" ORDER BY "VAL" DESC) AS "RN",',
+    '  CASE WHEN EXTRACT(YEAR FROM "CREATED_AT") >= 2024 THEN 1 ELSE 0 END AS "RECENT"',
+    'FROM cte FOR SYSTEM_TIME AS OF UTCTIMESTAMP \'2025-01-01 00:00:00\'',
+    'WHERE "FLAG" IS NOT DISTINCT FROM 1 AND EXISTS (SELECT 1 FROM "OTHER" o WHERE o."ID" = cte."ID")',
+    'GROUP BY "CAT", "ID", "VAL", "CREATED_AT"',
+    'HAVING COUNT(*) >= 1',
+    'WINDOW w AS (PARTITION BY "CAT" ORDER BY "VAL")',
+    'ORDER BY "CAT" ASC',
+    'LIMIT 50 OFFSET 10;',
+    'SELECT COUNT(*) INTO lv_cnt FROM "BASE" WHERE "ACTIVE" = 1;',
+    'SELECT "A" FROM "T1" WHERE "X" = 1 UNION ALL SELECT "A" FROM "T2" WHERE "X" = 2 ORDER BY "A";',
+    '(SELECT "A" FROM "T1" ORDER BY "A") UNION (SELECT "A" FROM "T2" ORDER BY "A");',
+  ].join('\n');
+  assert.deepEqual(syn27('hanasql', validQueries), []);
+});
+
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {
   const brokenProc = 'CREATE FUNC "P"() AS BEGIN SELECT 1 FROM DUMMY; END;';
   // syntax: false disables HANA-SYN-* while leaving semantic diagnostics intact
