@@ -139,7 +139,9 @@ test('HANA-SYN-020: SQLScript compound blocks, CASE..END, IF EXISTS & loops', ()
     '  END IF;',
     'END;',
   ].join('\n');
-  assert.deepEqual(syntaxDiags('hdbprocedure', validProc), []);
+  assert.deepEqual(syntaxDiags('hanasql', validProc), []);
+  const validHdiProc = validProc.replace(/^CREATE /, '').replace(/END;$/, 'END');
+  assert.deepEqual(syntaxDiags('hdbprocedure', validHdiProc), []);
 
   // Valid LANGUAGE R procedure body skipped safely
   assert.deepEqual(
@@ -1519,6 +1521,169 @@ test('HANA-SYN-004 / 027 / 028 / 029: edge cases, multiple violations, and Quick
   const wrongRoot = syntaxDiags('hdbtable', 'GRANT SELECT ON "T" TO "U"');
   assert.ok(wrongRoot.some((d) => d.ruleId === 'HANA-SYN-004' && d.fixes.length === 0));
   assert.ok(!wrongRoot.some((d) => d.ruleId === 'HANA-SYN-021'));
+});
+
+test('HANA-SYN-004 / 028 / 029 QuickFixes & #22/#23 improvements', () => {
+  const byRule = (lang: string, code: string, rule: string) => syntaxDiags(lang, code).filter((d) => d.ruleId === rule);
+
+  // --- #22: Aggregated trailing statement diagnostic + preferred remove QuickFix ---
+  const viewWith3Extra =
+    'VIEW "V" AS SELECT 1 AS A FROM DUMMY; SELECT 2 FROM DUMMY; SELECT 3 FROM DUMMY; SELECT 4 FROM DUMMY; -- trailing comment';
+  const trailingViewDiags = byRule('hdbview', viewWith3Extra, 'HANA-SYN-004');
+  assert.equal(trailingViewDiags.length, 1);
+  assert.ok(/found 3 unexpected trailing statements/i.test(trailingViewDiags[0].message));
+  assert.equal(trailingViewDiags[0].fixes.length, 1);
+  assert.equal(trailingViewDiags[0].fixes[0].isPreferred, true);
+  const fixedView = applyTextEdits(viewWith3Extra, trailingViewDiags[0].fixes[0].edits);
+  assert.equal(fixedView, 'VIEW "V" AS SELECT 1 AS A FROM DUMMY; -- trailing comment');
+  assert.deepEqual(byRule('hdbview', fixedView, 'HANA-SYN-004'), []);
+
+  const procWith2Extra =
+    'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END; SELECT 2 FROM DUMMY; SELECT 3 FROM DUMMY;\n-- keep';
+  const trailingProcDiags = byRule('hdbprocedure', procWith2Extra, 'HANA-SYN-004');
+  assert.equal(trailingProcDiags.length, 1);
+  assert.ok(/found 2 unexpected trailing statements/i.test(trailingProcDiags[0].message));
+  const fixedProc = applyTextEdits(procWith2Extra, trailingProcDiags[0].fixes[0].edits);
+  assert.equal(fixedProc, 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END\n-- keep');
+  assert.deepEqual(syntaxDiags('hdbprocedure', fixedProc), []);
+
+  // Nested BEGIN ... END in trailing statement still counts as 1 statement per block
+  const procWithNestedTrailing =
+    'PROCEDURE "P"() AS BEGIN END; DO BEGIN SELECT 1 FROM DUMMY; END; SELECT 2 FROM DUMMY;';
+  const nestedTrail = byRule('hdbprocedure', procWithNestedTrailing, 'HANA-SYN-004');
+  assert.equal(nestedTrail.length, 1);
+  assert.ok(/found 2 unexpected trailing statements/i.test(nestedTrail[0].message));
+
+  // --- #22: Redundant leading CREATE [OR REPLACE] warning & strip QuickFix ---
+  const createProc = 'CREATE PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END';
+  const createProcDiags = byRule('hdbprocedure', createProc, 'HANA-SYN-004');
+  assert.equal(createProcDiags.length, 1);
+  assert.equal(createProcDiags[0].severity, 'warning');
+  assert.equal(createProcDiags[0].fixes[0].isPreferred, true);
+  const strippedProc = applyTextEdits(createProc, createProcDiags[0].fixes[0].edits);
+  assert.equal(strippedProc, 'PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END');
+  assert.deepEqual(syntaxDiags('hdbprocedure', strippedProc), []);
+
+  const createOrReplaceFn = 'CREATE OR REPLACE FUNCTION "F"() RETURNS r INT AS BEGIN r = 1; END';
+  const corDiags = byRule('hdbfunction', createOrReplaceFn, 'HANA-SYN-004');
+  assert.equal(corDiags.length, 1);
+  assert.equal(corDiags[0].severity, 'warning');
+  const strippedFn = applyTextEdits(createOrReplaceFn, corDiags[0].fixes[0].edits);
+  assert.equal(strippedFn, 'FUNCTION "F"() RETURNS r INT AS BEGIN r = 1; END');
+  assert.deepEqual(syntaxDiags('hdbfunction', strippedFn), []);
+
+  // Leading comment after CREATE is preserved
+  const createWithComment = 'CREATE /* keep */ PROCEDURE "P"() AS BEGIN SELECT 1 FROM DUMMY; END';
+  const cwcDiags = byRule('hdbprocedure', createWithComment, 'HANA-SYN-004');
+  assert.equal(cwcDiags.length, 1);
+  const fixedCwc = applyTextEdits(createWithComment, cwcDiags[0].fixes[0].edits);
+  assert.ok(fixedCwc.includes('/* keep */'));
+  assert.ok(!fixedCwc.startsWith('CREATE'));
+
+  // Wrong CREATE object kind stays error with NO fix
+  const wrongObj = byRule('hdbprocedure', 'CREATE VIEW "V" AS SELECT 1 AS A FROM DUMMY;', 'HANA-SYN-004');
+  assert.equal(wrongObj[0].severity, 'error');
+  assert.deepEqual(wrongObj[0].fixes, []);
+
+  // CREATE PROCEDURE in .hanasql script file is valid (no warning)
+  assert.deepEqual(byRule('hanasql', 'CREATE PROCEDURE "P"() AS BEGIN END;', 'HANA-SYN-004'), []);
+
+  // --- #23: Library member visibility QuickFixes (PRIVATE preferred, PUBLIC secondary) ---
+  const noVisLib = `LIBRARY "L" AS BEGIN
+  VARIABLE "V" CONSTANT INT := 1;
+  PROCEDURE "P"() AS BEGIN END;
+  FUNCTION "F"() RETURNS r INT AS BEGIN r = 1; END
+END`;
+  const visDiags = byRule('hdblibrary', noVisLib, 'HANA-SYN-029');
+  assert.equal(visDiags.length, 3);
+  for (const d of visDiags) {
+    assert.equal(d.fixes.length, 2);
+    assert.equal(d.fixes[0].title, "Add 'PRIVATE'");
+    assert.equal(d.fixes[0].isPreferred, true);
+    assert.equal(d.fixes[1].title, "Add 'PUBLIC'");
+    assert.equal(d.fixes[1].isPreferred, false);
+  }
+  const fixedAllPrivate = applyTextEdits(
+    noVisLib,
+    visDiags.flatMap((d) => d.fixes[0].edits)
+  );
+  assert.ok(fixedAllPrivate.includes('PRIVATE VARIABLE "V"'));
+  assert.ok(fixedAllPrivate.includes('PRIVATE PROCEDURE "P"'));
+  assert.ok(fixedAllPrivate.includes('PRIVATE FUNCTION "F"'));
+  assert.deepEqual(syntaxDiags('hdblibrary', fixedAllPrivate), []);
+
+  // Secondary PUBLIC fix also produces clean artifact
+  const singlePublic = applyTextEdits(
+    'LIBRARY "L" AS BEGIN VARIABLE "V" CONSTANT INT := 1; END',
+    byRule('hdblibrary', 'LIBRARY "L" AS BEGIN VARIABLE "V" CONSTANT INT := 1; END', 'HANA-SYN-029')[0].fixes[1].edits
+  );
+  assert.equal(singlePublic, 'LIBRARY "L" AS BEGIN PUBLIC VARIABLE "V" CONSTANT INT := 1; END');
+  assert.deepEqual(syntaxDiags('hdblibrary', singlePublic), []);
+
+  // --- #23: Qualified variable name + Add CONSTANT QuickFix ---
+  const qualVarLib = 'LIBRARY "L" AS BEGIN PUBLIC VARIABLE "my_schema"."v_rate" INT := 1; END';
+  const qualDiags = byRule('hdblibrary', qualVarLib, 'HANA-SYN-028');
+  assert.equal(qualDiags.length, 1);
+  assert.equal(qualDiags[0].fixes[0].title, "Add 'CONSTANT'");
+  assert.equal(qualDiags[0].fixes[0].isPreferred, true);
+  const fixedQual = applyTextEdits(qualVarLib, qualDiags[0].fixes[0].edits);
+  assert.equal(fixedQual, 'LIBRARY "L" AS BEGIN PUBLIC VARIABLE "my_schema"."v_rate" CONSTANT INT := 1; END');
+  assert.deepEqual(syntaxDiags('hdblibrary', fixedQual), []);
+
+  // --- #23: Combined QuickFixes (visibility + CONSTANT in the same variable declaration) ---
+  const comboLib = `LIBRARY "L" AS BEGIN
+  VARIABLE "V1" INT DEFAULT 1;
+  PROCEDURE "P1"() AS BEGIN END;
+END`;
+  const comboDiags = syntaxDiags('hdblibrary', comboLib);
+  const comboPreferredEdits = comboDiags
+    .flatMap((d) => d.fixes.filter((f) => f.kind === 'quickfix' && f.isPreferred))
+    .flatMap((f) => f.edits);
+  const fixedCombo = applyTextEdits(comboLib, comboPreferredEdits);
+  assert.ok(fixedCombo.includes('PRIVATE VARIABLE "V1" CONSTANT INT DEFAULT 1;'));
+  assert.deepEqual(syntaxDiags('hdblibrary', fixedCombo), []);
+
+  // --- #23: Move declaration before first member (non-preferred refactor, multi-line & inline) ---
+  const lateVarMulti = `LIBRARY "L" AS BEGIN\n  PUBLIC PROCEDURE "P"() AS BEGIN END;\n  PUBLIC VARIABLE "C" CONSTANT INT := 3;\nEND`;
+  const lateDiagsMulti = byRule('hdblibrary', lateVarMulti, 'HANA-SYN-028');
+  assert.equal(lateDiagsMulti.length, 1);
+  assert.equal(lateDiagsMulti[0].fixes.length, 1);
+  assert.equal(lateDiagsMulti[0].fixes[0].kind, 'refactor');
+  assert.equal(lateDiagsMulti[0].fixes[0].isPreferred, false);
+  const movedMulti = applyTextEdits(lateVarMulti, lateDiagsMulti[0].fixes[0].edits);
+  assert.equal(
+    movedMulti,
+    `LIBRARY "L" AS BEGIN\n  PUBLIC VARIABLE "C" CONSTANT INT := 3;\n  PUBLIC PROCEDURE "P"() AS BEGIN END;\nEND`
+  );
+  assert.deepEqual(syntaxDiags('hdblibrary', movedMulti), []);
+
+  // CRLF multi-line preservation
+  const lateVarCrlf = lateVarMulti.replace(/\n/g, '\r\n');
+  const movedCrlf = applyTextEdits(lateVarCrlf, byRule('hdblibrary', lateVarCrlf, 'HANA-SYN-028')[0].fixes[0].edits);
+  assert.equal(movedCrlf, movedMulti.replace(/\n/g, '\r\n'));
+
+  // Inline / single-line move refactor
+  const lateVarInline = 'LIBRARY "L" AS BEGIN PUBLIC PROCEDURE "P"() AS BEGIN END; PUBLIC VARIABLE "C" CONSTANT INT := 3; END';
+  const movedInline = applyTextEdits(
+    lateVarInline,
+    byRule('hdblibrary', lateVarInline, 'HANA-SYN-028')[0].fixes[0].edits
+  );
+  assert.equal(
+    movedInline,
+    'LIBRARY "L" AS BEGIN PUBLIC VARIABLE "C" CONSTANT INT := 3; PUBLIC PROCEDURE "P"() AS BEGIN END; END'
+  );
+  assert.deepEqual(syntaxDiags('hdblibrary', movedInline), []);
+
+  // --- #23: Trigger precedence avoids secondary AUTONOMOUS/PARALLEL noise ---
+  const trgAutonomous = `TRIGGER "T" AFTER INSERT ON "TAB" FOR EACH ROW BEGIN
+    BEGIN AUTONOMOUS TRANSACTION
+      CALL "pkg::helper"();
+      CREATE COLUMN TABLE "TMP" ("A" INT);
+    END;
+  END`;
+  const trgPrecDiags = byRule('hdbtrigger', trgAutonomous, 'HANA-SYN-029');
+  assert.equal(trgPrecDiags.length, 2);
+  assert.ok(trgPrecDiags.every((d) => /TRIGGER/.test(d.message)));
 });
 
 test('Options & suppressions control HANA-SYN-* independently of semantics', () => {

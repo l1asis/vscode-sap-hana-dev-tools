@@ -1,9 +1,15 @@
 import { type Token } from '../formatter/tokenizer';
 import { findLineNumber } from './sql-order';
-import { type AnalyzerDiagnostic, type DiagnosticSeverityLevel, type DiagnosticTagKind } from './types';
+import {
+  type AnalyzerDiagnostic,
+  type CodeFixSuggestion,
+  type DiagnosticSeverityLevel,
+  type DiagnosticTagKind,
+} from './types';
 
 export interface SqlContextOptions {
   readonly languageId: string;
+  readonly text: string;
   readonly codeTokens: readonly Token[];
   readonly baseOffset: number;
   readonly lineStarts: readonly number[];
@@ -80,6 +86,7 @@ interface BlockScope {
   terminatedBy: string;
   handlerKind: 'EXIT' | 'CONTINUE' | null;
   readonly seenConditions: Set<string>;
+  firstMemberStart?: number;
 }
 
 const TERMINATOR_KEYWORDS = new Set<string>(['RETURN', 'SIGNAL', 'RESIGNAL', 'BREAK', 'CONTINUE']);
@@ -214,12 +221,113 @@ function isFunctionHeaderBoundary(tokens: readonly Token[], idx: number): boolea
   return false;
 }
 
+function makeVisibilityFixes(insertAt: number): readonly CodeFixSuggestion[] {
+  return [
+    {
+      title: "Add 'PRIVATE'",
+      kind: 'quickfix',
+      isPreferred: true,
+      edits: [{ start: insertAt, end: insertAt, newText: 'PRIVATE ' }],
+    },
+    {
+      title: "Add 'PUBLIC'",
+      kind: 'quickfix',
+      isPreferred: false,
+      edits: [{ start: insertAt, end: insertAt, newText: 'PUBLIC ' }],
+    },
+  ];
+}
+
+function makeAddConstantFix(text: string, baseOffset: number, nameEnd: number): CodeFixSuggestion {
+  const needsTrailingSpace = nameEnd < text.length && !/\s/.test(text[nameEnd]) ? ' ' : '';
+  return {
+    title: "Add 'CONSTANT'",
+    kind: 'quickfix',
+    isPreferred: true,
+    edits: [{ start: baseOffset + nameEnd, end: baseOffset + nameEnd, newText: ` CONSTANT${needsTrailingSpace}` }],
+  };
+}
+
+function makeMoveLibVarBeforeMembersFix(
+  text: string,
+  baseOffset: number,
+  firstMemberStart: number,
+  stmtStart: number,
+  stmtEnd: number,
+  hasSemi: boolean
+): CodeFixSuggestion | undefined {
+  if (firstMemberStart >= stmtStart || stmtEnd <= stmtStart) return undefined;
+
+  const declText = hasSemi ? text.slice(stmtStart, stmtEnd) : `${text.slice(stmtStart, stmtEnd)};`;
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+
+  let firstLineStart = firstMemberStart;
+  while (firstLineStart > 0 && text[firstLineStart - 1] !== '\n') firstLineStart--;
+  const onlyWsBeforeFirst = text.slice(firstLineStart, firstMemberStart).trim().length === 0;
+
+  let stmtLineStart = stmtStart;
+  while (stmtLineStart > 0 && text[stmtLineStart - 1] !== '\n') stmtLineStart--;
+  const onlyWsBeforeStmt = text.slice(stmtLineStart, stmtStart).trim().length === 0;
+
+  let afterStmtWsEnd = stmtEnd;
+  while (afterStmtWsEnd < text.length && (text[afterStmtWsEnd] === ' ' || text[afterStmtWsEnd] === '\t')) {
+    afterStmtWsEnd++;
+  }
+  const atEolAfterStmt =
+    afterStmtWsEnd >= text.length ||
+    text[afterStmtWsEnd] === '\n' ||
+    (text[afterStmtWsEnd] === '\r' && text[afterStmtWsEnd + 1] === '\n');
+
+  let delStart: number;
+  let delEnd: number;
+  if (onlyWsBeforeStmt && atEolAfterStmt) {
+    if (afterStmtWsEnd < text.length) {
+      delStart = stmtLineStart;
+      delEnd = text[afterStmtWsEnd] === '\r' ? afterStmtWsEnd + 2 : afterStmtWsEnd + 1;
+    } else {
+      delStart =
+        stmtLineStart > 0
+          ? stmtLineStart >= 2 && text[stmtLineStart - 2] === '\r'
+            ? stmtLineStart - 2
+            : stmtLineStart - 1
+          : stmtLineStart;
+      delEnd = afterStmtWsEnd;
+    }
+  } else if (onlyWsBeforeStmt) {
+    delStart = stmtStart;
+    delEnd = afterStmtWsEnd;
+  } else {
+    delStart = stmtStart;
+    while (delStart > firstMemberStart && (text[delStart - 1] === ' ' || text[delStart - 1] === '\t')) {
+      delStart--;
+    }
+    delEnd = stmtEnd;
+  }
+
+  const insertAt = onlyWsBeforeFirst ? firstLineStart : firstMemberStart;
+  const insertText = onlyWsBeforeFirst
+    ? `${text.slice(firstLineStart, firstMemberStart)}${declText}${eol}`
+    : `${declText} `;
+
+  if (insertAt > delStart || delStart >= delEnd) return undefined;
+  return {
+    title: 'Move declaration before first member',
+    kind: 'refactor',
+    isPreferred: false,
+    edits: [
+      { start: baseOffset + insertAt, end: baseOffset + insertAt, newText: insertText },
+      { start: baseOffset + delStart, end: baseOffset + delEnd, newText: '' },
+    ],
+  };
+}
+
 /**
  * Validates SQLScript routine header ordering/compatibility, `USING` placement, compound block
  * declaration/handler ordering, handler scope conflicts, and unreachable statements (`HANA-SYN-028`).
  */
 export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
   const {
+    text,
     codeTokens,
     baseOffset,
     lineStarts,
@@ -235,7 +343,8 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
     ruleId: string,
     message: string,
     severity: DiagnosticSeverityLevel = 'error',
-    tags?: readonly DiagnosticTagKind[]
+    tags?: readonly DiagnosticTagKind[],
+    fixes: readonly CodeFixSuggestion[] = []
   ): void => {
     if (unclosedStarts.has(tok.start) || unmatchedCloseStarts.has(tok.start)) return;
     const line = findLineNumber(lineStarts, baseOffset + tok.start);
@@ -248,7 +357,7 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
       message,
       start: baseOffset + tok.start,
       end: baseOffset + tok.end,
-      fixes: [],
+      fixes,
     });
   };
 
@@ -1080,21 +1189,21 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
 
       if (memberUp === 'VARIABLE' && memberTok) {
         if (!hasVisibility) {
-          emitDiag(tok, 'HANA-SYN-029', `Library member 'VARIABLE' must specify 'PUBLIC' or 'PRIVATE' visibility.`);
-        }
-        if (topScope.phase >= BlockPhase.EXECUTABLE) {
           emitDiag(
-            memberTok,
-            'HANA-SYN-028',
-            `Library variable declarations must appear before member procedures and functions.`
+            tok,
+            'HANA-SYN-029',
+            `Library member 'VARIABLE' must specify 'PUBLIC' or 'PRIVATE' visibility.`,
+            'error',
+            undefined,
+            makeVisibilityFixes(baseOffset + tok.start)
           );
-        } else {
-          topScope.phase = BlockPhase.DECL;
         }
 
         let cur = hasVisibility ? i + 2 : i + 1;
-        if (cur < codeTokens.length && codeTokens[cur].text !== ';') {
-          cur++;
+        const nameEndIdx = skipQualifiedName(cur);
+        const constInsertTok = nameEndIdx > cur ? codeTokens[nameEndIdx - 1] : undefined;
+        if (nameEndIdx > cur) {
+          cur = nameEndIdx;
         }
         let hasConstant = false;
         let initTok: Token | undefined;
@@ -1122,14 +1231,48 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           }
           cur++;
         }
+
+        const hasSemi = codeTokens[cur]?.text === ';';
+        const lastStmtTok = hasSemi ? codeTokens[cur] : codeTokens[Math.max(i, cur - 1)];
+        if (topScope.phase >= BlockPhase.EXECUTABLE) {
+          const moveFix =
+            topScope.firstMemberStart !== undefined && lastStmtTok
+              ? makeMoveLibVarBeforeMembersFix(
+                  text,
+                  baseOffset,
+                  topScope.firstMemberStart,
+                  tok.start,
+                  lastStmtTok.end,
+                  hasSemi
+                )
+              : undefined;
+          emitDiag(
+            memberTok,
+            'HANA-SYN-028',
+            `Library variable declarations must appear before member procedures and functions.`,
+            'error',
+            undefined,
+            moveFix ? [moveFix] : []
+          );
+        } else {
+          topScope.phase = BlockPhase.DECL;
+        }
+
         if (initTok && !hasConstant) {
+          const constFixes =
+            constInsertTok && initTok.start > constInsertTok.end
+              ? [makeAddConstantFix(text, baseOffset, constInsertTok.end)]
+              : [];
           emitDiag(
             initTok,
             'HANA-SYN-028',
-            `Library variable initializer '${initTok.text.toUpperCase()}' requires 'CONSTANT'.`
+            `Library variable initializer '${initTok.text.toUpperCase()}' requires 'CONSTANT'.`,
+            'error',
+            undefined,
+            constFixes
           );
         }
-        i = codeTokens[cur]?.text === ';' ? cur + 1 : cur;
+        i = hasSemi ? cur + 1 : cur;
         atStmtStart = true;
         continue;
       }
@@ -1139,8 +1282,14 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
           emitDiag(
             tok,
             'HANA-SYN-029',
-            `Library member '${memberUp}' must specify 'PUBLIC' or 'PRIVATE' visibility.`
+            `Library member '${memberUp}' must specify 'PUBLIC' or 'PRIVATE' visibility.`,
+            'error',
+            undefined,
+            makeVisibilityFixes(baseOffset + tok.start)
           );
+        }
+        if (topScope.firstMemberStart === undefined) {
+          topScope.firstMemberStart = tok.start;
         }
         topScope.phase = BlockPhase.EXECUTABLE;
         const res = tryParseRoutineHeader(i, true);
@@ -1185,22 +1334,26 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
         if (!isBeginKind && up !== 'SEQUENTIAL') {
           emitDiag(tok, 'HANA-SYN-028', `'${modName}' is only valid on a 'BEGIN' block.`);
         } else if (up === 'AUTONOMOUS') {
-          (topScope as { inAutonomous: boolean }).inAutonomous = true;
-          if (isFunctionRoutine || routine?.hasReadsSqlData) {
-            emitDiag(
-              tok,
-              'HANA-SYN-029',
-              `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
-            );
-          } else if (routine?.kind === 'trigger') {
+          if (routine?.kind === 'trigger') {
             emitDiag(tok, 'HANA-SYN-029', `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a TRIGGER body.`);
+          } else {
+            (topScope as { inAutonomous: boolean }).inAutonomous = true;
+            if (isFunctionRoutine || routine?.hasReadsSqlData) {
+              emitDiag(
+                tok,
+                'HANA-SYN-029',
+                `'BEGIN AUTONOMOUS TRANSACTION' is not allowed inside a FUNCTION or READS SQL DATA procedure.`
+              );
+            }
           }
         } else if (up === 'PARALLEL') {
-          (topScope as { inParallel: boolean }).inParallel = true;
-          if (isFunctionRoutine) {
-            emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION.`);
-          } else if (routine?.kind === 'trigger') {
+          if (routine?.kind === 'trigger') {
             emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a TRIGGER body.`);
+          } else {
+            (topScope as { inParallel: boolean }).inParallel = true;
+            if (isFunctionRoutine) {
+              emitDiag(tok, 'HANA-SYN-029', `'BEGIN PARALLEL EXECUTION' is not allowed inside a FUNCTION.`);
+            }
           }
         }
         topScope.phase = BlockPhase.AFTER_MODIFIER;
