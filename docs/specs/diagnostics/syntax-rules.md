@@ -60,9 +60,11 @@
 - **Severity:** `error`
 - **Target Extensions:** Same as `HANA-SYN-001`.
 - **Lexical Trigger:** While scanning non-comment, non-string tokens in order:
-  - Encountering a closing `)`, `]`, or `}` when the delimiter stack is empty or its top has a mismatched opener type.
-    - Exception: Wait-free tolerance for `#[...]` attribute annotations in SQLScript (`#[INLINE]`, `[0..*]`, `[1..1]` in CDS) — all use balanced `[` and `]`, so standard stack matching handles them cleanly without special cases.
-  - Reaching EOF (or `.hdbmigrationtable` section boundary) with unclosed `(`, `[`, or `{` remaining on the stack.
+  - Fast path validates `( )`, `[ ]`, and `{ }` strictly in O(N). When an imbalance or mismatch occurs:
+    - **Statement & Boundary Fencing:** SQL/SQLScript treats statement `;` as a hard delimiter fence so an unclosed `(` or `[` in one statement never pairs with a `)` or `]` in a later statement. Inline SQL data-type dimension openers (`DECIMAL(`, `NVARCHAR(`, etc.) also penalize pairing across incompatible parameter/clause boundaries (`IN`/`OUT`/`INOUT`/`RETURNS`).
+    - **Indentation- & Nesting-Aware Blame Localization:** Collapses same-line tight pairs first, then runs minimum-cost non-crossing bracket alignment across the unbalanced region using line indentation and opener/closer line-boundary symmetry (`O.isLineEnd` / `C.isLineStart`). Removing an inner `)` or `(` inside an outer pair (e.g. `DECIMAL(3, 2` or `DECIMAL3, 2)` inside `FUNCTION ... (\n    ...\n)`) pairs the outer `(`..`)` at matching indent `0` and pinpoints the exact inner missing bracket instead of falsely blaming the outer declaration line `1` or closing line `4`.
+    - **Resilient Recovery:** Resolved unclosed/unmatched delimiter offsets are excluded from downstream paren depth tracking (`HANA-SYN-023`) so one missing bracket does not cascade bogus missing-comma diagnostics across subsequent declarations.
+    - Exception: `#[...]` attribute annotations in SQLScript and `[0..*]`/`[1..1]` multiplicity in CDS use balanced `[` and `]` and pass cleanly.
 - **Diagnostic Span & Message:**
   - Stray/mismatched closer: `"Unexpected closing delimiter ')'. Expected ']'."` or `"Unmatched closing delimiter ')'."`
   - Unclosed opener: `"Unclosed delimiter '('."`
@@ -78,7 +80,7 @@
   - Unterminated `/* ... */` block comment.
   - Missing `:` after object property key.
   - Missing `,` between object properties or array elements (**disabled when `languageId === 'xssqlcc'`** per documented `.xssqlcc` tolerance in `docs/specs/artifacts/json-formatting.md`).
-  - Unmatched or unclosed `{` / `}` / `[` / `]`.
+  - Unmatched or unclosed `{` / `}` / `[` / `]` (using indentation/nesting recovery when containers are unbalanced so a missing inner `}` or `]` inside nested JSON objects/arrays blames the inner unclosed container rather than the root `{`).
   - Single-quoted strings `'...'`, unquoted object keys, or invalid literal identifiers (`undefined`, `NaN`, etc.).
   - Trailing non-comment tokens after the root JSON value closes.
 
@@ -167,9 +169,9 @@
 - **Severity:** `error`
 - **Target Extensions:** `.xsjs`, `.xsjslib`
 - **Platform Scope:** `[XSC]` `[XSA]`
-- **Lexical Trigger:** Matches `( )`, `[ ]`, `{ }`, and `${ ... }` pairs outside strings, regex literals, and comments:
-  - Unexpected closing delimiter when stack empty or top mismatches (`HANA-SYN-031`).
-  - Unclosed opener remaining at EOF (`HANA-SYN-031`).
+- **Lexical Trigger:** Matches `( )`, `[ ]`, `{ }`, and `${ ... }` pairs outside strings, regex literals, and comments using the same fencing and indentation-aware alignment recovery when unbalanced (treating `;` inside `[...]` or non-`for` `(...)` without an intervening `{` as a hard fence so unclosed `foo(1, 2;` does not steal outer closers, and ignoring resolved bad delimiters in `HANA-SYN-033`):
+  - Unexpected/unmatched closing delimiter (`HANA-SYN-031`).
+  - Unclosed opener or unclosed template interpolation `'${'` (`HANA-SYN-031`).
 
 ### `HANA-SYN-032` — Misspelled JS Statement / Declaration Keyword (`.xsjs` / `.xsjslib`)
 - **Severity:** `error`
