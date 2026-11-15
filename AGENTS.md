@@ -66,7 +66,7 @@ The terminal runs **Windows PowerShell 5.1**, NOT Bash or PowerShell 7.
 ## 7. GitHub CLI (`gh`) Issue, Label & PR Management
 
 1. **Labels:** Run `gh label list` before creating issues or PRs and assign accurate existing labels (`area:*`, `platform:*`, `phase:*`). Create missing category labels only when genuinely needed (`gh label create "<name>" --color "<hex>" --description "<desc>" --force`).
-2. **Issues:** Check `gh issue list` to avoid duplicates, create structured issues (`gh issue create --title '...' --label '...'`), and link them (`Closes #N` or `Refs #N`) in PR descriptions.
+2. **Issues:** Check `gh issue list` to avoid duplicates, create structured issues (`gh issue create --title '...' --label '...'`) using plain, natural-language titles without Conventional Commit prefixes or emojis (e.g., `Add .hdbti formatter support`), and link them (`Closes #N` or `Refs #N`) in PR descriptions.
 3. **Pull Requests:** Verify `npm test` passes and `git status` is clean (`research/` untracked), push (`git push -u origin <branch>`), and open the PR (`gh pr create --title '...' --label '...' --body-file ...`).
 4. **Human-Only Merge Gate (STRICT):** **NEVER** run `gh pr merge` or merge feature branches into `main` locally. Leave all PRs open for human review.
 
