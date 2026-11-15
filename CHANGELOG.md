@@ -2,6 +2,24 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.8.0] - 2026-11-15
+
+### Added
+
+- **Syntax QuickFixes & Refactors (`HANA-SYN-004`, `HANA-SYN-028`, `HANA-SYN-029`):**
+  - **Redundant HDI `CREATE` Detection & QuickFix (`src/analyzer/syntax.ts`, `HANA-SYN-004`):** Emits a `warning` diagnostic when a headerless HDI DDL artifact begins with a redundant `CREATE` or `CREATE OR REPLACE` prefix in front of an expected root keyword, paired with a preferred `Remove leading 'CREATE'` / `Remove leading 'CREATE OR REPLACE'` QuickFix.
+  - **`.hdblibrary` Visibility, `CONSTANT` & Relocation Actions (`src/analyzer/sql-context.ts`, `HANA-SYN-028`, `HANA-SYN-029`):** Adds preferred `Add 'PRIVATE'` and alternative `Add 'PUBLIC'` QuickFixes for library members missing visibility modifiers, a preferred `Add 'CONSTANT'` QuickFix for initialized non-constant `VARIABLE` declarations (supporting `DEFAULT`, `=`, and `:=` initializers), and a non-preferred `refactor` action (`Move declaration before first member`) that relocates out-of-order library variables ahead of the first member procedure or function.
+- **Specs & Tests:**
+  - Updated `docs/specs/diagnostics/syntax-rules.md` for `HANA-SYN-004`, `HANA-SYN-028`, and `HANA-SYN-029` QuickFixes and refactors, and expanded `test/syntax-analyzer.test.ts` with positive, negative, multi-edit replacement, and library variable coverage.
+
+### Changed
+
+- **Aggregated Single-Object HDI Trailing Diagnostics (`src/analyzer/syntax.ts`, `HANA-SYN-004`):** Aggregates multiple trailing top-level statements after the single root HDI object completes into one diagnostic spanning from the first trailing token through the last non-comment trailing token (reporting the trailing statement count when multiple trailing statements are present), paired with a preferred `Remove trailing statement` / `Remove trailing statements` QuickFix that preserves comments after the final trailing token.
+
+### Fixed
+
+- **`.hdblibrary` Variable Name Parsing & Trigger Block Precedence (`src/analyzer/sql-context.ts`, `HANA-SYN-028`, `HANA-SYN-029`):** Parsed qualified and quoted `.hdblibrary` `VARIABLE` identifiers accurately via `skipQualifiedName` before initializers so `Add 'CONSTANT'` offsets remain accurate, and suppressed secondary `autonomous` / `parallel` body diagnostics inside `TRIGGER` blocks where `BEGIN AUTONOMOUS TRANSACTION` or `BEGIN PARALLEL EXECUTION` is already rejected at the block header while preserving direct `TRIGGER` restrictions.
+
 ## [0.7.0] - 2026-11-15
 
 ### Added
