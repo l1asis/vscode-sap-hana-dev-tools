@@ -1943,6 +1943,33 @@
       },
       "[hdbfabricvirtualtable]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbtable]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbstructure]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbview]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsequence]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbschema]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbti]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbdd]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbcds]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[xsodata]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       }
     },
     "configuration": {
