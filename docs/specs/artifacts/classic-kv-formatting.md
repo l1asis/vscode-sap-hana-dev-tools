@@ -20,6 +20,9 @@
 | `.hdbsequence` | `[XSC]` | `_SYS_REPO` HDBSequence | HANA 1.0 SPS 04+ | Classic KV when first non-comment tokens match `ident ('.' ident)* '='`; otherwise `[HDI]` SQL DDL (`com.sap.hana.di.sequence`). |
 | `.hdbschema` | `[XSC]` | `_SYS_REPO` HDBSchema | HANA 1.0 SPS 04+ | Always Classic KV (`schema_name = "...";`). |
 | `.hdbti` | `[XSC]` | `_SYS_REPO` Table Import | HANA 1.0 SPS 05+ | Always Classic KV (`import = [ { ... } ];`); replaced by `.hdbtabledata` in `[HDI]`. |
+| `.xshttpdest` | `[XSC]` | `_SYS_REPO` HTTP Destination | HANA 1.0 SPS 05+ | Always Classic KV (`host = "...";`, `port = 80;`, `authType = none;`). |
+| `.hdbtid` | `[XSC]` | `_SYS_REPO` Legacy Table Import Data | HANA 1.0 SPS 04–05 | Always Classic KV (`import = [ { ... } ];`); deprecated predecessor to `.hdbti`. |
+| `.hdbtim` | `[XSC]` | `_SYS_REPO` Legacy Table Import Map | HANA 1.0 SPS 04–05 | Always Classic KV (`import = [ { ... } ];`); deprecated predecessor to `.hdbti`. |
 
 ---
 
