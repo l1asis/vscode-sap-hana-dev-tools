@@ -3,4 +3,5 @@ var conn = $.hdb.getConnection();
 var rs = conn.executeQuery("SELECT * FROM DUMMY");
 $.response.status = $.net.http.OK;
 $.response.contentType = "application/json";
+$.application.language = "en-US";
 $.response.setBody(JSON.stringify({ user: $.session.getUsername(), mail: $.net.Mail.Part.TYPE_TEXT }));
