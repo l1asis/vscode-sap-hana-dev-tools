@@ -7,6 +7,8 @@ scripts/**
 test/**
 src/**
 .gitignore
+AGENTS.md
+GEMINI.md
 tsconfig.json
 **/*.map
 **/*.ts
