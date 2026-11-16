@@ -32,18 +32,7 @@ VS Code language support, formatters, static analyzers, and tooling for **SAP HA
 - **Formatting Safety:** Formatters must never corrupt valid code, strip comments, append semicolons to headerless HDI root statements, or break `-- hanasql-format off` pragmas.
 - **Testing:** Every new grammar rule, formatter feature, or diagnostic rule must include positive and negative test cases in `test/` and pass `npm test`.
 
-## 5. Windows PowerShell 5.1 Terminal Rules (CRITICAL)
-
-The terminal runs **Windows PowerShell 5.1**, NOT Bash or PowerShell 7.
-
-1. **`&&` and `||` Are Forbidden:** PowerShell 5.1 throws a parser error on `&&` and `||`.
-2. **One Command Per Tool Call:** Execute commands as individual, sequential tool calls (e.g., wait for `git add` to finish before `git commit`). Never run parallel `git` commands (prevents `.git/index.lock` collisions and matches the terminal allowlist cleanly).
-3. **Chaining Fallback:** Only if chaining in a single invocation is unavoidable, use `Command1; if ($?) { Command2 }` for dependent commands, or `Command1; Command2` for read-only inspection.
-4. **Backtick Escaping Trap:** In PowerShell, `` ` `` is the escape character inside double quotes (`"..."`).
-   - **Always use single quotes (`'...'`)** for commit messages, issue titles, and PR titles containing Markdown backticks (e.g., `git commit -m 'feat(grammar): ✨ add `.hdbtable` support'`).
-   - For multi-line PR or issue bodies containing code blocks/backticks, use `--body-file` or a single-quoted here-string (`@' ... '@`).
-
-## 6. Git & Branching Workflow
+## 5. Git & Branching Workflow
 
 1. **Feature Branches:** Never commit feature or fix work directly to `main`. Branch first using `feat/<slug>`, `fix/<slug>`, or `docs/<slug>`.
 2. **Incremental Atomic Commits:** Commit logical units separately (e.g., 1st: spec in `docs/specs/`; 2nd: implementation + regenerated artifacts; 3rd: samples & tests).
@@ -63,14 +52,14 @@ The terminal runs **Windows PowerShell 5.1**, NOT Bash or PowerShell 7.
    | `ci` | 👷 | GitHub Actions workflows (`.github/workflows/*`) |
    | `chore` | 🔧 | Maintenance, label setup, config, or release preparation |
 
-## 7. GitHub CLI (`gh`) Issue, Label & PR Management
+## 6. GitHub CLI (`gh`) Issue, Label & PR Management
 
 1. **Labels:** Run `gh label list` before creating issues or PRs and assign accurate existing labels (`area:*`, `platform:*`, `phase:*`). Create missing category labels only when genuinely needed (`gh label create "<name>" --color "<hex>" --description "<desc>" --force`).
 2. **Issues:** Check `gh issue list` to avoid duplicates, create structured issues (`gh issue create --title '...' --label '...'`) using plain, natural-language titles without Conventional Commit prefixes or emojis (e.g., `Add .hdbti formatter support`), and link them (`Closes #N` or `Refs #N`) in PR descriptions.
 3. **Pull Requests:** Verify `npm test` passes and `git status` is clean (`research/` untracked), push (`git push -u origin <branch>`), and open the PR (`gh pr create --title '...' --label '...' --body-file ...`).
 4. **Human-Only Merge Gate (STRICT):** **NEVER** run `gh pr merge` or merge feature branches into `main` locally. Leave all PRs open for human review.
 
-## 8. Changelog & Versioning Policy
+## 7. Changelog & Versioning Policy
 
 1. **Hands Off on Feature Branches:** Never modify `CHANGELOG.md` or bump `"version"` in `package.json` during feature, fix, or spec tasks.
 2. **Release Prep Only:** Update `CHANGELOG.md` and `package.json` version exclusively when explicitly asked to prepare a release (synthesizing `git log <last-tag>..HEAD` into domain-grouped `Added` / `Changed` / `Fixed` sections).
