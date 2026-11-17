@@ -40,6 +40,7 @@
 | `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
 | `HANA-SYN-040` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token, malformed clause argument, or missing `AS` in a routine / library / trigger / `DO` header (consuming header parser, with QuickFix) |
 | `HANA-SYN-041` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Invalid top-level or block-level statement start (not a SQL / SQLScript starter, imperative assignment target, or library member), with scope-aware typo QuickFix |
+| `HANA-SYN-042` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`.hdbview`, `.hdbtable`, `.hdbsequence`, ...), `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token at a clause or expression boundary (double alias, adjacent operands, trailing garbage) found by the consuming clause and Pratt expression parsers; clause-keyword typos reported as `HANA-SYN-021` with QuickFix |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -546,6 +547,63 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
     DO BEGIN
       DECLARE x INT;
     END;
+    ```
+
+### `HANA-SYN-042` — Unconsumed Token at a Clause or Expression Boundary
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (SELECT, INSERT, UPDATE, UPSERT / REPLACE, DELETE, CREATE VIEW, CREATE TABLE, CREATE SEQUENCE Statements; Expressions; Predicates; Operators)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/010_8_Imperative_SQLScript_Logic.md (DECLARE, assignments, RETURN, SIGNAL / RESIGNAL, cursors)
+> Source: `docs/specs/grammars/sql-sqlscript.md` §4.1
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** all SQL / SQLScript languages, including headerless HDI DDL (`.hdbview`, `.hdbtable`, `.hdbsequence`, ...) and `.hdbmigrationtable` sections.
+- **Parsers:** `src/analyzer/sql-clauses.ts` (pure TypeScript, zero runtime dependencies) validates each statement range delimited by the statement walker (`HANA-SYN-041`). The walker owns statement extents, so a clause error never desynchronizes the walk.
+  - **Pratt expression parser** (`<expr>`), binding powers `OR` 1 < `AND` 2 < `NOT` 3 < comparison / predicates 4 < `||` 5 < `+ -` 6 < `* / %` 7 < unary `+ -` 8. Operands: literals (strings, numbers, `?`, `DATE | TIME | TIMESTAMP | SECONDDATE '..'`, `INTERVAL '..' <unit>`), `:var`, `::sysvar`, (quoted) identifier chains, function calls with `OVER (...)` / `WITHIN GROUP (...)` / `FILTER (...)`, member / method / index postfixes (`.ST_X()`, `:tv.col`, `:arr[1]`, `t.*`), `CASE [<expr>] WHEN ... THEN ... [ELSE ...] END`, `EXISTS (<query>)`, `NEW <type>(...)`, scalar subqueries, and parenthesized lists. Predicates: `IS [NOT] NULL | TRUE | FALSE | UNKNOWN`, `IS [NOT] DISTINCT FROM`, `[NOT] BETWEEN .. AND ..`, `[NOT] IN (...)`, `[NOT] LIKE .. [ESCAPE ..]`, `[NOT] LIKE_REGEXPR .. [FLAG ..]`, `[NOT] MEMBER OF`, `<cmp> ANY | ALL | SOME (<query>)`, `COLLATE <name>`. Function arguments are parsed leniently: special-syntax arguments (`CAST(x AS INT)`, `EXTRACT(YEAR FROM d)`, `TRIM(BOTH ' ' FROM s)`, `STRING_AGG(x, ',' ORDER BY y)`) are skipped without diagnostics.
+  - **Queries:**
+
+    ```ebnf
+    query      ::= [ "WITH" cte_name [ "(" cols ")" ] "AS" "(" query ")" { "," ... } ]
+                   term { ( "UNION" [ "ALL" | "DISTINCT" ] | "INTERSECT" | "EXCEPT" | "MINUS" ) term }
+                   [ "ORDER" "BY" expr [ "ASC" | "DESC" ] [ "NULLS" ( "FIRST" | "LAST" ) ] { "," ... } ]
+                   [ "LIMIT" expr [ "OFFSET" expr ] [ "TOTAL" "ROWCOUNT" ] ] [ "WITH" "HINT" "(" ... ")" ] ;
+    term       ::= "(" query ")"
+                 | "SELECT" [ "TOP" expr ] [ "ALL" | "DISTINCT" ] item [ [ "AS" ] alias ] { "," ... }
+                   [ "INTO" targets [ "DEFAULT" expr { "," expr } ] ] [ "FROM" from_item { "," from_item } ]
+                   [ "WHERE" expr ] [ "GROUP" "BY" ( expr | "GROUPING" "SETS" "(" ... ")" ) { "," ... } ]
+                   [ "HAVING" expr ] ;
+    from_item  ::= table_ref [ [ "AS" ] alias [ "(" cols ")" ] ]
+                   { [ "NATURAL" ] [ "INNER" | "CROSS" | ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] ]
+                     [ ( "MANY" | "ONE" | "EXACT" "ONE" ) "TO" ( "MANY" | "ONE" | "EXACT" "ONE" ) ]
+                     "JOIN" table_ref [ alias ] [ "ON" expr | "USING" "(" cols ")" ] } ;
+    table_ref  ::= ( name | ":" var | "(" query ")" ) { "(" args ")" | "[" filter "]" | ":" assoc | "." name }
+                   [ "WITH" "ORDINALITY" ] ;       (* "V"(5):"ASSOC"('EN'), t2:a[y1 > 1] *)
+    ```
+
+  - **Statements:** `INSERT INTO <t> [(cols)] (VALUES (...) | <query>)`, `UPSERT | REPLACE <t> [(cols)] (VALUES (...) [WHERE <expr> | WITH PRIMARY KEY] | <query>)`, `UPDATE <t> [<alias>] SET <col> = <expr>, ... [FROM ...] [WHERE <expr>]`, `DELETE [FROM] <t> [<alias>] [WHERE <expr>]`, `DECLARE <names> [CONSTANT] <type> [NOT NULL] [(DEFAULT | = | :=) <expr | query>]`, `DECLARE [CURSOR] <c> [CURSOR] [(params)] FOR <query>`, `RETURN [<expr | query>]`, `<target> (= | :=) <expr | query>`, `CALL <proc>(...)`, `SIGNAL | RESIGNAL [<cond> | SQL_ERROR_CODE <n>] [SET MESSAGE_TEXT = <expr>]`, `IF` / `ELSEIF` / `WHILE` conditions, `[CREATE [OR REPLACE]] VIEW <name> ... AS <query>`, `[CREATE] (COLUMN | ROW) TABLE <name> (<columns / constraints>)` (column attributes are long tail; only `DEFAULT` expressions are validated), and `[CREATE] SEQUENCE <name> { START | RESTART WITH <n> | INCREMENT BY <n> | [NO] MAXVALUE | [NO] MINVALUE | [NO] CYCLE | [NO] CACHE }`.
+- **AST / Token Trigger (boundary rule):** once a clause has been consumed (select item and its alias, `FROM` item and its alias, `JOIN ... ON` / `WHERE` / `HAVING` / statement condition, `GROUP BY` / `ORDER BY` item, `LIMIT`, `INTO` list, `SET` assignment, initializer, `RETURN` value, assignment, sequence option), the next token must belong to the clause's follow-set (`,`, the following clause keywords, `)` inside subqueries, or the statement end):
+  1. A word that is a typo of a follow-set keyword is reported as `HANA-SYN-021` with a QuickFix (`WHEREE` -> `WHERE`, `GROUPP BY` -> `GROUP BY`, `ORDR BY` -> `ORDER BY`, `ANDD` -> `AND`, `DSC` -> `DESC`). For an implicit-alias candidate (`FROM t WHEREE x = 1`, `FROM t GROUPP BY a`) the typo is reported only when the word is not itself followed by a valid boundary, so `SELECT a whre, b FROM t` keeps `whre` as an alias.
+  2. A plain identifier, quoted identifier, literal, or punctuation token is reported as `HANA-SYN-042`: double aliases (`FROM t a b`, `SELECT a b c`), adjacent operands (`WHERE a = 1 foo`, `ORDER BY x y`), and trailing garbage after an initializer / assignment / `RETURN` value (`DECLARE v INT = 1 junk;`, `v = :v + 1 extra;`).
+  3. Any other keyword (`KEYWORDS` / `RESERVED` catalogs in `src/formatter/keywords.ts`) silently ends validation of the statement, because it may start a clause that is not modelled (`TABLESAMPLE`, `FOR SYSTEM_TIME`, `WITH READ ONLY`, `FOR UPDATE`, `WINDOW`, ...).
+- **Long-Tail Safety:** statements without a dedicated consumer (`ALTER SYSTEM`, `MERGE INTO`, `CREATE` of other object kinds, engine-specific DDL, ...) and constructs that are not understood (JSON object literals `{...}`, `GROUPING SETS <options> (...)`, anonymous `SQL FUNCTION` blocks in queries, parenthesized join trees, `RESET BY` sequences) are protected only by `HANA-SYN-005`, `HANA-SYN-006`, `HANA-SYN-040`, and `HANA-SYN-041`. A section containing `##IF` / `##ifdef` ... `##endif` conditional compilation is skipped by `HANA-SYN-041` and `HANA-SYN-042`.
+- **De-duplication:** one diagnostic per statement; nothing is reported for a statement that already carries any diagnostic (the existing `HANA-SYN-021` / `023` / `024` / `025` / `027` rules take precedence), and sections with `HANA-SYN-003` / `HANA-SYN-020` errors are skipped.
+- **Case Sensitivity:** SQL keywords are case-insensitive, so mixed-case spellings such as `FROm` are a valid `FROM` and are never reported.
+- **Diagnostic Examples:**
+  - `Unexpected 'eeeeee' after FROM item; expected ',', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'ON', 'USING', 'WHERE', ....`
+  - `Unexpected 'y' after ORDER BY item; expected ',', 'ASC', 'DESC', 'NULLS', 'LIMIT', 'OFFSET', 'FOR', 'WITH', 'INTO', ';'.`
+  - `Unknown keyword 'WHEREE' after table reference 't'. Did you mean 'WHERE'?` (`HANA-SYN-021`)
+  - `Unexpected 'junk' after variable initializer; expected ';'.`
+- **QuickFix (`HANA-SYN-021` only):**
+  - **Before:**
+
+    ```sql
+    SELECT a, COUNT(*) FROM t GROUPP BY a;
+    ```
+
+  - **After:**
+
+    ```sql
+    SELECT a, COUNT(*) FROM t GROUP BY a;
     ```
 
 ---
