@@ -1,4 +1,5 @@
 import { type Token } from '../formatter/tokenizer';
+import { parseRoutineHeader } from './sql-header';
 import { findLineNumber } from './sql-order';
 import {
   type AnalyzerDiagnostic,
@@ -195,32 +196,6 @@ function scanUntilClauseKeyword(
   return { targetIdx: -1, nextIdx: tokens.length };
 }
 
-/**
- * Checks whether `tokens[idx..]` begins a routine header option after `RETURNS` (used so `RETURNS <type>`
- * does not swallow `LANGUAGE`, `SQL SECURITY`, `DEFAULT SCHEMA`, etc.).
- */
-function isFunctionHeaderBoundary(tokens: readonly Token[], idx: number): boolean {
-  const up = wordUpper(tokens[idx]);
-  if (!up) return tokens[idx]?.text === ';';
-  const nextUp = wordUpper(tokens[idx + 1]);
-  const thirdUp = wordUpper(tokens[idx + 2]);
-  if (up === 'AS' || up === 'BEGIN' || up === 'LANGUAGE' || up === 'DETERMINISTIC' || up === 'CONFIGURATION') {
-    return true;
-  }
-  if (up === 'SQL' && nextUp === 'SECURITY') return true;
-  if (up === 'DEFAULT' && nextUp === 'SCHEMA') return true;
-  if (up === 'READS' && nextUp === 'SQL') return true;
-  if (up === 'WITH' && (nextUp === 'ENCRYPTION' || nextUp === 'RESULT' || nextUp === 'PARAMETERS')) return true;
-  if (up === 'AUTOCOMMIT' && nextUp === 'DDL') return true;
-  if (up === 'STRUCTURED' && nextUp === 'FILTER' && thirdUp === 'CHECK') return true;
-  if (up === 'NO' && nextUp === 'STRUCTURED' && wordUpper(tokens[idx + 2]) === 'FILTER') return true;
-  if (up === 'VARIABLE' && nextUp === 'CACHE') return true;
-  if (up === 'HEADER' && nextUp === 'ONLY') return true;
-  if ((up === 'SEQUENTIAL' || up === 'PARALLEL') && nextUp === 'EXECUTION') return true;
-  if (up === 'AUTONOMOUS' && nextUp === 'TRANSACTION') return true;
-  return false;
-}
-
 function makeVisibilityFixes(insertAt: number): readonly CodeFixSuggestion[] {
   return [
     {
@@ -391,444 +366,217 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
   }
 
   /**
-   * Attempts to parse and validate a routine/library/trigger/`DO` header at statement start.
+   * Parses a routine/library/trigger/`DO` header at statement start with the consuming header parser
+   * (`parseRoutineHeader`), reports its syntax issues (`HANA-SYN-021` / `HANA-SYN-040`), and validates
+   * clause placement and compatibility (`HANA-SYN-028`).
    * Returns `nextIdx` pointing immediately after `BEGIN` if a block was opened, or after `;`/EOF otherwise.
    */
   const tryParseRoutineHeader = (startIdx: number, inLibrary: boolean): ParsedRoutineResult => {
-    let i = startIdx;
-    let isAlter = false;
-    let isVirtual = false;
+    const hdr = parseRoutineHeader(codeTokens, startIdx, { inLibrary });
+    if (!hdr) return { handled: false, nextIdx: startIdx };
 
-    const firstUp = wordUpper(codeTokens[i]);
-    if (inLibrary && (firstUp === 'PUBLIC' || firstUp === 'PRIVATE')) {
-      i++;
-    } else if (!inLibrary) {
-      if (firstUp === 'CREATE') {
-        i++;
-        if (wordUpper(codeTokens[i]) === 'OR' && wordUpper(codeTokens[i + 1]) === 'REPLACE') {
-          i += 2;
-        }
-      } else if (firstUp === 'ALTER') {
-        isAlter = true;
-        i++;
-      } else if (firstUp === 'VIRTUAL') {
-        isVirtual = true;
-        i++;
+    // A missing / extra bracket inside the header (already reported as HANA-SYN-003) desynchronizes clause
+    // parsing, so structural header issues are suppressed for that header; word-local typos are kept.
+    const hdrStart = codeTokens[startIdx].start;
+    const hdrEnd = codeTokens[Math.min(hdr.nextIdx, codeTokens.length) - 1]?.end ?? hdrStart;
+    const inHeader = (off: number): boolean => off >= hdrStart && off < hdrEnd;
+    const hasDelimiterError =
+      [...unclosedStarts.keys()].some(inHeader) || [...unmatchedCloseStarts].some(inHeader);
+
+    for (const iss of hdr.issues) {
+      const tok = codeTokens[iss.tokIdx];
+      if (!tok) continue;
+      if (hasDelimiterError && iss.ruleId === 'HANA-SYN-040') continue;
+      const fixes: CodeFixSuggestion[] = [];
+      if (iss.replaceWith !== undefined) {
+        fixes.push({
+          title: `Replace '${tok.text}' with '${iss.replaceWith}'`,
+          kind: 'quickfix',
+          isPreferred: true,
+          edits: [{ start: baseOffset + tok.start, end: baseOffset + tok.end, newText: iss.replaceWith }],
+        });
+      } else if (iss.insertBefore !== undefined) {
+        fixes.push({
+          title: `Insert '${iss.insertBefore.trim()}'`,
+          kind: 'quickfix',
+          isPreferred: true,
+          edits: [{ start: baseOffset + tok.start, end: baseOffset + tok.start, newText: iss.insertBefore }],
+        });
       }
+      emitDiag(tok, iss.ruleId, iss.message, 'error', undefined, fixes);
     }
 
-    const kindTok = codeTokens[i];
-    const kindUp = wordUpper(kindTok);
-    if (!kindTok || kindTok.type !== 'word') {
-      return { handled: false, nextIdx: startIdx };
+    const kindTok = codeTokens[hdr.kindIdx];
+    if (hdr.kind === 'do') {
+      return hdr.beginIdx >= 0
+        ? { handled: true, nextIdx: hdr.nextIdx, openedKind: 'begin', openedRoutine: createRoutineContext('do') }
+        : { handled: true, nextIdx: hdr.nextIdx };
     }
-
-    // Anonymous DO [(params)] BEGIN ... END block (top-level only)
-    if (kindUp === 'DO' && !inLibrary && i === startIdx) {
-      const nextTok = codeTokens[i + 1];
-      if (nextTok?.text === '(' || wordUpper(nextTok) === 'BEGIN') {
-        let cur = i + 1;
-        if (nextTok.text === '(') {
-          const closeIdx = findMatchingParen(codeTokens, cur);
-          cur = closeIdx >= 0 ? closeIdx + 1 : cur + 1;
-        }
-        if (wordUpper(codeTokens[cur]) === 'BEGIN') {
-          return {
+    if (hdr.kind === 'trigger') {
+      return hdr.beginIdx >= 0
+        ? {
             handled: true,
-            nextIdx: cur + 1,
+            nextIdx: hdr.nextIdx,
             openedKind: 'begin',
-            openedRoutine: createRoutineContext('do'),
-          };
-        }
-      }
-      return { handled: false, nextIdx: startIdx };
-    }
-
-    if (kindUp === 'TRIGGER' && !inLibrary) {
-      i++;
-      while (i < codeTokens.length) {
-        const up = wordUpper(codeTokens[i]);
-        if (codeTokens[i].text === ';') return { handled: true, nextIdx: i + 1 };
-        if (up === 'BEGIN') {
-          return {
-            handled: true,
-            nextIdx: i + 1,
-            openedKind: 'begin',
-            openedRoutine: createRoutineContext('trigger', { isAlter }),
-          };
-        }
-        if (codeTokens[i].text === '(') {
-          const closeIdx = findMatchingParen(codeTokens, i);
-          if (closeIdx >= 0) {
-            i = closeIdx + 1;
-            continue;
+            openedRoutine: createRoutineContext('trigger', { isAlter: hdr.isAlter }),
           }
-        }
-        i++;
-      }
-      return { handled: true, nextIdx: i };
+        : { handled: true, nextIdx: hdr.nextIdx };
     }
-
-    if (kindUp === 'LIBRARY' && !inLibrary) {
-      i++;
-      i = skipQualifiedName(i);
-      while (i < codeTokens.length) {
-        const up = wordUpper(codeTokens[i]);
-        if (codeTokens[i].text === ';') return { handled: true, nextIdx: i + 1 };
-        if (up === 'BEGIN') {
-          return {
+    if (hdr.kind === 'library') {
+      return hdr.beginIdx >= 0
+        ? {
             handled: true,
-            nextIdx: i + 1,
+            nextIdx: hdr.nextIdx,
             openedKind: 'library_root',
-            openedRoutine: createRoutineContext('library', { isAlter }),
-          };
-        }
-        i++;
-      }
-      return { handled: true, nextIdx: i };
-    }
-
-    if (kindUp !== 'PROCEDURE' && kindUp !== 'FUNCTION') {
-      return { handled: false, nextIdx: startIdx };
-    }
-
-    const isFunction = kindUp === 'FUNCTION';
-    const isProcedure = kindUp === 'PROCEDURE';
-    i++;
-    i = skipQualifiedName(i);
-
-    // Non-body management ALTER forms (`ALTER PROCEDURE p RECOMPILE`, `ALTER PROCEDURE/FUNCTION x ENCRYPTION ON`)
-    if (isAlter) {
-      const afterNameUp = wordUpper(codeTokens[i]);
-      if (afterNameUp === 'RECOMPILE' || afterNameUp === 'ENCRYPTION') {
-        while (i < codeTokens.length && codeTokens[i].text !== ';') i++;
-        return { handled: true, nextIdx: codeTokens[i]?.text === ';' ? i + 1 : i };
-      }
-    }
-
-    // Parameter list `(...)`
-    if (codeTokens[i]?.text === '(') {
-      const closeIdx = findMatchingParen(codeTokens, i);
-      if (closeIdx >= 0) {
-        let pDepth = 0;
-        let atParamStart = true;
-        for (let p = i + 1; p < closeIdx; p++) {
-          const pt = codeTokens[p];
-          if (pt.text === '(' || pt.text === '[') {
-            pDepth++;
-            atParamStart = false;
-            continue;
+            openedRoutine: createRoutineContext('library', { isAlter: hdr.isAlter }),
           }
-          if (pt.text === ')' || pt.text === ']') {
-            if (pDepth > 0) pDepth--;
-            atParamStart = false;
-            continue;
-          }
-          if (pDepth === 0 && pt.text === ',') {
-            atParamStart = true;
-            continue;
-          }
-          if (atParamStart && pDepth === 0) {
-            atParamStart = false;
-            const pUp = wordUpper(pt);
-            if (isFunction && (pUp === 'OUT' || pUp === 'INOUT')) {
-              emitDiag(
-                pt,
-                'HANA-SYN-028',
-                `Parameter mode '${pUp}' is not allowed in a FUNCTION header; functions only support 'IN' parameters.`
-              );
-            }
+        : { handled: true, nextIdx: hdr.nextIdx };
+    }
+    if (hdr.isManagementForm) return { handled: true, nextIdx: hdr.nextIdx };
+
+    const isFunction = hdr.kind === 'function';
+    const isProcedure = hdr.kind === 'procedure';
+
+    // Parameter modes: functions only take IN parameters.
+    if (isFunction && hdr.paramOpenIdx >= 0 && hdr.paramCloseIdx > hdr.paramOpenIdx) {
+      let pDepth = 0;
+      let atParamStart = true;
+      for (let p = hdr.paramOpenIdx + 1; p < hdr.paramCloseIdx; p++) {
+        const pt = codeTokens[p];
+        if (pt.text === '(' || pt.text === '[') {
+          pDepth++;
+          atParamStart = false;
+        } else if (pt.text === ')' || pt.text === ']') {
+          if (pDepth > 0) pDepth--;
+          atParamStart = false;
+        } else if (pDepth === 0 && pt.text === ',') {
+          atParamStart = true;
+        } else if (atParamStart && pDepth === 0) {
+          atParamStart = false;
+          const pUp = wordUpper(pt);
+          if (pUp === 'OUT' || pUp === 'INOUT') {
+            emitDiag(
+              pt,
+              'HANA-SYN-028',
+              `Parameter mode '${pUp}' is not allowed in a FUNCTION header; functions only support 'IN' parameters.`
+            );
           }
         }
-        i = closeIdx + 1;
-      } else {
-        i++;
       }
     }
 
-    let sawAs = false;
-    let sawReturns = false;
-    let returnKind: 'none' | 'table' | 'scalar' = 'none';
-    const returnVarNames = new Set<string>();
-    let firstTrailingOptionName: string | undefined;
+    for (const u of hdr.usingIdxs) {
+      if (!u.afterAs) {
+        emitDiag(
+          codeTokens[u.tokIdx],
+          'HANA-SYN-028',
+          `'USING' library declaration must appear after 'AS' (or at the start of root 'BEGIN').`
+        );
+      }
+    }
+
+    // Clause placement, duplicates, and kind compatibility.
     const seenClauses = new Set<string>();
+    let firstTrailingOptionName: string | undefined;
+    let sawReturns = false;
     let hasReadsSqlData = false;
     let hasDeterministic = false;
     let hasAutocommitDdl = false;
     let autocommitTok: Token | undefined;
-    let hasForeignLanguage = false;
-    let isHeaderOnly = false;
-
-    const recordClause = (tok: Token, key: string, label: string, isTrailingOption: boolean): void => {
-      if (sawAs) {
-        emitDiag(tok, 'HANA-SYN-028', `Header clause '${label}' must appear before 'AS'.`);
-      } else if (seenClauses.has(key)) {
-        emitDiag(tok, 'HANA-SYN-028', `Duplicate '${label}' clause in routine header.`);
-      } else {
-        seenClauses.add(key);
-        if (isTrailingOption && !firstTrailingOptionName) {
-          firstTrailingOptionName = label;
-        }
-      }
-    };
-
-    const finalizeHeaderChecks = (): void => {
-      if (isProcedure && hasReadsSqlData && hasAutocommitDdl && autocommitTok) {
-        emitDiag(
-          autocommitTok,
-          'HANA-SYN-028',
-          `'AUTOCOMMIT DDL' is not allowed in a 'READS SQL DATA' procedure.`
-        );
-      }
-      if (isFunction && !isAlter && !sawReturns) {
-        emitDiag(kindTok, 'HANA-SYN-028', `Missing 'RETURNS' clause in FUNCTION header.`);
-      }
-    };
-
-    while (i < codeTokens.length) {
-      const tok = codeTokens[i];
-      const up = wordUpper(tok);
-      const nextUp = wordUpper(codeTokens[i + 1]);
-      const thirdUp = wordUpper(codeTokens[i + 2]);
-
-      if (tok.text === ';') {
-        finalizeHeaderChecks();
-        return { handled: true, nextIdx: i + 1 };
-      }
-
-      if (up === 'BEGIN') {
-        finalizeHeaderChecks();
-        if (hasForeignLanguage) {
-          // Foreign bodies (R/RLANG/GRAPH/etc.) are not SQLScript
-          return { handled: true, nextIdx: i + 1 };
-        }
-        const routineKind: RoutineKind = isProcedure
-          ? 'procedure'
-          : returnKind === 'table'
-            ? 'table_function'
-            : 'scalar_function';
-        return {
-          handled: true,
-          nextIdx: i + 1,
-          openedKind: 'begin',
-          openedRoutine: createRoutineContext(routineKind, {
-            isAlter,
-            isVirtual,
-            hasReadsSqlData,
-            hasDeterministic,
-            hasAutocommitDdl,
-            hasForeignLanguage,
-            hasExplicitReturns: sawReturns,
-            returnVarNames,
-          }),
-        };
-      }
-
-      if (up === 'AS') {
-        sawAs = true;
-        i++;
-        continue;
-      }
-
-      if (up === 'USING') {
-        if (!sawAs) {
+    for (const cl of hdr.clauses) {
+      const tok = codeTokens[cl.tokIdx];
+      switch (cl.key) {
+        case 'RETURNS':
+          if (isProcedure) {
+            emitDiag(tok, 'HANA-SYN-028', `'RETURNS' clause is not allowed in a PROCEDURE header; use OUT/INOUT parameters instead.`);
+          } else if (cl.afterAs) {
+            emitDiag(tok, 'HANA-SYN-028', `Header clause 'RETURNS' must appear before 'AS'.`);
+          } else if (seenClauses.has('RETURNS')) {
+            emitDiag(tok, 'HANA-SYN-028', `Duplicate 'RETURNS' clause in FUNCTION header.`);
+          } else {
+            seenClauses.add('RETURNS');
+            sawReturns = true;
+            if (firstTrailingOptionName) {
+              emitDiag(tok, 'HANA-SYN-028', `'RETURNS' clause must appear before '${firstTrailingOptionName}' in FUNCTION header.`);
+            }
+          }
+          continue;
+        case 'SEQUENTIAL EXECUTION':
+        case 'PARALLEL EXECUTION':
           emitDiag(
             tok,
             'HANA-SYN-028',
-            `'USING' library declaration must appear after 'AS' (or at the start of root 'BEGIN').`
+            `'${cl.key}' must appear immediately after 'BEGIN' (or branch keyword), not in the routine header.`
           );
-        }
-        i = consumeUsingStmt(i);
-        continue;
-      }
-
-      if (up === 'RETURNS') {
-        if (isProcedure) {
-          emitDiag(
-            tok,
-            'HANA-SYN-028',
-            `'RETURNS' clause is not allowed in a PROCEDURE header; use OUT/INOUT parameters instead.`
-          );
-        } else if (sawAs) {
-          emitDiag(tok, 'HANA-SYN-028', `Header clause 'RETURNS' must appear before 'AS'.`);
-        } else if (seenClauses.has('RETURNS')) {
-          emitDiag(tok, 'HANA-SYN-028', `Duplicate 'RETURNS' clause in FUNCTION header.`);
-        } else {
-          seenClauses.add('RETURNS');
-          sawReturns = true;
-          if (firstTrailingOptionName) {
-            emitDiag(
-              tok,
-              'HANA-SYN-028',
-              `'RETURNS' clause must appear before '${firstTrailingOptionName}' in FUNCTION header.`
-            );
+          continue;
+        case 'AUTONOMOUS TRANSACTION':
+          emitDiag(tok, 'HANA-SYN-028', `'AUTONOMOUS TRANSACTION' must appear immediately after 'BEGIN', not in the routine header.`);
+          continue;
+        case 'AUTOCOMMIT DDL':
+          if (isFunction) {
+            emitDiag(tok, 'HANA-SYN-028', `'AUTOCOMMIT DDL' is not allowed in a FUNCTION header.`);
+            continue;
           }
-        }
-        i++;
-        if (wordUpper(codeTokens[i]) === 'TABLE') {
-          returnKind = 'table';
-          i++;
-          if (codeTokens[i]?.text === '(') {
-            const closeIdx = findMatchingParen(codeTokens, i);
-            i = closeIdx >= 0 ? closeIdx + 1 : i + 1;
-          }
-        } else {
-          if (returnKind !== 'table') returnKind = 'scalar';
-          let pDepth = 0;
-          let expectingRetVar = true;
-          while (i < codeTokens.length) {
-            const rt = codeTokens[i];
-            if (rt.text === '(') {
-              pDepth++;
-              expectingRetVar = false;
-              i++;
-              continue;
-            }
-            if (rt.text === ')') {
-              if (pDepth > 0) pDepth--;
-              expectingRetVar = false;
-              i++;
-              continue;
-            }
-            if (pDepth === 0 && isFunctionHeaderBoundary(codeTokens, i)) {
-              break;
-            }
-            if (pDepth === 0 && rt.text === ',') {
-              expectingRetVar = true;
-              i++;
-              continue;
-            }
-            if (
-              expectingRetVar &&
-              pDepth === 0 &&
-              (rt.type === 'word' || rt.type === 'qident') &&
-              codeTokens[i + 1] &&
-              codeTokens[i + 1].text !== '(' &&
-              codeTokens[i + 1].text !== ',' &&
-              !isFunctionHeaderBoundary(codeTokens, i + 1)
-            ) {
-              returnVarNames.add(rt.type === 'qident' ? rt.text : rt.text.toUpperCase());
-              expectingRetVar = false;
-            }
-            i++;
-          }
-        }
-        continue;
-      }
-
-      if (up === 'LANGUAGE') {
-        recordClause(tok, 'LANGUAGE', 'LANGUAGE', true);
-        if (nextUp && nextUp !== 'SQLSCRIPT' && codeTokens[i + 1]?.type === 'word') {
-          hasForeignLanguage = true;
-        }
-        i += codeTokens[i + 1] && !isFunctionHeaderBoundary(codeTokens, i + 1) ? 2 : 1;
-        continue;
-      }
-
-      if (up === 'SQL' && nextUp === 'SECURITY') {
-        recordClause(tok, 'SQL SECURITY', 'SQL SECURITY', true);
-        i += 2;
-        if (wordUpper(codeTokens[i]) === 'DEFINER' || wordUpper(codeTokens[i]) === 'INVOKER') i++;
-        continue;
-      }
-
-      if (up === 'DEFAULT' && nextUp === 'SCHEMA') {
-        recordClause(tok, 'DEFAULT SCHEMA', 'DEFAULT SCHEMA', true);
-        i += 2;
-        if (isSimpleIdOrIdent(codeTokens[i]) && !isFunctionHeaderBoundary(codeTokens, i)) {
-          i++;
-        }
-        continue;
-      }
-
-      if (up === 'READS' && nextUp === 'SQL' && thirdUp === 'DATA') {
-        recordClause(tok, 'READS SQL DATA', 'READS SQL DATA', true);
-        hasReadsSqlData = true;
-        i += 3;
-        continue;
-      }
-
-      if (up === 'DETERMINISTIC') {
-        recordClause(tok, 'DETERMINISTIC', 'DETERMINISTIC', true);
-        hasDeterministic = true;
-        i++;
-        continue;
-      }
-
-      if (up === 'WITH' && nextUp === 'ENCRYPTION') {
-        recordClause(tok, 'WITH ENCRYPTION', 'WITH ENCRYPTION', true);
-        i += 2;
-        continue;
-      }
-
-      if (up === 'AUTOCOMMIT' && nextUp === 'DDL') {
-        if (isFunction) {
-          emitDiag(tok, 'HANA-SYN-028', `'AUTOCOMMIT DDL' is not allowed in a FUNCTION header.`);
-        } else {
-          recordClause(tok, 'AUTOCOMMIT DDL', 'AUTOCOMMIT DDL', true);
           hasAutocommitDdl = true;
           autocommitTok = tok;
-        }
-        i += 2;
-        if (wordUpper(codeTokens[i]) === 'ON' || wordUpper(codeTokens[i]) === 'OFF') i++;
-        continue;
+          break;
+        case 'STRUCTURED FILTER CHECK':
+          if (isProcedure) {
+            emitDiag(tok, 'HANA-SYN-028', `'STRUCTURED FILTER CHECK' is only supported in FUNCTION headers.`);
+            continue;
+          }
+          break;
+        case 'READS SQL DATA':
+          hasReadsSqlData = true;
+          break;
+        case 'DETERMINISTIC':
+          hasDeterministic = true;
+          break;
+        default:
+          break;
       }
-
-      if ((up === 'STRUCTURED' && nextUp === 'FILTER' && thirdUp === 'CHECK') || (up === 'NO' && nextUp === 'STRUCTURED' && thirdUp === 'FILTER')) {
-        const isNo = up === 'NO';
-        if (isProcedure) {
-          emitDiag(tok, 'HANA-SYN-028', `'STRUCTURED FILTER CHECK' is only supported in FUNCTION headers.`);
-        } else {
-          recordClause(tok, 'STRUCTURED FILTER CHECK', 'STRUCTURED FILTER CHECK', true);
-        }
-        i += isNo ? 4 : 3;
-        continue;
+      if (cl.afterAs) {
+        emitDiag(tok, 'HANA-SYN-028', `Header clause '${cl.key}' must appear before 'AS'.`);
+      } else if (seenClauses.has(cl.key)) {
+        emitDiag(tok, 'HANA-SYN-028', `Duplicate '${cl.key}' clause in routine header.`);
+      } else {
+        seenClauses.add(cl.key);
+        if (!firstTrailingOptionName && cl.key !== 'CONFIGURATION' && cl.key !== 'AT') firstTrailingOptionName = cl.key;
       }
-
-      if ((up === 'SEQUENTIAL' || up === 'PARALLEL') && nextUp === 'EXECUTION') {
-        emitDiag(
-          tok,
-          'HANA-SYN-028',
-          `'${up} EXECUTION' must appear immediately after 'BEGIN' (or branch keyword), not in the routine header.`
-        );
-        i += 2;
-        continue;
-      }
-
-      if (up === 'AUTONOMOUS' && nextUp === 'TRANSACTION') {
-        emitDiag(
-          tok,
-          'HANA-SYN-028',
-          `'AUTONOMOUS TRANSACTION' must appear immediately after 'BEGIN', not in the routine header.`
-        );
-        i += 2;
-        continue;
-      }
-
-      if (up === 'HEADER' && nextUp === 'ONLY') {
-        isHeaderOnly = true;
-        i += 2;
-        if (wordUpper(codeTokens[i]) === 'ON' && wordUpper(codeTokens[i + 1]) === 'INVALID') i += 2;
-        continue;
-      }
-
-      // VIRTUAL / XSC additional header options (`CONFIGURATION ... AT ...`, `WITH RESULT VIEW ...`, `VARIABLE CACHE ...`)
-      if (tok.text === '(') {
-        const closeIdx = findMatchingParen(codeTokens, i);
-        i = closeIdx >= 0 ? closeIdx + 1 : i + 1;
-        continue;
-      }
-
-      if (isVirtual || isHeaderOnly || up === 'CONFIGURATION' || up === 'VARIABLE' || up === 'WITH') {
-        i++;
-        continue;
-      }
-
-      i++;
     }
 
-    finalizeHeaderChecks();
-    return { handled: true, nextIdx: i };
+    if (isProcedure && hasReadsSqlData && hasAutocommitDdl && autocommitTok) {
+      emitDiag(autocommitTok, 'HANA-SYN-028', `'AUTOCOMMIT DDL' is not allowed in a 'READS SQL DATA' procedure.`);
+    }
+    if (isFunction && !hdr.isAlter && !hdr.isVirtual && !sawReturns && kindTok) {
+      emitDiag(kindTok, 'HANA-SYN-028', `Missing 'RETURNS' clause in FUNCTION header.`);
+    }
+
+    const hasForeignLanguage = hdr.language !== null && hdr.language !== 'SQLSCRIPT';
+    if (hdr.beginIdx < 0 || hasForeignLanguage) {
+      // No body, or a foreign (R/RLANG/GRAPH/...) body that is not SQLScript.
+      return { handled: true, nextIdx: hdr.nextIdx };
+    }
+    const routineKind: RoutineKind = isProcedure
+      ? 'procedure'
+      : hdr.returnKind === 'table'
+        ? 'table_function'
+        : 'scalar_function';
+    return {
+      handled: true,
+      nextIdx: hdr.nextIdx,
+      openedKind: 'begin',
+      openedRoutine: createRoutineContext(routineKind, {
+        isAlter: hdr.isAlter,
+        isVirtual: hdr.isVirtual,
+        hasReadsSqlData,
+        hasDeterministic,
+        hasAutocommitDdl,
+        hasForeignLanguage,
+        hasExplicitReturns: sawReturns,
+        returnVarNames: hdr.returnVarNames,
+      }),
+    };
   };
 
   /**

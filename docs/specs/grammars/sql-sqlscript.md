@@ -128,53 +128,102 @@ TRUE, UNION, UNKNOWN, USING, UTCTIMESTAMP, VALUES, WHEN, WHERE, WHILE, WITH
 ### 4.1 SQLScript Procedures, Functions, Libraries & Imperative Constructs
 
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/002_pages_31_60.md (Pages 31–270)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md (CREATE / ALTER PROCEDURE, CREATE / ALTER FUNCTION, User-Defined Libraries)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (CREATE PROCEDURE Statement, `READS SQL DATA WITH RESULT VIEW`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/026_pages_751_780.md (CREATE TRIGGER Statement)
+
+Header clauses `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` are accepted in any order before `AS` by the consuming header parser (`src/analyzer/sql-header.ts`); the canonical order below is enforced only where `HANA-SYN-028` says so (`RETURNS` first on functions). Block modifiers (`SEQUENTIAL EXECUTION`, `PARALLEL EXECUTION`, `AUTONOMOUS TRANSACTION`) belong after `BEGIN`, never in the header. Every token from the header start through `AS` -> `{ using_library_decl }` -> `BEGIN` (or `HEADER ONLY`) must be consumed by these productions (`HANA-SYN-040`).
 
 ```ebnf
 (* 1. Procedure Definition (Catalog DDL & HDI Headerless .hdbprocedure) *)
 procedure_stmt ::=
-    [ "CREATE" [ "OR" "REPLACE" ] ] "PROCEDURE" object_name
+    [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" ] "PROCEDURE" object_name
     [ "(" [ proc_param { "," proc_param } ] ")" ]
-    [ "LANGUAGE" ( "SQLSCRIPT" | "GRAPH" | "R" | "AFLLANG" ) ]
+    [ "LANGUAGE" ( "SQLSCRIPT" | "GRAPH" | "R" | "RLANG" | "AFLLANG" ) ]
     [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
     [ "DEFAULT" "SCHEMA" schema_name ]
     [ "READS" "SQL" "DATA" [ "WITH" "RESULT" "VIEW" view_name ] ]
-    [ "SEQUENTIAL" "EXECUTION" ]
+    [ variable_cache_clause ]
+    [ "DETERMINISTIC" ]
+    [ "WITH" "ENCRYPTION" ]
     [ "AUTOCOMMIT" "DDL" ( "ON" | "OFF" ) ]
     "AS"
     { using_library_decl }
-    proc_block ;
+    ( proc_block | "HEADER" "ONLY" ) ;
+
+alter_routine_mgmt ::=                                   (* option-only / management forms, no body *)
+    "ALTER" ( "PROCEDURE" | "FUNCTION" ) object_name
+    ( "RECOMPILE" ... | "ENCRYPTION" "ON" | ( "ADD" | "DROP" ) variable_cache_clause
+    | [ "NO" ] "STRUCTURED" "FILTER" "CHECK" ) ";" ;
 
 proc_param ::=
     [ "IN" | "OUT" | "INOUT" ] identifier ( param_type | "TABLE" "(" column_def_list ")" | " TABLE (...)" )
     [ "DEFAULT" ( expression | "EMPTY" ) ] ;
+
+variable_cache_clause ::=
+    "VARIABLE" "CACHE" "ON" variable_entry [ ( "ENABLE" | "DISABLE" | "AUTOMATIC" ) ]
+    { "," variable_entry [ ( "ENABLE" | "DISABLE" | "AUTOMATIC" ) ] } ;
+variable_entry ::= identifier | "(" identifier { "," identifier } ")" ;
 
 using_library_decl ::=
     "USING" [ "SYS" "." ] identifier "AS" identifier ";" ;
 
 (* 2. User-Defined Function Definition (.hdbfunction, .hdbtablefunction, .hdbscalarfunction) *)
 function_stmt ::=
-    [ "CREATE" [ "OR" "REPLACE" ] ] "FUNCTION" object_name
+    [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" ] "FUNCTION" object_name
     [ "(" [ func_param { "," func_param } ] ")" ]
-    "RETURNS" ( return_table_spec | return_scalar_list )
+    "RETURNS" ( "TABLE" "(" column_def_list ")" | return_scalar_list )   (* optional on ALTER *)
     [ "LANGUAGE" ( "SQLSCRIPT" | "GRAPH" ) ]
     [ "SQL" "SECURITY" ( "DEFINER" | "INVOKER" ) ]
     [ "DEFAULT" "SCHEMA" schema_name ]
     [ "READS" "SQL" "DATA" ]
+    [ variable_cache_clause ]
     [ "DETERMINISTIC" ]
-    [ "CACHE" | "NO" "CACHE" ]
+    [ "WITH" "ENCRYPTION" ]
+    [ [ "NO" ] "STRUCTURED" "FILTER" "CHECK" ]
     "AS"
     { using_library_decl }
-    proc_block ;
+    ( [ "HEADER" "ONLY" "ON" "INVALID" ] proc_block [ cache_clause ] | "HEADER" "ONLY" ) ;
+
+return_scalar_list ::= [ identifier ] sql_type [ "ARRAY" ] { "," [ identifier ] sql_type [ "ARRAY" ] } ;
+cache_clause ::= "WITH" [ "STATIC" ] "CACHE" [ "NAME" identifier ] [ "RETENTION" unsigned_integer ]
+                 [ "OF" projection_list ] [ "FILTER" condition ] ;     (* after END, table UDFs only *)
+
+(* 2b. Virtual routines [HDI] [CLOUD] (.hdbvirtualprocedure, .hdbvirtualfunction): remote adapter options
+   such as "CONFIGURATION" string_literal and "AT" remote_location are accepted; other adapter-specific
+   options are not validated. *)
+virtual_routine ::=
+    [ "CREATE" [ "OR" "REPLACE" ] ] "VIRTUAL" ( "PROCEDURE" | "FUNCTION" ) object_name
+    [ "(" param_list ")" ] [ "RETURNS" ... ] { routine_option | "CONFIGURATION" string_literal | "AT" object_name }
+    [ "AS" ( proc_block | "HEADER" "ONLY" ) ] ;
 
 (* 3. SQLScript Shared & Test Library Definition (.hdblibrary) *)
 library_stmt ::=
-    [ "CREATE" [ "OR" "REPLACE" ] ] "LIBRARY" object_name
+    [ "CREATE" [ "OR" "REPLACE" ] | "ALTER" ] "LIBRARY" object_name
     [ "LANGUAGE" "SQLSCRIPT" ]
     [ "TEST" ]
     [ "DEFAULT" "SCHEMA" schema_name ]
     "AS" "BEGIN"
         { [ "PUBLIC" | "PRIVATE" ] ( variable_decl | procedure_member | function_member ) }
     "END" ;
+(* System documentation shows SYS.SQLSCRIPT_* signatures as "AS BUILTIN [BEGIN ... END]"; accepted, not user syntax. *)
+
+(* 3b. Trigger Definition (.hdbtrigger) — no "AS" *)
+trigger_stmt ::=
+    [ "CREATE" [ "OR" "REPLACE" ] ] "TRIGGER" object_name
+    ( "BEFORE" | "AFTER" | "INSTEAD" "OF" )
+    trigger_event { "OR" trigger_event }
+    "ON" object_name
+    [ "REFERENCING" transition { "," transition } ]
+    [ "FOR" "EACH" ( "ROW" | "STATEMENT" ) ]
+    [ ( "FOLLOWS" | "PRECEDES" ) object_name { "," object_name } ]
+    [ "ONLINE" ]
+    proc_block ;
+trigger_event ::= "INSERT" | "DELETE" | "UPDATE" [ [ "EXCEPT" ] "OF" identifier { "," identifier } ] ;
+transition ::= ( "OLD" | "NEW" ) ( "ROW" | "TABLE" ) [ "AS" ] identifier ;
+
+(* 3c. Anonymous Block *)
+do_block ::= "DO" [ "(" param_list ")" ] proc_block ;
 
 (* 4. SQLScript Block & Statements *)
 proc_block ::=
