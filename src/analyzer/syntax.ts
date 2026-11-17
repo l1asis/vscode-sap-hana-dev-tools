@@ -1651,7 +1651,117 @@ const SPECIAL_CALL_NAMES = new Set<string>([
   'HASH',
   'ROUNDROBIN',
   'SET',
+  // Clause-syntax graph table function `[CLOUD]` `[HDI]`: `GRAPH WORKSPACE <ws> QUERY '<cypher>' [PARAMETERS (...)]`
+  'OPENCYPHER_TABLE',
+  // Clause-syntax hierarchy generator & navigation functions `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+  // (`HIERARCHY_COMPOSITE_ID(a, b, ...)` is a plain comma-separated scalar call and stays checked.)
+  'HIERARCHY',
+  'HIERARCHY_LEVELED',
+  'HIERARCHY_SPANTREE',
+  'HIERARCHY_TEMPORAL',
+  'HIERARCHY_ANCESTORS',
+  'HIERARCHY_ANCESTORS_AGGREGATE',
+  'HIERARCHY_DESCENDANTS',
+  'HIERARCHY_DESCENDANTS_AGGREGATE',
+  'HIERARCHY_SIBLINGS',
 ]);
+
+/** Clause-syntax hierarchy generator & navigation table functions (`<fn>(SOURCE ... START WHERE ... DEPTH ...)`). */
+const HIERARCHY_CLAUSE_FUNCTIONS = new Set<string>([
+  'HIERARCHY',
+  'HIERARCHY_LEVELED',
+  'HIERARCHY_SPANTREE',
+  'HIERARCHY_TEMPORAL',
+  'HIERARCHY_ANCESTORS',
+  'HIERARCHY_ANCESTORS_AGGREGATE',
+  'HIERARCHY_DESCENDANTS',
+  'HIERARCHY_DESCENDANTS_AGGREGATE',
+  'HIERARCHY_SIBLINGS',
+]);
+
+/**
+ * Top-level clause keywords of hierarchy functions that end a preceding `START WHERE` / `WHERE` / `JOIN ... ON`
+ * condition. These are non-reserved in SAP HANA, so they only act as terminators inside hierarchy call frames.
+ */
+const HIERARCHY_CLAUSE_TERMINATORS = new Set<string>([
+  'SOURCE',
+  'START',
+  'JOIN',
+  'MEASURES',
+  'DISTANCE',
+  'LEVELS',
+  'SIBLING',
+  'VALID',
+  'DEPTH',
+  'MULTIPARENT',
+  'ORPHAN',
+  'CYCLE',
+  'CACHE',
+  'NO',
+  'LOAD',
+  'RETAIN',
+]);
+
+/**
+ * `JSON_VALUE` / `JSON_QUERY` take `<ctx>, <path>` followed by space-separated clauses
+ * (`RETURNING <type>`, `WITH|WITHOUT [...] WRAPPER`, `<behavior> ON EMPTY`, `<behavior> ON ERROR`).
+ * Comma checking is disabled from the first clause keyword onward.
+ */
+const JSON_CLAUSE_CALL_NAMES = new Set<string>(['JSON_VALUE', 'JSON_QUERY']);
+const JSON_CALL_CLAUSE_STARTERS = new Set<string>([
+  'RETURNING',
+  'WITH',
+  'WITHOUT',
+  'ERROR',
+  'NULL',
+  'DEFAULT',
+  'EMPTY',
+  'ON',
+  'KEEP',
+  'OMIT',
+]);
+
+/** Words that may follow a complete `JSON_TABLE` column definition (behaviors and wrapper clauses). */
+const JSON_COLUMN_TRAILING_WORDS = new Set<string>([
+  'ERROR',
+  'NULL',
+  'DEFAULT',
+  'EMPTY',
+  'ARRAY',
+  'OBJECT',
+  'ON',
+  'WITH',
+  'WITHOUT',
+  'CONDITIONAL',
+  'UNCONDITIONAL',
+  'WRAPPER',
+  'KEEP',
+  'OMIT',
+  'QUOTES',
+]);
+
+/** True when `(` at `openIdx` opens a `COLUMNS (...)` list of `JSON_TABLE` (incl. `NESTED [PATH] '...' COLUMNS (...)`). */
+function isJsonTableColumnsParen(codeTokens: readonly Token[], openIdx: number): boolean {
+  const prev = openIdx > 0 ? codeTokens[openIdx - 1] : null;
+  if (!prev || prev.type !== 'word' || prev.text.toUpperCase() !== 'COLUMNS') return false;
+  let depth = 0;
+  for (let k = openIdx - 2; k >= 0; k--) {
+    const t = codeTokens[k].text;
+    if (t === ';') return false;
+    if (t === ')') depth++;
+    else if (t === '(') {
+      if (depth === 0) {
+        const owner = k > 0 ? codeTokens[k - 1] : null;
+        const ownerUp = owner?.type === 'word' ? owner.text.toUpperCase() : '';
+        if (ownerUp === 'JSON_TABLE') return true;
+        if (ownerUp === 'COLUMNS') return isJsonTableColumnsParen(codeTokens, k);
+        return false;
+      }
+      depth--;
+    }
+  }
+  return false;
+}
 
 const PARAM_MODES = new Set<string>(['IN', 'OUT', 'INOUT']);
 
@@ -1927,9 +2037,12 @@ function classifyParenFrame(
   codeTokens: readonly Token[],
   openIdx: number,
   enclosing: { readonly kind: string; readonly declPhase?: string } | undefined
-): 'params' | 'columns' | 'call' | 'skip' {
+): 'params' | 'columns' | 'call' | 'skip' | 'json_columns' {
   const listKind = isTypeListOpener(codeTokens, openIdx);
   if (listKind) return listKind;
+
+  // `JSON_TABLE(<ctx>, <path> COLUMNS (<col> <type> PATH '...' [...], NESTED [PATH] '...' COLUMNS (...)))`
+  if (isJsonTableColumnsParen(codeTokens, openIdx)) return 'json_columns';
 
   // Type parameter list inside a parameter/column declaration, e.g. DECIMAL(3, 2)
   if ((enclosing?.kind === 'params' || enclosing?.kind === 'columns') && enclosing.declPhase === 'sawType') {
@@ -2045,8 +2158,15 @@ function classifyParenFrame(
 }
 
 interface DeclParenFrame {
-  readonly kind: 'params' | 'columns' | 'call' | 'skip';
+  readonly kind: 'params' | 'columns' | 'call' | 'skip' | 'json_columns';
   readonly depth: number;
+  // For `JSON_VALUE` / `JSON_QUERY` 'call' frames: disable comma checks at the first clause keyword
+  readonly jsonClauseCall: boolean;
+  // For 'json_columns' frames (`JSON_TABLE ... COLUMNS (...)`):
+  // `start` (before an entry), `entry` (inside `<col> <type> PATH`/`NESTED ...`), `complete` (entry ended,
+  // only trailing behavior/wrapper clauses may follow), `value` (awaiting a `DEFAULT <value>` operand).
+  jsonPhase: 'start' | 'entry' | 'complete' | 'value';
+  jsonNested: boolean;
   declPhase: 'start' | 'sawName' | 'sawType' | 'inConstraint';
   lastItemEnd: number;
   awaitingTypeSegment: boolean;
@@ -2182,6 +2302,49 @@ function checkSqlMissingCommas(
     });
   };
 
+  /**
+   * Missing-comma check between `JSON_TABLE` column entries: an entry is complete after `FOR ORDINALITY`,
+   * after its `PATH '<path>'` literal, or after a nested `COLUMNS (...)`; only behavior/wrapper clauses
+   * (`ERROR|NULL|DEFAULT <v>|EMPTY ARRAY|EMPTY OBJECT ON EMPTY|ERROR`, `WITH|WITHOUT ... WRAPPER`) may follow.
+   */
+  const checkJsonTableColumnToken = (frame: DeclParenFrame, tok: Token, up: string, prev: Token | null): void => {
+    if (tok.text === ',') {
+      frame.jsonPhase = 'start';
+      frame.jsonNested = false;
+      frame.lastItemEnd = tok.end;
+      return;
+    }
+    const prevUpWord = prev?.type === 'word' ? prev.text.toUpperCase() : '';
+    switch (frame.jsonPhase) {
+      case 'start':
+        frame.jsonPhase = 'entry';
+        frame.jsonNested = up === 'NESTED';
+        break;
+      case 'entry':
+        if (up === 'ORDINALITY' && prevUpWord === 'FOR') {
+          frame.jsonPhase = 'complete';
+        } else if (tok.type === 'string' && !frame.jsonNested && prevUpWord === 'PATH') {
+          frame.jsonPhase = 'complete';
+        }
+        break;
+      case 'value':
+        if (tok.type !== 'op' && tok.text !== '.' && tok.text !== '::') frame.jsonPhase = 'complete';
+        break;
+      case 'complete':
+        if (up === 'DEFAULT' || tok.type === 'op') {
+          frame.jsonPhase = 'value';
+        } else if (JSON_COLUMN_TRAILING_WORDS.has(up)) {
+          // trailing behavior / wrapper clause
+        } else if (!isOnBrokenLine(tok)) {
+          emitMissingComma(frame.lastItemEnd, tok, `Expected ',' before JSON_TABLE column '${tok.text}'.`);
+          frame.jsonPhase = 'entry';
+          frame.jsonNested = up === 'NESTED';
+        }
+        break;
+    }
+    frame.lastItemEnd = tok.end;
+  };
+
   for (let i = 0; i < codeTokens.length; i++) {
     const tok = codeTokens[i];
     const up = tok.type === 'word' ? tok.text.toUpperCase() : '';
@@ -2267,6 +2430,9 @@ function checkSqlMissingCommas(
       parenStack.push({
         kind,
         depth: parenDepth,
+        jsonClauseCall: kind === 'call' && prev?.type === 'word' && JSON_CLAUSE_CALL_NAMES.has(prev.text.toUpperCase()),
+        jsonPhase: 'start',
+        jsonNested: false,
         declPhase: 'start',
         lastItemEnd: tok.end,
         awaitingTypeSegment: false,
@@ -2298,6 +2464,13 @@ function checkSqlMissingCommas(
         parentParen.lastItemEnd = tok.end;
         parentParen.callPrevOperandEnd = tok.end;
         parentParen.callExpectOperand = false;
+        // `NESTED [PATH] '...' COLUMNS (...)` entry ends with its nested column list
+        if (parentParen.kind === 'json_columns' && popped.kind === 'json_columns') {
+          parentParen.jsonPhase = 'complete';
+          parentParen.jsonNested = false;
+        } else if (parentParen.kind === 'json_columns' && parentParen.jsonPhase === 'value') {
+          parentParen.jsonPhase = 'complete';
+        }
       }
       const topSelAfter = selectStack[selectStack.length - 1];
       if (topSelAfter && topSelAfter.depth === parenDepth && topSelAfter.caseDepth === 0) {
@@ -2406,7 +2579,16 @@ function checkSqlMissingCommas(
         continue;
       }
 
+      if (topParen.kind === 'json_columns') {
+        checkJsonTableColumnToken(topParen, tok, up, prev);
+        continue;
+      }
+
       if (topParen.kind === 'call' && !topParen.callDisabled) {
+        if (topParen.jsonClauseCall && JSON_CALL_CLAUSE_STARTERS.has(up)) {
+          topParen.callDisabled = true;
+          continue;
+        }
         if (up === 'CASE' && prevUp !== 'END') {
           topParen.caseDepth++;
           continue;
@@ -2805,6 +2987,8 @@ interface ExprClauseState {
 interface ExprParenFrame {
   readonly kind: 'params' | 'columns' | 'skip' | 'call' | 'paren_expr';
   readonly depth: number;
+  // Clause-syntax `HIERARCHY*` generator / navigation call frame (scopes hierarchy clause terminators)
+  readonly hierarchy: boolean;
   callPendingOpTok: Token | null;
   callUnaryOpTok: Token | null;
 }
@@ -3123,6 +3307,7 @@ function checkSqlExpressionsAndClauses(
       parenFrames.push({
         kind: frameKind,
         depth: parenDepth,
+        hierarchy: frameKind === 'skip' && HIERARCHY_CLAUSE_FUNCTIONS.has(prevUp) && prev?.type === 'word',
         callPendingOpTok: null,
         callUnaryOpTok: null,
       });
@@ -3233,6 +3418,8 @@ function checkSqlExpressionsAndClauses(
         }
       }
       if (up === 'UNTIL') {
+        // `VALID FROM <expr> [EXCLUDED] UNTIL <expr> [EXCLUDED]` inside `HIERARCHY_TEMPORAL(...)` is not a loop condition
+        if (curFrame?.hierarchy && curFrame.depth === parenDepth) continue;
         pushExprAtDepth('until_cond', parenDepth);
         continue;
       }
@@ -3326,7 +3513,14 @@ function checkSqlExpressionsAndClauses(
     }
 
     // Check clause terminators
+    const inHierarchyFrame = !!curFrame && curFrame.hierarchy && curFrame.depth === parenDepth;
     const shouldTerminateExpr =
+      // `START WHERE <cond> DEPTH 1` / `JOIN t ON <cond> MEASURES (...)`: non-reserved hierarchy clause keywords
+      // end the condition only after a complete operand, so `WHERE depth = 1` keeps `depth` as a column.
+      (inHierarchyFrame &&
+        (activeExpr.kind === 'where' || activeExpr.kind === 'on') &&
+        activeExpr.state === 'expectOp' &&
+        HIERARCHY_CLAUSE_TERMINATORS.has(up)) ||
       (activeExpr.kind === 'select' && SELECT_STOP_CLAUSES.has(up) && !(up === 'GROUP' && prevUp === 'WITHIN')) ||
       ((activeExpr.kind === 'where' || activeExpr.kind === 'on' || activeExpr.kind === 'having') &&
         EXPR_CLAUSE_TERMINATORS.has(up) &&
