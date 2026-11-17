@@ -6,12 +6,15 @@ import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
 import { checkSqlLexicalIntegrity, dedupeLexicalCascade } from './sql-lexical';
+import { matchKeywordTypo } from './typo';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
   type AnalyzerDiagnostic,
   type CodeFixSuggestion,
 } from './types';
+
+export { damerauLevenshtein, matchKeywordTypo, type TypoMatchOptions } from './typo';
 
 const SQL_SYNTAX_SET = new Set<string>([...SQL_LANGUAGES, 'sql']);
 const JSON_SYNTAX_SET = new Set<string>(JSON_ARTIFACT_LANGUAGES);
@@ -134,25 +137,6 @@ const DDL_TYPO_CANDIDATES: readonly string[] = [
   'CONSTRAINT',
 ];
 
-const SHORTHAND_TYPOS: Readonly<Record<string, string>> = {
-  FUNC: 'FUNCTION',
-  FN: 'FUNCTION',
-  PROC: 'PROCEDURE',
-  PRC: 'PROCEDURE',
-  TRIG: 'TRIGGER',
-  LIB: 'LIBRARY',
-  TAB: 'TABLE',
-  TBL: 'TABLE',
-  SEQ: 'SEQUENCE',
-  SYN: 'SYNONYM',
-  PRIV: 'PRIVILEGE',
-  STRUCT: 'STRUCTURE',
-  COL: 'COLUMN',
-  ROL: 'ROLE',
-  SCHED: 'SCHEDULER',
-  STATS: 'STATISTICS',
-};
-
 const HDI_ROOT_TARGETS: Readonly<Record<string, readonly string[]>> = {
   hdbprocedure: ['PROCEDURE', 'CREATE'],
   hdbfunction: ['FUNCTION', 'CREATE'],
@@ -266,85 +250,6 @@ const CDS_TOP_KEYWORDS = new Set<string>([
 ]);
 
 const VALID_KV_KEYS_RE = /\b(?:table\.(?:schemaName|tableType|columns|primaryKey|indexes|temporary|loggingType)|schema|query|public|depends_on|import|host|port|sql|default_schema|increment_by|start_with|maxvalue|minvalue|cycles|reset_by)\b/;
-
-/** Computes Optimal String Alignment (Damerau-Levenshtein) distance between uppercase strings. */
-export function damerauLevenshtein(a: string, b: string): number {
-  const m = a.length;
-  const n = b.length;
-  if (m === 0) return n;
-  if (n === 0) return m;
-
-  const dp: number[][] = Array.from({ length: m + 1 }, () => new Array<number>(n + 1).fill(0));
-  for (let i = 0; i <= m; i++) dp[i][0] = i;
-  for (let j = 0; j <= n; j++) dp[0][j] = j;
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      let val = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
-      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
-        val = Math.min(val, dp[i - 2][j - 2] + 1);
-      }
-      dp[i][j] = val;
-    }
-  }
-  return dp[m][n];
-}
-
-export interface TypoMatchOptions {
-  readonly allowShort?: boolean;
-  readonly lowercase?: boolean;
-}
-
-/**
- * Resolves an unambiguous misspelling or anchored shorthand (e.g. `FUNC` -> `FUNCTION`)
- * against `candidates`. Returns `null` if valid, too short, ambiguous, or unrelated.
- */
-export function matchKeywordTypo(
-  rawWord: string,
-  candidates: readonly string[],
-  options: TypoMatchOptions = {}
-): string | null {
-  const upper = rawWord.toUpperCase();
-  const upperCandidates = candidates.map((c) => c.toUpperCase());
-  if (upperCandidates.includes(upper)) return null;
-
-  if (options.allowShort !== false) {
-    const shorthand = SHORTHAND_TYPOS[upper];
-    if (shorthand && upperCandidates.includes(shorthand)) {
-      return options.lowercase ? shorthand.toLowerCase() : shorthand;
-    }
-  }
-
-  if (upper.length < 4) return null;
-
-  let bestTarget: string | null = null;
-  let bestDist = Infinity;
-  let tied = false;
-
-  for (const cand of upperCandidates) {
-    const maxDist = Math.min(upper.length, cand.length) <= 5 ? 1 : 2;
-    if (Math.abs(upper.length - cand.length) > maxDist) continue;
-    const sameHead =
-      upper[0] === cand[0] ||
-      (upper.length >= 2 && cand.length >= 2 && upper[0] === cand[1] && upper[1] === cand[0]);
-    if (!sameHead) continue;
-
-    const d = damerauLevenshtein(upper, cand);
-    if (d > maxDist) continue;
-
-    if (d < bestDist) {
-      bestDist = d;
-      bestTarget = cand;
-      tied = false;
-    } else if (d === bestDist) {
-      tied = true;
-    }
-  }
-
-  if (!bestTarget || tied) return null;
-  return options.lowercase ? bestTarget.toLowerCase() : bestTarget;
-}
 
 function makeReplaceFix(title: string, start: number, end: number, replacement: string): CodeFixSuggestion {
   return {
@@ -1103,12 +1008,10 @@ function checkSqlHeaderTypos(
     }
   }
 
-  // Statement-start checks across the file (`CREATE [OR REPLACE] <TYPO>`, `ALTER <TYPO>`, `DROP <TYPO>`)
+  // Statement-start checks across the file (`CREATE [OR REPLACE] <TYPO>`, `ALTER <TYPO>`, `DROP <TYPO>`).
+  // Routine header clauses (`RETUNS`, `LANUAGE`, `INVOKR`, ...) are validated by the consuming header parser
+  // (`sql-header.ts`, run from `checkSqlScriptOrderAndContext`).
   let parenDepth = 0;
-  let routineParamSeen = false;
-  let inRoutineHeader = false;
-  let skipNextIdent = false;
-  let skipReturnSpec = 0;
 
   const pushTypo = (tok: Token, fixKw: string, message: string): void => {
     const absStart = baseOffset + tok.start;
@@ -1127,106 +1030,18 @@ function checkSqlHeaderTypos(
   for (let i = 0; i < codeTokens.length; i++) {
     const tok = codeTokens[i];
     if (tok.text === '(') {
-      if (parenDepth === 0 && routineParamSeen) {
-        // Param list opened; once it closes back to depth 0 we enter the routine header.
-      }
       parenDepth++;
       continue;
     }
     if (tok.text === ')') {
       parenDepth = Math.max(0, parenDepth - 1);
-      if (parenDepth === 0 && routineParamSeen) {
-        routineParamSeen = false;
-        inRoutineHeader = true;
-      }
-      if (skipReturnSpec > 0 && parenDepth === 0) {
-        skipReturnSpec = 0;
-      }
       continue;
     }
-    if (tok.text === ';') {
-      routineParamSeen = false;
-      inRoutineHeader = false;
-      skipNextIdent = false;
-      skipReturnSpec = 0;
-      continue;
-    }
-    if (parenDepth > 0 || tok.type !== 'word') {
-      if (parenDepth === 0 && tok.type === 'punct' && tok.text === '.') {
-        skipNextIdent = true;
-      } else if (parenDepth === 0 && tok.type === 'qident') {
-        skipNextIdent = false;
-        skipReturnSpec = 0;
-      }
-      continue;
-    }
+    if (parenDepth > 0 || tok.type !== 'word') continue;
 
     const prev = i > 0 ? codeTokens[i - 1] : null;
-    const prevUp = prev?.type === 'word' ? prev.text.toUpperCase() : prev?.text ?? '';
     const isStmtStart = !prev || prev.text === ';';
     const kw = tok.text.toUpperCase();
-
-    if (kw === 'FUNCTION' || kw === 'PROCEDURE') {
-      if (isStmtStart || prevUp === 'CREATE' || prevUp === 'REPLACE' || prevUp === 'ALTER' || prevUp === 'VIRTUAL' || prevUp === 'PUBLIC' || prevUp === 'PRIVATE') {
-        routineParamSeen = true;
-        inRoutineHeader = false;
-      }
-    }
-
-    // Routine header keywords between `)` and `BEGIN`/`AS`/`;`
-    if (inRoutineHeader) {
-      if (kw === 'BEGIN' || kw === 'AS' || kw === 'SELECT' || kw === 'WITH') {
-        inRoutineHeader = false;
-      } else if (skipNextIdent) {
-        skipNextIdent = false;
-        continue;
-      } else if (skipReturnSpec > 0) {
-        skipReturnSpec--;
-        continue;
-      } else if (kw === 'SCHEMA' || kw === 'VIEW') {
-        skipNextIdent = true;
-        continue;
-      } else if (kw === 'RETURNS') {
-        const nextTok = codeTokens[i + 1];
-        if (nextTok?.type === 'word') {
-          const nu = nextTok.text.toUpperCase();
-          if (nu !== 'TABLE') {
-            skipReturnSpec = 1;
-          }
-        }
-        continue;
-      } else if (prevUp === 'SECURITY') {
-        const fixSec = matchKeywordTypo(tok.text, ['INVOKER', 'DEFINER']);
-        if (fixSec) {
-          pushTypo(tok, fixSec, `Unknown keyword '${tok.text}' after 'SECURITY'. Did you mean '${fixSec}'?`);
-        }
-        continue;
-      } else if (prevUp === 'LANGUAGE') {
-        if (!['SQLSCRIPT', 'R', 'RLANG', 'GRAPH', 'SQL'].includes(kw)) {
-          const fixLang = matchKeywordTypo(tok.text, ['SQLSCRIPT', 'RLANG', 'GRAPH']);
-          if (fixLang) {
-            pushTypo(tok, fixLang, `Unknown keyword '${tok.text}' after 'LANGUAGE'. Did you mean '${fixLang}'?`);
-          }
-        }
-        continue;
-      } else if (kw === 'RETURN' && codeTokens[i + 1]?.text.toUpperCase() === 'TABLE') {
-        pushTypo(tok, 'RETURNS', "Expected 'RETURNS' instead of 'RETURN' before 'TABLE' in routine header.");
-        continue;
-      } else if (!ROUTINE_HEADER_VALID_WORDS.has(kw)) {
-        const fixHdr = matchKeywordTypo(tok.text, [
-          'RETURNS',
-          'LANGUAGE',
-          'SECURITY',
-          'INVOKER',
-          'DEFINER',
-          'DETERMINISTIC',
-          'SQLSCRIPT',
-        ]);
-        if (fixHdr) {
-          pushTypo(tok, fixHdr, `Unknown keyword '${tok.text}' in routine header. Did you mean '${fixHdr}'?`);
-        }
-      }
-    }
 
     if (isStmtStart && (kw === 'CREATE' || kw === 'ALTER' || kw === 'DROP')) {
       let j = i + 1;
@@ -1250,49 +1065,6 @@ function checkSqlHeaderTypos(
   // Query clause keyword typo checks (works at all paren depths for queries & subqueries)
   checkQueryClauseTypos(codeTokens, baseOffset, diagnostics);
 }
-
-const ROUTINE_HEADER_VALID_WORDS = new Set<string>([
-  'RETURNS',
-  'TABLE',
-  'ARRAY',
-  'LANGUAGE',
-  'SQLSCRIPT',
-  'RLANG',
-  'GRAPH',
-  'R',
-  'SQL',
-  'SECURITY',
-  'INVOKER',
-  'DEFINER',
-  'DEFAULT',
-  'SCHEMA',
-  'READS',
-  'MODIFIES',
-  'DATA',
-  'DETERMINISTIC',
-  'AUTOCOMMIT',
-  'DDL',
-  'DML',
-  'MEMBER',
-  'HEADER',
-  'ONLY',
-  'WITH',
-  'ENCRYPTION',
-  'RESULT',
-  'VIEW',
-  'CACHE',
-  'STATIC',
-  'DYNAMIC',
-  'CALLED',
-  'ON',
-  'NULL',
-  'INPUT',
-  'RETURNS_ON_NULL',
-  'SEQUENTIAL',
-  'EXECUTION',
-  'BEGIN',
-  'AS',
-]);
 
 const COMPARISON_AFTER_WORD_SET = new Set<string>(['=', '<>', '!=', '<', '>', '<=', '>=', '~=', '^=', 'IS', 'IN', 'LIKE', 'BETWEEN', 'NOT']);
 const QUERY_START_PREV = new Set<string>([';', '(', ':=', 'RETURN', 'BEGIN', 'THEN', 'ELSE', 'ELSEIF', 'DO', 'LOOP', 'UNION', 'ALL', 'INTERSECT', 'EXCEPT', 'MINUS']);
