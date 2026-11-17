@@ -2,6 +2,24 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.9.0] - 2026-11-17
+
+### Changed
+
+- **Specs & Roadmap (`docs/specs/SPEC_RULES.md`, `docs/specs/diagnostics/syntax-rules.md`, `ROADMAP.md`):**
+  - Documented `HANA-SYN-023` clause-syntax exclusions (`HIERARCHY*`, `OPENCYPHER_TABLE`, `JSON_VALUE` / `JSON_QUERY`), `JSON_TABLE` entry-level column list checking, and scoped `HANA-SYN-024` hierarchy clause terminators with platform tags in `docs/specs/diagnostics/syntax-rules.md`.
+  - Upgraded `docs/specs/SPEC_RULES.md` with visual/diagram distillation rules (`images_catalog.md` / `./images/*.png` source references without copying binaries), Custom-PDF `<pre>` clipping cross-checks, `HANA-SYN-XXX` diagnostic template fields (`Platform Scope`, `Diagnostic Span & Message`, multi-language fences), and aligned `system-views.json` / `xsjs-api.json` schemas; synced `ROADMAP.md` with v0.8.0 support (95 extensions, `HANA-SYN-001` – `HANA-SYN-034`, remaining Phase 3 tasks, and Phase 4 spec foundations).
+- **Contributor Rules & Packaging (`AGENTS.md`, `GEMINI.md`, `.vscodeignore`):**
+  - Split OS-scoped Antigravity / Gemini terminal execution rules from `AGENTS.md` into `GEMINI.md` and excluded both `AGENTS.md` and `GEMINI.md` from `.vsix` packaging in `.vscodeignore`.
+
+### Fixed
+
+- **Clause-Syntax SQL Function False Positives (`src/analyzer/syntax.ts`, `HANA-SYN-023`, `HANA-SYN-024`):**
+  - **`HIERARCHY*` Generators & Navigators & `OPENCYPHER_TABLE`:** Added the 9 clause-syntax `HIERARCHY*` functions (`HIERARCHY`, `HIERARCHY_LEVELED`, `HIERARCHY_SPANTREE`, `HIERARCHY_TEMPORAL`, `HIERARCHY_ANCESTORS`, `HIERARCHY_ANCESTORS_AGGREGATE`, `HIERARCHY_DESCENDANTS`, `HIERARCHY_DESCENDANTS_AGGREGATE`, `HIERARCHY_SIBLINGS`) and `OPENCYPHER_TABLE` to `SPECIAL_CALL_NAMES` while keeping `HIERARCHY_COMPOSITE_ID` comma-checked alongside nested `LEVELS (...)`, `MEASURES (...)`, `PARAMETERS (...)`, `IN (...)`, function calls, and `SOURCE` / `START` subqueries. Scoped `HIERARCHY_CLAUSE_TERMINATORS` (`SOURCE`, `START`, `JOIN`, `MEASURES`, `DISTANCE`, `LEVELS`, `SIBLING`, `VALID`, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `CACHE`, `NO`, `LOAD`, `RETAIN`) to `START WHERE` / `WHERE` / `JOIN ... ON` conditions inside top-level `HIERARCHY*` call frames after complete operands, and prevented `UNTIL` inside `HIERARCHY_TEMPORAL` `VALID FROM ... UNTIL ...` from opening a loop condition while preserving `depth` / `valid` as plain SQL column names.
+  - **`JSON_VALUE` & `JSON_QUERY`:** Stopped top-level argument comma checking at the first trailing clause keyword (`RETURNING`, `WITH`, `WITHOUT`, `ERROR`, `NULL`, `DEFAULT`, `EMPTY`, `ON`, `KEEP`, `OMIT`) while keeping `<ctx>, <path>` and nested type arguments (`RETURNING DECIMAL(10, 2)`) validated.
+  - **`JSON_TABLE` `COLUMNS (...)` Lists:** Added entry-level `json_columns` paren-frame validation (including `NESTED [PATH] '...' COLUMNS (...)`) accepting space-separated clauses (`FOR ORDINALITY`, `FORMAT JSON`, `PATH '...'`, `ON EMPTY` / `ON ERROR`, wrapper clauses) while flagging missing commas between complete column entries with the `Insert ','` QuickFix.
+  - **Tests (`test/syntax-analyzer.test.ts`):** Added positive, negative, and regression tests covering all 9 `HIERARCHY*` functions (across `.sql`, `.hdbprocedure`, `.hdbfunction`, and `.hdbview`), `HIERARCHY_COMPOSITE_ID`, `OPENCYPHER_TABLE`, `JSON_VALUE`, `JSON_QUERY`, and `JSON_TABLE`.
+
 ## [0.8.0] - 2026-11-15
 
 ### Added
