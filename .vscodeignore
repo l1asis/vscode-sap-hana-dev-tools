@@ -6,6 +6,7 @@ samples/**
 scripts/**
 test/**
 src/**
+.gitattributes
 .gitignore
 AGENTS.md
 GEMINI.md
