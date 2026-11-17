@@ -103,8 +103,8 @@ export function matchKeywordTypo(
 /**
  * Suggests the keyword a token most likely meant when it sits in a parser slot whose follow-set is known
  * (`expected`). Unlike {@link matchKeywordTypo}, the token is already known to be invalid in this slot, so
- * short keywords (`AS`, `ON`, `IN`, `OF`, `OR`, `TO`) are matched too: a 1-edit typo with the same leading
- * character (`ASd` -> `AS`, `INN` -> `IN`). Returns `null` when nothing matches unambiguously.
+ * short keywords (`AS`, `ON`, `IN`, `OF`, `OR`, `TO`) and 3-letter typos of 4-letter keywords are matched too:
+ * a 1-edit typo with the same leading character (`ASd` -> `AS`, `INN` -> `IN`, `DSC` -> `DESC`). Returns `null` when nothing matches unambiguously.
  */
 export function suggestSlotKeyword(rawWord: string, expected: readonly string[]): string | null {
   const upper = rawWord.toUpperCase();
@@ -114,7 +114,7 @@ export function suggestSlotKeyword(rawWord: string, expected: readonly string[])
   let best: string | null = null;
   let tied = false;
   for (const cand of expected) {
-    if (cand.length > 3 || upper.length < 2) continue;
+    if (cand.length > 4 || upper.length < 2 || (cand.length === 4 && upper.length !== 3)) continue;
     if (Math.abs(upper.length - cand.length) > 1 || upper[0] !== cand[0]) continue;
     if (damerauLevenshtein(upper, cand) !== 1) continue;
     if (best && best !== cand) tied = true;

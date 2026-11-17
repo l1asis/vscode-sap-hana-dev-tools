@@ -6,6 +6,7 @@ import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
 import { checkSqlLexicalIntegrity, dedupeLexicalCascade } from './sql-lexical';
+import { createClauseHooks } from './sql-clauses';
 import { checkSqlStatements } from './sql-statements';
 import { matchKeywordTypo } from './typo';
 import {
@@ -665,25 +666,54 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         diagnostics,
       });
     }
-    // 9. Statement starters & imperative assignment targets (HANA-SYN-041, HANA-SYN-021). Skipped when block
-    //    or delimiter structure is already broken, since statement boundaries cannot be trusted then.
+    // 9. Statement starters & imperative assignment targets (HANA-SYN-041, HANA-SYN-021) and consuming clause /
+    //    expression parsers (HANA-SYN-042, HANA-SYN-021). Skipped when block or delimiter structure is already
+    //    broken, since statement boundaries cannot be trusted then.
     const sectionStart = baseOffset;
     const sectionEnd = baseOffset + slice.length;
     const structureBroken = diagnostics.some(
       (d) => (d.ruleId === 'HANA-SYN-020' || d.ruleId === 'HANA-SYN-003') && d.start >= sectionStart && d.start <= sectionEnd
     );
-    if (SQLSCRIPT_BLOCK_LANGUAGES.has(languageId) && !structureBroken) {
+    // `##IF` / `##ifdef` ... `##else` ... `##endif` conditional compilation interleaves alternative code paths.
+    const hasConditionalCompilation = codeTokens.some((t) => t.type === 'word' && t.text.startsWith('##'));
+    if (!structureBroken && !hasConditionalCompilation) {
+      const isBlocked = (tok: Token): boolean =>
+        delimResult.unclosedStarts.has(tok.start) ||
+        delimResult.unmatchedCloseStarts.has(tok.start) ||
+        brokenQidentLines.has(findLineNumber(lineStarts, tok.start));
+      const hooks = createClauseHooks(
+        codeTokens,
+        (issue) => {
+          const tok = codeTokens[issue.tokIdx];
+          if (!tok || isBlocked(tok)) return;
+          diagnostics.push({
+            ruleId: issue.ruleId,
+            category: 'syntax',
+            severity: 'error',
+            message: issue.message,
+            start: baseOffset + tok.start,
+            end: baseOffset + tok.end,
+            fixes:
+              issue.replaceWith !== undefined
+                ? [makeReplaceFix(`Replace '${tok.text}' with '${issue.replaceWith}'`, baseOffset + tok.start, baseOffset + tok.end, issue.replaceWith)]
+                : [],
+          });
+        },
+        (start, end) => {
+          const from = baseOffset + codeTokens[start].start;
+          const to = baseOffset + codeTokens[Math.min(end, codeTokens.length) - 1].end;
+          return diagnostics.some((d) => d.start >= from && d.start <= to);
+        }
+      );
       checkSqlStatements({
         languageId,
         codeTokens,
         baseOffset,
-        validateTopLevel: !HDI_ROOT_TARGETS[languageId],
+        validateTopLevel: SQLSCRIPT_BLOCK_LANGUAGES.has(languageId) && !HDI_ROOT_TARGETS[languageId],
         extraTopStarters: opts.extraTopStarters,
-        isBlocked: (tok) =>
-          delimResult.unclosedStarts.has(tok.start) ||
-          delimResult.unmatchedCloseStarts.has(tok.start) ||
-          brokenQidentLines.has(findLineNumber(lineStarts, tok.start)),
+        isBlocked,
         diagnostics,
+        hooks,
       });
     }
   }
