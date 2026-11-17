@@ -36,6 +36,7 @@ All notable changes to the **Developer Tools for SAP HANA** extension will be do
 
 - **Silently Accepted Broken SQL / SQLScript (`src/analyzer/syntax.ts`):** Corrupted artifacts such as an `.hdbfunction` header ending in `SQL SECURITY INVOKER,,,,.//asd/.AWlpqwkr` followed by `ASd` previously produced zero diagnostics; stray punctuation, `//` text, misspelled header keywords, missing `AS`, bogus statements, and trailing garbage inside clauses are now reported.
 
+## [0.9.0] - 2026-11-17
 
 ### Changed
 
