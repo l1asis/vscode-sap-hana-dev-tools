@@ -1744,3 +1744,167 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
 
   assert.ok(checkedCount >= 20, `Expected to scan >= 20 sample files, scanned ${checkedCount}`);
 });
+
+function clauseSyntaxDiags(languageId: string, text: string) {
+  return syntaxDiags(languageId, text).filter((d) => d.ruleId === 'HANA-SYN-023' || d.ruleId === 'HANA-SYN-024');
+}
+
+function wrapForLanguage(languageId: string, query: string): string {
+  switch (languageId) {
+    case 'hdbprocedure':
+      return `PROCEDURE "P" (IN iv_id INT, IN iv_from DATE, IN iv_to DATE, IN iv_param INT)\nAS\nBEGIN\n  lt_res = ${query};\nEND`;
+    case 'hdbfunction':
+      return `FUNCTION "F" (iv_id INT, iv_from DATE, iv_to DATE, iv_param INT)\nRETURNS TABLE (node_id NVARCHAR(10))\nAS\nBEGIN\n  RETURN ${query};\nEND`;
+    case 'hdbview':
+      return `VIEW "V" AS ${query.replace(/:iv_\w+/g, '1')}`;
+    default:
+      return `${query};`;
+  }
+}
+
+const HIERARCHY_CLAUSE_QUERIES: ReadonlyArray<readonly [string, string]> = [
+  [
+    'HIERARCHY_DESCENDANTS (issue #36 repro)',
+    'SELECT node_id FROM HIERARCHY_DESCENDANTS(\n    SOURCE "<SCHEMA>"."..."\n    START WHERE node_id = :iv_id\n)',
+  ],
+  [
+    'HIERARCHY_DESCENDANTS + DISTANCE',
+    'SELECT node_id FROM HIERARCHY_DESCENDANTS(\n    SOURCE "<SCHEMA>"."..."\n    START WHERE node_id = :iv_id\n    DISTANCE FROM 1 TO 2\n)',
+  ],
+  [
+    'HIERARCHY',
+    'SELECT * FROM HIERARCHY(SOURCE (SELECT id AS node_id, pid AS parent_id FROM "H") START WHERE parent_id IS NULL SIBLING ORDER BY node_id DESC DEPTH 3 MULTIPARENT ERROR ORPHAN ROOT CYCLE BREAKUP NO CACHE LOAD BULK)',
+  ],
+  [
+    'HIERARCHY_LEVELED',
+    "SELECT * FROM HIERARCHY_LEVELED(SOURCE \"LVL\" LEVELS (lvl1, lvl2, lvl3) START WHERE lvl1 = 'A' RETAIN NULLS 'X' CACHE FORCE)",
+  ],
+  [
+    'HIERARCHY_SPANTREE',
+    'SELECT * FROM HIERARCHY_SPANTREE(SOURCE "H" START WHERE parent_id IS NULL ORPHAN ADOPT CYCLE ERROR)',
+  ],
+  [
+    'HIERARCHY_TEMPORAL',
+    'SELECT * FROM HIERARCHY_TEMPORAL(SOURCE "H" VALID FROM :iv_from EXCLUDED UNTIL :iv_to EXCLUDED START WHERE parent_id IS NULL DEPTH 2)',
+  ],
+  [
+    'HIERARCHY_ANCESTORS',
+    'SELECT * FROM HIERARCHY_ANCESTORS(SOURCE "H" START WHERE node_id = :iv_id DISTANCE -2)',
+  ],
+  [
+    'HIERARCHY_ANCESTORS_AGGREGATE',
+    'SELECT * FROM HIERARCHY_ANCESTORS_AGGREGATE(SOURCE "H" START WHERE node_id = :iv_id MEASURES (SUM(amount) AS total, COUNT(*) AS cnt) WHERE hierarchy_level > 1 WITH TOTAL)',
+  ],
+  [
+    'HIERARCHY_DESCENDANTS_AGGREGATE',
+    'SELECT * FROM HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE "H" JOIN "FACTS" ON node_id = fact_node MEASURES (SUM(v) AS s) WITH SUBTOTAL WITH BALANCE WITH NOT MATCHED)',
+  ],
+  [
+    'HIERARCHY_SIBLINGS',
+    'SELECT * FROM HIERARCHY_SIBLINGS(SOURCE "H" START (SELECT node_id FROM "H" WHERE node_id = :iv_id))',
+  ],
+];
+
+test('HANA-SYN-023/024: clause-syntax HIERARCHY* functions emit no false positives (issue #36)', () => {
+  for (const lang of ['hanasql', 'hdbprocedure', 'hdbfunction', 'hdbview']) {
+    for (const [label, query] of HIERARCHY_CLAUSE_QUERIES) {
+      const text = wrapForLanguage(lang, query);
+      assert.deepEqual(clauseSyntaxDiags(lang, text), [], `${label} in ${lang}:\n${text}`);
+    }
+  }
+
+  // HIERARCHY_COMPOSITE_ID stays a comma-separated scalar call
+  assert.deepEqual(clauseSyntaxDiags('hanasql', 'SELECT HIERARCHY_COMPOSITE_ID(a, b) FROM "T";'), []);
+  const compositeErr = clauseSyntaxDiags('hanasql', 'SELECT HIERARCHY_COMPOSITE_ID(a b) FROM "T";');
+  assert.ok(compositeErr.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'b'")));
+});
+
+test('HANA-SYN-023/024: HIERARCHY* nested lists, conditions and plain SQL still validated (issue #36)', () => {
+  // Missing comma inside nested LEVELS (...) / MEASURES (...)
+  const levels = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_LEVELED(SOURCE "LVL" LEVELS (lvl1 lvl2));');
+  assert.ok(levels.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'lvl2'")));
+  const measures = clauseSyntaxDiags(
+    'hanasql',
+    'SELECT * FROM HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE "H" MEASURES (SUM(a) AS s1 SUM(b) AS s2));'
+  );
+  assert.ok(measures.some((d) => d.ruleId === 'HANA-SYN-023'));
+
+  // Missing comma inside SOURCE (SELECT ...) subquery projection
+  const sub = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY(SOURCE (SELECT id AS node_id pid AS parent_id FROM "H"));');
+  assert.ok(sub.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'pid'")));
+
+  // Missing operator inside START WHERE condition is still reported
+  const cond = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id :iv_id DEPTH 2);');
+  assert.ok(cond.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes(':iv_id')));
+
+  // Dangling operator before a hierarchy clause keyword is reported
+  const dangling = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id + DEPTH 2);');
+  assert.ok(dangling.some((d) => d.ruleId === 'HANA-SYN-024'));
+
+  // Hierarchy keywords used as column names inside hierarchy conditions keep working
+  assert.deepEqual(
+    clauseSyntaxDiags('hanasql', "SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE \"H\" START WHERE depth = 1 AND valid = 'Y' DISTANCE 1);"),
+    []
+  );
+
+  // Hierarchy clause keywords are NOT global terminators in plain SQL
+  assert.deepEqual(clauseSyntaxDiags('hanasql', "SELECT * FROM T WHERE depth = 1 AND valid = 'Y';"), []);
+  const plain = clauseSyntaxDiags('hanasql', 'SELECT * FROM T WHERE a = 1 DEPTH 2;');
+  assert.ok(plain.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes('DEPTH')));
+});
+
+test('HANA-SYN-023: OPENCYPHER_TABLE, JSON_VALUE, JSON_QUERY and JSON_TABLE clause syntax (issue #37)', () => {
+  const valid = [
+    "SELECT name FROM OPENCYPHER_TABLE(\n    GRAPH WORKSPACE \"MY_SCHEMA\".\"MY_GRAPH\"\n    QUERY 'MATCH (n) RETURN n.name AS name'\n    PARAMETERS (p1 => :iv_param)\n)",
+    "SELECT JSON_VALUE(doc, '$.a' RETURNING NVARCHAR(100) DEFAULT 'x' ON EMPTY ERROR ON ERROR) FROM t",
+    "SELECT JSON_VALUE(doc, '$.a' DEFAULT -1 ON EMPTY NULL ON ERROR) FROM t",
+    "SELECT JSON_QUERY(doc, '$.items' RETURNING JSON WITH WRAPPER EMPTY ON EMPTY ERROR ON ERROR) FROM t",
+    "SELECT JSON_QUERY(doc, '$.items' WITHOUT ARRAY WRAPPER EMPTY OBJECT ON ERROR) FROM t",
+    "SELECT JSON_QUERY(doc, '$.items' WITH CONDITIONAL ARRAY WRAPPER) FROM t",
+    "SELECT * FROM JSON_TABLE(\n    doc,\n    '$'\n    COLUMNS (\n        id INT PATH '$.id',\n        NESTED PATH '$.items[*]' COLUMNS (sku NVARCHAR(20) PATH '$.sku')\n    )\n)",
+    "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (rn FOR ORDINALITY, id INT PATH '$.id' DEFAULT 0 ON EMPTY ERROR ON ERROR, raw NVARCHAR(200) FORMAT JSON PATH '$.raw' WITH UNCONDITIONAL ARRAY WRAPPER EMPTY ARRAY ON EMPTY, NESTED '$.tags[*]' COLUMNS (tag NVARCHAR(20) PATH '$')) ERROR ON ERROR)",
+  ];
+  for (const lang of ['hanasql', 'hdbprocedure', 'hdbfunction', 'hdbview']) {
+    for (const query of valid) {
+      const text = wrapForLanguage(lang, query);
+      assert.deepEqual(clauseSyntaxDiags(lang, text), [], `${lang}:\n${text}`);
+    }
+  }
+});
+
+test('HANA-SYN-023: OPENCYPHER_TABLE / JSON_* genuine missing commas still reported (issue #37)', () => {
+  const params = clauseSyntaxDiags(
+    'hanasql',
+    "SELECT * FROM OPENCYPHER_TABLE(GRAPH WORKSPACE ws QUERY 'MATCH (n) RETURN n' PARAMETERS (p1 => :a p2 => :b));"
+  );
+  assert.ok(params.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'p2'")));
+
+  const jv = clauseSyntaxDiags('hanasql', "SELECT JSON_VALUE(doc '$.a') FROM t;");
+  assert.ok(jv.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'$.a'")));
+
+  const jvType = clauseSyntaxDiags('hanasql', "SELECT JSON_VALUE(doc, '$.a' RETURNING DECIMAL(10 2)) FROM t;");
+  assert.ok(jvType.some((d) => d.ruleId === 'HANA-SYN-023'));
+
+  const jtCols = clauseSyntaxDiags(
+    'hanasql',
+    "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (id INT PATH '$.id' name NVARCHAR(10) PATH '$.name'));"
+  );
+  const colDiag = jtCols.find((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'name'"));
+  assert.ok(colDiag, JSON.stringify(jtCols));
+  assert.equal(colDiag.fixes[0].title, "Insert ','");
+
+  const jtOrd = clauseSyntaxDiags('hanasql', "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (rn FOR ORDINALITY id INT PATH '$.id'));");
+  assert.ok(jtOrd.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'id'")));
+
+  const jtNested = clauseSyntaxDiags(
+    'hanasql',
+    "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (NESTED PATH '$.a[*]' COLUMNS (x INT PATH '$.x') id INT PATH '$.id'));"
+  );
+  assert.ok(jtNested.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'id'")));
+
+  const jtInner = clauseSyntaxDiags(
+    'hanasql',
+    "SELECT * FROM JSON_TABLE(doc, '$' COLUMNS (NESTED PATH '$.a[*]' COLUMNS (x INT PATH '$.x' y INT PATH '$.y')));"
+  );
+  assert.ok(jtInner.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'y'")));
+});
