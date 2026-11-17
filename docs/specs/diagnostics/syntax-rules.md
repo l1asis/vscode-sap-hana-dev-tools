@@ -24,13 +24,15 @@
 | `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`) |
 | `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`) |
 | `HANA-SYN-004` | `error` / `warning` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword, redundant leading `CREATE`, invalid `CREATE` object kind, or extra trailing top-level statements in single-object artifact (with QuickFixes) |
+| `HANA-SYN-005` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Invalid SQL character, unsupported `//` comment, or unknown `@` pragma (with QuickFix) |
+| `HANA-SYN-006` | `error` / `warning` | `syntax` | SQL, SQLScript, headerless HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing whitespace between adjacent tokens (`123abc`, `"T"alias`, `'s'AS`) or undelimited object name containing `::` (with QuickFix) |
 | `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
 | `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
 | `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header or SQL clause keyword (e.g., `CREATE FUNC`, `RETUNS`, `LANUAGE`, `INVOKR`, `SELCT`, `WHRE`, `ENTIY`) with QuickFix |
 | `HANA-SYN-022` | `error` | `syntax` | Classic KV (`.hdbtable`, `.hdbview`, `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.hdbprocedure` KV, etc.) | `[XSC]` | Malformed Classic Key-Value assignment (missing `=`, missing RHS value, or missing `,` in `[ ... ]` array) |
 | `HANA-SYN-023` | `error` | `syntax` | SQL, SQLScript, HDI DDL, Classic KV (`[...]`), `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing `,` separator between parameters, table columns, `SELECT` list items, function arguments, or array elements (with QuickFix) |
-| `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions, or trailing `,` before `)` / clause keyword (with QuickFix) |
+| `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions; consecutive / leading / trailing `,` (before `)`, `;`, or a clause keyword); stray `.` separators (with QuickFix) |
 | `HANA-SYN-025` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Incomplete/empty SQL clause (`SELECT FROM`, `WHERE AND`) or missing `;` between SQLScript statements inside `BEGIN ... END` (with QuickFix) |
 | `HANA-SYN-026` | `error` | `syntax` | CDS (`.hdbdd`, `.hdbcds`) | `[XSC]` `[XSA]` `[HDI]` | Missing `:`, missing type, or missing `;` in CDS `entity`/`type` members and top-level `namespace`/`using` headers |
 | `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
@@ -100,6 +102,66 @@
   - `Headerless '.hdbprocedure' artifact should omit leading 'CREATE'.`
   - `Only one top-level declaration is allowed in '.hdbprocedure'; unexpected trailing statement 'SELECT'.`
   - `Only one top-level declaration is allowed in '.hdbview'; found 3 unexpected trailing statements.`
+
+---
+
+### `HANA-SYN-005` — Invalid SQL Character, `//` Comment, or Unknown Pragma
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (Comments, Identifiers)
+> Source: `docs/specs/grammars/sql-sqlscript.md` §2 (Lexical Tokens, Character Set & Token Separation)
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** All SQL / SQLScript languages (`.sql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, headerless HDI DDL, `.hdbmigrationtable` per section). Not applied inside `LANGUAGE R` / `RLANG` / `GRAPH` bodies.
+- **Lexical Trigger** (outside string literals, quoted identifiers, and comments; `-- hanasql-format off` regions are still checked):
+  1. **`//` line comment:** SQL and SQLScript only define `--` and `/* ... */` comments. The scanner still recognizes `//` up to end of line so that a stray quote inside it (`// it's`) cannot swallow the rest of the file, but every such comment is reported.
+  2. **Character outside the SQL lexical grammar** (tokenizer `other` token): `&`, single `|`, `\`, `` ` ``, single `!`, `~`, `^` (SAP HANA has no `~=` / `^=` operators; the SQL Reference defines only `=`, `>`, `<`, `>=`, `<=`, `!=`, `<>`), typographic quotes (`‘ ’ “ ”`), dashes (`–`), arrows (`→`), ellipsis (`…`), and any other non-ASCII symbol. `!=` and `||` are valid operators.
+  3. **Unknown `@` pragma:** `@<name>` where `<name>` is not a SQLScript compiler pragma or `SQLSCRIPT_TEST` annotation (`AnalyzerSuppress`, `pushscope`, `popscope`, `Test`, `TestSetUp`, `TestTearDown`, `TestSetUpTest`, `TestTearDownTest`, `TestSetUpConfig`, `TestTearDownConfig`, `TestSetUpLibrary`, `TestTearDownLibrary`, `TestClassification`; case-insensitive).
+- **Cascade Suppression:** Diagnostics from later passes (`HANA-SYN-023`, `HANA-SYN-024`, ...) that start inside a `HANA-SYN-005` / `HANA-SYN-006` span are dropped.
+- **Diagnostic Span & Message:**
+  - `'//' is not a valid SQL comment; use '--' for line comments or '/* ... */' for block comments.` (spans the whole comment)
+  - `Unexpected character '&' in SQL.` / `Typographic quote '’' (U+2019) is not valid in SQL; use ASCII ' for strings or " for identifiers.`
+  - `Unknown SQLScript pragma '@someOtherPragma'.`
+- **QuickFix:** `Replace '//' with '--'`; `Remove '<char>'`.
+  - **Before:**
+
+    ```sql
+    SQL SECURITY INVOKER // caller rights
+    ```
+
+  - **After:**
+
+    ```sql
+    SQL SECURITY INVOKER -- caller rights
+    ```
+
+### `HANA-SYN-006` — Missing Token Separator or Undelimited `::` Object Name
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (Identifiers)
+> Source: `docs/specs/grammars/sql-sqlscript.md` §2 (Character Set & Token Separation)
+
+- **Severity:** `error` (numeric literal / `::` name) or `warning` (string literal / quoted identifier)
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** Same as `HANA-SYN-005`.
+- **Lexical Trigger:** Two tokens with no whitespace and no comment between them (`!wsBefore && nlBefore === 0` on the right token):
+  1. **Glued literal / quoted identifier:** left token is a quoted identifier, string literal, or numeric literal; right token is an identifier/keyword, quoted identifier, string literal, or numeric literal (`"T"ddddddd`, `'str'abc`, `123abc`, `1.5f`). `error` when the left token is a numeric literal (two regular tokens must be separated); `warning` otherwise, since a delimited token is self-terminating and HANA may accept it (`'a'AS x`), but the form is almost always a typo.
+     - **Exclusions:** hexadecimal literals (`0x1F`); doubled-quote escapes (`'it''s'`, `"A""B"` are single tokens); `N'...'` / `X'...'` / `DATE'...'` prefixes (left token is a word); member access and operators (`:var`, `::`, `..`, `.`, `"S"."T"`, `$"a"."b"` JSON paths).
+  2. **Undelimited name containing `::`:** an identifier chain `a.b.c` immediately followed by `::name` (`com.acme.app::tbl`). Undelimited identifiers may only contain letters, digits, `_`, `#`, and `$`, so repository/HDI names with `::` must be quoted. **Exclusion:** cursor attributes `<cursor>::ISCLOSED`, `::NOTFOUND`, `::ROWCOUNT`.
+- **Diagnostic Span & Message:** spans both tokens (or the whole name):
+  - `Missing whitespace between quoted identifier '"T"' and 'ddddddd'.`
+  - `Object name 'com.acme.app::tbl' contains '::' and must be a quoted identifier.`
+- **QuickFix:** `Insert space`; `Quote as "com.acme.app::tbl"`.
+  - **Before:**
+
+    ```sql
+    SELECT * FROM com.acme.app::sample_table;
+    ```
+
+  - **After:**
+
+    ```sql
+    SELECT * FROM "com.acme.app::sample_table";
+    ```
 
 ---
 
@@ -204,7 +266,9 @@
      - Preserves valid SQL predicates and multi-token constructs: `IS [NOT] NULL|TRUE|FALSE|UNKNOWN`, `[NOT] BETWEEN ... AND ...`, `[NOT] IN (...)`, `[NOT] LIKE ... [ESCAPE ...]`, `CASE ... WHEN ... THEN ... ELSE ... END`, typed literals (`DATE '...'`, `TIMESTAMP '...'`, `INTERVAL '...' UNIT`), `CAST(... AS ...)`, `EXTRACT(... FROM ...)`, `TRIM(... FROM ...)`, `SUBSTRING(... FROM ... FOR ...)`, `ANY`/`ALL`/`SOME`/`EXISTS`, `OVER (...)`, `WITHIN GROUP (...)`, `FILTER (...)`, `AT TIME ZONE ...`, `COLLATE ...`, `ASC`/`DESC`/`NULLS FIRST|LAST`.
   2. **Dangling / Leading Binary Operator:** Binary operator (`*`, `/`, `+`, `-`, `||`, `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`) at the end of an expression before `AS`, `,`, `;`, `)`, `END`, or a clause boundary (`FROM`, `WHERE`, `GROUP`, `ORDER`, `HAVING`, `LIMIT`, `UNION`, `AND`, `OR`, `WHEN`, `THEN`, `ELSE`), or non-unary operator (`*`, `/`, `||`, `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`) at expression start.
   3. **Consecutive Binary Operators:** Two incompatible binary operators side-by-side (`a * / b`, `a >= = b`, `a = = b`), excluding unary `+`, `-`, `NOT`, `PRIOR`, `NEW`, `BINARY`.
-  4. **Trailing Comma (`QuickFix: Remove trailing comma`):** Comma immediately before closing `)` in SQL lists (`DECIMAL(3, 2,)`, `RETURNS TABLE ("A" INT,)`) or before major query clause keywords (`SELECT "A", FROM "T"`).
+  4. **Trailing Comma (`QuickFix: Remove trailing comma`):** Comma immediately before closing `)` in SQL lists (`DECIMAL(3, 2,)`, `RETURNS TABLE ("A" INT,)`), before `;`, or before major query clause keywords (`SELECT "A", FROM "T"`).
+  5. **Consecutive / Leading Comma (`QuickFix: Remove extra ','` / `Remove leading ','`):** Two or more commas separated only by whitespace or comments (`a,,b`, `INVOKER,,,,`; one diagnostic per run spanning the extra commas), or a comma immediately after `(` (`INSERT INTO A (, ab)`).
+  6. **Stray `.` Separator (`QuickFix: Remove '.'`):** A `.` must sit between two name parts: left operand is an identifier, quoted identifier, `:var`, `::sysvar`, `)` or `]`; right operand is an identifier, quoted identifier, or `*` (`t.*`). A run of glued dots other than a single `..` range separator (`...`, `a...b`, `.` glued to `..`) is reported once. `..` itself is valid only as the `FOR i IN a..b` range separator.
 - **Hierarchy Function Clause Scoping `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`:** Inside the top level of a clause-syntax `HIERARCHY*` call (the 9 functions listed under `HANA-SYN-023`), a `START WHERE` / `WHERE` / `JOIN ... ON` condition ends at a hierarchy clause keyword (`SOURCE`, `START`, `JOIN`, `MEASURES`, `DISTANCE`, `LEVELS`, `SIBLING`, `VALID`, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `CACHE`, `NO`, `LOAD`, `RETAIN`). This applies only after a complete operand, so the condition is still checked (`START WHERE node_id :id` → missing operator; `START WHERE node_id + DEPTH 2` → dangling operator). `UNTIL` in `VALID FROM <expr> [EXCLUDED] UNTIL <expr> [EXCLUDED]` does not open a loop condition. These keywords are non-reserved, so they are **not** global clause terminators: outside hierarchy calls, `WHERE depth = 1 AND valid = 'Y'` treats them as columns, and `WHERE a = 1 DEPTH 2` is still flagged.
 
 ### `HANA-SYN-025` — Incomplete SQL Clause or Missing Statement Semicolon

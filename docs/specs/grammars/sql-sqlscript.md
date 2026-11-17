@@ -28,10 +28,11 @@
 
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/001_pages_1_30.md (Pages 20–30)
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/007_pages_181_210.md (Pages 181–204)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (Comments, Identifiers)
 
 | Token Class | Pattern / Delimiters | TextMate Scope | Platform | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| Line Comment | `--[^\r\n]*` or `//[^\r\n]*` | `comment.line.double-dash.hanasql`, `comment.line.double-slash.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | SQL `--` and C-style `//` single-line comments |
+| Line Comment | `--[^\r\n]*` | `comment.line.double-dash.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | SQL `--` single-line comment. C-style `//` is **not** a SQL/SQLScript comment (the SQL Reference *Comments* section defines only `--` and `/* ... */`) and is reported as `HANA-SYN-005`. |
 | Block Comment | `/\*[\s\S]*?\*/` | `comment.block.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Multi-line comment |
 | Single-Quoted String | `[nN]?'(?:[^']\|'')*'` | `string.quoted.single.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | SQL string literal (`'...'` or Unicode `N'...'`) |
 | Binary String Literal | `[xX]'[0-9A-Fa-f]*'` | `string.quoted.single.binary.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Hexadecimal binary literal (`X'01AF'`) |
@@ -45,8 +46,25 @@
 | Numeric Literal | `\b(?:0[xX][0-9A-Fa-f]+\|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b` | `constant.numeric.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Integer, decimal, float, or hex literal |
 | Assignment & Named Parameter Operators | `:=`, `=>` | `keyword.operator.assignment.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | SQLScript assignment `:=` and named argument binding `=>` |
 | Concatenation Operator | `\|\|` | `keyword.operator.concatenation.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | String or array concatenation |
-| Comparison & Arithmetic Operators | `<>`, `!=`, `~=`, `<=`, `>=`, `^=`, `=`, `<`, `>`, `\+`, `-`, `\*`, `/`, `%` | `keyword.operator.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Relational and arithmetic operators |
+| Comparison & Arithmetic Operators | `<>`, `!=`, `<=`, `>=`, `=`, `<`, `>`, `\+`, `-`, `\*`, `/`, `%` | `keyword.operator.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Relational and arithmetic operators (SQL Reference *Comparison Operators*: `=`, `>`, `<`, `>=`, `<=`, `!=`, `<>`; `~=` / `^=` are not supported) |
 | Namespace / Library Member Accessor | `::`, `:` | `punctuation.separator.namespace.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Repository/HDI object separator `::` and SQLScript library member separator `alias:member` |
+| Cursor Attribute | `<cursor>::(?i:ISCLOSED\|NOTFOUND\|ROWCOUNT)` | `variable.language.system.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Cursor state attributes (`c_cursor1::NOTFOUND`). Any other `<ident>::<ident>` name must be a delimited identifier (`"com.acme::tbl"`): undelimited identifiers contain only letters, digits, `_`, `#`, and `$`. |
+| Punctuation | `(`, `)`, `[`, `]`, `{`, `}`, `,`, `;`, `.`, `..` | `punctuation.*.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | `.` separates name parts (`schema.table.column`, `:tv.col`, `t.*`); `..` separates `FOR i IN a..b` range bounds. |
+
+**Character Set & Token Separation** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` (enforced by `HANA-SYN-005`, `HANA-SYN-006`, `HANA-SYN-024`):
+
+```text
+valid_char     ::= letter | digit | whitespace | "_" | "#" | "$" | "'" | '"' | "(" | ")" | "[" | "]" | "{" | "}"
+                 | "," | ";" | "." | ":" | "?" | "+" | "-" | "*" | "/" | "%" | "=" | "<" | ">"
+                 | "!=" | "||" | "@" sqlscript_pragma_name
+                 (* any other character outside string literals, quoted identifiers and comments is invalid,
+                    e.g. "&", "|", "\", "`", "!", "~", "^", typographic quotes, arrows, dashes *)
+delimiter_tok  ::= string_literal | quoted_identifier | punctuation | operator
+regular_tok    ::= identifier | keyword | numeric_literal
+(* Adjacent regular_tok MUST be separated by whitespace or a comment: "123abc" is invalid, while "0x1F" is a
+   hexadecimal literal. A delimiter_tok glued to a following identifier or literal ('s'AS, "T"alias) is
+   lexically legal but almost always a typo, so it is reported as a warning. *)
+```
 
 ---
 
