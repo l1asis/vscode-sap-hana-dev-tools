@@ -2,7 +2,40 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
-## [0.9.0] - 2026-11-17
+## [0.10.0] - 2026-11-17
+
+### Added
+
+- **SQL & SQLScript Lexical Integrity (`src/analyzer/sql-lexical.ts`, `HANA-SYN-005`, `HANA-SYN-006`, `HANA-SYN-024`):**
+  - **Invalid Characters, `//` Comments & Pragmas (`HANA-SYN-005`):** Reports `//` line comments (SQL / SQLScript only support `--` and `/* ... */`), characters outside the SQL lexical grammar (`&`, single `|`, `\`, backtick, single `!`, `~`, `^`, typographic quotes, dashes, arrows, ellipsis), and unknown `@` pragmas (anything other than `@AnalyzerSuppress`, `@pushscope` / `@popscope`, and the `SQLSCRIPT_TEST` annotations), with `Replace '//' with '--'` and `Remove '<char>'` QuickFixes. `//` is still scanned to end of line, so a stray quote inside it cannot swallow the rest of the file.
+  - **Token Boundaries (`HANA-SYN-006`):** Reports glued tokens with an `Insert space` QuickFix: `error` for numeric literals (`123abc`), `warning` for string literals and quoted identifiers (`'s'abc`, `"T"alias`), with hexadecimal literals (`0x1F`) excluded. Also reports undelimited object names containing `::` (`com.acme::tbl`) with a `Quote as "..."` QuickFix, excluding cursor attributes (`c::ISCLOSED`, `::NOTFOUND`, `::ROWCOUNT`).
+  - **Punctuation Hygiene (`HANA-SYN-024`):** Reports consecutive commas (`,,,,`, one diagnostic per run), leading commas after `(`, trailing commas before `;`, and stray or repeated `.` separators (`,.`, `...`, `t. FROM`). Follow-up diagnostics from other rules inside or directly after a lexical span are dropped to avoid cascades.
+- **Consuming Routine Header Parser (`src/analyzer/sql-header.ts`, `HANA-SYN-040`, `HANA-SYN-021`):**
+  - Parses `[CREATE [OR REPLACE] | ALTER] [VIRTUAL] PROCEDURE | FUNCTION | LIBRARY` headers, `.hdblibrary` member headers, `TRIGGER` headers (action time, event list, `ON`, `REFERENCING`, `FOR EACH`, `FOLLOWS` / `PRECEDES`, `ONLINE`), and `DO [(...)] BEGIN` blocks. Every token through `AS` -> `{ USING ...; }` -> `BEGIN` / `HEADER ONLY [ON INVALID]` must be consumed by a header production.
+  - Reports unconsumed tokens (one per contiguous run), malformed clause arguments, and a missing mandatory `AS` before `BEGIN` / `HEADER ONLY` (`Insert 'AS'` QuickFix). Option-only and management `ALTER` forms, virtual-routine adapter options, and `AS BUILTIN` signatures are accepted.
+  - Matches unconsumed words against the follow-set of their exact header slot, including 2–3 letter keywords (`ASd` -> `AS`, `LANUAGE` -> `LANGUAGE`, `INVOKR` -> `INVOKER`, `AFTR` -> `AFTER`, `OM` -> `ON`), with a `HANA-SYN-021` QuickFix; parsing then continues as if the keyword had been written.
+- **Statement-Starter Validation (`src/analyzer/sql-statements.ts`, `HANA-SYN-041`, `HANA-SYN-021`):**
+  - Adds a statement walker that follows routine, library, and trigger bodies, `BEGIN ... END`, `IF` / `ELSEIF` / `ELSE`, `WHILE`, `FOR`, `LOOP`, statement-level `CASE ... END CASE`, `DECLARE ... HANDLER`, and `BEGIN ... END` nested inside statements, keeping expression-level `CASE ... END` out of statement boundaries.
+  - Rejects invalid statement starters (`foobar;`, `'Active';`, `123;`, stray operators) at top level and inside blocks. Valid starters are the documented SQL statement verbs, SQLScript imperative keywords, parenthesized queries, and imperative targets: `x = ..`, `x := ..`, `arr[i] = ..`, `tv.col[i] = ..`, `:tv.INSERT(..)`, `(i, j) = SUDF(..)`, and `LIB:member(..)`. `@pragma(...)`, `#[INLINE]`, and `label:` prefixes are skipped.
+  - Suggests the intended starter for typos (`SELECTT`, `DECLRE`, `UPSRT`, `PUBLC` in library scope) with a `HANA-SYN-021` QuickFix.
+- **Consuming Clause & Pratt Expression Parsers (`src/analyzer/sql-clauses.ts`, `HANA-SYN-042`, `HANA-SYN-021`):**
+  - Adds a zero-dependency Pratt expression parser and consuming parsers for queries (`WITH`, set operations, select lists, `FROM` items with joins, join cardinality, and association navigation, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`), `INSERT`, `UPDATE`, `UPSERT` / `REPLACE`, `DELETE`, `DECLARE`, `RETURN`, assignments, `CALL`, `SIGNAL` / `RESIGNAL`, `IF` / `ELSEIF` / `WHILE` conditions, and `VIEW` / `COLUMN | ROW TABLE` / `SEQUENCE` DDL.
+  - Reports tokens left over at a clause boundary (`FROM t a b`, `SELECT a b c`, `WHERE a = 1 foo`, `ORDER BY x y`, `DECLARE v INT = 1 junk;`) and clause-keyword typos (`WHEREE`, `GROUPP BY`, `ORDR`, `ANDD`, `DSC`) with a `HANA-SYN-021` QuickFix. Unmodelled keywords, special-syntax function arguments, and long-tail column attributes end validation silently, and existing rules keep precedence (one diagnostic per statement).
+- **Specs & Tests:**
+  - Documented `HANA-SYN-005`, `HANA-SYN-006`, and `HANA-SYN-040` – `HANA-SYN-042` in `docs/specs/diagnostics/syntax-rules.md`, and added the character set / token separation rules and the corrected header, trigger, and `DO` productions to `docs/specs/grammars/sql-sqlscript.md`.
+  - Added `test/sql-lexical.test.ts`, `test/sql-header-parser.test.ts`, `test/sql-statement-starters.test.ts`, and `test/sql-clause-parser.test.ts` (positive, negative, and QuickFix round-trip coverage), plus a sweep asserting every SQL sample in `samples/` analyzes with zero syntax diagnostics, bringing the test suite to `156/156` passing.
+
+### Changed
+
+- **Routine Header Checks (`src/analyzer/sql-context.ts`, `src/analyzer/syntax.ts`, `HANA-SYN-021`, `HANA-SYN-028`):** Replaced the skip-loops in `tryParseRoutineHeader` and the `inRoutineHeader` typo scan with the consuming header parser; `HANA-SYN-028` placement and compatibility checks are now derived from the parsed clause list (messages unchanged). Skips virtual routines in the missing-`RETURNS` check.
+- **Shared Typo Matching (`src/analyzer/typo.ts`):** Moved `damerauLevenshtein` and `matchKeywordTypo` into a shared module (still re-exported from `syntax.ts`) and added `suggestSlotKeyword` for follow-set matching of short keywords.
+- **Grammar Spec Corrections (`docs/specs/grammars/sql-sqlscript.md`):** Removed `//` line comments and the unsupported `~=` / `^=` operators from the SQL / SQLScript lexical tokens (the SQL Reference defines only `--` / `/* */` comments and `=`, `>`, `<`, `>=`, `<=`, `!=`, `<>`). Moved block modifiers (`SEQUENTIAL EXECUTION`, ...) after `BEGIN` and the table-UDF result cache after `END`.
+- **Repository Line Endings (`.gitattributes`, `.vscode/settings.json`):** Enforced LF line endings and renormalized existing CRLF files.
+
+### Fixed
+
+- **Silently Accepted Broken SQL / SQLScript (`src/analyzer/syntax.ts`):** Corrupted artifacts such as an `.hdbfunction` header ending in `SQL SECURITY INVOKER,,,,.//asd/.AWlpqwkr` followed by `ASd` previously produced zero diagnostics; stray punctuation, `//` text, misspelled header keywords, missing `AS`, bogus statements, and trailing garbage inside clauses are now reported.
+
 
 ### Changed
 
