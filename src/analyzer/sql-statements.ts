@@ -9,8 +9,8 @@
  * assignment / method-call target (`[:]<ident>[[<expr>] | .<ident>]* (:= | = | .<method>(...))`).
  *
  * Grammar: `docs/specs/grammars/sql-sqlscript.md` §4.1, rules: `docs/specs/diagnostics/syntax-rules.md`.
- * Simple (non-compound) statements are delegated to {@link StatementWalkerHooks.parseSimpleStatement} so
- * clause-level parsers can consume their tokens; the default hook scans to the statement end.
+ * Simple (non-compound) statements and compound-statement conditions are handed to
+ * {@link StatementWalkerHooks} so clause-level parsers can validate their tokens.
  */
 import { type Token } from '../formatter/tokenizer';
 import { parseRoutineHeader } from './sql-header';
@@ -98,19 +98,15 @@ const BLOCK_MODIFIERS: ReadonlyArray<readonly [string, string]> = [
 
 export type StatementScope = 'top' | 'block' | 'library';
 
-export interface StatementWalkerContext {
-  readonly tokens: readonly Token[];
-  readonly scope: StatementScope;
-  /** Words ending the enclosing statement list (`END`, `ELSE`, `ELSEIF`, `WHEN`). */
-  readonly stops: ReadonlySet<string>;
-}
-
 export interface StatementWalkerHooks {
   /**
-   * Consumes one simple statement starting at `start` (already validated as a starter) and returns the index
-   * of its terminating `;` or of the stop token / EOF that ends it.
+   * Validates one simple statement. `start` is its first token (after prefixes, already validated as a
+   * starter) and `end` the index of its terminating `;`, of the stop token that ends it, or EOF. The walker
+   * owns statement extents; hooks only inspect `[start, end)`.
    */
-  readonly parseSimpleStatement?: (start: number, ctx: StatementWalkerContext) => number;
+  readonly checkStatement?: (start: number, end: number, scope: StatementScope) => void;
+  /** Validates an `IF` / `ELSEIF` / `WHILE` condition spanning `[start, end)`; `tokens[end]` is `THEN` / `DO`. */
+  readonly checkCondition?: (start: number, end: number, keyword: string) => void;
 }
 
 export interface SqlStatementOptions {
@@ -293,6 +289,13 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
     return n - 1;
   };
 
+  /** Scans an `IF` / `ELSEIF` / `WHILE` condition to `kw`, hands it to the condition hook, returns `kw`'s index. */
+  const condition = (i: number, kw: string): number => {
+    const k = scanToKeyword(i, kw);
+    if (up(k) === kw && k > i) hooks?.checkCondition?.(i, k, kw);
+    return k;
+  };
+
   /** Consumes `END [<suffix>] [;]` at `i` (if present) and returns the following index. */
   const consumeEnd = (i: number, suffix: string | null): number => {
     if (up(i) !== 'END') return i;
@@ -360,11 +363,11 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
         case 'BEGIN':
           return parseBeginBlock(i + 1);
         case 'IF': {
-          let j = scanToKeyword(i + 1, 'THEN') + 1;
+          let j = condition(i + 1, 'THEN') + 1;
           for (;;) {
             j = parseList(j, 'block', IF_STOPS);
             if (up(j) === 'ELSEIF') {
-              j = scanToKeyword(j + 1, 'THEN') + 1;
+              j = condition(j + 1, 'THEN') + 1;
               continue;
             }
             if (up(j) === 'ELSE') {
@@ -376,7 +379,8 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
         }
         case 'WHILE':
         case 'FOR': {
-          const j = parseList(scanToKeyword(i + 1, 'DO') + 1, 'block', BODY_STOPS);
+          const doIdx = w === 'WHILE' ? condition(i + 1, 'DO') : scanToKeyword(i + 1, 'DO');
+          const j = parseList(doIdx + 1, 'block', BODY_STOPS);
           return consumeEnd(j, w);
         }
         case 'LOOP':
@@ -408,8 +412,8 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
     }
 
     validateStarter(i, scope);
-    const ctx: StatementWalkerContext = { tokens: T, scope, stops };
-    const end = hooks?.parseSimpleStatement ? hooks.parseSimpleStatement(i, ctx) : scanToEnd(i, scope === 'top' ? NO_STOPS : stops);
+    const end = scanToEnd(i, scope === 'top' ? NO_STOPS : stops);
+    hooks?.checkStatement?.(i, end, scope);
     return text(end) === ';' ? end + 1 : Math.max(end, i + 1);
   };
 
