@@ -38,6 +38,7 @@
 | `HANA-SYN-027` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbview`, `.hdblibrary`, `.hdbprojectionview`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Out-of-order or duplicate `SELECT` query clause (`FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, `LIMIT`, `OFFSET`, `INTO`, `WITH HINT`) |
 | `HANA-SYN-028` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Routine header clause placement/compatibility, `USING` library placement, `DECLARE` / `HANDLER` / executable ordering in compound blocks, handler scope conflicts, or unreachable statements |
 | `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
+| `HANA-SYN-040` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token, malformed clause argument, or missing `AS` in a routine / library / trigger / `DO` header (consuming header parser, with QuickFix) |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -219,7 +220,7 @@
 - **AST / Token Trigger:** Checked strictly at **anchored keyword positions** (Damerau-Levenshtein edit distance `<= 2`, same leading character or clear prefix truncation `len >= 4`, non-keyword unknown word, never matching a known SAP HANA keyword or column/table identifier position):
   1. Immediately following `CREATE`, `CREATE OR REPLACE`, `ALTER`, or `DROP` in SQL / SQLScript: expected object kind (`PROCEDURE`, `FUNCTION`, `TABLE`, `COLUMN`, `ROW`, `VIEW`, `TRIGGER`, `LIBRARY`, `SEQUENCE`, `INDEX`, `SCHEMA`, `SYNONYM`, `ROLE`, `USER`, `TYPE`, `COLLECTION`, `PROJECTION`, `STATISTICS`, `STRUCTURED`, `VIRTUAL`). E.g. `CREATE FUNC`, `CREATE OR REPLACE PROCEDUR`, `CREATE TABEL`.
   2. Document root / first statement token in headerless HDI artifacts (`.hdbtable`, `.hdbview`, `.hdbfunction`, `.hdbtablefunction`, `.hdbprocedure`, `.hdbtrigger`, `.hdblibrary`, `.hdbsequence`, `.hdbindex`, `.hdbconstraint`, `.hdbprojectionview`, `.hdbstructuredprivilege`, `.hdbvirtualtable`, etc.): checks leading token against expected HDI root keyword (`COLUMN`, `ROW`, `VIEW`, `FUNCTION`, `PROCEDURE`, `TRIGGER`, `LIBRARY`, `SEQUENCE`, `INDEX`, `CONSTRAINT`, `PROJECTION`, `STRUCTURED`, `VIRTUAL`, `TYPE`, etc.) — e.g. `FUNC "my_fn"()` -> QuickFix `FUNCTION`. Also skips if token is `@` annotation, comment, or valid KV syntax in dual-mode `.hdbview`/`.hdbtable`.
-  3. Routine signature header keywords between parameter `)` and `AS`/`BEGIN`: `RETURNS` (`RETUNS`, or `RETURN` followed by `TABLE` in a `FUNCTION` header), `LANGUAGE` (`LANUAGE`, `LANGAUGE`), `SECURITY` (`SECURTY`), `INVOKER` (`INVOKR`), `DEFINER` (`DEFINR`).
+  3. Routine / library / trigger header keywords: every unconsumed word in a header is matched against the follow-set of its exact slot by the consuming header parser (see `HANA-SYN-040`), including short keywords — `RETURNS` (`RETUNS`, `RETURN`), `LANGUAGE` (`LANUAGE`, `LANGAUGE`), `SECURITY` (`SECURTY`), `INVOKER` (`INVOKR`), `DEFINER` (`DEFINR`), `AS` (`ASd`), `AFTER` (`AFTR`), `ON`, `EACH`, ...
   4. Top-level statement starts and unambiguous SQL query clause anchors:
      - Statement starts inside SQLScript body (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `RESIGNAL`) ONLY when immediately at statement start and structurally invalid (not followed by `=` or identifier assignments like `col := ...`).
      - Query clause typos at structural boundaries (`SELECT` -> `SELCT`/`SELET`/`SLECT` at statement start or after `RETURN`/`UNION`/`(`; `WHERE` -> `WHRE`/`WHER` at line start or after `FROM <table_ref>`; `GROUP` -> `GROP` before `BY`; `ORDER` -> `ORDR` before `BY`; `HAVING` -> `HAVNG`; `LIMIT` -> `LIMT`).
@@ -447,6 +448,49 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
   - `Imperative statement 'DECLARE' is only allowed inside a routine or 'DO BEGIN ... END' block.`
   - `Library member 'FUNCTION' must specify 'PUBLIC' or 'PRIVATE' visibility.`
   - `DDL statement 'CREATE' is not allowed inside a TRIGGER body.`
+
+---
+
+### `HANA-SYN-040` — Unconsumed Token or Missing `AS` in Routine / Library / Trigger Header
+
+> Source: `docs/specs/grammars/sql-sqlscript.md` §4.1 (procedure, function, virtual routine, library, trigger, and `DO` headers)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/008_6_Logic_Container.md (CREATE / ALTER PROCEDURE, CREATE / ALTER FUNCTION, User-Defined Libraries)
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** `.sql`, `.hanasql`, `.sqlscript`, `.procedure`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary` (library header and every `PUBLIC` / `PRIVATE` member header), `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable`.
+- **AST / Token Trigger:** A deterministic consuming parser (`src/analyzer/sql-header.ts`) runs at every statement start that opens `[CREATE [OR REPLACE] | ALTER] [VIRTUAL] PROCEDURE | FUNCTION | LIBRARY`, `[CREATE [OR REPLACE]] TRIGGER`, `DO [(...)] BEGIN`, or a library member. Every token from the header start through `AS` -> `{ USING <lib> [AS <alias>]; }` -> `BEGIN` (or `HEADER ONLY [ON INVALID]` / `;`) must be consumed by a §4.1 production:
+  1. **Unconsumed token:** any word, literal, operator, or punctuation that does not start or continue a header production (`INVOKER,`, `AWlpqwkr`, stray `+`). One diagnostic is reported per contiguous run of unexpected tokens; parsing resumes at the next recognized clause keyword.
+  2. **Missing `AS`:** `BEGIN`, `HEADER ONLY`, or the terminating `;` reached before `AS` on a procedure, function, or library header (QuickFix `Insert 'AS'` before `BEGIN` / `HEADER ONLY`). Not applied to triggers / `DO` (no `AS`), option-only `ALTER` forms (`ALTER FUNCTION f STRUCTURED FILTER CHECK;`), management forms (`ALTER PROCEDURE p RECOMPILE`, `... ENCRYPTION ON`, `... ADD | DROP VARIABLE CACHE ...`), or virtual routines.
+  3. **Malformed clause argument:** `SQL SECURITY` without `DEFINER` / `INVOKER`, `AUTOCOMMIT DDL` without `ON` / `OFF`, `LANGUAGE` / `DEFAULT SCHEMA` / `WITH RESULT VIEW` / `USING` without a name, `RETURNS` without a type or with `TABLE` but no column list, `HEADER ONLY` not followed by `;` or `ON INVALID BEGIN`, `AS` followed by anything other than `USING`, `BEGIN`, or `HEADER ONLY`.
+  4. **Trigger header** (`BEFORE | AFTER | INSTEAD OF` -> `INSERT | DELETE | UPDATE [[EXCEPT] OF <cols>]` `{OR <event>}` -> `ON <table>` -> `[REFERENCING (OLD | NEW) (ROW | TABLE) [AS] <name>, ...]` -> `[FOR EACH ROW | STATEMENT]` -> `[FOLLOWS | PRECEDES <triggers>]` -> `[ONLINE]` -> `BEGIN`): a missing or misplaced element.
+- **Slot-Aware Typo Recovery (`HANA-SYN-021`):** before reporting an unconsumed word, it is matched against the follow-set of its exact slot (including 2–3 letter keywords such as `AS`, `ON`, `OF`, `OR`), e.g. `ASd` -> `AS`, `LANUAGE` -> `LANGUAGE`, `SECURTY` -> `SECURITY`, `INVOKR` -> `INVOKER`, `RETURN` -> `RETURNS`, `AFTR` -> `AFTER`. A match is reported as `HANA-SYN-021` with a `Replace '<typo>' with '<KEYWORD>'` QuickFix, and parsing continues as if the keyword had been written (so no cascading `HANA-SYN-040`).
+- **Cascade Suppression:** structural `HANA-SYN-040` issues are dropped for a header that contains an unclosed / unmatched delimiter (`HANA-SYN-003`); `HANA-SYN-005` / `HANA-SYN-006` lexical spans suppress diagnostics inside or directly after them.
+- **Not Accepted (not in the SAP HANA references):** `MODIFIES SQL DATA`, `CALLED ON NULL INPUT`, `[NO] CACHE` in the header (the table-UDF result cache is `END WITH [STATIC] CACHE ...` after the body).
+- **Diagnostic Examples:**
+  - `Unexpected ',' in FUNCTION header; expected 'DEFAULT SCHEMA', 'READS SQL DATA', 'VARIABLE CACHE', 'DETERMINISTIC', 'WITH ENCRYPTION', 'STRUCTURED FILTER CHECK', 'AS'.`
+  - `Unknown keyword 'ASd' in FUNCTION header. Did you mean 'AS'?` (`HANA-SYN-021`)
+  - `Missing 'AS' before 'BEGIN' in PROCEDURE header.`
+  - `Expected 'DEFINER' or 'INVOKER' after 'SECURITY'.`
+  - `Expected 'ON' in TRIGGER header (before subject table), found 'FROM'.`
+- **QuickFix:**
+  - **Before:**
+
+    ```sql
+    PROCEDURE "p"() LANGUAGE SQLSCRIPT SQL SECURITY INVOKER
+    BEGIN
+      SELECT 1 FROM DUMMY;
+    END
+    ```
+
+  - **After:**
+
+    ```sql
+    PROCEDURE "p"() LANGUAGE SQLSCRIPT SQL SECURITY INVOKER
+    AS BEGIN
+      SELECT 1 FROM DUMMY;
+    END
+    ```
 
 ---
 
