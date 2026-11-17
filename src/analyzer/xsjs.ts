@@ -1,5 +1,5 @@
 import { analyzeDelimiters, matchingOpener, type DelimTokenInput } from './delimiters';
-import { matchKeywordTypo } from './syntax';
+import { matchKeywordTypo } from './typo';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
