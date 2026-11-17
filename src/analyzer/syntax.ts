@@ -5,6 +5,7 @@ import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
+import { checkSqlLexicalIntegrity, dedupeLexicalCascade } from './sql-lexical';
 import {
   filterSuppressedDiagnostics,
   type AnalyzerContext,
@@ -519,6 +520,9 @@ function findLineNumber(lineStarts: readonly number[], offset: number): number {
 function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): AnalyzerDiagnostic[] {
   const { baseOffset, languageId, checkBlocks, checkHeaderRoots } = opts;
   const diagnostics: AnalyzerDiagnostic[] = [];
+  // `//` is NOT a SQL/SQLScript comment (only `--` and `/* ... */` are). The tokenizer still recognizes it so a
+  // stray quote inside `// it's` cannot swallow the rest of the file; every such comment is reported as an
+  // error (`HANA-SYN-005`) by `checkSqlLexicalIntegrity`.
   const allTokens = tokenize(slice, {
     collapseFormatOff: false,
     slashComments: true,
@@ -662,6 +666,21 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     return diagnostics;
   }
 
+  // 1b. Lexical integrity: `//` comments, invalid characters, glued tokens, comma/dot hygiene
+  //     (HANA-SYN-005, HANA-SYN-006, HANA-SYN-024)
+  const lexicalStartIdx = diagnostics.length;
+  const delimBlamed = new Set<number>([...delimResult.unclosedStarts.keys(), ...delimResult.unmatchedCloseStarts]);
+  checkSqlLexicalIntegrity({
+    tokens,
+    text: slice,
+    baseOffset,
+    skipStarts: delimBlamed,
+    brokenLines: brokenQidentLines,
+    lineOf: (offset) => findLineNumber(lineStarts, offset),
+    diagnostics,
+  });
+  const afterLexicalIdx = diagnostics.length;
+
   // 2. Anchored DDL & headerless HDI root keyword typo checks (HANA-SYN-021, HANA-SYN-004)
   checkSqlHeaderTypos(slice, codeTokens, languageId, baseOffset, checkHeaderRoots, diagnostics);
 
@@ -737,6 +756,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     }
   }
 
+  if (afterLexicalIdx > lexicalStartIdx) dedupeLexicalCascade(diagnostics, afterLexicalIdx, slice, baseOffset);
   return diagnostics;
 }
 
