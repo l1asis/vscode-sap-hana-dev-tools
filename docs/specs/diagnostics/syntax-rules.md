@@ -39,6 +39,7 @@
 | `HANA-SYN-028` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Routine header clause placement/compatibility, `USING` library placement, `DECLARE` / `HANDLER` / executable ordering in compound blocks, handler scope conflicts, or unreachable statements |
 | `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
 | `HANA-SYN-040` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token, malformed clause argument, or missing `AS` in a routine / library / trigger / `DO` header (consuming header parser, with QuickFix) |
+| `HANA-SYN-041` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Invalid top-level or block-level statement start (not a SQL / SQLScript starter, imperative assignment target, or library member), with scope-aware typo QuickFix |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
 | `HANA-SYN-032` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Misspelled JS statement or declaration keyword at anchored token boundary (e.g., `FUNC foo()`) with QuickFix |
@@ -222,7 +223,7 @@
   2. Document root / first statement token in headerless HDI artifacts (`.hdbtable`, `.hdbview`, `.hdbfunction`, `.hdbtablefunction`, `.hdbprocedure`, `.hdbtrigger`, `.hdblibrary`, `.hdbsequence`, `.hdbindex`, `.hdbconstraint`, `.hdbprojectionview`, `.hdbstructuredprivilege`, `.hdbvirtualtable`, etc.): checks leading token against expected HDI root keyword (`COLUMN`, `ROW`, `VIEW`, `FUNCTION`, `PROCEDURE`, `TRIGGER`, `LIBRARY`, `SEQUENCE`, `INDEX`, `CONSTRAINT`, `PROJECTION`, `STRUCTURED`, `VIRTUAL`, `TYPE`, etc.) — e.g. `FUNC "my_fn"()` -> QuickFix `FUNCTION`. Also skips if token is `@` annotation, comment, or valid KV syntax in dual-mode `.hdbview`/`.hdbtable`.
   3. Routine / library / trigger header keywords: every unconsumed word in a header is matched against the follow-set of its exact slot by the consuming header parser (see `HANA-SYN-040`), including short keywords — `RETURNS` (`RETUNS`, `RETURN`), `LANGUAGE` (`LANUAGE`, `LANGAUGE`), `SECURITY` (`SECURTY`), `INVOKER` (`INVOKR`), `DEFINER` (`DEFINR`), `AS` (`ASd`), `AFTER` (`AFTR`), `ON`, `EACH`, ...
   4. Top-level statement starts and unambiguous SQL query clause anchors:
-     - Statement starts inside SQLScript body (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `RESIGNAL`) ONLY when immediately at statement start and structurally invalid (not followed by `=` or identifier assignments like `col := ...`).
+     - Statement starts at top level, inside SQLScript blocks, and in library member scope: every invalid statement starter is matched against the valid starters of its scope (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `SELECT` -> `SELECTT`, `PUBLIC` -> `PUBLC`) ONLY when it is structurally invalid (not an assignment such as `retern = 1;` or `col := ...`); see `HANA-SYN-041`.
      - Query clause typos at structural boundaries (`SELECT` -> `SELCT`/`SELET`/`SLECT` at statement start or after `RETURN`/`UNION`/`(`; `WHERE` -> `WHRE`/`WHER` at line start or after `FROM <table_ref>`; `GROUP` -> `GROP` before `BY`; `ORDER` -> `ORDR` before `BY`; `HAVING` -> `HAVNG`; `LIMIT` -> `LIMT`).
   5. Top-level CDS declarations (`.hdbdd`, `.hdbcds`): anchored after optional `@Annotations` / `namespace ...;` / `using ...;` / statement start (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `aspect`, `service`) — e.g. `entiy Customer {` -> QuickFix `entity`.
 - **QuickFix (`Replace with '<KEYWORD>'`):** Single text replacement preserving capitalization convention (`UPPERCASE` for SQL/HDI DDL, `lowercase` for CDS keywords).
@@ -490,6 +491,61 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
     AS BEGIN
       SELECT 1 FROM DUMMY;
     END
+    ```
+
+### `HANA-SYN-041` — Invalid Statement Start
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_en/006_4_SQL_Reference.md (SQL Statements: first keyword of every `<X> Statement`)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/010_8_Imperative_SQLScript_Logic.md (imperative statements, assignments, table-variable operators, multiple-output scalar UDF assignment)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/008_pages_211_240.md (library member calls `LIB:PRINT_LINE(...)`)
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** `.sql`, `.hanasql`, `.sqlscript`, `.procedure`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable`.
+- **Statement Walker:** `src/analyzer/sql-statements.ts` follows the compound structure of each SQL section: routine / library / trigger / `DO` headers (consuming header parser, `HANA-SYN-040`), `BEGIN [SEQUENTIAL EXECUTION | PARALLEL EXECUTION | AUTONOMOUS TRANSACTION] ... END`, `IF ... THEN ... {ELSEIF ... THEN ...} [ELSE ...] END IF`, `WHILE ... DO ... END WHILE`, `FOR ... DO ... END FOR`, `LOOP ... END LOOP`, statement-level `CASE [<expr>] WHEN ... THEN <stmts> ... [ELSE <stmts>] END CASE`, `DECLARE (EXIT | CONTINUE) HANDLER FOR <conditions> <stmt>`, and library member scope. Conditions (`IF` / `ELSEIF` / `WHILE` / `WHEN`) are scanned to their `THEN` / `DO` at parenthesis depth 0 outside `CASE ... END` **expressions**, so expression-level `CASE WHEN ... THEN <expr> ELSE <expr> END` never opens or closes a statement list. A `BEGIN ... END` nested inside a statement (anonymous `SQL FUNCTION ... BEGIN ... END` in a query) is walked as a block.
+- **Statement Prefixes (skipped before validation):** `@<pragma>[(...)]` (see `HANA-SYN-005`), `#[INLINE]` / `#[NO_INLINE]` hints, and labels `<ident>:` before `FOR` / `WHILE` / `LOOP` / `BEGIN`.
+- **Valid Starters by Scope:**
+
+  ```text
+  sql_statement_starter  ::= ALTER | ANNOTATE | BACKUP | CALL | CANCEL | COMMENT | COMMIT | CONNECT | CREATE | DELETE
+                           | DO | DROP | EXPLAIN | EXPORT | GRANT | IMPORT | INSERT | LOAD | LOCK | MERGE | RECOVER
+                           | REFRESH | RELEASE | RENAME | REPLACE | REVOKE | ROLLBACK | SAVEPOINT | SELECT | SET
+                           | TRUNCATE | UNLOAD | UNSET | UPDATE | UPSERT | VALIDATE | VALUES | WITH
+                           | "(" ( SELECT | WITH | "(" ) ...                     (* parenthesized query *)
+  sqlscript_starter      ::= BEGIN | BREAK | CALL | CASE | CLOSE | CONTINUE | DECLARE | DO | EXEC | EXECUTE | FETCH
+                           | FOR | IF | LOOP | OPEN | RESIGNAL | RETURN | SIGNAL | USING | WHILE | WITH
+  imperative_target      ::= [ ":" ] <ident> { "." <ident> | "[" <expr> "]" } ( ":=" | "=" )
+                           | [ ":" ] <ident> { "." <ident> } "." <method> "("    (* :tv.INSERT(...), tv.DELETE(...) *)
+                           | "(" <ident> { "," <ident> } ")" ( "=" | ":=" )      (* multi-output scalar UDF *)
+                           | <lib_alias> ":" <member> "("                       (* library procedure call *)
+  library_member_starter ::= PUBLIC | PRIVATE | USING | VARIABLE | PROCEDURE | FUNCTION
+  ```
+
+  - **Top level** (`.sql`, `.hanasql`, `.sqlscript`, `.procedure`, `.hdbmigrationtable` sections): `sql_statement_starter`; SQLScript imperative starters are accepted here because `HANA-SYN-029` already reports them outside a routine; `.hdbmigrationtable` additionally accepts the headerless roots `COLUMN` / `ROW`. Headerless HDI artifacts skip top-level validation (their root is checked by `HANA-SYN-004`).
+  - **Imperative block** (`BEGIN`, `IF` / `ELSEIF` / `ELSE`, loop, `CASE` branch, handler body): `sql_statement_starter`, `sqlscript_starter`, or `imperative_target`.
+  - **Library member scope** (`.hdblibrary` / `CREATE LIBRARY` body): only `library_member_starter` typos are reported here (`HANA-SYN-021`, superseding the generic `HANA-SYN-029` report on the same token); other invalid members are reported by `HANA-SYN-029`.
+- **AST / Token Trigger:** the first token of a statement (after prefixes) is not a valid starter for its scope, e.g. `foobar;`, `ASd;`, `'Active';`, `123;`, `+ 1;`, `SELECTT * FROM T;`.
+- **Typo Suggestions (`HANA-SYN-021`):** an invalid word starter is matched against the valid starters of the enclosing scope (`SELECTT` -> `SELECT`, `DECLRE` -> `DECLARE`, `UPSRT` -> `UPSERT`, `PUBLC` -> `PUBLIC` in library scope) and reported with a `Replace '<typo>' with '<KEYWORD>'` QuickFix. A misspelled word that forms a valid assignment (`retrun = 5;`) is an assignment, not a typo.
+- **Guards:** a section with a `HANA-SYN-003` (delimiter) or `HANA-SYN-020` (compound block) error is skipped, because its statement boundaries cannot be trusted; tokens on lines with a broken quoted identifier, and tokens already carrying a diagnostic, are not reported again.
+- **Diagnostic Examples:**
+  - `Invalid statement start: unexpected identifier 'foobar'; expected a SQL or SQLScript statement, or an assignment ('foobar = <expression>;').`
+  - `Invalid statement start: unexpected string literal ''Active''; expected a SQL or SQLScript statement, or an assignment ('<variable> = <expression>;').`
+  - `Unknown statement keyword 'DECLRE'. Did you mean 'DECLARE'?` (`HANA-SYN-021`)
+- **QuickFix:**
+  - **Before:**
+
+    ```sql
+    DO BEGIN
+      DECLRE x INT;
+    END;
+    ```
+
+  - **After:**
+
+    ```sql
+    DO BEGIN
+      DECLARE x INT;
+    END;
     ```
 
 ---

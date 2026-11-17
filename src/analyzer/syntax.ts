@@ -6,6 +6,7 @@ import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
 import { checkSqlLexicalIntegrity, dedupeLexicalCascade } from './sql-lexical';
+import { checkSqlStatements } from './sql-statements';
 import { matchKeywordTypo } from './typo';
 import {
   filterSuppressedDiagnostics,
@@ -39,6 +40,9 @@ const SQLSCRIPT_BLOCK_LANGUAGES = new Set<string>([
 ]);
 
 const MIGRATION_MARKER_RE = /^\s*==\s*(?:version|dev-version|migration)\s*=\s*\d+.*$/i;
+
+/** Headerless roots of `.hdbmigrationtable` version sections `[HDI]` `[CLOUD]`. */
+const MIGRATION_TABLE_ROOTS: ReadonlySet<string> = new Set<string>(['COLUMN', 'ROW']);
 
 const KV_TRAILING_SEMI_OPTIONAL_SET = new Set<string>(['hdbview']);
 
@@ -356,6 +360,8 @@ interface SqlSectionScanOptions {
   readonly languageId: string;
   readonly checkBlocks: boolean;
   readonly checkHeaderRoots: boolean;
+  /** Additional valid top-level statement starters (headerless roots of `.hdbmigrationtable` sections). */
+  readonly extraTopStarters?: ReadonlySet<string>;
 }
 
 function resolveUnclosedQidentSpan(
@@ -656,6 +662,27 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         brokenQidentLines,
         unclosedStarts: delimResult.unclosedStarts,
         unmatchedCloseStarts: delimResult.unmatchedCloseStarts,
+        diagnostics,
+      });
+    }
+    // 9. Statement starters & imperative assignment targets (HANA-SYN-041, HANA-SYN-021). Skipped when block
+    //    or delimiter structure is already broken, since statement boundaries cannot be trusted then.
+    const sectionStart = baseOffset;
+    const sectionEnd = baseOffset + slice.length;
+    const structureBroken = diagnostics.some(
+      (d) => (d.ruleId === 'HANA-SYN-020' || d.ruleId === 'HANA-SYN-003') && d.start >= sectionStart && d.start <= sectionEnd
+    );
+    if (SQLSCRIPT_BLOCK_LANGUAGES.has(languageId) && !structureBroken) {
+      checkSqlStatements({
+        languageId,
+        codeTokens,
+        baseOffset,
+        validateTopLevel: !HDI_ROOT_TARGETS[languageId],
+        extraTopStarters: opts.extraTopStarters,
+        isBlocked: (tok) =>
+          delimResult.unclosedStarts.has(tok.start) ||
+          delimResult.unmatchedCloseStarts.has(tok.start) ||
+          brokenQidentLines.has(findLineNumber(lineStarts, tok.start)),
         diagnostics,
       });
     }
@@ -4555,6 +4582,7 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
           languageId: 'sql',
           checkBlocks: true,
           checkHeaderRoots: false,
+          extraTopStarters: MIGRATION_TABLE_ROOTS,
         })
       );
     }
