@@ -173,7 +173,7 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 
 **Object suffix -> `type`:** `hdbtable`, `table` -> `TABLE`; `hdbview`, `view`, `attributeview`, `analyticview`, `calculationview`, `hdbcalculationview` -> `VIEW`; `hdbprocedure`, `procedure` -> `PROCEDURE`; `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction` -> `FUNCTION`; `hdbsequence`, `sequence` -> `SEQUENCE`; `hdbsynonym` -> `SYNONYM`.
 
-**Reporting dropped content:** JSON cannot hold comments or notes. Everything the QuickFix cannot carry over is listed in the `HANA-MIG-004` diagnostic message under `Not carried over by the QuickFix:`, one `<statement> — <reason>` line per item. That covers `package` and `application privilege` statements, the `catalog sql object` synonym reminder, unknown object types, and a system-privilege grant option.
+**Reporting dropped content:** JSON cannot hold comments or notes. Everything the QuickFix cannot carry over is listed in the `HANA-MIG-004` diagnostic message under `Not carried over by the QuickFix:`, one `<statement> — <reason>` line per item. That covers source comments (§4), `package` and `application privilege` statements, the `catalog sql object` synonym reminder, unknown object types, and a system-privilege grant option.
 
 ---
 
@@ -230,3 +230,26 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 - **Target Extensions:** `.xsjs`, `.xsjslib`
 - **Trigger:** Calls or property accesses on `$.repo.*`, `$.config.*`, `$.session.hasSystemPrivilege(...)`, `$.session.assertSystemPrivilege(...)`, or `$.session.hasAppPrivilege(...)` / `$.session.assertAppPrivilege(...)` (`004_2_Migrating_...md:4345-4363`).
 - **Diagnostic Message:** `'<api>' is unsupported or semantics changed in XS Advanced (@sap/xsjs). Replace $.session app privileges with XSUAA scopes ('$.session.hasAppPrivilege' -> XSUAA scope name) and remove $.repo / $.config.`
+
+---
+
+## 4. Comment Preservation & Regression Harness
+
+AGENTS.md says tooling must never strip comments. Every structural migration QuickFix either keeps each source comment or reports it as dropped.
+
+| QuickFix | Comment handling |
+| :--- | :--- |
+| `HANA-MIG-001`, `002`, `003`, `006` (classic KV -> SQL DDL) | All comments outside string values move to a SQL header block before the DDL, in source order. `//` becomes `--`; `--` and `/* */` are kept. Comments inside a value (such as `query = "..."`) stay inside it. |
+| Reverse `001`, `002`, `003` (SQL DDL -> classic KV) | Comments come back as a KV header block, with `--` turned into `//`. Comments inside verbatim-copied SQL (the `.hdbview` query, the `RESET BY` subquery) stay inside it and are not duplicated. `-- TODO(.hdbindex): ...` lines written by `HANA-MIG-001` are parsed back into `table.indexes`, not kept as comments. |
+| `HANA-MIG-004` (`.hdbrole` -> JSON) | JSON cannot hold comments, so each comment is listed in the diagnostic message as `<comment> — comment dropped: JSON .hdbrole cannot hold comments` (see §2.4). |
+| `HANA-MIG-005` (`.hdbdd` -> `.hdbcds`) | Edits in place. Comments are never touched, including a comment that shares a line with a removed annotation. |
+
+**Regression harness** (`test/migration-transformer.test.ts`) applies every structural QuickFix to every file in `samples/xs-classic/` and `samples/format-demos/` and asserts:
+
+1. The output is non-empty.
+2. The output has no `syntax` diagnostics of severity `error` in its target language (`.hdbstructure` -> `hdbtabletype`, `.hdbdd` -> `hdbcds`).
+3. Running the analyzer on the output finds nothing left to migrate (idempotency).
+4. Each source comment appears in the output or in the diagnostic message.
+5. For bidirectional rules, forward -> reverse -> forward reproduces the first forward output exactly.
+
+A new classic sample is covered automatically. Add it to `EXPECTED_MIGRATABLE_SAMPLES` so the harness fails if the QuickFix stops being offered.
