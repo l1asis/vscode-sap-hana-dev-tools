@@ -2,6 +2,19 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.10.1] - 2026-11-18
+
+### Added
+
+- **Built-in Functions (`syntaxes/hanasql.tmLanguage.json`, `docs/specs/catalogs/builtin-functions.json`, `src/sql/sql-catalog.ts`):** Added `TO_CHAR` / `TO_NCHAR` (conversion), `CHR` (string), `GET_NUM_SERVERS` (misc), and the SQLScript table variable built-ins `RECORD_COUNT` / `IS_EMPTY`, which the SQL / SQLScript references use without giving them a chapter. They are now highlighted (only when followed by `(`) and have hover and completion with real signatures, e.g. `TO_CHAR(<value> [, <format>])` and `RECORD_COUNT(<table_variable>)` (#74).
+
+### Fixed
+
+- **`IF [NOT] EXISTS` / `IF NOT` Conditions (`src/analyzer/syntax.ts`, `HANA-SYN-020`):** An SQLScript `IF` whose condition starts with `EXISTS`, `NOT EXISTS`, or any `NOT` (`IF NOT :flag THEN`) now opens an `IF` block instead of reporting a false `Unexpected 'END IF'`. Errors inside such conditions and bodies (`AND AND`, a missing `;`) are now reported too. DDL `DROP ... IF EXISTS` is unaffected (#72).
+- **`LEFT(` / `RIGHT(` in Conditions (`HANA-SYN-024`):** The `LEFT` / `RIGHT` string functions no longer end a `WHERE` / `ON` / `HAVING` condition, which caused false `Dangling operator 'AND' before 'LEFT'` errors. `LEFT [OUTER] JOIN` / `RIGHT [OUTER] JOIN` still end it (#73).
+- **Missing-Operator and Missing-Comma False Positives (`HANA-SYN-023`, `HANA-SYN-024`):** `[NOT] LIKE_REGEXPR <pattern> [FLAG <flags>]`, `MERGE INTO ... WHEN MATCHED ... WHEN NOT MATCHED ...` branches, `ALTER SYSTEM ALTER CONFIGURATION ... SET (...) = <value> WITH RECONFIGURE`, and typed cursor parameters (`DECLARE CURSOR c (p NVARCHAR(10)) FOR ...`) no longer produce false diagnostics. Genuine errors in these constructs are still reported (#60).
+- **Specs & Tests:** Updated `docs/specs/diagnostics/syntax-rules.md` and `docs/specs/grammars/sql-sqlscript.md` and added positive and negative tests for each fix, bringing the test suite to `161/161` passing.
+
 ## [0.10.0] - 2026-11-17
 
 ### Added
