@@ -823,10 +823,47 @@ function skipCdsAnnotation(codeToks: readonly CdsToken[], startIdx: number): num
   return i;
 }
 
+/** Existing `} technical configuration { ... }` block that follows an entity's closing brace. */
+interface TechConfigBlock {
+  readonly open: CdsToken;
+  readonly close: CdsToken;
+  readonly hasStore: boolean;
+  readonly indexNames: ReadonlySet<string>;
+}
+
 interface TargetEntityInfo {
   readonly entityOpen: CdsToken;
   readonly entityClose: CdsToken;
-  readonly hasTechnicalConfig: boolean;
+  /** Whether a `;` already follows the entity (after its technical configuration, if any). */
+  readonly hasTrailingSemi: boolean;
+  readonly techConfig: TechConfigBlock | null;
+}
+
+function isCdsWord(tok: CdsToken | undefined, word: string): boolean {
+  return tok?.type === 'word' && tok.text.toLowerCase() === word;
+}
+
+/**
+ * Reads the `technical configuration { ... }` block that CDS places *after* the entity's closing brace
+ * (`entity E { ... } technical configuration { ... };`) `[XSC]` `[HDI]`.
+ */
+function readTechConfigAfter(codeToks: readonly CdsToken[], entityCloseIdx: number): { block: TechConfigBlock; closeIdx: number } | null {
+  const k = entityCloseIdx + 1;
+  if (!isCdsWord(codeToks[k], 'technical') || !isCdsWord(codeToks[k + 1], 'configuration') || codeToks[k + 2]?.text !== '{') {
+    return null;
+  }
+  const closeIdx = findMatchingCdsDelimiter(codeToks, k + 2, '{', '}');
+  if (closeIdx === -1) return null;
+  let hasStore = false;
+  const indexNames = new Set<string>();
+  for (let b = k + 3; b < closeIdx; b++) {
+    if (isCdsWord(codeToks[b], 'store') && (isCdsWord(codeToks[b - 1], 'column') || isCdsWord(codeToks[b - 1], 'row'))) {
+      hasStore = true;
+    } else if (isCdsWord(codeToks[b], 'index') && codeToks[b + 1]) {
+      indexNames.add(codeToks[b + 1].text.toLowerCase());
+    }
+  }
+  return { block: { open: codeToks[k + 2], close: codeToks[closeIdx], hasStore, indexNames }, closeIdx };
 }
 
 function findTargetEntityAfterAnnotation(codeToks: readonly CdsToken[], afterIdx: number): TargetEntityInfo | null {
@@ -845,20 +882,14 @@ function findTargetEntityAfterAnnotation(codeToks: readonly CdsToken[], afterIdx
       if (codeToks[k]?.text !== '{') return null;
       const closeIdx = findMatchingCdsDelimiter(codeToks, k, '{', '}');
       if (closeIdx === -1) return null;
-
-      let hasTechnicalConfig = false;
-      for (let b = k + 1; b < closeIdx - 1; b++) {
-        if (
-          codeToks[b].type === 'word' &&
-          codeToks[b].text.toLowerCase() === 'technical' &&
-          codeToks[b + 1]?.type === 'word' &&
-          codeToks[b + 1].text.toLowerCase() === 'configuration'
-        ) {
-          hasTechnicalConfig = true;
-          break;
-        }
-      }
-      return { entityOpen: codeToks[k], entityClose: codeToks[closeIdx], hasTechnicalConfig };
+      const tc = readTechConfigAfter(codeToks, closeIdx);
+      const lastIdx = tc ? tc.closeIdx : closeIdx;
+      return {
+        entityOpen: codeToks[k],
+        entityClose: codeToks[closeIdx],
+        hasTrailingSemi: codeToks[lastIdx + 1]?.text === ';',
+        techConfig: tc?.block ?? null,
+      };
     }
     return null;
   }
@@ -872,8 +903,17 @@ function unquoteCdsString(raw: string): string {
   return raw;
 }
 
-function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: number, arrCloseIdx: number): string[] {
-  const clauses: string[] = [];
+interface CatalogIndexClause {
+  readonly name: string;
+  readonly text: string;
+}
+
+/**
+ * Converts `@Catalog.index: [{ name, unique, order, elementNames }]` into technical configuration clauses.
+ * CDS orders a whole index, not single columns: `[unique] index <name> on (<a>, <b>) asc|desc;`.
+ */
+function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: number, arrCloseIdx: number): CatalogIndexClause[] {
+  const clauses: CatalogIndexClause[] = [];
   let i = arrOpenIdx + 1;
   while (i < arrCloseIdx) {
     if (codeToks[i].text !== '{') {
@@ -925,37 +965,63 @@ function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: num
 
     if (idxName && elements.length > 0) {
       const uq = isUnique ? 'unique ' : '';
-      const cols = elements.map((c) => `${c} ${orderDir}`).join(', ');
-      clauses.push(`${uq}index ${idxName} on (${cols});`);
+      clauses.push({ name: idxName, text: `${uq}index ${idxName} on (${elements.join(', ')}) ${orderDir};` });
     }
     i = objClose + 1;
   }
   return clauses;
 }
 
-function buildTechConfigInsertEdit(text: string, target: TargetEntityInfo, clauses: readonly string[]): TextEditSpan {
-  const closeStart = target.entityClose.start;
-  const lineStart = text.lastIndexOf('\n', closeStart - 1) + 1;
-  const beforeCloseOnLine = text.slice(lineStart, closeStart);
-  const bodyHasNewline = text.slice(target.entityOpen.end, closeStart).includes('\n');
+/** Leading whitespace of the line that contains `offset`, or `null` when other text precedes it on that line. */
+function lineIndentBefore(text: string, offset: number): string | null {
+  const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+  const before = text.slice(lineStart, offset);
+  return /^[ \t]*$/.test(before) ? before : null;
+}
 
-  if (bodyHasNewline && /^[ \t]*$/.test(beforeCloseOnLine)) {
-    const indent = beforeCloseOnLine;
-    const inner = clauses.map((c) => `${indent}    ${c}\n`).join('');
-    return {
-      start: lineStart,
-      end: lineStart,
-      newText: `${indent}  technical configuration {\n${inner}${indent}  };\n`,
-    };
+/**
+ * Indentation for clauses inside a block that opens at `open` and closes at `close`: the indentation of the
+ * block's first inner line, or the closing brace's indentation plus four spaces.
+ */
+function innerBlockIndent(text: string, open: CdsToken, close: CdsToken, closeIndent: string): string {
+  const firstInner = /\n([ \t]*)\S/.exec(text.slice(open.end, close.start));
+  const indent = firstInner?.[1];
+  return indent !== undefined && indent.length > closeIndent.length ? indent : `${closeIndent}    `;
+}
+
+function buildTechConfigEdit(text: string, target: TargetEntityInfo, clauses: readonly string[]): TextEditSpan {
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const tc = target.techConfig;
+
+  if (tc) {
+    // Merge into the existing block, before its closing brace.
+    const closeIndent = lineIndentBefore(text, tc.close.start);
+    if (closeIndent !== null && text.slice(tc.open.end, tc.close.start).includes('\n')) {
+      const inner = innerBlockIndent(text, tc.open, tc.close, closeIndent);
+      const lineStart = tc.close.start - closeIndent.length;
+      return { start: lineStart, end: lineStart, newText: clauses.map((c) => `${inner}${c}${eol}`).join('') };
+    }
+    const prevCh = text[tc.close.start - 1] ?? '';
+    const newText = /\s/.test(prevCh) ? `${clauses.join(' ')} ` : ` ${clauses.join(' ')}`;
+    return { start: tc.close.start, end: tc.close.start, newText };
   }
 
-  const prevCh = text[closeStart - 1] ?? '';
-  const leadSpace = prevCh === ' ' || prevCh === '\t' || prevCh === '\n' ? '' : ' ';
-  const trailSpace = prevCh === ' ' || prevCh === '\t' ? ' ' : '';
+  // No block yet: append `technical configuration { ... }` after the entity's closing brace.
+  const semi = target.hasTrailingSemi ? '' : ';';
+  const closeIndent = lineIndentBefore(text, target.entityClose.start);
+  if (closeIndent !== null && text.slice(target.entityOpen.end, target.entityClose.start).includes('\n')) {
+    const inner = innerBlockIndent(text, target.entityOpen, target.entityClose, closeIndent);
+    const body = clauses.map((c) => `${inner}${c}${eol}`).join('');
+    return {
+      start: target.entityClose.end,
+      end: target.entityClose.end,
+      newText: ` technical configuration {${eol}${body}${closeIndent}}${semi}`,
+    };
+  }
   return {
-    start: closeStart,
-    end: closeStart,
-    newText: `${leadSpace}technical configuration { ${clauses.join(' ')} };${trailSpace}`,
+    start: target.entityClose.end,
+    end: target.entityClose.end,
+    newText: ` technical configuration { ${clauses.join(' ')} }${semi}`,
   };
 }
 
@@ -995,15 +1061,25 @@ function findHdbddMigrationSpans(text: string): Array<{ start: number; end: numb
 export function convertHdbddToHdbcds(text: string): string {
   const codeToks = cdsTokenize(text).filter(isCdsCodeToken);
   const edits: TextEditSpan[] = [];
-  const techAdditions = new Map<number, { target: TargetEntityInfo; clauses: string[] }>();
-
-  const queueTechClause = (target: TargetEntityInfo, clause: string): void => {
+  const techAdditions = new Map<number, { target: TargetEntityInfo; store: string | null; indexes: string[] }>();
+  const entryFor = (target: TargetEntityInfo) => {
     let entry = techAdditions.get(target.entityClose.start);
     if (!entry) {
-      entry = { target, clauses: [] };
+      entry = { target, store: null, indexes: [] };
       techAdditions.set(target.entityClose.start, entry);
     }
-    entry.clauses.push(clause);
+    return entry;
+  };
+  // SAP forbids @Catalog.tableType / @Catalog.index together with the matching technical configuration
+  // clause, so an existing clause always wins and is never duplicated.
+  const queueStore = (target: TargetEntityInfo, clause: string): void => {
+    if (target.techConfig?.hasStore) return;
+    const entry = entryFor(target);
+    entry.store ??= clause;
+  };
+  const queueIndex = (target: TargetEntityInfo, idx: CatalogIndexClause): void => {
+    if (target.techConfig?.indexNames.has(idx.name.toLowerCase())) return;
+    entryFor(target).indexes.push(idx.text);
   };
 
   for (let i = 0; i < codeToks.length; i++) {
@@ -1042,9 +1118,7 @@ export function convertHdbddToHdbcds(text: string): string {
       const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
       if (target) {
         edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
-        if (!target.hasTechnicalConfig) {
-          queueTechClause(target, storeKeyword);
-        }
+        queueStore(target, storeKeyword);
       }
       i = endIdx;
       continue;
@@ -1059,14 +1133,16 @@ export function convertHdbddToHdbcds(text: string): string {
         const clauses = parseCatalogIndexClauses(codeToks, i + 2, arrClose);
         if (clauses.length > 0) {
           const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
-          if (target && !target.hasTechnicalConfig) {
+          if (target) {
             edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
-            for (const c of clauses) queueTechClause(target, c);
+            for (const c of clauses) queueIndex(target, c);
           } else {
             edits.push({
               start: tok.start,
               end: codeToks[endIdx].end,
-              newText: clauses.map((c) => `/* Converted from @Catalog.index -> place in technical configuration { ${c} }; */`).join('\n'),
+              newText: clauses
+                .map((c) => `/* Converted from @Catalog.index -> place in technical configuration { ${c.text} }; */`)
+                .join('\n'),
             });
           }
         }
@@ -1075,8 +1151,9 @@ export function convertHdbddToHdbcds(text: string): string {
     }
   }
 
-  for (const { target, clauses } of techAdditions.values()) {
-    edits.push(buildTechConfigInsertEdit(text, target, clauses));
+  for (const { target, store, indexes } of techAdditions.values()) {
+    const clauses = store ? [store, ...indexes] : indexes;
+    if (clauses.length > 0) edits.push(buildTechConfigEdit(text, target, clauses));
   }
 
   return applyTextEdits(text, edits);
