@@ -238,3 +238,116 @@ test('xsjs IntelliSense: $.import string completions, XSDS Entity static/instanc
   assert.ok(expectSig);
   assert.match(expectSig.signatures[0].label, /expect\(actual: any\): jasmine\.Expectation/);
 });
+
+// ---------------------------------------------------------------------------
+// Issue #30: inherited overload deduplication and consolidated hover cards
+// ---------------------------------------------------------------------------
+
+function hoverAt(code: string, needle: string, delta = 2) {
+  const idx = code.lastIndexOf(needle);
+  assert.ok(idx >= 0, `needle ${needle} not found`);
+  return getXsjsHover(code, idx + delta);
+}
+
+function countMatches(text: string, re: RegExp): number {
+  return (text.match(new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g')) ?? []).length;
+}
+
+test('xsjs #30: inherited setBody renders a single hover card', () => {
+  const cases: Array<[string, string, RegExp]> = [
+    ['$.response.setBody("x");', '$.web.WebResponse.setBody(', /Sets the body of the entity/],
+    ['$.request.setBody("x");', '$.web.WebRequest.setBody(', /Sets the body of the entity/],
+    [
+      'var r = new $.net.http.Request($.net.http.GET, "/");\nr.setBody("x");',
+      '$.net.http.Request.setBody(',
+      /Sets the body of the entity/,
+    ],
+  ];
+  for (const [code, signature, desc] of cases) {
+    const hover = hoverAt(code, 'setBody');
+    assert.ok(hover, code);
+    assert.ok(hover.markdown.includes(signature), `${code}: most-derived signature`);
+    assert.equal(countMatches(hover.markdown, /setBody\(/), 1, `${code}: one signature`);
+    assert.equal(countMatches(hover.markdown, desc), 1, `${code}: description once`);
+    assert.ok(!hover.markdown.includes('---'), `${code}: no card separator`);
+    assert.ok(hover.markdown.includes('- `body`'), `${code}: parameter list`);
+  }
+});
+
+test('xsjs #30: inherited setBody yields one signature and no overload suffix', () => {
+  const prefix = 'var r = new $.net.http.Request($.net.http.GET, "/");\n';
+  for (const receiver of ['$.response', '$.request', 'r']) {
+    const sigCode = `${prefix}${receiver}.setBody(`;
+    const sig = getXsjsSignatureHelp(sigCode, sigCode.length);
+    assert.ok(sig, receiver);
+    assert.equal(sig.signatures.length, 1, `${receiver}: signature count`);
+
+    const compCode = `${prefix}${receiver}.setB`;
+    const setBody = getXsjsCompletions(compCode, compCode.length).filter((c) => c.label === 'setBody');
+    assert.equal(setBody.length, 1, `${receiver}: one completion`);
+    assert.doesNotMatch(setBody[0].detail ?? '', /overload/, `${receiver}: no overload suffix`);
+  }
+});
+
+test('xsjs #30: genuine overloads stay distinct in completions and signature help', () => {
+  const comp = getXsjsCompletions('$.imp', 5).find((c) => c.label === 'import');
+  assert.ok(comp);
+  assert.match(comp.detail ?? '', /\(\+1 overload\)/);
+
+  const reqCode = 'var cl = new $.net.http.Client();\ncl.request(';
+  const sig = getXsjsSignatureHelp(reqCode, reqCode.length);
+  assert.ok(sig);
+  assert.equal(sig.signatures.length, 3);
+  const comp2 = getXsjsCompletions('var cl = new $.net.http.Client();\ncl.req', 40);
+  assert.match(comp2.find((c) => c.label === 'request')?.detail ?? '', /\(\+2 overloads\)/);
+});
+
+test('xsjs #30: $.import overloads share one description and order by call-site arity', () => {
+  const twoArg = hoverAt('var lib = $.import("a.b", "c");', 'import');
+  assert.ok(twoArg);
+  assert.equal(countMatches(twoArg.markdown, /Imports a server-side JavaScript library artifact/), 1);
+  assert.equal(countMatches(twoArg.markdown, /\$\.import\(/), 2, 'both overload signatures stacked');
+  assert.ok(!twoArg.markdown.includes('---'));
+  assert.match(twoArg.markdown, /```ts\n\$\.import\(package_: string, library: string\)/);
+  assert.match(twoArg.markdown, /\*\*Parameters\*\*/);
+  for (const p of ['package_', 'library', 'path']) {
+    assert.equal(countMatches(twoArg.markdown, new RegExp('- `' + p + '`')), 1, `param ${p} once`);
+  }
+
+  const oneArg = hoverAt('$.import("a/b.xsjslib");', 'import');
+  assert.ok(oneArg);
+  assert.match(oneArg.markdown, /```ts\n\$\.import\(path: string\)/, 'one-arg call lists path overload first');
+});
+
+test('xsjs #30: partial deprecation and differing descriptions are attributed per overload', () => {
+  const conn = hoverAt('var c = $.db.getConnection();', 'getConnection');
+  assert.ok(conn);
+  assert.equal(countMatches(conn.markdown, /Returns a connection to the database/), 1);
+  assert.equal(countMatches(conn.markdown, /\*\*@deprecated\*\*/), 1);
+  assert.match(conn.markdown, /\*\*@deprecated\*\* `\$\.db\.getConnection\(sqlcc, isolationLevel\)`/);
+
+  const req = hoverAt('var cl = new $.net.http.Client();\ncl.request($.net.http.GET, "u");', 'request');
+  assert.ok(req);
+  assert.match(req.markdown, /- `\$\.net\.http\.Client\.request\(request, destination\)` — Send a new request object/);
+  assert.match(req.markdown, /- `\$\.net\.http\.Client\.request\(WebMethod, url, proxy\)` — Send a new request to the given URL/);
+  assert.equal(countMatches(req.markdown, /- `request` \(/), 1, 'shared param listed once');
+});
+
+test('xsjs #30: hover filters static vs. instance members like completions', () => {
+  const xsdsCode = [
+    'var XSDS = $.import("sap.hana.xs.libs.dbutils", "xsds");',
+    'var Order = XSDS.$importEntity("app.data", "Order");',
+    'var item = Order.$get({ ID: 1 });',
+  ].join('\n');
+
+  // Class reference: static members only
+  assert.ok(hoverAt(xsdsCode + '\nOrder.$find();', '$find'), 'static $find on class');
+  assert.equal(hoverAt(xsdsCode + '\nOrder.$save();', '$save'), null, 'instance $save hidden on class');
+
+  // Instance: instance members only
+  assert.ok(hoverAt(xsdsCode + '\nitem.$save();', '$save'), 'instance $save on instance');
+  assert.equal(hoverAt(xsdsCode + '\nitem.$find();', '$find'), null, 'static $find hidden on instance');
+
+  // Namespaces are not filtered
+  assert.ok(hoverAt('$.db.getConnection();', 'getConnection'));
+});
