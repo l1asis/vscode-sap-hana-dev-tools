@@ -419,6 +419,20 @@ export function convertHdbtableHdiToKv(text: string, targetSchema = 'MYSCHEMA'):
 }
 
 /**
+ * Rewrites `"_SYS_BIC"."pkg/OBJ"` to `"pkg::OBJ"` and strips the `"<schema>".` prefix matching the classic
+ * `schema=` property, so container-local objects resolve in `[HDI]`.
+ */
+function stripClassicSchemaRefs(sql: string, schema: string | null): string {
+  let out = sql.replace(/(?:"_SYS_BIC"|_SYS_BIC)\."([^"]+)"/gi, (_m, obj: string) => `"${obj.replace(/\//g, '::')}"`);
+  if (schema) {
+    const escapedSchema = schema.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(`"${escapedSchema}"\\s*\\.\\s*`, 'g'), '');
+    out = out.replace(new RegExp(`\\b${escapedSchema}\\s*\\.\\s*`, 'gi'), '');
+  }
+  return out;
+}
+
+/**
  * Converts XSC Classic KV `.hdbview` (`schema = ...; query = "...";`) to HDI DDL `.hdbview`.
  */
 export function convertHdbviewKvToHdi(text: string, objectName = 'MY_VIEW'): string {
@@ -427,13 +441,7 @@ export function convertHdbviewKvToHdi(text: string, objectName = 'MY_VIEW'): str
   const queryRaw = readKvScalarString(assigns.get('query')?.value) ?? '';
   let cleanQuery = queryRaw.trim().replace(/;+\s*$/, '');
 
-  // Replace `"_SYS_BIC"."pkg/OBJ"` -> `"pkg::OBJ"` and strip matching `"SCHEMA".` prefix
-  cleanQuery = cleanQuery.replace(/(?:"_SYS_BIC"|_SYS_BIC)\."([^"]+)"/gi, (_m, obj: string) => `"${obj.replace(/\//g, '::')}"`);
-  if (schema) {
-    const escapedSchema = schema.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    cleanQuery = cleanQuery.replace(new RegExp(`"${escapedSchema}"\\s*\\.\\s*`, 'g'), '');
-    cleanQuery = cleanQuery.replace(new RegExp(`\\b${escapedSchema}\\s*\\.\\s*`, 'gi'), '');
-  }
+  cleanQuery = stripClassicSchemaRefs(cleanQuery, schema);
 
   return `VIEW "${objectName}"\nAS ${cleanQuery}\n`;
 }
@@ -496,12 +504,13 @@ export function convertHdbsequenceKvToHdi(text: string, objectName = 'MY_SEQ'): 
 
   const noMax = readKvBool(assigns.get('nomaxvalue')?.value);
   const maxVal = readKvScalarString(assigns.get('maxvalue')?.value);
-  if (noMax === true) clauses.push('NOMAXVALUE');
+  // `NO MAXVALUE` / `NO MINVALUE` are two words in HANA SQL `<sequence_parameter>` [HDI] [CLOUD].
+  if (noMax === true) clauses.push('NO MAXVALUE');
   else if (maxVal) clauses.push(`MAXVALUE ${maxVal}`);
 
   const noMin = readKvBool(assigns.get('nominvalue')?.value);
   const minVal = readKvScalarString(assigns.get('minvalue')?.value);
-  if (noMin === true) clauses.push('NOMINVALUE');
+  if (noMin === true) clauses.push('NO MINVALUE');
   else if (minVal) clauses.push(`MINVALUE ${minVal}`);
 
   const cycles = readKvBool(assigns.get('cycles')?.value);
@@ -509,7 +518,10 @@ export function convertHdbsequenceKvToHdi(text: string, objectName = 'MY_SEQ'): 
   else if (cycles === false) clauses.push('NO CYCLE');
 
   const resetBy = readKvScalarString(assigns.get('reset_by')?.value);
-  if (resetBy) clauses.push(`RESET BY ${resetBy.trim().replace(/;+\s*$/, '')}`);
+  if (resetBy) {
+    const schema = readKvScalarString(assigns.get('schema')?.value);
+    clauses.push(`RESET BY ${stripClassicSchemaRefs(resetBy.trim().replace(/;+\s*$/, ''), schema)}`);
+  }
 
   const body = clauses.length > 0 ? `\n  ${clauses.join('\n  ')}` : '';
   return `SEQUENCE "${objectName}"${body}\n`;
@@ -535,13 +547,18 @@ export function convertHdbsequenceHdiToKv(text: string, targetSchema = 'MYSCHEMA
     } else if (w === 'MAXVALUE' && toks[i + 1]) {
       lines.push(`maxvalue = ${toks[i + 1].text};`);
       i++;
-    } else if (w === 'NOMAXVALUE') {
+    } else if (w === 'NO' && next === 'MAXVALUE') {
       lines.push('nomaxvalue = true;');
+      i++;
+    } else if (w === 'NO' && next === 'MINVALUE') {
+      lines.push('nominvalue = true;');
+      i++;
+    } else if (w === 'NOMAXVALUE' || w === 'NOMINVALUE') {
+      // Legacy single-word form written by converter versions <= 0.10.1; not valid HANA SQL.
+      lines.push(`${w.toLowerCase()} = true;`);
     } else if (w === 'MINVALUE' && toks[i + 1]) {
       lines.push(`minvalue = ${toks[i + 1].text};`);
       i++;
-    } else if (w === 'NOMINVALUE') {
-      lines.push('nominvalue = true;');
     } else if (w === 'NO' && next === 'CYCLE') {
       lines.push('cycles = false;');
       i++;
