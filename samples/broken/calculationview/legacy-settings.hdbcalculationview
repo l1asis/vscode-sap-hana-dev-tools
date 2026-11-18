@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario id="app.sales::CV_LEGACY" dataCategory="CUBE" defaultSchema="SALES" applyPrivilegeType="ANALYTIC_PRIVILEGE">
+  <dataSources>
+    <DataSource id="ORDERS" type="DATA_BASE_TABLE">
+      <columnObject schemaName="SALES" columnObjectName="ORDERS"/>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:ScriptView" id="Script_Orders"/>
+  </calculationViews>
+  <logicalModel id="Script_Orders">
+    <baseMeasures><measure id="AMOUNT" aggregationType="sum"/></baseMeasures>
+  </logicalModel>
+</Calculation:scenario>

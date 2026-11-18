@@ -1,0 +1,5 @@
+table.schemaName = "SALES";
+table.tableType COLUMNSTORE;
+table.columns = [
+  {name = "ORDER_ID"; sqlType = INTEGER; nullable = false;}
+];

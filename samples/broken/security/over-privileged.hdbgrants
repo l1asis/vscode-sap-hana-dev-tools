@@ -1,0 +1,15 @@
+{
+  "sales_grantor": {
+    "object_owner": {
+      "schema_privileges": [
+        { "schema": "SYS", "privileges": ["CREATE ANY", "ALL PRIVILEGES"] }
+      ]
+    },
+    "application_user": {
+      "object_privileges": [
+        { "name": "ORDERS", "type": "TABLE", "privileges_with_grant_option": ["INSERT"] }
+      ]
+    }
+  },
+  "unused_grantor": {}
+}

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario id="app.sales::CV_BROKEN_GRAPH" dataCategory="DIMENSION" applyPrivilegeType="SQL_ANALYTIC_PRIVILEGE">
+  <dataSources>
+    <DataSource id="ORDERS" type="DATA_BASE_TABLE"><resourceUri>ORDERS</resourceUri></DataSource>
+    <DataSource id="ORDERS" type="DATA_BASE_TABLE"><resourceUri>ORDERS_COPY</resourceUri></DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_Orders">
+      <input node="#Proj_Loop"/>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Proj_Loop">
+      <input node="#Join_Orders"/>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Proj_Missing">
+      <input node="#NOT_DEFINED"/>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="No_Such_Node">
+    <attributes>
+      <attribute id="ORDER_ID"><keyMapping columnObjectName="Unknown_Object" columnName="ORDER_ID"/></attribute>
+    </attributes>
+    <baseMeasures>
+      <measure id="AMOUNT" aggregationType="sum"><measureMapping columnObjectName="ORDERS" columnName="AMOUNT"/></measure>
+    </baseMeasures>
+  </logicalModel>
+</Calculation:scenario>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario dataCategory="DIMENSION">
+  <dataSources>
+    <DataSource id="ORDERS" type="DATA_BASE_TABLE">
+  </dataSources>
+</Calculation:scenario>

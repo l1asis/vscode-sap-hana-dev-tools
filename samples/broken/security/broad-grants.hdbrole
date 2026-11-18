@@ -1,0 +1,20 @@
+{
+  "role": {
+    "name": "app.sales::Reporting",
+    "system_privileges": ["USER ADMIN"],
+    "schema_privileges": [
+      {
+        "privileges": ["SELECT", "ALL PRIVILEGES"],
+        "privileges_with_grant_option": ["SELECT"]
+      }
+    ],
+    "object_privileges": [
+      {
+        "name": "%",
+        "pattern_mode": "include",
+        "type": "TABLE",
+        "privileges": ["SELECT"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+namespace app.sales;
+
+context Orders {
+  entity Header {
+    key orderId Integer;
+    customer : ;
+    amount : Decimal(15, 2)
+    status : String(10);
+  };
+};
