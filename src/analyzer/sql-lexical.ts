@@ -42,8 +42,6 @@ const SQLSCRIPT_PRAGMAS = new Set<string>([
   'TESTCLASSIFICATION',
 ]);
 
-const HEX_SUFFIX_RE = /^[xX][0-9A-Fa-f]+$/;
-
 /** SQLScript cursor attributes (`c_cursor::ISCLOSED`, `::NOTFOUND`, `::ROWCOUNT`) `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`. */
 const CURSOR_ATTRIBUTES = new Set<string>(['ISCLOSED', 'NOTFOUND', 'ROWCOUNT']);
 
@@ -190,20 +188,17 @@ export function checkSqlLexicalIntegrity(opts: SqlLexicalOptions): void {
       const rightOperand =
         next.type === 'word' || next.type === 'qident' || next.type === 'string' || next.type === 'number';
       if ((leftDelimited || tok.type === 'number') && rightOperand) {
-        const isHexLiteral = tok.type === 'number' && tok.text === '0' && next.type === 'word' && HEX_SUFFIX_RE.test(next.text);
-        if (!isHexLiteral) {
-          const leftKind = tok.type === 'qident' ? 'quoted identifier' : tok.type === 'string' ? 'string literal' : 'numeric literal';
-          push(
-            'HANA-SYN-006',
-            tok.type === 'number' ? 'error' : 'warning',
-            `Missing whitespace between ${leftKind} ${describe(tok)} and ${describe(next)}.`,
-            tok.start,
-            next.end,
-            [replaceFix('Insert space', baseOffset + tok.end, baseOffset + tok.end, ' ')]
-          );
-          i++;
-          continue;
-        }
+        const leftKind = tok.type === 'qident' ? 'quoted identifier' : tok.type === 'string' ? 'string literal' : 'numeric literal';
+        push(
+          'HANA-SYN-006',
+          tok.type === 'number' ? 'error' : 'warning',
+          `Missing whitespace between ${leftKind} ${describe(tok)} and ${describe(next)}.`,
+          tok.start,
+          next.end,
+          [replaceFix('Insert space', baseOffset + tok.end, baseOffset + tok.end, ' ')]
+        );
+        i++;
+        continue;
       }
 
       // Unquoted object name containing `::` (`com.acme.app::tbl` → `"com.acme.app::tbl"`).

@@ -55,8 +55,6 @@ SELECT emp_id FROM employees WHERE active = 1 AND LEFT(last_name, 2) = 'Sm' OR R
 SELECT DATE'2024-01-31', TIMESTAMP'2024-01-31 10:00:00', N'unicode', X'0AFF', 1.5E3 FROM DUMMY;
 
 -- @case hexadecimal numeric literal
--- @todo syntax #88 false HANA-SYN-023 at "\"hex_value\""
--- @todo formatter #88 word-sequence
 SELECT 0x0abc "hex_value" FROM DUMMY;
 
 -- @case aggregate with DISTINCT and string_agg
