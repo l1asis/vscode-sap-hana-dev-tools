@@ -1,0 +1,11 @@
+PROCEDURE "app.sales::FIND_ORDERS" (IN iv_region NVARCHAR(10), IN iv_table NVARCHAR(128), IN iv_filter NVARCHAR(200))
+LANGUAGE SQLSCRIPT
+AS
+BEGIN
+  -- HANA-SEC-001: concatenated dynamic SQL. HANA-SEC-003: implicit SQL SECURITY DEFINER with dynamic SQL.
+  EXECUTE IMMEDIATE 'SELECT order_id FROM orders WHERE region = ''' || :iv_region || '''';
+  -- HANA-SEC-002: unvalidated identifier input.
+  EXEC :iv_table;
+  -- HANA-SEC-005: unvalidated filter string.
+  lt_orders = APPLY_FILTER("app.sales::ORDERS", :iv_filter);
+END

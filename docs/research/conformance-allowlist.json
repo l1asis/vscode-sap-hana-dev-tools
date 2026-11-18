@@ -1,0 +1,1555 @@
+{
+  "description": "Corpus blocks that are not valid SQL as extracted (PDF clipping, SAP typos, prose or result output). Keyed by blockHash (SHA-256 of the LF-normalized, trimmed block, first 16 hex). Used only by scripts/conformance.js. Contains no corpus text. Regenerate candidates with --propose-allowlist and review them before adding.",
+  "entries": [
+    {
+      "hash": "0150cd72936fb28b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "037d6d7b6db909ca",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/003_pages_61_90.md"
+    },
+    {
+      "hash": "039c7af6f8f7e94e",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "03c12afc9bdc27f1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/007_pages_181_210.md"
+    },
+    {
+      "hash": "040e6aae34cdcce1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "0452e41e34600fb5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "05b927c0c539aae7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "06490b782585a2a6",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "065e73f9c46b5fb1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "081fab2ac649456b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "0995821d693fa630",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "0af2ec067d7b6587",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "0c27bd336741edc7",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/029_pages_841_870.md"
+    },
+    {
+      "hash": "0ca8929e88f3fb1d",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/036_pages_1051_1080.md"
+    },
+    {
+      "hash": "0d9adf339ae96652",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "0e560c786e2bf716",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/029_pages_841_870.md"
+    },
+    {
+      "hash": "0f8a2580199d4205",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/035_pages_1021_1050.md"
+    },
+    {
+      "hash": "0fa2b7037e69876a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/022_pages_631_660.md"
+    },
+    {
+      "hash": "105c7a76761d2abc",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/004_pages_91_120.md"
+    },
+    {
+      "hash": "1108bcf01dc083e9",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "12f9cd7db2f582ec",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "1385f1aae605cc0b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "13a0e72216540272",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/012_pages_331_360.md"
+    },
+    {
+      "hash": "13df2d0e171c6778",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "13f1c31ef3ed203e",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/043_pages_1261_1290.md"
+    },
+    {
+      "hash": "13f82f83379ccd0f",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md"
+    },
+    {
+      "hash": "154e7cbed58aa6e9",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/029_pages_841_870.md"
+    },
+    {
+      "hash": "157cce3accdbf9b8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "1a03336ce360800d",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "1a38a19883b46f95",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "1ae438972f11ba29",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/034_pages_991_1020.md"
+    },
+    {
+      "hash": "1c10758bdbebbb18",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/023_pages_661_690.md"
+    },
+    {
+      "hash": "1c920555b72f4420",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "1db459a9f620d6c9",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/030_pages_871_900.md"
+    },
+    {
+      "hash": "1e11cfa037c7a0db",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/030_pages_871_900.md"
+    },
+    {
+      "hash": "1e3377b5ca463839",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/010_pages_271_300.md"
+    },
+    {
+      "hash": "1eb856f494d6492b",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/014_pages_391_420.md"
+    },
+    {
+      "hash": "1ec602fe327d326b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md"
+    },
+    {
+      "hash": "20330dba8211a1f5",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/004_pages_91_120.md"
+    },
+    {
+      "hash": "203ea790fbb17cca",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "2082798cc5eb9a8a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "20a6b4ae7c2390fb",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/032_pages_931_960.md"
+    },
+    {
+      "hash": "20b9cac43aa1b19e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "20def81dcbfc8694",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "20e46c5024b22ea7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "2182974ad26828ce",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/009_pages_241_270.md"
+    },
+    {
+      "hash": "21cd38bbcdee1773",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/036_pages_1051_1080.md"
+    },
+    {
+      "hash": "2224979d880fa98c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/001_pages_1_30.md"
+    },
+    {
+      "hash": "222f886463ed1830",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "2320293eb31dd827",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/030_pages_871_900.md"
+    },
+    {
+      "hash": "23b33336c4aec43f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "2467845b19246102",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
+      "hash": "24957d7e2cf2b339",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/013_pages_361_390.md"
+    },
+    {
+      "hash": "24c00ad64922dff1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "251f8a32515b4b21",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/025_pages_721_750.md"
+    },
+    {
+      "hash": "279350785bb48347",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "2a5004019b07dbba",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "2a67c7d361d5d38f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "2ad6e79b1ca33350",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "2e605e9810d48cdd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "2ec5b158519ca75a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/025_pages_721_750.md"
+    },
+    {
+      "hash": "31f5618d171360dd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "33537a7791f6bb7f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/032_pages_931_960.md"
+    },
+    {
+      "hash": "34547409c9658d19",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/011_pages_301_330.md"
+    },
+    {
+      "hash": "3570bb94bf454650",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "35b47f26e8602a13",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "364d8e62a5b01cf5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/041_Inheriting_and_Propagating_Values_Along_a_Hierarchy.md"
+    },
+    {
+      "hash": "378885c142b5af14",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/018_pages_511_540.md"
+    },
+    {
+      "hash": "379ac0a9373ee989",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "3809ea8e5d8712b8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "385a5c9005d15aff",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "39438a448793f893",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/021_pages_601_630.md"
+    },
+    {
+      "hash": "3a17ee44887b302e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
+      "hash": "3a3cf1e4bf19a060",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
+      "hash": "3a5126c5beb0de10",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "3a559850cc18433e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/020_pages_571_600.md"
+    },
+    {
+      "hash": "3a9a37da98cf39d0",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "3b265ad295532d63",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "3be05e5b14f913cb",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md"
+    },
+    {
+      "hash": "3c1257787f7e1395",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/002_pages_31_60.md"
+    },
+    {
+      "hash": "3c7266bd6f7da0ca",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "3ca15fd3ad18dc95",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "3cdf7aebd73aa108",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "3cff398f560b7094",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/013_pages_361_390.md"
+    },
+    {
+      "hash": "3d3c1225f2137f55",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "3d68c78e3df0f859",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md"
+    },
+    {
+      "hash": "3da176e33f0211e8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "3f8425a88292779c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "40ee193894c793c2",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/005_pages_121_150.md"
+    },
+    {
+      "hash": "41aecb0f0050c66b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/008_pages_211_240.md"
+    },
+    {
+      "hash": "4284c2b8e1fcd3d0",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/034_pages_991_1020.md"
+    },
+    {
+      "hash": "42b68c4cb824baef",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "432472293f543343",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/037_pages_1081_1110.md"
+    },
+    {
+      "hash": "4451f9c187192291",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/027_pages_781_810.md"
+    },
+    {
+      "hash": "446c0f6776a70ed7",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md"
+    },
+    {
+      "hash": "44701775edbc0d77",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "4643174504b21f00",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "48b8064b46ea5621",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "48b96f7a3ab9ce8e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/034_pages_991_1020.md"
+    },
+    {
+      "hash": "4cec87279586be11",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "4e51af8e6679c971",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "4e78f57d264db575",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "4f474aa76977487a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "4fad905c2c0d5d01",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/021_pages_601_630.md"
+    },
+    {
+      "hash": "4fb4eb161d211c88",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/009_pages_241_270.md"
+    },
+    {
+      "hash": "529261338bcf3d00",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/021_pages_601_630.md"
+    },
+    {
+      "hash": "55bfcdb63517ee65",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/004_pages_91_120.md"
+    },
+    {
+      "hash": "56547bacc6bbd9ba",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "5746a16cf1df7546",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "57497e6944b4ac38",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "57b6c3f359da5ca9",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "58f0e01bf3f8ff67",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "5999c6c7b8ddb794",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "5ad11ffc0e095d42",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/003_pages_61_90.md"
+    },
+    {
+      "hash": "5cdd1149acc570a7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "5d6a7d519bdbec03",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/030_pages_871_900.md"
+    },
+    {
+      "hash": "5d8d1d6e7acb1639",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "5eeb32c55025e646",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "5f34521bf356a4dd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/018_pages_511_540.md"
+    },
+    {
+      "hash": "5f9cb3f0b308f624",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/031_pages_901_930.md"
+    },
+    {
+      "hash": "5ff0866ce98933c1",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/021_pages_601_630.md"
+    },
+    {
+      "hash": "611ad807c98d963a",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "6172e3e074a5cfaa",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "61d6d9bd1542e673",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "6258166325fd3437",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "6277626385740950",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/043_pages_1261_1290.md"
+    },
+    {
+      "hash": "63a006624dd9ea9c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "64b171092b344fdd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "655bfa53af29c301",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/007_pages_181_210.md"
+    },
+    {
+      "hash": "6706c3b1b647688a",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/030_pages_871_900.md"
+    },
+    {
+      "hash": "681cf97642c721d1",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "68ddd883b605da1c",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "6a5f6e1f22eb7c3b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "6b3cd80cf5be4529",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "6cfa168d69cfb9ad",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/012_pages_331_360.md"
+    },
+    {
+      "hash": "6d3e412cf0a3ac36",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/021_pages_601_630.md"
+    },
+    {
+      "hash": "6e0f1bbb3ae9bc67",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/010_pages_271_287.md"
+    },
+    {
+      "hash": "6f1fd47f3b599407",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "7114da9a921ae165",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/021_pages_601_630.md"
+    },
+    {
+      "hash": "71d14f5fd7219f3b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "725a93f95e6df7ed",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "732a367c81d39904",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/030_pages_871_900.md"
+    },
+    {
+      "hash": "755cdc8ec925ad33",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/008_pages_211_240.md"
+    },
+    {
+      "hash": "76933bbc3749c44d",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md"
+    },
+    {
+      "hash": "78e5644c56391e45",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/033_pages_961_990.md"
+    },
+    {
+      "hash": "7a4d02af40a46b6f",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/014_pages_391_420.md"
+    },
+    {
+      "hash": "7ddf0785b17c0aae",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "7ec0cbdc74387c26",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "7eccc4d9df8a25fd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "7f61e09473a20df6",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "80133c2308a90189",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
+      "hash": "80a12b2ddcfaff86",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "80b03b130da64e1e",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "81a9ba1f802568d3",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "81ae114c3eda31e3",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "81c0b63afa72f31a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "82327328fe69d6eb",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/027_pages_781_810.md"
+    },
+    {
+      "hash": "845fd0e8760f7669",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "8481c18978f66987",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "84bccd58226f644b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/035_pages_1021_1050.md"
+    },
+    {
+      "hash": "85c12a7d989e33c8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "860f613ad5207961",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/003_pages_61_90.md"
+    },
+    {
+      "hash": "87443ca3d79e7e57",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "879151bf31a86262",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "88b3d74c03d1ae55",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "890809454cbc035c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/049_Troubleshooting.md"
+    },
+    {
+      "hash": "892d519edb1f705b",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/030_pages_871_900.md"
+    },
+    {
+      "hash": "899fa41093122148",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/022_pages_631_660.md"
+    },
+    {
+      "hash": "8a3312fc2cc7e531",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/003_pages_61_90.md"
+    },
+    {
+      "hash": "8a413cef2479f51b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/010_pages_271_300.md"
+    },
+    {
+      "hash": "8b677f0882985f8b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "8c0b73f9ddb7f9f4",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/013_pages_361_390.md"
+    },
+    {
+      "hash": "8d18952e78fe2be7",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/004_pages_91_120.md"
+    },
+    {
+      "hash": "8d4fedce935ceb82",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/016_pages_451_480.md"
+    },
+    {
+      "hash": "8d8d646bbac874b7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "8d9f829f655074a4",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "8e235c094b3e09ec",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/012_pages_331_360.md"
+    },
+    {
+      "hash": "90be518db3fc9340",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "9196eaf26adc1349",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/010_pages_271_278.md"
+    },
+    {
+      "hash": "91bbe0aa1c03007b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/006_pages_151_180.md"
+    },
+    {
+      "hash": "92d6794d9059a556",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/010_pages_271_287.md"
+    },
+    {
+      "hash": "94dadfda57039464",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "957ed69bf3a22aea",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "9665e064c0ec6939",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/033_pages_961_990.md"
+    },
+    {
+      "hash": "977f03338fe3f428",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "979c185e07fad0b7",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "98b54ea09b988619",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/034_pages_991_1020.md"
+    },
+    {
+      "hash": "98e30440cb93bcec",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/009_pages_241_270.md"
+    },
+    {
+      "hash": "98fbcf658be8a36d",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/025_pages_721_750.md"
+    },
+    {
+      "hash": "9b092001bbde5cf7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/035_pages_1021_1050.md"
+    },
+    {
+      "hash": "9b469c0c578eb88b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/013_pages_361_390.md"
+    },
+    {
+      "hash": "9c210e5d3a045a50",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "9ccefb16cc5a3cc5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/023_pages_661_690.md"
+    },
+    {
+      "hash": "9cdd409e4cc177ac",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "9d4225703dec740b",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/032_pages_931_960.md"
+    },
+    {
+      "hash": "9d9f6c7f1a339b71",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/025_pages_721_750.md"
+    },
+    {
+      "hash": "9e1f72454c49cd35",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/027_pages_781_810.md"
+    },
+    {
+      "hash": "9e765c935d10ae42",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/027_pages_781_810.md"
+    },
+    {
+      "hash": "9eac0c5265695e3b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "9ed9363cadef2920",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md"
+    },
+    {
+      "hash": "a06043803c4632de",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/026_pages_751_780.md"
+    },
+    {
+      "hash": "a162ade9db57fc57",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/015_pages_421_450.md"
+    },
+    {
+      "hash": "a1b65b0d8df810b5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/009_pages_241_270.md"
+    },
+    {
+      "hash": "a293b805283b73fe",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/020_HIERARCHY_DESCENDANTS_Navigation_Function.md"
+    },
+    {
+      "hash": "a2c57941aecb91c0",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "a3527507209b1814",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "a3c918a3cc258097",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "a3e1ac99c19b45a5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/014_pages_391_420.md"
+    },
+    {
+      "hash": "a432b36d3f8e9cf9",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/039_Determining_the_Nearest_Common_Ancestor_of_Two_Known.md"
+    },
+    {
+      "hash": "a46879b8e3c97b9d",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/002_pages_31_60.md"
+    },
+    {
+      "hash": "a58bdb41b183ff10",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/039_pages_1141_1170.md"
+    },
+    {
+      "hash": "a5fb37f31247c600",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "a606bef17f208580",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/015_pages_421_450.md"
+    },
+    {
+      "hash": "a63178fb1b03a1c5",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/034_pages_991_1020.md"
+    },
+    {
+      "hash": "a637664ddd97fc4c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "aae6aea1face4d44",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "ab1607dd11152047",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/017_pages_481_510.md"
+    },
+    {
+      "hash": "ab3fcceff20da118",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/013_pages_361_390.md"
+    },
+    {
+      "hash": "ab9d389c0d9b9e70",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/032_pages_931_960.md"
+    },
+    {
+      "hash": "ac6368620d6ee0da",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/013_pages_361_390.md"
+    },
+    {
+      "hash": "adc9cddada27111f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "adeb2348875ff7bb",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "ae85adbc6e476e08",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/026_pages_751_780.md"
+    },
+    {
+      "hash": "af503886e4b03ca1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "b0d1f7faa803fd54",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/026_pages_751_780.md"
+    },
+    {
+      "hash": "b1f9755bc0dc5b35",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "b44222c921069b5e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "b5394a37de1bda9b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "b983dca7dd92d059",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/018_pages_511_540.md"
+    },
+    {
+      "hash": "bb105a150ae65546",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/015_pages_421_450.md"
+    },
+    {
+      "hash": "bb9b5451ddf61fc7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "c19a5e2b3bcd202f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "c23d7362218f4d17",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/007_pages_181_210.md"
+    },
+    {
+      "hash": "c3d3e80c39f8990a",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/014_pages_391_420.md"
+    },
+    {
+      "hash": "c423180aaec582b8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/033_pages_961_990.md"
+    },
+    {
+      "hash": "c486c41d72e3a6ec",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/021_pages_601_630.md"
+    },
+    {
+      "hash": "c55ba0f19edfd022",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "c55f91f33b8ed6d8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/034_pages_991_1020.md"
+    },
+    {
+      "hash": "c5ea17783a471bcc",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "c7fbb14b00c66075",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "ca3156ea3e55a76f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/039_pages_1141_1170.md"
+    },
+    {
+      "hash": "cbd05e97ee31a3fe",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "cc8ccad8bc88fa7c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/023_pages_661_690.md"
+    },
+    {
+      "hash": "ce563c82c6905123",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/001_pages_1_30.md"
+    },
+    {
+      "hash": "ce8a575c26bcdb90",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/015_pages_421_450.md"
+    },
+    {
+      "hash": "cf273dbc4e1eba5f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/034_pages_991_1020.md"
+    },
+    {
+      "hash": "cf4974449f455590",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md"
+    },
+    {
+      "hash": "d22bfe8193f3057c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "d26c9695007bc3dd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/003_pages_61_90.md"
+    },
+    {
+      "hash": "d2a2f52997ee2373",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/004_pages_91_120.md"
+    },
+    {
+      "hash": "d364b571ab9665dc",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/006_pages_151_180.md"
+    },
+    {
+      "hash": "d367de374ad86eef",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "d4cafafcad1d8c33",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/010_pages_271_300.md"
+    },
+    {
+      "hash": "d5253abbbd06e141",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "d8d5183be70995cb",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/021_HIERARCHY_ANCESTORS_Navigation_Function.md"
+    },
+    {
+      "hash": "dcfa2b19fd9c25f6",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/018_pages_511_540.md"
+    },
+    {
+      "hash": "dd392aa7e795d1dd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/008_pages_211_240.md"
+    },
+    {
+      "hash": "dd55b79b86435af0",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "de4b7a2e47fec42e",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/034_pages_991_1020.md"
+    },
+    {
+      "hash": "df9b2d7d39618ec4",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "e08b58bde94581df",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "e0f8b250dc35192f",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "e196397db07745d1",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "e198c51358305994",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/004_pages_91_120.md"
+    },
+    {
+      "hash": "e19f90a1a276585d",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/022_pages_631_660.md"
+    },
+    {
+      "hash": "e1d747da0e5d6ce8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/001_pages_1_30.md"
+    },
+    {
+      "hash": "e29771d01734b1a2",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "e460ef86e5879bf3",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
+    },
+    {
+      "hash": "e506c80f2b5f5f9e",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/037_pages_1081_1110.md"
+    },
+    {
+      "hash": "e67ab515ffe28ad8",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/007_pages_181_210.md"
+    },
+    {
+      "hash": "e8549c46c2f815d4",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "e8987885fca07813",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/010_pages_271_300.md"
+    },
+    {
+      "hash": "e95ec90843584fbc",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/018_pages_511_540.md"
+    },
+    {
+      "hash": "e9645d40e40363a7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/036_Handling_Source_Topology_Quirks.md"
+    },
+    {
+      "hash": "ea9775cd8501ce29",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/033_pages_961_990.md"
+    },
+    {
+      "hash": "eab9fa93f381179d",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/030_pages_871_900.md"
+    },
+    {
+      "hash": "eb2d26549da90679",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/012_pages_331_360.md"
+    },
+    {
+      "hash": "ec5cbb2923b0171c",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "ede8a392a0bb78fe",
+      "reason": "SAP example uses // comments, which are not SQL comments",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/008_pages_211_240.md"
+    },
+    {
+      "hash": "ee454ffdb7b50d78",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/007_pages_181_210.md"
+    },
+    {
+      "hash": "ee4ff48d66c14000",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "eed72396e5caf136",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/021_pages_601_630.md"
+    },
+    {
+      "hash": "efb68e753fdc2305",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/019_pages_541_570.md"
+    },
+    {
+      "hash": "efdc1663c8906433",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/033_pages_961_990.md"
+    },
+    {
+      "hash": "f0395fe80324b0b2",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/034_pages_991_1020.md"
+    },
+    {
+      "hash": "f0d8554c3945f9d8",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/020_pages_571_600.md"
+    },
+    {
+      "hash": "f10c51e7892a82a2",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "f117355b8af2a866",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/017_pages_481_510.md"
+    },
+    {
+      "hash": "f1a5a18611d5008b",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/012_pages_331_360.md"
+    },
+    {
+      "hash": "f1cd256da6deca46",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/040_pages_1171_1200.md"
+    },
+    {
+      "hash": "f26596ffc05a60f3",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/026_pages_751_780.md"
+    },
+    {
+      "hash": "f39d8c6531c1c1db",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/006_pages_151_180.md"
+    },
+    {
+      "hash": "f3d95fbc333305b2",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/032_pages_931_960.md"
+    },
+    {
+      "hash": "f45525778004d7b9",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/018_pages_511_540.md"
+    },
+    {
+      "hash": "f467db803cfe1b56",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "f51bc918c3041349",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
+      "hash": "f5f43b4a2e043b04",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md"
+    },
+    {
+      "hash": "f64f4669d43ace09",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/012_pages_331_360.md"
+    },
+    {
+      "hash": "f65670248a71edc1",
+      "reason": "Result output or prose captured in the code block",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/005_pages_121_150.md"
+    },
+    {
+      "hash": "f7588e42de62c206",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/028_pages_811_840.md"
+    },
+    {
+      "hash": "f79a1fd12f89e4ec",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/009_pages_241_270.md"
+    },
+    {
+      "hash": "f7b6e71a7a18b237",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/021_pages_601_630.md"
+    },
+    {
+      "hash": "f82bf2f0342b1105",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/033_pages_961_990.md"
+    },
+    {
+      "hash": "f856d43ddf6d0afd",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/022_pages_631_660.md"
+    },
+    {
+      "hash": "f8e0385ccf482514",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/033_pages_961_990.md"
+    },
+    {
+      "hash": "fb373fadffaa9234",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/024_pages_691_720.md"
+    },
+    {
+      "hash": "fc323a5ee59807b7",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/022_pages_631_660.md"
+    },
+    {
+      "hash": "fc860204d6558c6f",
+      "reason": "Result output or prose captured in the code block",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/008_pages_211_240.md"
+    },
+    {
+      "hash": "fd61db1caf7d95d0",
+      "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/027_pages_781_810.md"
+    },
+    {
+      "hash": "fe2846174ff33bed",
+      "reason": "SAP typo: typographic quote or dash where SQL needs ASCII punctuation",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/020_pages_571_600.md"
+    }
+  ]
+}

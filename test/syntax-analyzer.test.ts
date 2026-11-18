@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import { ANALYZER_LANGUAGES, analyzeDocument } from '../src/analyzer/dispatch';
 import { parseJsonAstWithErrors } from '../src/analyzer/json-parser';
 import { applyTextEdits, DEFAULT_ANALYZER_OPTIONS } from '../src/analyzer/types';
+import { walkSamples } from './helpers/samples';
 
 const ROOT = fs.existsSync(path.join(__dirname, '..', 'samples'))
   ? path.join(__dirname, '..')
@@ -1711,17 +1712,12 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
   };
   const analyzerLangSet = new Set(ANALYZER_LANGUAGES);
 
-  const walk = (dir: string): string[] => {
-    const out: string[] = [];
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) out.push(...walk(full));
-      else out.push(full);
-    }
-    return out;
-  };
-
-  const sampleFiles = walk(path.join(ROOT, 'samples'));
+  // samples/broken/ is intentionally invalid and checked by test/broken-samples.test.ts instead.
+  const sampleFiles = walkSamples({ includeBroken: false });
+  assert.ok(
+    !sampleFiles.some((f) => path.relative(ROOT, f).split(path.sep).includes('broken')),
+    'the clean-sample sweep must not include samples/broken/'
+  );
   let checkedCount = 0;
 
   for (const file of sampleFiles) {

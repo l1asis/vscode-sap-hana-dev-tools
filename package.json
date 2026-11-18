@@ -2508,6 +2508,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node --test out/test/*.test.js",
+    "conformance": "npm run compile && node scripts/conformance.js",
     "build:grammars": "node scripts/build-grammars.js",
     "build:keywords": "node scripts/build-keywords.js && node scripts/build-sql-catalog.js",
     "build:sql-catalog": "node scripts/build-sql-catalog.js",

@@ -1,0 +1,20 @@
+PROCEDURE "app.sales::CLOSE_ORDERS" ()
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+AS
+BEGIN
+  DECLARE CURSOR c_open FOR SELECT * FROM orders WHERE status = 'OPEN';
+  DECLARE lv_count INTEGER;
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN END;
+  -- HANA-PERF-003 cursor loop, HANA-PERF-004 SELECT *, HANA-PERF-005 DML inside the loop.
+  FOR r AS c_open DO
+    UPDATE orders SET status = 'CLOSED' WHERE order_id = r.order_id;
+  END FOR;
+  -- HANA-PERF-006: DDL in stored logic.
+  TRUNCATE TABLE order_staging;
+  -- HANA-PERF-007: COUNT(*) where RECORD_COUNT / IS_EMPTY is cheaper.
+  lt_open = SELECT order_id FROM orders WHERE status = 'OPEN';
+  SELECT COUNT(*) INTO lv_count FROM :lt_open;
+  -- HANA-PERF-001 / 002: CE function mixed with SQL.
+  lt_proj = CE_PROJECTION(:lt_open, ["ORDER_ID"]);
+END

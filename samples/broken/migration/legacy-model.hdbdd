@@ -1,0 +1,10 @@
+namespace app.sales;
+
+@Schema: 'SALES'
+context Model {
+  @Catalog.tableType: #COLUMN
+  entity Order {
+    key orderId : Integer;
+    amount : Decimal(15, 2);
+  };
+};

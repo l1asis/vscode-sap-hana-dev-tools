@@ -1,0 +1,12 @@
+{
+  "exposed": true,
+  "authentication": null,
+  "prevent_xsrf": false,
+  "default_connection": "app.sales::TechnicalConn",
+  "force_ssl": false,
+  "authorization": null,
+  "cors": {
+    "enabled": true,
+    "allowOrigin": ["*"]
+  }
+}

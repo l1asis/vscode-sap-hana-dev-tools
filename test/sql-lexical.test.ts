@@ -5,6 +5,7 @@ import * as path from 'node:path';
 import { analyzeDocument } from '../src/analyzer/dispatch';
 import { applyTextEdits, DEFAULT_ANALYZER_OPTIONS, type AnalyzerDiagnostic } from '../src/analyzer/types';
 import { SQL_LANGUAGES } from '../src/formatter/dispatch';
+import { walkSamples } from './helpers/samples';
 
 const ROOT = fs.existsSync(path.join(__dirname, '..', 'samples'))
   ? path.join(__dirname, '..')
@@ -27,10 +28,9 @@ function spanText(src: string, d: AnalyzerDiagnostic): string {
 }
 
 test('samples: every SQL / SQLScript sample artifact analyzes with zero syntax diagnostics', () => {
-  const walk = (dir: string): string[] =>
-    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]));
   let checked = 0;
-  for (const file of walk(path.join(ROOT, 'samples'))) {
+  // samples/broken/ is intentionally invalid and checked by test/broken-samples.test.ts instead.
+  for (const file of walkSamples({ includeBroken: false })) {
     const ext = path.extname(file).slice(1);
     const languageId = ext === 'sql' ? 'hanasql' : ext;
     if (languageId !== 'hanasql' && !SQL_LANGUAGES.includes(languageId)) continue;
