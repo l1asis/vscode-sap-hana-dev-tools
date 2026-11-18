@@ -70,3 +70,18 @@ Triggered for `xsjs`, `xsjslib`, covering:
 - `.hdiconfig`: `plugin_version`, `minimum_feature_version`, `file_suffixes`, `plugin_name`, and documented `com.sap.hana.di.*` plug-in identifiers.
 - `.hdbgrants` / `.hdbrevokes`: Grantor object-level blocks (`object_owner`, `application_user`), privilege containers (`schema_privileges`, `object_privileges`, `global_object_privileges`, `roles`, `schema_roles`), and object privilege properties (`reference`, `privileges`, `privileges_with_grant_option`, `include_filter`).
 - Classic KV (`hdbtable`, `hdbview`, `hdbsequence`, `hdbti`, `xshttpdest`): Property keys matching [classic-kv-formatting.md](file:///e:/Code/js/vscode-sap-hana-dev-tools/docs/specs/artifacts/classic-kv-formatting.md) (`table.schemaName`, `table.tableType`, `table.columns`, `sqlType`, `reset_by`, `delimField`, `authType`, etc.).
+
+### 2.5 XSJS Inheritance, Overloads & Hover Cards `[XSC]` `[XSA]`
+
+Applies to `xsjs` / `xsjslib` completions, hover, and signature help driven by `docs/specs/catalogs/xsjs-api.json`.
+
+- **Inherited member resolution:** Members and methods are collected from the resolved type and its `extends` ancestors in breadth-first order (most-derived first).
+  - Properties are deduplicated by name; the most-derived declaration wins.
+  - Methods are deduplicated by **overload signature** — `name`, `static` flag, and the ordered list of parameter `type` + `optional` flags (parameter names are ignored). The most-derived declaration wins; ancestor overloads with a distinct signature are still inherited.
+  - Example: `$.net.http.Request` → `$.web.WebRequest` → `$.web.WebEntityRequest` all declare `setBody(body: any | ArrayBuffer, index?: number)`; exactly one `setBody` overload is exposed, so completions show no `(+N overloads)` suffix and signature help lists one signature.
+- **Static vs. instance filtering:** For `class` entries, hover applies the same rule as completions — a class reference (`$.net.http.Request.x`) only matches `static` members/methods, an instance (`new $.net.http.Request(...).x`, `$.request.x`) only matches non-static ones. Namespaces are not filtered.
+- **Consolidated overload card:** Hover over an overloaded method (and method completion documentation) renders **one** card, never one card per overload:
+  1. One `ts` code block stacking every overload signature. When the hovered identifier is directly followed by a call `(...)`, the overload whose arity accepts the call-site argument count is listed first.
+  2. `**@deprecated**` notes: when every overload shares the same deprecation message it is shown once; otherwise each note is prefixed with the deprecated overload's signature (e.g. `$.db.getConnection(sqlcc, isolationLevel)`).
+  3. Description: shown once when all overloads share identical prose (`$.import`, `$.db.getConnection`); otherwise listed per overload as `` `name(p1, p2)` — description `` (`$.net.http.Client.request`).
+  4. `**Parameters**`: the union of all overload parameters, deduplicated by name + type + description, rendered as `` - `name` (`type`): description ``.
