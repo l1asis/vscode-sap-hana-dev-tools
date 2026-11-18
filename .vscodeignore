@@ -5,6 +5,7 @@ research/**
 samples/**
 scripts/**
 test/**
+out/test/**
 src/**
 .gitattributes
 .gitignore
