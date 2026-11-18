@@ -2,6 +2,18 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-18: unified word catalog (#77), against `main` @ `9c0a9e2` (0.10.3)
+
+| Metric | `main` | #77 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 474 | 474 |
+| Formatter: blocks with violations | 1 | 1 |
+| Grammar: unscoped catalog keywords | 109 (1036 blocks) | 111 (1046 blocks) |
+| Catalog: unknown called names | 75 | 75 |
+| `npm test`: tests / pass / todo | 388 / 355 / 33 | 398 / 365 / 33 |
+
+The grammar count grew because the catalog grew, not because highlighting got worse. `REPLICA`, `LOADABLE` and `SNAPSHOT`, which the formatter already knew as statement nouns, are now catalog keywords and are measured too. Counted over `main`'s keyword list the figure is 108: `ALTER SYSTEM SAVEPOINT` no longer highlights only `SAVE`. The 23 SQLScript / GraphScript built-ins (`MAP_MERGE`, `VERTICES`, ...) left the keyword list for the function list. They are highlighted only before `(`, as before.
+
 ## Baseline: 2026-11-18, `main` @ `02c9439` (0.10.2)
 
 Corpus: SAP HANA Platform SQL Reference, SAP HANA Cloud SQL Reference, both SQLScript References, SAP HANA Cloud Hierarchy Developer Guide (`sql` fences only).

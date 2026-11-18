@@ -24,7 +24,7 @@ Thank you for helping improve SAP HANA language support in VS Code! This documen
      npm run build:grammars
      ```
 
-   * The SQL formatter's built-in keyword, function, and data type tables are generated via:
+   * Every SQL / SQLScript word list (the `hanasql` grammar alternations, the formatter's keyword, function and data type tables, the analyzer's word sets in `src/analyzer/keyword-sets.ts`, and hover / completion data) is generated from the catalog in `docs/specs/catalogs/sql-keywords.json` and `builtin-functions.json` (schema: `docs/specs/SPEC_RULES.md` §C.1). After editing the catalog, run:
 
      ```bash
      npm run build:keywords

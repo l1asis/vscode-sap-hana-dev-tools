@@ -28,7 +28,7 @@ VS Code language support, formatters, static analyzers, and tooling for **SAP HA
 - **Strict TypeScript:** `strict: true` in `tsconfig.json`. Avoid `any`; use discriminated unions for AST nodes and tokens.
 - **Generated Artifacts Sync:**
   - Never hand-edit generated files in `syntaxes/`. Edit `scripts/build-grammars.js` and run `npm run build:grammars`.
-  - After updating SQL keyword/function lists, run `npm run build:keywords`.
+  - SQL / SQLScript words live only in `docs/specs/catalogs/sql-keywords.json` (roles per word) and `builtin-functions.json` (`docs/specs/SPEC_RULES.md` §C.1). Never add a keyword `Set` or list to `src/analyzer/` or `src/formatter/formatter.ts`: add a catalog role, run `npm run build:keywords`, and import from `src/analyzer/keyword-sets.ts` / `src/formatter/keywords.ts`. `test/keyword-catalog.test.ts` enforces this.
 - **Formatting Safety:** Formatters must never corrupt valid code, strip comments, append semicolons to headerless HDI root statements, or break `-- hanasql-format off` pragmas.
 - **Testing:** Every new grammar rule, formatter feature, or diagnostic rule must include positive and negative test cases in `test/` and pass `npm test`.
 - **Conformance Harness:** Before opening a grammar, formatter, or analyzer PR, run `npm run conformance` when the local corpus is available and compare the summary with the latest baseline in `docs/research/CONFORMANCE.md`. Valid SQL that the change fixes or breaks goes into `test/fixtures/conformance/*.sql`. Remove a `-- @todo` marker in the PR that makes it pass, otherwise `npm test` fails. Spec: `docs/specs/diagnostics/conformance-harness.md`.
