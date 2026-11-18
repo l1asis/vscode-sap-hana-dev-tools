@@ -122,25 +122,30 @@ COLUMN TABLE "app.data::ORDERS" (
 
 > Source: `004_2_Migrating_...md:4010-4020`, `005_3_Creating_the_Persistence_Model_with_HDBTable.md:1005-1080`, `008_6_SAP_HDI_Artifact_Types_and_Build_Plug-ins_Reference.md:2508-2538`
 
-| Classic KV Field | HDI DDL Clause |
-| :--- | :--- |
-| `schema = "...";` | *(Removed in HDI)* |
-| `increment_by = N;` | `INCREMENT BY N` |
-| `start_with = N;` | `START WITH N` |
-| `maxvalue = N;` | `MAXVALUE N` |
-| `nomaxvalue = true \| false;` | `NOMAXVALUE` (if `true`) |
-| `minvalue = N;` | `MINVALUE N` |
-| `nominvalue = true \| false;` | `NOMINVALUE` (if `true`) |
-| `cycles = true \| false;` | `CYCLE` (if `true`) / `NO CYCLE` (if `false`) |
-| `reset_by = "<query>";` | `RESET BY <unescaped query>` |
-| `public`, `depends_on*` | *(Removed in HDI)* |
+| Classic KV Field | HDI DDL Clause | Notes |
+| :--- | :--- | :--- |
+| `schema = "...";` | *(Removed in HDI)* | |
+| `increment_by = N;` | `INCREMENT BY N` | |
+| `start_with = N;` | `START WITH N` | |
+| `maxvalue = N;` | `MAXVALUE N` | |
+| `nomaxvalue = true \| false;` | `NO MAXVALUE` (if `true`) | |
+| `minvalue = N;` | `MINVALUE N` | |
+| `nominvalue = true \| false;` | `NO MINVALUE` (if `true`) | |
+| `cycles = true \| false;` | `CYCLE` (if `true`) / `NO CYCLE` (if `false`) | |
+| `reset_by = "<query>";` | `RESET BY <unescaped query>` | Strips the `"<schema>".` prefix matching `schema=` (same rule as `.hdbview`, §2.2 step 3). |
+| `public`, `depends_on*` | *(Removed in HDI)* | |
+
+> `NO MAXVALUE` / `NO MINVALUE` are two words in the HANA SQL `<sequence_parameter>` grammar
+> (`hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md:151-190`).
+> The single-word `NOMAXVALUE` / `NOMINVALUE` is invalid and must never be emitted; the reverse converter
+> still accepts it so files written by converter versions <= 0.10.1 convert back.
 
 ```sql
 -- Example HDI .hdbsequence output
 SEQUENCE "my.pkg::SEQ_ORDER_ID"
   INCREMENT BY 1
   START WITH 1000
-  NOMAXVALUE
+  NO MAXVALUE
   RESET BY SELECT IFNULL(MAX("ORDER_ID"), 0) + 1 FROM "my.pkg::ORDERS"
 ```
 
