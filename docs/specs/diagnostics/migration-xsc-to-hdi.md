@@ -180,11 +180,18 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 | Classic `.hdbdd` Construct | HDI `.hdbcds` Conversion |
 | :--- | :--- |
 | `@Schema : 'MY_SCHEMA'` (or `@Schema: '...'`) | **Remove** completely (HDI assigns container schema automatically). |
-| `@Catalog.tableType : #COLUMN` | Convert entity-level annotation into inside-entity `technical configuration { column store; };` block (or strip if default). |
-| `@Catalog.tableType : #ROW` | Convert to `technical configuration { row store; };`. |
-| `@Catalog.index : [ { name : 'IDX', unique : true, order : #ASC, elementNames : ['A', 'B'] } ]` | Convert to `technical configuration { [unique] index IDX on (A asc, B asc); };`. |
+| `@Catalog.tableType : #COLUMN` | Remove the annotation and add `column store;` to the entity's technical configuration, which follows the entity's closing brace: `entity E { ... } technical configuration { column store; };`. |
+| `@Catalog.tableType : #ROW` | Same, with `row store;`. |
+| `@Catalog.index : [ { name : 'IDX', unique : true, order : #ASC, elementNames : ['A', 'B'] } ]` | One clause per index, ordered as a whole: `[unique] index IDX on (A, B) asc;` (`#DESC` -> `desc`). |
 | `@WithStructuredPrivilegeCheck` | Replace with `with structured privilege check` clause on `view` / `entity` (or note HDI compatibility). |
 | `using "SCHEMA"::Obj;` | Strip explicit external schema where local container object applies. |
+
+**Technical configuration placement** (`SAP_HANA_Core_Data_Services_CDS_Reference_en/006_4_Creating_Data_Persistence_Artifacts_with_CDS_in_XS_Advanced.md:630-660,780-830`; `docs/specs/grammars/cds.md`):
+
+1. The block always goes **after** the entity's closing brace, never inside the element list: `} technical configuration { ... };`. XS advanced does not support `@Catalog.tableType` or `@Catalog.index`.
+2. **No block yet:** insert `technical configuration { ... }` right after the entity's `}`, before its `;` (add the `;` when it is missing). For a multi-line entity, put each clause on its own line at the element indentation, with the closing `}` at the entity brace's indentation. For a single-line entity, keep it on one line.
+3. **Block already present:** merge the clauses into it before its closing `}`. Skip the store clause when the block already has `column store;` or `row store;`, and skip any index whose name is already declared. SAP forbids the annotation and the matching clause together, so the existing clause wins and nothing is duplicated.
+4. Store clauses come before index clauses. Running the fix again on its own output changes nothing.
 
 ---
 
