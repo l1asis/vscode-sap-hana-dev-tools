@@ -122,25 +122,30 @@ COLUMN TABLE "app.data::ORDERS" (
 
 > Source: `004_2_Migrating_...md:4010-4020`, `005_3_Creating_the_Persistence_Model_with_HDBTable.md:1005-1080`, `008_6_SAP_HDI_Artifact_Types_and_Build_Plug-ins_Reference.md:2508-2538`
 
-| Classic KV Field | HDI DDL Clause |
-| :--- | :--- |
-| `schema = "...";` | *(Removed in HDI)* |
-| `increment_by = N;` | `INCREMENT BY N` |
-| `start_with = N;` | `START WITH N` |
-| `maxvalue = N;` | `MAXVALUE N` |
-| `nomaxvalue = true \| false;` | `NOMAXVALUE` (if `true`) |
-| `minvalue = N;` | `MINVALUE N` |
-| `nominvalue = true \| false;` | `NOMINVALUE` (if `true`) |
-| `cycles = true \| false;` | `CYCLE` (if `true`) / `NO CYCLE` (if `false`) |
-| `reset_by = "<query>";` | `RESET BY <unescaped query>` |
-| `public`, `depends_on*` | *(Removed in HDI)* |
+| Classic KV Field | HDI DDL Clause | Notes |
+| :--- | :--- | :--- |
+| `schema = "...";` | *(Removed in HDI)* | |
+| `increment_by = N;` | `INCREMENT BY N` | |
+| `start_with = N;` | `START WITH N` | |
+| `maxvalue = N;` | `MAXVALUE N` | |
+| `nomaxvalue = true \| false;` | `NO MAXVALUE` (if `true`) | |
+| `minvalue = N;` | `MINVALUE N` | |
+| `nominvalue = true \| false;` | `NO MINVALUE` (if `true`) | |
+| `cycles = true \| false;` | `CYCLE` (if `true`) / `NO CYCLE` (if `false`) | |
+| `reset_by = "<query>";` | `RESET BY <unescaped query>` | Strips the `"<schema>".` prefix matching `schema=` (same rule as `.hdbview`, §2.2 step 3). |
+| `public`, `depends_on*` | *(Removed in HDI)* | |
+
+> `NO MAXVALUE` / `NO MINVALUE` are two words in the HANA SQL `<sequence_parameter>` grammar
+> (`hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md:151-190`).
+> The single-word `NOMAXVALUE` / `NOMINVALUE` is invalid and must never be emitted; the reverse converter
+> still accepts it so files written by converter versions <= 0.10.1 convert back.
 
 ```sql
 -- Example HDI .hdbsequence output
 SEQUENCE "my.pkg::SEQ_ORDER_ID"
   INCREMENT BY 1
   START WITH 1000
-  NOMAXVALUE
+  NO MAXVALUE
   RESET BY SELECT IFNULL(MAX("ORDER_ID"), 0) + 1 FROM "my.pkg::ORDERS"
 ```
 
@@ -152,19 +157,23 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 
 | Classic `.hdbrole` Statement | HDI JSON `.hdbrole` Property | Notes |
 | :--- | :--- | :--- |
-| `role pkg::RoleName` | `"role": { "name": "pkg::RoleName", ... }` | If `WITH GRANT OPTION` was used, append `#` or drop grant option per least privilege. |
-| `extends role pkg::Other` | `"schema_roles": [{ "names": ["pkg::Other"] }]` | Container-local schema role reference. |
-| `extends catalog role "R"` | `"global_roles": ["R"]` | External catalog role; flag comment/warning if migrating from XSC. |
-| `system privilege: P1, P2;` | `"system_privileges": ["P1", "P2"]` | Direct array. |
+| `role pkg::RoleName [extends ...]` | `"role": { "name": "pkg::RoleName", ... }` | The header is split at each `extends`: only the tokens before the first one form the name. Append `#` only when an object or schema privilege carries `WITH GRANT OPTION`. |
+| `extends role pkg::A, pkg::B` | `"schema_roles": [{ "names": ["pkg::A", "pkg::B"] }]` | Container-local schema role reference. Allowed in the header or as a body statement, and may list several roles. |
+| `extends catalog role "R1", "R2"` | `"global_roles": ["R1", "R2"]` | External catalog role. |
+| `system privilege: P1, P2;` | `"system_privileges": ["P1", "P2"]` | Direct array. HDI has no grant-option form, so `WITH GRANT OPTION` is dropped and reported. |
 | `schema x.hdbschema: P;` | `"schema_privileges": [{ "privileges": ["P"] }]` | Local container schema omits `"reference"`. |
 | `catalog schema "S": P;` | `"schema_privileges": [{ "reference": "S_REF", "privileges": ["P"] }]` | Requires `.hdbroleconfig` / `.hdbgrants` mapping external schema `"S"`. |
-| `sql object pkg:OBJ.tbl: P;` | `"object_privileges": [{ "name": "pkg::OBJ", "type": "<INFERRABLE>", "privileges": ["P"] }]` | Infers `"TABLE"`/`.hdbview` `"VIEW"`/`.hdbprocedure` `"PROCEDURE"` from suffix or leaves `"TABLE"` placeholder for user confirmation. |
-| `catalog sql object "S"."O": P;` | `"object_privileges": [{ "name": "O", "type": "TABLE", "privileges": ["P"] }]` | Add `.hdbsynonym` reminder for external schema `"S"`. |
+| `sql object pkg:A.hdbtable, pkg:B.hdbprocedure: P;` | `"object_privileges": [{ "name": "pkg::A", "type": "TABLE", ... }, { "name": "pkg::B", "type": "PROCEDURE", ... }]` | One entry per comma-separated object, each sharing the privilege list. The name converts `pkg:OBJ.suffix` to `pkg::OBJ`, and the type comes from the object's own suffix (see the suffix table below). An unknown suffix is kept in the name, gets the `"TABLE"` placeholder, and is reported. |
+| `catalog sql object "S"."O": P;` | `"object_privileges": [{ "name": "O", "type": "TABLE", "privileges": ["P"] }]` | Reports a `.hdbsynonym` reminder for the external object `S.O` and asks the user to confirm the assumed type. |
 | `analytic privilege: ...;` | `"schema_analytic_privileges": [{ "privileges": [...] }]` | Must migrate classic XML analytic privilege to SQL analytic privilege. |
 | `catalog analytic privilege: ...;` | `"schema_analytic_privileges": [...]` | Same. |
 | `... WITH GRANT OPTION;` | `"privileges_with_grant_option": [...]` | Moves grantable privileges into `privileges_with_grant_option` (requires `#` on role name). |
-| `package <pkg>: ...;` | *(Dropped — deprecated in HDI)* | Repository packages do not exist in HDI. |
-| `application privilege: <p>;` | *(Dropped from `.hdbrole` — move to `xs-security.json`)* | Emits diagnostic / header comment note for XSUAA scope migration. |
+| `package <pkg>: ...;` | *(Dropped — deprecated in HDI)* | Repository packages do not exist in HDI. Reported. |
+| `application privilege: <p>;` | *(Dropped from `.hdbrole` — move to `xs-security.json`)* | Reported, with a pointer to XSUAA scope migration. |
+
+**Object suffix -> `type`:** `hdbtable`, `table` -> `TABLE`; `hdbview`, `view`, `attributeview`, `analyticview`, `calculationview`, `hdbcalculationview` -> `VIEW`; `hdbprocedure`, `procedure` -> `PROCEDURE`; `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction` -> `FUNCTION`; `hdbsequence`, `sequence` -> `SEQUENCE`; `hdbsynonym` -> `SYNONYM`.
+
+**Reporting dropped content:** JSON cannot hold comments or notes. Everything the QuickFix cannot carry over is listed in the `HANA-MIG-004` diagnostic message under `Not carried over by the QuickFix:`, one `<statement> — <reason>` line per item. That covers source comments (§4), `package` and `application privilege` statements, the `catalog sql object` synonym reminder, unknown object types, and a system-privilege grant option.
 
 ---
 
@@ -175,11 +184,18 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 | Classic `.hdbdd` Construct | HDI `.hdbcds` Conversion |
 | :--- | :--- |
 | `@Schema : 'MY_SCHEMA'` (or `@Schema: '...'`) | **Remove** completely (HDI assigns container schema automatically). |
-| `@Catalog.tableType : #COLUMN` | Convert entity-level annotation into inside-entity `technical configuration { column store; };` block (or strip if default). |
-| `@Catalog.tableType : #ROW` | Convert to `technical configuration { row store; };`. |
-| `@Catalog.index : [ { name : 'IDX', unique : true, order : #ASC, elementNames : ['A', 'B'] } ]` | Convert to `technical configuration { [unique] index IDX on (A asc, B asc); };`. |
+| `@Catalog.tableType : #COLUMN` | Remove the annotation and add `column store;` to the entity's technical configuration, which follows the entity's closing brace: `entity E { ... } technical configuration { column store; };`. |
+| `@Catalog.tableType : #ROW` | Same, with `row store;`. |
+| `@Catalog.index : [ { name : 'IDX', unique : true, order : #ASC, elementNames : ['A', 'B'] } ]` | One clause per index, ordered as a whole: `[unique] index IDX on (A, B) asc;` (`#DESC` -> `desc`). |
 | `@WithStructuredPrivilegeCheck` | Replace with `with structured privilege check` clause on `view` / `entity` (or note HDI compatibility). |
 | `using "SCHEMA"::Obj;` | Strip explicit external schema where local container object applies. |
+
+**Technical configuration placement** (`SAP_HANA_Core_Data_Services_CDS_Reference_en/006_4_Creating_Data_Persistence_Artifacts_with_CDS_in_XS_Advanced.md:630-660,780-830`; `docs/specs/grammars/cds.md`):
+
+1. The block always goes **after** the entity's closing brace, never inside the element list: `} technical configuration { ... };`. XS advanced does not support `@Catalog.tableType` or `@Catalog.index`.
+2. **No block yet:** insert `technical configuration { ... }` right after the entity's `}`, before its `;` (add the `;` when it is missing). For a multi-line entity, put each clause on its own line at the element indentation, with the closing `}` at the entity brace's indentation. For a single-line entity, keep it on one line.
+3. **Block already present:** merge the clauses into it before its closing `}`. Skip the store clause when the block already has `column store;` or `row store;`, and skip any index whose name is already declared. SAP forbids the annotation and the matching clause together, so the existing clause wins and nothing is duplicated.
+4. Store clauses come before index clauses. Running the fix again on its own output changes nothing.
 
 ---
 
@@ -214,3 +230,26 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 - **Target Extensions:** `.xsjs`, `.xsjslib`
 - **Trigger:** Calls or property accesses on `$.repo.*`, `$.config.*`, `$.session.hasSystemPrivilege(...)`, `$.session.assertSystemPrivilege(...)`, or `$.session.hasAppPrivilege(...)` / `$.session.assertAppPrivilege(...)` (`004_2_Migrating_...md:4345-4363`).
 - **Diagnostic Message:** `'<api>' is unsupported or semantics changed in XS Advanced (@sap/xsjs). Replace $.session app privileges with XSUAA scopes ('$.session.hasAppPrivilege' -> XSUAA scope name) and remove $.repo / $.config.`
+
+---
+
+## 4. Comment Preservation & Regression Harness
+
+AGENTS.md says tooling must never strip comments. Every structural migration QuickFix either keeps each source comment or reports it as dropped.
+
+| QuickFix | Comment handling |
+| :--- | :--- |
+| `HANA-MIG-001`, `002`, `003`, `006` (classic KV -> SQL DDL) | All comments outside string values move to a SQL header block before the DDL, in source order. `//` becomes `--`; `--` and `/* */` are kept. Comments inside a value (such as `query = "..."`) stay inside it. |
+| Reverse `001`, `002`, `003` (SQL DDL -> classic KV) | Comments come back as a KV header block, with `--` turned into `//`. Comments inside verbatim-copied SQL (the `.hdbview` query, the `RESET BY` subquery) stay inside it and are not duplicated. `-- TODO(.hdbindex): ...` lines written by `HANA-MIG-001` are parsed back into `table.indexes`, not kept as comments. |
+| `HANA-MIG-004` (`.hdbrole` -> JSON) | JSON cannot hold comments, so each comment is listed in the diagnostic message as `<comment> — comment dropped: JSON .hdbrole cannot hold comments` (see §2.4). |
+| `HANA-MIG-005` (`.hdbdd` -> `.hdbcds`) | Edits in place. Comments are never touched, including a comment that shares a line with a removed annotation. |
+
+**Regression harness** (`test/migration-transformer.test.ts`) applies every structural QuickFix to every file in `samples/xs-classic/` and `samples/format-demos/` and asserts:
+
+1. The output is non-empty.
+2. The output has no `syntax` diagnostics of severity `error` in its target language (`.hdbstructure` -> `hdbtabletype`, `.hdbdd` -> `hdbcds`).
+3. Running the analyzer on the output finds nothing left to migrate (idempotency).
+4. Each source comment appears in the output or in the diagnostic message.
+5. For bidirectional rules, forward -> reverse -> forward reproduces the first forward output exactly.
+
+A new classic sample is covered automatically. Add it to `EXPECTED_MIGRATABLE_SAMPLES` so the harness fails if the QuickFix stops being offered.

@@ -1,5 +1,6 @@
 import { cdsTokenize, type CdsToken } from '../formatter/cds';
 import {
+  kvTokenize,
   parseClassicKv,
   type KvAssignmentNode,
   type KvStructValue,
@@ -40,6 +41,47 @@ function escapeKvString(val: string): string {
 
 function escapeSqlSingleQuote(val: string): string {
   return `'${val.replace(/'/g, '\'\'')}'`;
+}
+
+/**
+ * Comments of a classic KV artifact (outside string values) as a SQL comment header, in source order.
+ * `//` becomes `--`; `--` and block comments are kept as they are.
+ */
+function kvCommentsAsSqlHeader(text: string): string {
+  const lines = kvTokenize(text)
+    .filter((t) => t.type === 'lineComment' || t.type === 'blockComment')
+    .map((t) => (t.type === 'lineComment' ? t.text.replace(/^\/\//, '--') : t.text));
+  return lines.length > 0 ? `${lines.join('\n')}\n` : '';
+}
+
+/**
+ * SQL comments that start before `before` (code after it is copied verbatim, comments included) as a
+ * classic KV comment header. `--` becomes `//`; block comments are kept as they are.
+ */
+function sqlCommentsAsKvHeader(comments: readonly Token[], before = Number.POSITIVE_INFINITY): string {
+  const lines = comments
+    .filter((t) => t.start < before)
+    .map((t) => (t.type === 'lineComment' ? t.text.replace(/^--/, '//') : t.text));
+  return lines.length > 0 ? `${lines.join('\n')}\n` : '';
+}
+
+function isSqlComment(t: Token): boolean {
+  return t.type === 'lineComment' || t.type === 'blockComment';
+}
+
+const HDBINDEX_TODO_RE = /^--\s*TODO\(\.hdbindex\):\s*(UNIQUE\s+)?(?:(\w+)\s+)?INDEX\s+"([^"]+)"\s+ON\s+"[^"]*"\s*\(([^)]*)\)\s*$/i;
+
+/** Reads back a `-- TODO(.hdbindex): ...` line written by `convertHdbtableKvToHdi` as a `table.indexes` struct. */
+function parseHdbindexTodo(comment: string): string | null {
+  const m = HDBINDEX_TODO_RE.exec(comment.trim());
+  if (!m) return null;
+  const cols = m[4]
+    .split(',')
+    .map((c) => c.trim().replace(/^"|"$/g, ''))
+    .filter((c) => c.length > 0)
+    .map(escapeKvString);
+  const typePart = m[2] ? ` indexType = ${m[2].toUpperCase()};` : '';
+  return `  {name = ${escapeKvString(m[3])}; unique = ${m[1] ? 'true' : 'false'};${typePart} indexColumns = [${cols.join(', ')}];}`;
 }
 
 export function deriveObjectName(filePath?: string, fallback = 'OBJECT_NAME'): string {
@@ -216,16 +258,22 @@ export function convertHdbtableKvToHdi(text: string, objectName = 'MY_TABLE'): s
     }
   }
 
-  return `${out}\n`;
+  return `${kvCommentsAsSqlHeader(text)}${out}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbtable` (`COLUMN TABLE ...`) into XSC Classic KV `.hdbtable`.
  */
 export function convertHdbtableHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
+  const indexStructs: string[] = [];
+  const keptComments: Token[] = [];
+  for (const c of allToks.filter(isSqlComment)) {
+    const idx = c.type === 'lineComment' ? parseHdbindexTodo(c.text) : null;
+    if (idx) indexStructs.push(idx);
+    else keptComments.push(c);
+  }
   let temporary = false;
   let tableType: 'COLUMNSTORE' | 'ROWSTORE' = 'COLUMNSTORE';
   let i = 0;
@@ -415,7 +463,24 @@ export function convertHdbtableHdiToKv(text: string, targetSchema = 'MYSCHEMA'):
   if (pkCols.length > 0) {
     lines.push(`table.primaryKey.pkcolumns = [${pkCols.join(', ')}];`);
   }
-  return `${lines.join('\n')}\n`;
+  if (indexStructs.length > 0) {
+    lines.push(`table.indexes = [\n${indexStructs.join(',\n')}\n];`);
+  }
+  return `${sqlCommentsAsKvHeader(keptComments)}${lines.join('\n')}\n`;
+}
+
+/**
+ * Rewrites `"_SYS_BIC"."pkg/OBJ"` to `"pkg::OBJ"` and strips the `"<schema>".` prefix matching the classic
+ * `schema=` property, so container-local objects resolve in `[HDI]`.
+ */
+function stripClassicSchemaRefs(sql: string, schema: string | null): string {
+  let out = sql.replace(/(?:"_SYS_BIC"|_SYS_BIC)\."([^"]+)"/gi, (_m, obj: string) => `"${obj.replace(/\//g, '::')}"`);
+  if (schema) {
+    const escapedSchema = schema.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp(`"${escapedSchema}"\\s*\\.\\s*`, 'g'), '');
+    out = out.replace(new RegExp(`\\b${escapedSchema}\\s*\\.\\s*`, 'gi'), '');
+  }
+  return out;
 }
 
 /**
@@ -427,24 +492,17 @@ export function convertHdbviewKvToHdi(text: string, objectName = 'MY_VIEW'): str
   const queryRaw = readKvScalarString(assigns.get('query')?.value) ?? '';
   let cleanQuery = queryRaw.trim().replace(/;+\s*$/, '');
 
-  // Replace `"_SYS_BIC"."pkg/OBJ"` -> `"pkg::OBJ"` and strip matching `"SCHEMA".` prefix
-  cleanQuery = cleanQuery.replace(/(?:"_SYS_BIC"|_SYS_BIC)\."([^"]+)"/gi, (_m, obj: string) => `"${obj.replace(/\//g, '::')}"`);
-  if (schema) {
-    const escapedSchema = schema.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    cleanQuery = cleanQuery.replace(new RegExp(`"${escapedSchema}"\\s*\\.\\s*`, 'g'), '');
-    cleanQuery = cleanQuery.replace(new RegExp(`\\b${escapedSchema}\\s*\\.\\s*`, 'gi'), '');
-  }
+  cleanQuery = stripClassicSchemaRefs(cleanQuery, schema);
 
-  return `VIEW "${objectName}"\nAS ${cleanQuery}\n`;
+  return `${kvCommentsAsSqlHeader(text)}VIEW "${objectName}"\nAS ${cleanQuery}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbview` (`VIEW "..." AS ...`) into XSC Classic KV `.hdbview`.
  */
 export function convertHdbviewHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
   const asIdx = toks.findIndex((t) => t.type === 'word' && t.text.toUpperCase() === 'AS');
   if (asIdx === -1 || asIdx + 1 >= toks.length) return text;
 
@@ -478,7 +536,9 @@ export function convertHdbviewHdiToKv(text: string, targetSchema = 'MYSCHEMA'): 
   if (deps.size > 0) {
     lines.push(`depends_on = [${[...deps].join(', ')}];`);
   }
-  return `${suffixNote}${lines.join('\n')}\n`;
+  // Comments inside the query are copied with it; only the ones before it become KV comments.
+  const header = sqlCommentsAsKvHeader(allToks.filter(isSqlComment), queryStart);
+  return `${header}${suffixNote}${lines.join('\n')}\n`;
 }
 
 /**
@@ -496,12 +556,13 @@ export function convertHdbsequenceKvToHdi(text: string, objectName = 'MY_SEQ'): 
 
   const noMax = readKvBool(assigns.get('nomaxvalue')?.value);
   const maxVal = readKvScalarString(assigns.get('maxvalue')?.value);
-  if (noMax === true) clauses.push('NOMAXVALUE');
+  // `NO MAXVALUE` / `NO MINVALUE` are two words in HANA SQL `<sequence_parameter>` [HDI] [CLOUD].
+  if (noMax === true) clauses.push('NO MAXVALUE');
   else if (maxVal) clauses.push(`MAXVALUE ${maxVal}`);
 
   const noMin = readKvBool(assigns.get('nominvalue')?.value);
   const minVal = readKvScalarString(assigns.get('minvalue')?.value);
-  if (noMin === true) clauses.push('NOMINVALUE');
+  if (noMin === true) clauses.push('NO MINVALUE');
   else if (minVal) clauses.push(`MINVALUE ${minVal}`);
 
   const cycles = readKvBool(assigns.get('cycles')?.value);
@@ -509,20 +570,23 @@ export function convertHdbsequenceKvToHdi(text: string, objectName = 'MY_SEQ'): 
   else if (cycles === false) clauses.push('NO CYCLE');
 
   const resetBy = readKvScalarString(assigns.get('reset_by')?.value);
-  if (resetBy) clauses.push(`RESET BY ${resetBy.trim().replace(/;+\s*$/, '')}`);
+  if (resetBy) {
+    const schema = readKvScalarString(assigns.get('schema')?.value);
+    clauses.push(`RESET BY ${stripClassicSchemaRefs(resetBy.trim().replace(/;+\s*$/, ''), schema)}`);
+  }
 
   const body = clauses.length > 0 ? `\n  ${clauses.join('\n  ')}` : '';
-  return `SEQUENCE "${objectName}"${body}\n`;
+  return `${kvCommentsAsSqlHeader(text)}SEQUENCE "${objectName}"${body}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbsequence` into XSC Classic KV `.hdbsequence`.
  */
 export function convertHdbsequenceHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
   const lines: string[] = [`schema = ${escapeKvString(targetSchema)};`];
+  let verbatimFrom = Number.POSITIVE_INFINITY;
   for (let i = 0; i < toks.length; i++) {
     const w = toks[i].text.toUpperCase();
     const next = toks[i + 1]?.text.toUpperCase();
@@ -535,25 +599,31 @@ export function convertHdbsequenceHdiToKv(text: string, targetSchema = 'MYSCHEMA
     } else if (w === 'MAXVALUE' && toks[i + 1]) {
       lines.push(`maxvalue = ${toks[i + 1].text};`);
       i++;
-    } else if (w === 'NOMAXVALUE') {
+    } else if (w === 'NO' && next === 'MAXVALUE') {
       lines.push('nomaxvalue = true;');
+      i++;
+    } else if (w === 'NO' && next === 'MINVALUE') {
+      lines.push('nominvalue = true;');
+      i++;
+    } else if (w === 'NOMAXVALUE' || w === 'NOMINVALUE') {
+      // Legacy single-word form written by converter versions <= 0.10.1; not valid HANA SQL.
+      lines.push(`${w.toLowerCase()} = true;`);
     } else if (w === 'MINVALUE' && toks[i + 1]) {
       lines.push(`minvalue = ${toks[i + 1].text};`);
       i++;
-    } else if (w === 'NOMINVALUE') {
-      lines.push('nominvalue = true;');
     } else if (w === 'NO' && next === 'CYCLE') {
       lines.push('cycles = false;');
       i++;
     } else if (w === 'CYCLE') {
       lines.push('cycles = true;');
     } else if (w === 'RESET' && next === 'BY' && toks[i + 2]) {
-      const rest = text.slice(toks[i + 2].start).trim().replace(/;+\s*$/, '');
+      verbatimFrom = toks[i + 2].start;
+      const rest = text.slice(verbatimFrom).trim().replace(/;+\s*$/, '');
       lines.push(`reset_by = ${escapeKvString(rest)};`);
       break;
     }
   }
-  return `${lines.join('\n')}\n`;
+  return `${sqlCommentsAsKvHeader(allToks.filter(isSqlComment), verbatimFrom)}${lines.join('\n')}\n`;
 }
 
 /**
@@ -563,41 +633,102 @@ export function convertHdbstructureKvToTableType(text: string, objectName = 'MY_
   const assigns = getAssignmentsMap(text);
   const colLines = renderHdiColumnDefinitions(assigns.get('table.columns')?.value);
   const body = colLines.length > 0 ? `\n  ${colLines.join(',\n  ')}\n` : '';
-  return `TYPE "${objectName}" AS TABLE (${body})\n`;
+  return `${kvCommentsAsSqlHeader(text)}TYPE "${objectName}" AS TABLE (${body})\n`;
 }
 
-function inferObjectTypeFromClassicSubject(subject: string): string {
-  const lower = subject.toLowerCase();
-  if (lower.endsWith('.hdbview') || lower.endsWith('.view') || lower.endsWith('.calculationview')) return 'VIEW';
-  if (lower.endsWith('.hdbprocedure') || lower.endsWith('.procedure')) return 'PROCEDURE';
-  if (lower.endsWith('.hdbfunction') || lower.endsWith('.hdbtablefunction')) return 'FUNCTION';
-  if (lower.endsWith('.hdbsequence')) return 'SEQUENCE';
-  return 'TABLE';
+/** Classic repository object suffix -> HDI object privilege `type` `[XSC]` -> `[HDI]`. */
+const CLASSIC_OBJECT_TYPES: Readonly<Record<string, string>> = {
+  hdbtable: 'TABLE',
+  table: 'TABLE',
+  hdbview: 'VIEW',
+  view: 'VIEW',
+  attributeview: 'VIEW',
+  analyticview: 'VIEW',
+  calculationview: 'VIEW',
+  hdbcalculationview: 'VIEW',
+  hdbprocedure: 'PROCEDURE',
+  procedure: 'PROCEDURE',
+  hdbfunction: 'FUNCTION',
+  hdbtablefunction: 'FUNCTION',
+  hdbscalarfunction: 'FUNCTION',
+  hdbsequence: 'SEQUENCE',
+  sequence: 'SEQUENCE',
+  hdbsynonym: 'SYNONYM',
+};
+
+interface ClassicObjectRef {
+  readonly name: string;
+  readonly type: string;
+  /** False when no known suffix was found and `type` is the `TABLE` placeholder. */
+  readonly typeKnown: boolean;
 }
 
-function normalizeClassicObjectName(rawToks: readonly RoleToken[]): string {
-  const joined = rawToks.map((t) => t.text.replace(/^"|"$/g, '')).join('');
-  // Strip `.hdbtable` etc. suffix cleanly and keep package::Object form
-  const strippedExt = joined.replace(/\.(?:hdbtable|hdbview|hdbprocedure|hdbfunction|hdbsequence|hdbschema|calculationview)$/i, '');
-  const parts = strippedExt.split(':');
-  if (parts.length === 2 && !strippedExt.includes('::')) {
-    return `${parts[0]}::${parts[1].replace(/\..+$/, '')}`;
+/** `pkg:OBJ.suffix` (or `pkg::OBJ.suffix`) -> `{ name: "pkg::OBJ", type }`. */
+function convertClassicObjectRef(raw: string): ClassicObjectRef {
+  let pkg: string | null = null;
+  let rest = raw;
+  const dcolon = raw.indexOf('::');
+  const colon = raw.indexOf(':');
+  if (dcolon !== -1) {
+    pkg = raw.slice(0, dcolon);
+    rest = raw.slice(dcolon + 2);
+  } else if (colon !== -1) {
+    pkg = raw.slice(0, colon);
+    rest = raw.slice(colon + 1);
   }
-  if (strippedExt.includes('::')) {
-    const [pkg, objWithSub] = strippedExt.split('::');
-    const obj = objWithSub.split('.')[0];
-    return `${pkg}::${obj}`;
+  const dot = rest.lastIndexOf('.');
+  const suffix = dot > 0 ? rest.slice(dot + 1).toLowerCase() : '';
+  const type = CLASSIC_OBJECT_TYPES[suffix];
+  const obj = type ? rest.slice(0, dot) : rest;
+  return { name: pkg ? `${pkg}::${obj}` : obj, type: type ?? 'TABLE', typeKnown: type !== undefined };
+}
+
+function unquoteRoleToken(tok: RoleToken): string {
+  return tok.type === 'qident' ? tok.text.slice(1, -1).replace(/""/g, '"') : tok.text;
+}
+
+/** Joins tokens of one name (`demo . roles :: X` -> `demo.roles::X`, `"R"` -> `R`). */
+function roleTokensText(toks: readonly RoleToken[]): string {
+  return toks.map(unquoteRoleToken).join('');
+}
+
+function splitRoleTokensOnCommas(toks: readonly RoleToken[]): RoleToken[][] {
+  const out: RoleToken[][] = [];
+  let cur: RoleToken[] = [];
+  for (const t of toks) {
+    if (t.type === 'comma') {
+      if (cur.length > 0) out.push(cur);
+      cur = [];
+    } else {
+      cur.push(t);
+    }
   }
-  return strippedExt;
+  if (cur.length > 0) out.push(cur);
+  return out;
+}
+
+function isRoleWord(tok: RoleToken | undefined, word: string): boolean {
+  return tok !== undefined && tok.type === 'word' && tok.text.toUpperCase() === word;
+}
+
+export interface RoleConversion {
+  readonly content: string;
+  /** Classic content that HDI JSON cannot hold, for the diagnostic message. */
+  readonly notes: readonly string[];
 }
 
 /**
- * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`.
+ * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`, and reports what it drops.
  */
-export function convertClassicHdbroleToHdiJson(text: string): string {
-  const tokens = roleTokenize(text).filter(
+export function convertClassicHdbroleToHdiJsonWithNotes(text: string): RoleConversion {
+  const allTokens = roleTokenize(text);
+  const tokens = allTokens.filter(
     (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
   );
+  // JSON cannot hold comments, so each one is reported instead of silently lost.
+  const commentNotes = allTokens
+    .filter((t) => t.type === 'lineComment' || t.type === 'blockComment')
+    .map((t) => `${t.text.replace(/\s+/g, ' ').trim()} — comment dropped: JSON .hdbrole cannot hold comments`);
 
   const stmts: RoleToken[][] = [];
   let cur: RoleToken[] = [];
@@ -615,6 +746,7 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
 
   let roleName = 'MY_ROLE';
   let needsGrantHash = false;
+  const notes: string[] = [...commentNotes];
   const schemaRoles: string[] = [];
   const globalRoles: string[] = [];
   const systemPrivs: string[] = [];
@@ -622,8 +754,37 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
   const objectPrivs: Array<Record<string, unknown>> = [];
   const analyticPrivs: Array<Record<string, unknown>> = [];
 
+  /** `extends role a, b` / `extends catalog role "R1", "R2"` (in the header or as a body statement). */
+  const readExtends = (toks: readonly RoleToken[]): void => {
+    if (isRoleWord(toks[1], 'CATALOG') && isRoleWord(toks[2], 'ROLE')) {
+      for (const n of splitRoleTokensOnCommas(toks.slice(3))) globalRoles.push(roleTokensText(n));
+    } else if (isRoleWord(toks[1], 'ROLE')) {
+      for (const n of splitRoleTokensOnCommas(toks.slice(2))) schemaRoles.push(roleTokensText(n));
+    }
+  };
+  /** Splits `role X extends ... extends ...` at each `extends`. */
+  const splitOnExtends = (toks: readonly RoleToken[]): RoleToken[][] => {
+    const parts: RoleToken[][] = [[]];
+    for (const t of toks) {
+      if (isRoleWord(t, 'EXTENDS')) parts.push([]);
+      parts[parts.length - 1].push(t);
+    }
+    return parts;
+  };
+
   for (const stmt of stmts) {
     if (stmt.length === 0) continue;
+    if (isRoleWord(stmt[0], 'ROLE')) {
+      const [head, ...exts] = splitOnExtends(stmt);
+      if (head.length > 1) roleName = roleTokensText(head.slice(1));
+      for (const ext of exts) readExtends(ext);
+      continue;
+    }
+    if (isRoleWord(stmt[0], 'EXTENDS')) {
+      readExtends(stmt);
+      continue;
+    }
+
     let colonIdx = -1;
     for (let k = stmt.length - 1; k >= 0; k--) {
       if (stmt[k].type === 'colon') {
@@ -631,77 +792,65 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
         break;
       }
     }
-    const lhs = colonIdx >= 0 ? stmt.slice(0, colonIdx) : stmt;
-    const lhsUpper = lhs.map((t) => t.text.toUpperCase()).join(' ');
-
-    if (lhs[0]?.text.toUpperCase() === 'ROLE') {
-      roleName = lhs.slice(1).map((t) => t.text.replace(/^"|"$/g, '')).join('');
-      continue;
-    }
-    if (lhsUpper.startsWith('EXTENDS CATALOG ROLE')) {
-      globalRoles.push(lhs[lhs.length - 1].text.replace(/^"|"$/g, ''));
-      continue;
-    }
-    if (lhsUpper.startsWith('EXTENDS ROLE')) {
-      schemaRoles.push(lhs.slice(2).map((t) => t.text.replace(/^"|"$/g, '')).join(''));
-      continue;
-    }
     if (colonIdx === -1) continue;
+    const lhs = stmt.slice(0, colonIdx);
+    const lhsUpper = lhs.map((t) => t.text.toUpperCase()).join(' ');
+    const stmtText = text.slice(stmt[0].start, stmt[stmt.length - 1].end).replace(/\s+/g, ' ');
 
     let endIdx = stmt.length;
     let withGrantOption = false;
     if (
       endIdx >= 3 &&
-      stmt[endIdx - 3].text.toUpperCase() === 'WITH' &&
-      stmt[endIdx - 2].text.toUpperCase() === 'GRANT' &&
-      stmt[endIdx - 1].text.toUpperCase() === 'OPTION'
+      isRoleWord(stmt[endIdx - 3], 'WITH') &&
+      isRoleWord(stmt[endIdx - 2], 'GRANT') &&
+      isRoleWord(stmt[endIdx - 1], 'OPTION')
     ) {
       withGrantOption = true;
-      needsGrantHash = true;
       endIdx -= 3;
     }
 
-    const privs: string[] = [];
-    let group: RoleToken[] = [];
-    for (let i = colonIdx + 1; i < endIdx; i++) {
-      if (stmt[i].type === 'comma') {
-        if (group.length > 0) privs.push(group.map((t) => t.text.replace(/^"|"$/g, '')).join(' '));
-        group = [];
-      } else {
-        group.push(stmt[i]);
-      }
-    }
-    if (group.length > 0) privs.push(group.map((t) => t.text.replace(/^"|"$/g, '')).join(' '));
-
+    const privs = splitRoleTokensOnCommas(stmt.slice(colonIdx + 1, endIdx)).map((g) =>
+      g.map(unquoteRoleToken).join(' ')
+    );
     const privKey = withGrantOption ? 'privileges_with_grant_option' : 'privileges';
+    let granted = true;
 
     if (lhsUpper.startsWith('SYSTEM PRIVILEGE')) {
       systemPrivs.push(...privs);
+      granted = false; // HDI JSON has no grant-option form for system privileges
+      if (withGrantOption) notes.push(`${stmtText} — WITH GRANT OPTION dropped: HDI system_privileges have no grant-option form`);
     } else if (lhsUpper.startsWith('CATALOG SCHEMA')) {
-      const refName = lhs[lhs.length - 1]?.text.replace(/^"|"$/g, '') ?? 'EXTERNAL_SCHEMA';
+      const refName = lhs.length > 2 ? unquoteRoleToken(lhs[lhs.length - 1]) : 'EXTERNAL_SCHEMA';
       schemaPrivs.push({ reference: refName, [privKey]: privs });
     } else if (lhsUpper.startsWith('SCHEMA')) {
       schemaPrivs.push({ [privKey]: privs });
     } else if (lhsUpper.startsWith('CATALOG SQL OBJECT')) {
-      const rawSubject = lhs.slice(3).map((t) => t.text).join('');
-      const parts = rawSubject.split('.');
-      const objName = (parts[parts.length - 1] ?? rawSubject).replace(/^"|"$/g, '');
-      objectPrivs.push({
-        name: objName,
-        type: inferObjectTypeFromClassicSubject(rawSubject),
-        [privKey]: privs,
-      });
+      const subject = lhs.slice(3);
+      const objName = subject.length > 0 ? unquoteRoleToken(subject[subject.length - 1]) : 'OBJECT';
+      objectPrivs.push({ name: objName, type: 'TABLE', [privKey]: privs });
+      notes.push(
+        `${stmtText} — create a .hdbsynonym for the external object ${roleTokensText(subject)} and confirm its type (TABLE assumed)`
+      );
     } else if (lhsUpper.startsWith('SQL OBJECT')) {
-      const subjectTokens = lhs.slice(2);
-      const rawJoined = subjectTokens.map((t) => t.text).join('');
-      objectPrivs.push({
-        name: normalizeClassicObjectName(subjectTokens),
-        type: inferObjectTypeFromClassicSubject(rawJoined),
-        [privKey]: privs,
-      });
+      for (const subject of splitRoleTokensOnCommas(lhs.slice(2))) {
+        const raw = roleTokensText(subject);
+        const ref = convertClassicObjectRef(raw);
+        objectPrivs.push({ name: ref.name, type: ref.type, [privKey]: privs });
+        if (!ref.typeKnown) notes.push(`sql object ${raw} — unknown object type, TABLE assumed`);
+      }
     } else if (lhsUpper.startsWith('ANALYTIC PRIVILEGE') || lhsUpper.startsWith('CATALOG ANALYTIC PRIVILEGE')) {
       analyticPrivs.push({ [privKey]: privs });
+    } else if (lhsUpper.startsWith('APPLICATION PRIVILEGE')) {
+      granted = false;
+      notes.push(`${stmtText} — dropped: define the application privilege as an XSUAA scope in xs-security.json`);
+    } else if (lhsUpper.startsWith('PACKAGE')) {
+      granted = false;
+      notes.push(`${stmtText} — dropped: repository package privileges do not exist in HDI`);
+    } else {
+      granted = false;
+      notes.push(`${stmtText} — dropped: no HDI JSON equivalent`);
     }
+    if (granted && withGrantOption) needsGrantHash = true;
   }
 
   if (needsGrantHash && !roleName.endsWith('#')) {
@@ -716,7 +865,14 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
   if (objectPrivs.length > 0) roleObj.object_privileges = objectPrivs;
   if (analyticPrivs.length > 0) roleObj.schema_analytic_privileges = analyticPrivs;
 
-  return `${JSON.stringify({ role: roleObj }, null, 2)}\n`;
+  return { content: `${JSON.stringify({ role: roleObj }, null, 2)}\n`, notes };
+}
+
+/**
+ * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`.
+ */
+export function convertClassicHdbroleToHdiJson(text: string): string {
+  return convertClassicHdbroleToHdiJsonWithNotes(text).content;
 }
 
 /**
@@ -806,10 +962,47 @@ function skipCdsAnnotation(codeToks: readonly CdsToken[], startIdx: number): num
   return i;
 }
 
+/** Existing `} technical configuration { ... }` block that follows an entity's closing brace. */
+interface TechConfigBlock {
+  readonly open: CdsToken;
+  readonly close: CdsToken;
+  readonly hasStore: boolean;
+  readonly indexNames: ReadonlySet<string>;
+}
+
 interface TargetEntityInfo {
   readonly entityOpen: CdsToken;
   readonly entityClose: CdsToken;
-  readonly hasTechnicalConfig: boolean;
+  /** Whether a `;` already follows the entity (after its technical configuration, if any). */
+  readonly hasTrailingSemi: boolean;
+  readonly techConfig: TechConfigBlock | null;
+}
+
+function isCdsWord(tok: CdsToken | undefined, word: string): boolean {
+  return tok?.type === 'word' && tok.text.toLowerCase() === word;
+}
+
+/**
+ * Reads the `technical configuration { ... }` block that CDS places *after* the entity's closing brace
+ * (`entity E { ... } technical configuration { ... };`) `[XSC]` `[HDI]`.
+ */
+function readTechConfigAfter(codeToks: readonly CdsToken[], entityCloseIdx: number): { block: TechConfigBlock; closeIdx: number } | null {
+  const k = entityCloseIdx + 1;
+  if (!isCdsWord(codeToks[k], 'technical') || !isCdsWord(codeToks[k + 1], 'configuration') || codeToks[k + 2]?.text !== '{') {
+    return null;
+  }
+  const closeIdx = findMatchingCdsDelimiter(codeToks, k + 2, '{', '}');
+  if (closeIdx === -1) return null;
+  let hasStore = false;
+  const indexNames = new Set<string>();
+  for (let b = k + 3; b < closeIdx; b++) {
+    if (isCdsWord(codeToks[b], 'store') && (isCdsWord(codeToks[b - 1], 'column') || isCdsWord(codeToks[b - 1], 'row'))) {
+      hasStore = true;
+    } else if (isCdsWord(codeToks[b], 'index') && codeToks[b + 1]) {
+      indexNames.add(codeToks[b + 1].text.toLowerCase());
+    }
+  }
+  return { block: { open: codeToks[k + 2], close: codeToks[closeIdx], hasStore, indexNames }, closeIdx };
 }
 
 function findTargetEntityAfterAnnotation(codeToks: readonly CdsToken[], afterIdx: number): TargetEntityInfo | null {
@@ -828,20 +1021,14 @@ function findTargetEntityAfterAnnotation(codeToks: readonly CdsToken[], afterIdx
       if (codeToks[k]?.text !== '{') return null;
       const closeIdx = findMatchingCdsDelimiter(codeToks, k, '{', '}');
       if (closeIdx === -1) return null;
-
-      let hasTechnicalConfig = false;
-      for (let b = k + 1; b < closeIdx - 1; b++) {
-        if (
-          codeToks[b].type === 'word' &&
-          codeToks[b].text.toLowerCase() === 'technical' &&
-          codeToks[b + 1]?.type === 'word' &&
-          codeToks[b + 1].text.toLowerCase() === 'configuration'
-        ) {
-          hasTechnicalConfig = true;
-          break;
-        }
-      }
-      return { entityOpen: codeToks[k], entityClose: codeToks[closeIdx], hasTechnicalConfig };
+      const tc = readTechConfigAfter(codeToks, closeIdx);
+      const lastIdx = tc ? tc.closeIdx : closeIdx;
+      return {
+        entityOpen: codeToks[k],
+        entityClose: codeToks[closeIdx],
+        hasTrailingSemi: codeToks[lastIdx + 1]?.text === ';',
+        techConfig: tc?.block ?? null,
+      };
     }
     return null;
   }
@@ -855,8 +1042,17 @@ function unquoteCdsString(raw: string): string {
   return raw;
 }
 
-function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: number, arrCloseIdx: number): string[] {
-  const clauses: string[] = [];
+interface CatalogIndexClause {
+  readonly name: string;
+  readonly text: string;
+}
+
+/**
+ * Converts `@Catalog.index: [{ name, unique, order, elementNames }]` into technical configuration clauses.
+ * CDS orders a whole index, not single columns: `[unique] index <name> on (<a>, <b>) asc|desc;`.
+ */
+function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: number, arrCloseIdx: number): CatalogIndexClause[] {
+  const clauses: CatalogIndexClause[] = [];
   let i = arrOpenIdx + 1;
   while (i < arrCloseIdx) {
     if (codeToks[i].text !== '{') {
@@ -908,37 +1104,63 @@ function parseCatalogIndexClauses(codeToks: readonly CdsToken[], arrOpenIdx: num
 
     if (idxName && elements.length > 0) {
       const uq = isUnique ? 'unique ' : '';
-      const cols = elements.map((c) => `${c} ${orderDir}`).join(', ');
-      clauses.push(`${uq}index ${idxName} on (${cols});`);
+      clauses.push({ name: idxName, text: `${uq}index ${idxName} on (${elements.join(', ')}) ${orderDir};` });
     }
     i = objClose + 1;
   }
   return clauses;
 }
 
-function buildTechConfigInsertEdit(text: string, target: TargetEntityInfo, clauses: readonly string[]): TextEditSpan {
-  const closeStart = target.entityClose.start;
-  const lineStart = text.lastIndexOf('\n', closeStart - 1) + 1;
-  const beforeCloseOnLine = text.slice(lineStart, closeStart);
-  const bodyHasNewline = text.slice(target.entityOpen.end, closeStart).includes('\n');
+/** Leading whitespace of the line that contains `offset`, or `null` when other text precedes it on that line. */
+function lineIndentBefore(text: string, offset: number): string | null {
+  const lineStart = text.lastIndexOf('\n', offset - 1) + 1;
+  const before = text.slice(lineStart, offset);
+  return /^[ \t]*$/.test(before) ? before : null;
+}
 
-  if (bodyHasNewline && /^[ \t]*$/.test(beforeCloseOnLine)) {
-    const indent = beforeCloseOnLine;
-    const inner = clauses.map((c) => `${indent}    ${c}\n`).join('');
-    return {
-      start: lineStart,
-      end: lineStart,
-      newText: `${indent}  technical configuration {\n${inner}${indent}  };\n`,
-    };
+/**
+ * Indentation for clauses inside a block that opens at `open` and closes at `close`: the indentation of the
+ * block's first inner line, or the closing brace's indentation plus four spaces.
+ */
+function innerBlockIndent(text: string, open: CdsToken, close: CdsToken, closeIndent: string): string {
+  const firstInner = /\n([ \t]*)\S/.exec(text.slice(open.end, close.start));
+  const indent = firstInner?.[1];
+  return indent !== undefined && indent.length > closeIndent.length ? indent : `${closeIndent}    `;
+}
+
+function buildTechConfigEdit(text: string, target: TargetEntityInfo, clauses: readonly string[]): TextEditSpan {
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const tc = target.techConfig;
+
+  if (tc) {
+    // Merge into the existing block, before its closing brace.
+    const closeIndent = lineIndentBefore(text, tc.close.start);
+    if (closeIndent !== null && text.slice(tc.open.end, tc.close.start).includes('\n')) {
+      const inner = innerBlockIndent(text, tc.open, tc.close, closeIndent);
+      const lineStart = tc.close.start - closeIndent.length;
+      return { start: lineStart, end: lineStart, newText: clauses.map((c) => `${inner}${c}${eol}`).join('') };
+    }
+    const prevCh = text[tc.close.start - 1] ?? '';
+    const newText = /\s/.test(prevCh) ? `${clauses.join(' ')} ` : ` ${clauses.join(' ')}`;
+    return { start: tc.close.start, end: tc.close.start, newText };
   }
 
-  const prevCh = text[closeStart - 1] ?? '';
-  const leadSpace = prevCh === ' ' || prevCh === '\t' || prevCh === '\n' ? '' : ' ';
-  const trailSpace = prevCh === ' ' || prevCh === '\t' ? ' ' : '';
+  // No block yet: append `technical configuration { ... }` after the entity's closing brace.
+  const semi = target.hasTrailingSemi ? '' : ';';
+  const closeIndent = lineIndentBefore(text, target.entityClose.start);
+  if (closeIndent !== null && text.slice(target.entityOpen.end, target.entityClose.start).includes('\n')) {
+    const inner = innerBlockIndent(text, target.entityOpen, target.entityClose, closeIndent);
+    const body = clauses.map((c) => `${inner}${c}${eol}`).join('');
+    return {
+      start: target.entityClose.end,
+      end: target.entityClose.end,
+      newText: ` technical configuration {${eol}${body}${closeIndent}}${semi}`,
+    };
+  }
   return {
-    start: closeStart,
-    end: closeStart,
-    newText: `${leadSpace}technical configuration { ${clauses.join(' ')} };${trailSpace}`,
+    start: target.entityClose.end,
+    end: target.entityClose.end,
+    newText: ` technical configuration { ${clauses.join(' ')} }${semi}`,
   };
 }
 
@@ -978,15 +1200,25 @@ function findHdbddMigrationSpans(text: string): Array<{ start: number; end: numb
 export function convertHdbddToHdbcds(text: string): string {
   const codeToks = cdsTokenize(text).filter(isCdsCodeToken);
   const edits: TextEditSpan[] = [];
-  const techAdditions = new Map<number, { target: TargetEntityInfo; clauses: string[] }>();
-
-  const queueTechClause = (target: TargetEntityInfo, clause: string): void => {
+  const techAdditions = new Map<number, { target: TargetEntityInfo; store: string | null; indexes: string[] }>();
+  const entryFor = (target: TargetEntityInfo) => {
     let entry = techAdditions.get(target.entityClose.start);
     if (!entry) {
-      entry = { target, clauses: [] };
+      entry = { target, store: null, indexes: [] };
       techAdditions.set(target.entityClose.start, entry);
     }
-    entry.clauses.push(clause);
+    return entry;
+  };
+  // SAP forbids @Catalog.tableType / @Catalog.index together with the matching technical configuration
+  // clause, so an existing clause always wins and is never duplicated.
+  const queueStore = (target: TargetEntityInfo, clause: string): void => {
+    if (target.techConfig?.hasStore) return;
+    const entry = entryFor(target);
+    entry.store ??= clause;
+  };
+  const queueIndex = (target: TargetEntityInfo, idx: CatalogIndexClause): void => {
+    if (target.techConfig?.indexNames.has(idx.name.toLowerCase())) return;
+    entryFor(target).indexes.push(idx.text);
   };
 
   for (let i = 0; i < codeToks.length; i++) {
@@ -1025,9 +1257,7 @@ export function convertHdbddToHdbcds(text: string): string {
       const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
       if (target) {
         edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
-        if (!target.hasTechnicalConfig) {
-          queueTechClause(target, storeKeyword);
-        }
+        queueStore(target, storeKeyword);
       }
       i = endIdx;
       continue;
@@ -1042,14 +1272,16 @@ export function convertHdbddToHdbcds(text: string): string {
         const clauses = parseCatalogIndexClauses(codeToks, i + 2, arrClose);
         if (clauses.length > 0) {
           const target = findTargetEntityAfterAnnotation(codeToks, endIdx + 1);
-          if (target && !target.hasTechnicalConfig) {
+          if (target) {
             edits.push(removeCdsAnnotationSpan(text, tok.start, codeToks[endIdx].end));
-            for (const c of clauses) queueTechClause(target, c);
+            for (const c of clauses) queueIndex(target, c);
           } else {
             edits.push({
               start: tok.start,
               end: codeToks[endIdx].end,
-              newText: clauses.map((c) => `/* Converted from @Catalog.index -> place in technical configuration { ${c} }; */`).join('\n'),
+              newText: clauses
+                .map((c) => `/* Converted from @Catalog.index -> place in technical configuration { ${c.text} }; */`)
+                .join('\n'),
             });
           }
         }
@@ -1058,8 +1290,9 @@ export function convertHdbddToHdbcds(text: string): string {
     }
   }
 
-  for (const { target, clauses } of techAdditions.values()) {
-    edits.push(buildTechConfigInsertEdit(text, target, clauses));
+  for (const { target, store, indexes } of techAdditions.values()) {
+    const clauses = store ? [store, ...indexes] : indexes;
+    if (clauses.length > 0) edits.push(buildTechConfigEdit(text, target, clauses));
   }
 
   return applyTextEdits(text, edits);
@@ -1103,7 +1336,8 @@ export function convertArtifactDirection(
       note: 'HDI replaces .hdbstructure with .hdbtabletype',
     };
   } else if (languageId === 'hdbrole' && direction === 'toHdi' && isClassicHdbrole(text)) {
-    return { content: convertClassicHdbroleToHdiJson(text) };
+    const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(text);
+    return notes.length > 0 ? { content, note: notes.join('\n') } : { content };
   } else if ((languageId === 'hdbdd' || languageId === 'hdbcds') && direction === 'toHdi') {
     return {
       content: convertHdbddToHdbcds(text),
@@ -1165,15 +1399,16 @@ export function analyzeMigration(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       fixes: [fullRangeFix('Convert Classic .hdbsequence to HDI DDL syntax', converted)],
     });
   } else if (languageId === 'hdbrole' && isClassicHdbrole(text)) {
-    const converted = convertClassicHdbroleToHdiJson(text);
+    const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(text);
+    const base = 'XS Classic .hdbrole DSL can be migrated to HDI JSON .hdbrole schema.';
     diagnostics.push({
       ruleId: 'HANA-MIG-004',
       category: 'migration',
       severity: 'information',
-      message: 'XS Classic .hdbrole DSL can be migrated to HDI JSON .hdbrole schema.',
+      message: notes.length > 0 ? `${base}\nNot carried over by the QuickFix:\n- ${notes.join('\n- ')}` : base,
       start: 0,
       end: endOffset,
-      fixes: [fullRangeFix('Convert Classic .hdbrole to HDI JSON .hdbrole', converted)],
+      fixes: [fullRangeFix('Convert Classic .hdbrole to HDI JSON .hdbrole', content)],
     });
   } else if (languageId === 'hdbdd' || languageId === 'hdbcds') {
     const hits = findHdbddMigrationSpans(text);

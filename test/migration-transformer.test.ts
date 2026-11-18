@@ -6,6 +6,7 @@ import { analyzeDocument } from '../src/analyzer/dispatch';
 import {
   convertArtifactDirection,
   convertClassicHdbroleToHdiJson,
+  convertClassicHdbroleToHdiJsonWithNotes,
   convertHdbddToHdbcds,
   convertHdbsequenceHdiToKv,
   convertHdbsequenceKvToHdi,
@@ -83,7 +84,7 @@ reset_by = "SELECT IFNULL(MAX(\\"ORDER_ID\\"), 0) + 1 FROM \\"ORDERS\\"";`;
   assert.match(hdiSeq, /SEQUENCE "app\.data::SEQ_ID"/);
   assert.match(hdiSeq, /INCREMENT BY 1/);
   assert.match(hdiSeq, /START WITH 1000/);
-  assert.match(hdiSeq, /NOMAXVALUE/);
+  assert.match(hdiSeq, /^  NO MAXVALUE$/m);
   assert.match(hdiSeq, /NO CYCLE/);
   assert.match(hdiSeq, /RESET BY SELECT IFNULL\(MAX\("ORDER_ID"\), 0\) \+ 1 FROM "ORDERS"/);
 
@@ -192,7 +193,7 @@ test('HANA-MIG-005: inline @Schema, single-line entity @Catalog.tableType / @Cat
   const convertedInline = convertHdbddToHdbcds(inlineBefore);
   assert.equal(/@Schema|@Catalog|@WithStructuredPrivilegeCheck/.test(convertedInline), false);
   assert.match(convertedInline, /^namespace demo\.app; context C \{/);
-  assert.match(convertedInline, /technical configuration \{ row store; unique index IDX_A on \(a asc\); \};/);
+  assert.match(convertedInline, /entity E \{ key a : Integer; \} technical configuration \{ row store; unique index IDX_A on \(a\) asc; \};/);
 
   // Negative case: commented / quoted annotations must NOT trigger HANA-MIG-005 or get mutated
   const commentedOnly = `namespace demo.hdi;
@@ -203,4 +204,361 @@ context C {
 };`;
   assert.equal(analyzeDocument({ text: commentedOnly, languageId: 'hdbdd' }).length, 0);
   assert.equal(convertHdbddToHdbcds(commentedOnly), commentedOnly);
+});
+
+// ---------------------------------------------------------------------------
+// #71: Sample-driven regression harness. Applies every migration QuickFix
+// (HANA-MIG-001 … 006) to every classic sample and checks the output.
+// ---------------------------------------------------------------------------
+
+const STRUCTURAL_MIGRATION_RULES = new Set([
+  'HANA-MIG-001',
+  'HANA-MIG-002',
+  'HANA-MIG-003',
+  'HANA-MIG-004',
+  'HANA-MIG-005',
+  'HANA-MIG-006',
+]);
+
+/** Language of the converted artifact (some migrations change the extension). */
+const MIGRATED_LANGUAGE: Record<string, string> = {
+  hdbstructure: 'hdbtabletype',
+  hdbdd: 'hdbcds',
+};
+
+/** Samples that must be offered a structural migration QuickFix (guards against a vacuous loop). */
+const EXPECTED_MIGRATABLE_SAMPLES = [
+  'format-demos/classic-model.hdbdd',
+  'format-demos/classic-role.hdbrole',
+  'format-demos/classic-sequence.hdbsequence',
+  'format-demos/classic-table.hdbtable',
+  'format-demos/classic-view.hdbview',
+  'format-demos/hdi-model.hdbcds',
+  'xs-classic/MYSEQ.hdbsequence',
+  'xs-classic/MYTABLE.hdbtable',
+  'xs-classic/MYVIEW.hdbview',
+  'xs-classic/MyRole.hdbrole',
+  'xs-classic/TableStructure.hdbstructure',
+  'xs-classic/model.hdbdd',
+];
+
+function repoRoot(): string {
+  return fs.existsSync(path.join(__dirname, '..', 'samples')) ? path.join(__dirname, '..') : path.join(__dirname, '..', '..');
+}
+
+interface MigrationCase {
+  readonly rel: string;
+  readonly languageId: string;
+  readonly text: string;
+  readonly ruleId: string;
+  readonly message: string;
+  readonly output: string;
+}
+
+function collectMigrationCases(): MigrationCase[] {
+  const cases: MigrationCase[] = [];
+  for (const dir of ['xs-classic', 'format-demos']) {
+    const abs = path.join(repoRoot(), 'samples', dir);
+    for (const name of fs.readdirSync(abs).sort()) {
+      const ext = path.extname(name).slice(1);
+      if (!ext) continue;
+      const rel = `${dir}/${name}`;
+      const text = fs.readFileSync(path.join(abs, name), 'utf8');
+      const diags = analyzeDocument({ text, languageId: ext, filePath: `/repo/db/src/${rel}` });
+      const mig = diags.find((d) => STRUCTURAL_MIGRATION_RULES.has(d.ruleId) && d.fixes.length > 0);
+      if (!mig) continue;
+      cases.push({
+        rel,
+        languageId: ext,
+        text,
+        ruleId: mig.ruleId,
+        message: mig.message,
+        output: applyTextEdits(text, mig.fixes[0].edits),
+      });
+    }
+  }
+  return cases;
+}
+
+/** Comment bodies in a sample (line and block comments), outside string literals. */
+function extractComments(text: string): string[] {
+  const out: string[] = [];
+  const re = /"(?:[^"\]|\.)*"|'(?:[^']|'')*'|(--|\/\/)([^\n]*)|\/\*([\s\S]*?)\*\//g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const body = (m[2] ?? m[3])?.trim();
+    if (body) out.push(body);
+  }
+  return out;
+}
+
+test('#71: every classic sample is offered a structural migration QuickFix', () => {
+  const covered = collectMigrationCases().map((c) => c.rel);
+  for (const rel of EXPECTED_MIGRATABLE_SAMPLES) {
+    assert.ok(covered.includes(rel), `${rel} should be offered a migration QuickFix`);
+  }
+});
+
+for (const c of collectMigrationCases()) {
+  test(`#71 ${c.ruleId} ${c.rel}: QuickFix output is valid, idempotent and keeps comments`, () => {
+    assert.ok(c.output.trim().length > 0, 'output must be non-empty');
+
+    const targetLang = MIGRATED_LANGUAGE[c.languageId] ?? c.languageId;
+    const after = analyzeDocument({ text: c.output, languageId: targetLang, filePath: `/repo/db/src/${c.rel}` });
+
+    const syntaxErrors = after.filter((d) => d.category === 'syntax' && d.severity === 'error');
+    assert.deepEqual(
+      syntaxErrors.map((d) => `${d.ruleId}: ${d.message}`),
+      [],
+      `output must have no syntax errors:\n${c.output}`
+    );
+
+    const remaining = after.filter((d) => STRUCTURAL_MIGRATION_RULES.has(d.ruleId));
+    assert.deepEqual(
+      remaining.map((d) => d.ruleId),
+      [],
+      `applying the fix again must not find more to migrate:\n${c.output}`
+    );
+
+    for (const comment of extractComments(c.text)) {
+      assert.ok(
+        c.output.includes(comment) || c.message.includes(comment),
+        `comment "${comment}" must be preserved or reported as dropped:\n${c.output}`
+      );
+    }
+  });
+}
+
+test('#71: forward -> reverse -> forward round trip is stable for every bidirectional sample', () => {
+  const pairs: Record<string, (s: string) => string> = {
+    hdbtable: (s) => convertHdbtableHdiToKv(s),
+    hdbview: (s) => convertHdbviewHdiToKv(s),
+    hdbsequence: (s) => convertHdbsequenceHdiToKv(s),
+  };
+  for (const c of collectMigrationCases()) {
+    const reverse = pairs[c.languageId];
+    if (!reverse) continue;
+    const back = reverse(c.output);
+    const again = analyzeDocument({ text: back, languageId: c.languageId, filePath: `/repo/db/src/${c.rel}` }).find(
+      (d) => d.ruleId === c.ruleId
+    );
+    assert.ok(again, `${c.rel}: reverse output should be classic again`);
+    assert.equal(applyTextEdits(back, again.fixes[0].edits), c.output, `${c.rel}: round trip must be stable`);
+  }
+});
+
+test('#70 HANA-MIG-003: NO MAXVALUE / NO MINVALUE two-word form and RESET BY schema stripping', () => {
+  const classic = `schema = "MYSCHEMA";
+start_with = 10;
+nomaxvalue = true;
+nominvalue = true;
+reset_by = "SELECT MAX(\\"ID\\") + 1 FROM \\"MYSCHEMA\\".\\"pkg::T\\" JOIN \\"OTHER\\".\\"X\\" ON 1 = 1";`;
+  const hdi = convertHdbsequenceKvToHdi(classic, 'pkg::SEQ');
+  assert.match(hdi, /^  NO MAXVALUE$/m);
+  assert.match(hdi, /^  NO MINVALUE$/m);
+  // Negative: the invalid single-word form must never be produced.
+  assert.equal(/NOMAXVALUE|NOMINVALUE/.test(hdi), false);
+  // The schema prefix matching `schema=` is stripped; other schemas are kept.
+  assert.match(hdi, /RESET BY SELECT MAX\("ID"\) \+ 1 FROM "pkg::T" JOIN "OTHER"\."X" ON 1 = 1$/m);
+  assert.equal(/"MYSCHEMA"/.test(hdi), false);
+
+  const back = convertHdbsequenceHdiToKv(hdi, 'MYSCHEMA');
+  assert.match(back, /^nomaxvalue = true;$/m);
+  assert.match(back, /^nominvalue = true;$/m);
+  assert.equal(/^(?:max|min)value = /m.test(back), false, 'NO MAXVALUE must not be read as MAXVALUE <n>');
+
+  // Legacy single-word input (written by <= 0.10.1) still converts back.
+  const legacy = convertHdbsequenceHdiToKv('SEQUENCE "S"\n  NOMAXVALUE\n  NOMINVALUE\n');
+  assert.match(legacy, /^nomaxvalue = true;$/m);
+  assert.match(legacy, /^nominvalue = true;$/m);
+});
+
+test('#68 HANA-MIG-005: technical configuration goes after the entity brace, merged, never duplicated', () => {
+  const countTc = (s: string): number => (s.match(/technical configuration/g) ?? []).length;
+  const idempotent = (out: string): void => assert.equal(convertHdbddToHdbcds(out), out, 'fix on its own output must be a no-op');
+
+  // Multi-line entity without a technical configuration: new block after `}` with element indentation.
+  const plain = `context C {
+    @Catalog.tableType: #COLUMN
+    entity E {
+        key id : Integer;
+    };
+};`;
+  const plainOut = convertHdbddToHdbcds(plain);
+  assert.equal(
+    plainOut,
+    `context C {
+    entity E {
+        key id : Integer;
+    } technical configuration {
+        column store;
+    };
+};`
+  );
+  idempotent(plainOut);
+
+  // Existing post-brace block with a store clause: annotation removed, nothing added (the issue's repro).
+  const withTc = `@Catalog.tableType: #COLUMN
+entity Item {
+    key id : Integer;
+    price : Decimal(15, 2);
+} technical configuration {
+    column store;
+    partition by hash(id) partitions 4;
+};`;
+  const withTcOut = convertHdbddToHdbcds(withTc);
+  assert.equal(withTcOut, withTc.replace('@Catalog.tableType: #COLUMN\n', ''));
+  assert.equal(countTc(withTcOut), 1);
+  idempotent(withTcOut);
+
+  // Existing block without a store clause: store + index merged into it.
+  const merge = `@Catalog.tableType: #ROW
+@Catalog.index: [ { name: 'IDX_AB', unique: false, order: #DESC, elementNames: ['a', 'b'] } ]
+entity M {
+  key a : Integer;
+  b : Integer;
+} technical configuration {
+  partition by hash(a) partitions 2;
+};`;
+  const mergeOut = convertHdbddToHdbcds(merge);
+  assert.equal(
+    mergeOut,
+    `entity M {
+  key a : Integer;
+  b : Integer;
+} technical configuration {
+  partition by hash(a) partitions 2;
+  row store;
+  index IDX_AB on (a, b) desc;
+};`
+  );
+  idempotent(mergeOut);
+
+  // Index already declared in the block: not duplicated.
+  const dupIdx = `@Catalog.index: [ { name: 'IDX_A', elementNames: ['a'] } ]
+entity D { key a : Integer; } technical configuration { index IDX_A on (a) asc; };`;
+  const dupOut = convertHdbddToHdbcds(dupIdx);
+  assert.equal(dupOut, `entity D { key a : Integer; } technical configuration { index IDX_A on (a) asc; };`);
+
+  // Single-line entity without `;` after the brace gets one.
+  const noSemi = `@Catalog.tableType: #ROW
+entity S { key a : Integer; }`;
+  assert.equal(convertHdbddToHdbcds(noSemi), `entity S { key a : Integer; } technical configuration { row store; };`);
+
+  // CRLF files keep CRLF line endings.
+  const crlfOut = convertHdbddToHdbcds(plain.replace(/\n/g, '\r\n'));
+  assert.equal(crlfOut, plainOut.replace(/\n/g, '\r\n'));
+
+  // Negative: the block is never placed inside the element list.
+  for (const out of [plainOut, withTcOut, mergeOut]) {
+    assert.equal(/;\s*technical configuration/.test(out), false, `technical configuration inside entity braces:\n${out}`);
+  }
+});
+
+test('#69 HANA-MIG-004: role header, extends lists, sql object lists and dropped-content notes', () => {
+  const root = repoRoot();
+  const demo = fs.readFileSync(path.join(root, 'samples', 'format-demos', 'classic-role.hdbrole'), 'utf8');
+  const demoRole = JSON.parse(convertClassicHdbroleToHdiJson(demo)).role;
+  assert.equal(demoRole.name, 'demo.roles::SalesViewer#');
+  assert.deepEqual(demoRole.schema_roles, [{ names: ['demo.roles::BaseViewer'] }]);
+  assert.deepEqual(demoRole.global_roles, ['PUBLIC_VIEWER']);
+  assert.deepEqual(demoRole.object_privileges, [
+    { name: 'ORDERS', type: 'TABLE', privileges_with_grant_option: ['SELECT'] },
+    { name: 'demo.app::V_ORDERS', type: 'VIEW', privileges: ['SELECT', 'EXECUTE'] },
+    { name: 'demo.app::P_INIT', type: 'PROCEDURE', privileges: ['SELECT', 'EXECUTE'] },
+  ]);
+
+  const job = fs.readFileSync(path.join(root, 'samples', 'xs-classic', 'MyRole.hdbrole'), 'utf8');
+  const jobRole = JSON.parse(convertClassicHdbroleToHdiJson(job)).role;
+  assert.equal(jobRole.name, 'acme.com.roles::JobAdministrator#');
+  assert.deepEqual(jobRole.schema_roles, [{ names: ['acme.com.roles::Base'] }]);
+  assert.deepEqual(jobRole.system_privileges, ['DATA ADMIN']);
+
+  // Dropped constructs are reported in the HANA-MIG-004 message.
+  const mig = analyzeDocument({ text: job, languageId: 'hdbrole' }).find((d) => d.ruleId === 'HANA-MIG-004');
+  assert.ok(mig);
+  assert.match(mig.message, /application privilege: acme\.com\.app1::Execute — dropped: .*xs-security\.json/);
+  assert.match(mig.message, /package acme\.com\.app1: REPO\.READ — dropped/);
+  assert.match(mig.message, /\.hdbsynonym for the external object MYSCHEMA\.MYTABLE/);
+
+  // Multiple extends clauses with comma lists, and a multi-object sql object list.
+  const multi = `role p::R extends role p::A, p::B extends catalog role "G1", "G2" {
+  sql object p:T1.hdbtable, p:V1.calculationview, p::S1.hdbsequence, p:F1.hdbtablefunction: SELECT;
+  sql object p:X1.weird: SELECT;
+}`;
+  const multiOut = convertClassicHdbroleToHdiJsonWithNotes(multi);
+  const multiRole = JSON.parse(multiOut.content).role;
+  assert.equal(multiRole.name, 'p::R', 'no # without grant options');
+  assert.deepEqual(multiRole.schema_roles, [{ names: ['p::A', 'p::B'] }]);
+  assert.deepEqual(multiRole.global_roles, ['G1', 'G2']);
+  assert.deepEqual(
+    multiRole.object_privileges.map((o: { name: string; type: string }) => `${o.type} ${o.name}`),
+    ['TABLE p::T1', 'VIEW p::V1', 'SEQUENCE p::S1', 'FUNCTION p::F1', 'TABLE p::X1.weird']
+  );
+  assert.deepEqual(multiOut.notes, ['sql object p:X1.weird — unknown object type, TABLE assumed']);
+
+  // Negative: header keywords never leak into the role name; a role with no grant option and nothing dropped has no notes.
+  assert.equal(/extends|catalog/i.test(demoRole.name), false);
+  const clean = convertClassicHdbroleToHdiJsonWithNotes('role p::C { sql object p:T.hdbtable: SELECT; }');
+  assert.deepEqual(clean.notes, []);
+  assert.equal(JSON.parse(clean.content).role.name, 'p::C');
+});
+
+test('#71: migration QuickFixes keep source comments or report them as dropped', () => {
+  // KV -> SQL: comments become a SQL header in source order (`//` -> `--`); comments in strings stay put.
+  const kvTable = `// owner: sales team
+table.schemaName = "S"; /* legacy */
+table.columns = [{name = "A"; sqlType = INTEGER; comment = "not // a comment";}];
+-- trailing note`;
+  const table = convertHdbtableKvToHdi(kvTable, 'T');
+  assert.match(table, /^-- owner: sales team\n\/\* legacy \*\/\n-- trailing note\nCOLUMN TABLE "T"/);
+  assert.match(table, /COMMENT 'not \/\/ a comment'/);
+  // ... and back: SQL header comments return as KV comments.
+  const kvBack = convertHdbtableHdiToKv(table, 'S');
+  assert.match(kvBack, /^\/\/ owner: sales team\n\/\* legacy \*\/\n\/\/ trailing note\ntable\.schemaName/);
+
+  assert.match(convertHdbviewKvToHdi('// v\nschema="S";\nquery="select 1 from dummy";', 'V'), /^-- v\nVIEW "V"/);
+  assert.match(convertHdbsequenceKvToHdi('/* s */\nschema="S";\nstart_with=1;', 'Q'), /^\/\* s \*\/\nSEQUENCE "Q"/);
+  assert.match(
+    convertHdbstructureKvToTableType('// tt\ntable.columns=[{name="A";sqlType=INTEGER;}];', 'TT'),
+    /^-- tt\nTYPE "TT" AS TABLE/
+  );
+
+  // Reverse view/sequence: comments in the copied query stay in it and are not duplicated as KV comments.
+  const viewBack = convertHdbviewHdiToKv('-- head\nVIEW "V"\nAS select 1 -- inner\nfrom dummy');
+  assert.match(viewBack, /^\/\/ head\nschema = /);
+  assert.equal((viewBack.match(/inner/g) ?? []).length, 1);
+  const seqBack = convertHdbsequenceHdiToKv('-- head\nSEQUENCE "Q"\n  RESET BY select 1 -- inner\n from dummy');
+  assert.match(seqBack, /^\/\/ head\nschema = /);
+  assert.equal((seqBack.match(/inner/g) ?? []).length, 1);
+
+  // .hdbindex TODO lines round-trip into table.indexes instead of becoming comments.
+  const withIdx = convertHdbtableKvToHdi(
+    'table.columns=[{name="A";sqlType=INTEGER;}];\ntable.indexes=[{name="I1";unique=true;indexType=B_TREE;indexColumns=["A"];}];',
+    'T'
+  );
+  const idxBack = convertHdbtableHdiToKv(withIdx);
+  assert.equal(/TODO/.test(idxBack), false);
+  assert.match(idxBack, /table\.indexes = \[\n {2}\{name = "I1"; unique = true; indexType = B_TREE; indexColumns = \["A"\];\}\n\];/);
+  assert.equal(convertHdbtableKvToHdi(idxBack, 'T'), withIdx);
+
+  // Role -> JSON cannot hold comments: each is listed in the HANA-MIG-004 message.
+  const role = `-- head\nrole p::R {\n  /* block\n  comment */\n  sql object p:T.hdbtable: SELECT; // tail\n}`;
+  const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(role);
+  assert.equal(/head|block|tail/.test(content), false);
+  assert.deepEqual(notes, [
+    '-- head — comment dropped: JSON .hdbrole cannot hold comments',
+    '/* block comment */ — comment dropped: JSON .hdbrole cannot hold comments',
+    '// tail — comment dropped: JSON .hdbrole cannot hold comments',
+  ]);
+  const roleDiag = analyzeDocument({ text: role, languageId: 'hdbrole' }).find((d) => d.ruleId === 'HANA-MIG-004');
+  assert.ok(roleDiag?.message.includes('-- head — comment dropped'));
+
+  // .hdbdd -> .hdbcds edits in place, so comments survive annotation removal.
+  const cds = `// model\ncontext C {\n  @Catalog.tableType: #COLUMN // store\n  entity E { key a : Integer; }; /* end */\n};`;
+  const cdsOut = convertHdbddToHdbcds(cds);
+  for (const c of ['// model', '// store', '/* end */']) assert.ok(cdsOut.includes(c), `${c} lost:\n${cdsOut}`);
+
+  // Negative: an artifact without comments gets no header.
+  assert.match(convertHdbviewKvToHdi('schema="S";\nquery="select 1 from dummy";', 'V'), /^VIEW "V"/);
 });
