@@ -2,6 +2,20 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.10.2] - 2026-11-18
+
+### Fixed
+
+- **`.hdbsequence` Migration QuickFix (`src/analyzer/migrator.ts`, `HANA-MIG-003`):** The Classic KV -> HDI DDL conversion now emits the valid `NO MAXVALUE` / `NO MINVALUE` form, and the reverse conversion reads it while still accepting the legacy single-word form. `RESET BY` now strips the `"<schema>".` prefix that matches `schema=`, as `.hdbview` already did (#70).
+- **`.hdbdd` -> `.hdbcds` Migration QuickFix (`HANA-MIG-005`):** The `technical configuration` block is now placed after the entity's closing brace (`} technical configuration { ... };`). An existing block is merged into instead of duplicated, and store clauses or index names it already has are not added again. Indentation follows the entity's elements, CRLF / LF line endings are kept, and index clauses use the documented `[unique] index I on (a, b) asc;` form (#68).
+- **Classic `.hdbrole` -> JSON Migration QuickFix (`HANA-MIG-004`):** The role header is split at each `extends` into `name`, `schema_roles`, and `global_roles`, including comma lists. A `sql object` list becomes one entry per object (`pkg::OBJ`, with its type taken from its own suffix). Content the QuickFix cannot carry over (`package` and `application privilege` lines, the `catalog sql object` synonym reminder, unknown object types, a system-privilege grant option) is listed in the diagnostic message under "Not carried over by the QuickFix" (#69).
+- **Comments in Migration QuickFixes:** Classic KV -> SQL conversions (table, view, sequence, structure) move source comments into a SQL header block in source order, with `//` turned into `--`. Reverse conversions bring them back as `//` without duplicating comments inside copied SQL, `-- TODO(.hdbindex)` lines convert back into `table.indexes`, and `.hdbrole` -> JSON lists each dropped comment in the diagnostic message (#71).
+- **Duplicated XSJS Hover Cards (`src/xsjs/intellisense-core.ts`):**
+  - Inherited methods are deduplicated by overload signature, keeping the most-derived override. `$.response.setBody`, `$.request.setBody`, and `new $.net.http.Request(...).setBody` no longer show the same hover card 2–3 times, and signature help and completion `(+N overloads)` counts no longer include the duplicates.
+  - An overloaded method now gets one hover card: its signatures stacked in one block (the overload matching the call-site argument count first), a description shared by all overloads shown once (`$.import`), per-overload deprecation notes (`$.db.getConnection`), and a merged parameter list, which hover previously left out.
+  - Member hover now filters `static` vs. instance members the same way completions do, so `Order.$save` on an XSDS entity class and `item.$find` on an instance no longer show a card (#30).
+- **Specs & Tests:** Updated `docs/specs/diagnostics/migration-xsc-to-hdi.md` and `docs/specs/diagnostics/sql-intellisense.md` (new §2.5). Added a sample-driven regression harness that applies every structural migration QuickFix to the files in `samples/`, plus positive and negative XSJS IntelliSense tests, bringing the test suite to `185/185` passing.
+
 ## [0.10.1] - 2026-11-18
 
 ### Added
