@@ -204,3 +204,144 @@ context C {
   assert.equal(analyzeDocument({ text: commentedOnly, languageId: 'hdbdd' }).length, 0);
   assert.equal(convertHdbddToHdbcds(commentedOnly), commentedOnly);
 });
+
+// ---------------------------------------------------------------------------
+// #71: Sample-driven regression harness. Applies every migration QuickFix
+// (HANA-MIG-001 … 006) to every classic sample and checks the output.
+// ---------------------------------------------------------------------------
+
+const STRUCTURAL_MIGRATION_RULES = new Set([
+  'HANA-MIG-001',
+  'HANA-MIG-002',
+  'HANA-MIG-003',
+  'HANA-MIG-004',
+  'HANA-MIG-005',
+  'HANA-MIG-006',
+]);
+
+/** Language of the converted artifact (some migrations change the extension). */
+const MIGRATED_LANGUAGE: Record<string, string> = {
+  hdbstructure: 'hdbtabletype',
+  hdbdd: 'hdbcds',
+};
+
+/** Samples that must be offered a structural migration QuickFix (guards against a vacuous loop). */
+const EXPECTED_MIGRATABLE_SAMPLES = [
+  'format-demos/classic-model.hdbdd',
+  'format-demos/classic-role.hdbrole',
+  'format-demos/classic-sequence.hdbsequence',
+  'format-demos/classic-table.hdbtable',
+  'format-demos/classic-view.hdbview',
+  'format-demos/hdi-model.hdbcds',
+  'xs-classic/MYSEQ.hdbsequence',
+  'xs-classic/MYTABLE.hdbtable',
+  'xs-classic/MYVIEW.hdbview',
+  'xs-classic/MyRole.hdbrole',
+  'xs-classic/TableStructure.hdbstructure',
+  'xs-classic/model.hdbdd',
+];
+
+function repoRoot(): string {
+  return fs.existsSync(path.join(__dirname, '..', 'samples')) ? path.join(__dirname, '..') : path.join(__dirname, '..', '..');
+}
+
+interface MigrationCase {
+  readonly rel: string;
+  readonly languageId: string;
+  readonly text: string;
+  readonly ruleId: string;
+  readonly message: string;
+  readonly output: string;
+}
+
+function collectMigrationCases(): MigrationCase[] {
+  const cases: MigrationCase[] = [];
+  for (const dir of ['xs-classic', 'format-demos']) {
+    const abs = path.join(repoRoot(), 'samples', dir);
+    for (const name of fs.readdirSync(abs).sort()) {
+      const ext = path.extname(name).slice(1);
+      if (!ext) continue;
+      const rel = `${dir}/${name}`;
+      const text = fs.readFileSync(path.join(abs, name), 'utf8');
+      const diags = analyzeDocument({ text, languageId: ext, filePath: `/repo/db/src/${rel}` });
+      const mig = diags.find((d) => STRUCTURAL_MIGRATION_RULES.has(d.ruleId) && d.fixes.length > 0);
+      if (!mig) continue;
+      cases.push({
+        rel,
+        languageId: ext,
+        text,
+        ruleId: mig.ruleId,
+        message: mig.message,
+        output: applyTextEdits(text, mig.fixes[0].edits),
+      });
+    }
+  }
+  return cases;
+}
+
+/** Comment bodies in a sample (line and block comments), outside string literals. */
+function extractComments(text: string): string[] {
+  const out: string[] = [];
+  const re = /"(?:[^"\]|\.)*"|'(?:[^']|'')*'|(--|\/\/)([^\n]*)|\/\*([\s\S]*?)\*\//g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    const body = (m[2] ?? m[3])?.trim();
+    if (body) out.push(body);
+  }
+  return out;
+}
+
+test('#71: every classic sample is offered a structural migration QuickFix', () => {
+  const covered = collectMigrationCases().map((c) => c.rel);
+  for (const rel of EXPECTED_MIGRATABLE_SAMPLES) {
+    assert.ok(covered.includes(rel), `${rel} should be offered a migration QuickFix`);
+  }
+});
+
+for (const c of collectMigrationCases()) {
+  test(`#71 ${c.ruleId} ${c.rel}: QuickFix output is valid, idempotent and keeps comments`, () => {
+    assert.ok(c.output.trim().length > 0, 'output must be non-empty');
+
+    const targetLang = MIGRATED_LANGUAGE[c.languageId] ?? c.languageId;
+    const after = analyzeDocument({ text: c.output, languageId: targetLang, filePath: `/repo/db/src/${c.rel}` });
+
+    const syntaxErrors = after.filter((d) => d.category === 'syntax' && d.severity === 'error');
+    assert.deepEqual(
+      syntaxErrors.map((d) => `${d.ruleId}: ${d.message}`),
+      [],
+      `output must have no syntax errors:\n${c.output}`
+    );
+
+    const remaining = after.filter((d) => STRUCTURAL_MIGRATION_RULES.has(d.ruleId));
+    assert.deepEqual(
+      remaining.map((d) => d.ruleId),
+      [],
+      `applying the fix again must not find more to migrate:\n${c.output}`
+    );
+
+    for (const comment of extractComments(c.text)) {
+      assert.ok(
+        c.output.includes(comment) || c.message.includes(comment),
+        `comment "${comment}" must be preserved or reported as dropped:\n${c.output}`
+      );
+    }
+  });
+}
+
+test('#71: forward -> reverse -> forward round trip is stable for every bidirectional sample', () => {
+  const pairs: Record<string, (s: string) => string> = {
+    hdbtable: (s) => convertHdbtableHdiToKv(s),
+    hdbview: (s) => convertHdbviewHdiToKv(s),
+    hdbsequence: (s) => convertHdbsequenceHdiToKv(s),
+  };
+  for (const c of collectMigrationCases()) {
+    const reverse = pairs[c.languageId];
+    if (!reverse) continue;
+    const back = reverse(c.output);
+    const again = analyzeDocument({ text: back, languageId: c.languageId, filePath: `/repo/db/src/${c.rel}` }).find(
+      (d) => d.ruleId === c.ruleId
+    );
+    assert.ok(again, `${c.rel}: reverse output should be classic again`);
+    assert.equal(applyTextEdits(back, again.fixes[0].edits), c.output, `${c.rel}: round trip must be stable`);
+  }
+});
