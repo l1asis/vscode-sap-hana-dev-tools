@@ -6,6 +6,7 @@ import { analyzeDocument } from '../src/analyzer/dispatch';
 import {
   convertArtifactDirection,
   convertClassicHdbroleToHdiJson,
+  convertClassicHdbroleToHdiJsonWithNotes,
   convertHdbddToHdbcds,
   convertHdbsequenceHdiToKv,
   convertHdbsequenceKvToHdi,
@@ -452,4 +453,53 @@ entity S { key a : Integer; }`;
   for (const out of [plainOut, withTcOut, mergeOut]) {
     assert.equal(/;\s*technical configuration/.test(out), false, `technical configuration inside entity braces:\n${out}`);
   }
+});
+
+test('#69 HANA-MIG-004: role header, extends lists, sql object lists and dropped-content notes', () => {
+  const root = repoRoot();
+  const demo = fs.readFileSync(path.join(root, 'samples', 'format-demos', 'classic-role.hdbrole'), 'utf8');
+  const demoRole = JSON.parse(convertClassicHdbroleToHdiJson(demo)).role;
+  assert.equal(demoRole.name, 'demo.roles::SalesViewer#');
+  assert.deepEqual(demoRole.schema_roles, [{ names: ['demo.roles::BaseViewer'] }]);
+  assert.deepEqual(demoRole.global_roles, ['PUBLIC_VIEWER']);
+  assert.deepEqual(demoRole.object_privileges, [
+    { name: 'ORDERS', type: 'TABLE', privileges_with_grant_option: ['SELECT'] },
+    { name: 'demo.app::V_ORDERS', type: 'VIEW', privileges: ['SELECT', 'EXECUTE'] },
+    { name: 'demo.app::P_INIT', type: 'PROCEDURE', privileges: ['SELECT', 'EXECUTE'] },
+  ]);
+
+  const job = fs.readFileSync(path.join(root, 'samples', 'xs-classic', 'MyRole.hdbrole'), 'utf8');
+  const jobRole = JSON.parse(convertClassicHdbroleToHdiJson(job)).role;
+  assert.equal(jobRole.name, 'acme.com.roles::JobAdministrator#');
+  assert.deepEqual(jobRole.schema_roles, [{ names: ['acme.com.roles::Base'] }]);
+  assert.deepEqual(jobRole.system_privileges, ['DATA ADMIN']);
+
+  // Dropped constructs are reported in the HANA-MIG-004 message.
+  const mig = analyzeDocument({ text: job, languageId: 'hdbrole' }).find((d) => d.ruleId === 'HANA-MIG-004');
+  assert.ok(mig);
+  assert.match(mig.message, /application privilege: acme\.com\.app1::Execute — dropped: .*xs-security\.json/);
+  assert.match(mig.message, /package acme\.com\.app1: REPO\.READ — dropped/);
+  assert.match(mig.message, /\.hdbsynonym for the external object MYSCHEMA\.MYTABLE/);
+
+  // Multiple extends clauses with comma lists, and a multi-object sql object list.
+  const multi = `role p::R extends role p::A, p::B extends catalog role "G1", "G2" {
+  sql object p:T1.hdbtable, p:V1.calculationview, p::S1.hdbsequence, p:F1.hdbtablefunction: SELECT;
+  sql object p:X1.weird: SELECT;
+}`;
+  const multiOut = convertClassicHdbroleToHdiJsonWithNotes(multi);
+  const multiRole = JSON.parse(multiOut.content).role;
+  assert.equal(multiRole.name, 'p::R', 'no # without grant options');
+  assert.deepEqual(multiRole.schema_roles, [{ names: ['p::A', 'p::B'] }]);
+  assert.deepEqual(multiRole.global_roles, ['G1', 'G2']);
+  assert.deepEqual(
+    multiRole.object_privileges.map((o: { name: string; type: string }) => `${o.type} ${o.name}`),
+    ['TABLE p::T1', 'VIEW p::V1', 'SEQUENCE p::S1', 'FUNCTION p::F1', 'TABLE p::X1.weird']
+  );
+  assert.deepEqual(multiOut.notes, ['sql object p:X1.weird — unknown object type, TABLE assumed']);
+
+  // Negative: header keywords never leak into the role name; a role with no grant option and nothing dropped has no notes.
+  assert.equal(/extends|catalog/i.test(demoRole.name), false);
+  const clean = convertClassicHdbroleToHdiJsonWithNotes('role p::C { sql object p:T.hdbtable: SELECT; }');
+  assert.deepEqual(clean.notes, []);
+  assert.equal(JSON.parse(clean.content).role.name, 'p::C');
 });
