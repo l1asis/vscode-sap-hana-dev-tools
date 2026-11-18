@@ -2,6 +2,58 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.11.0] - 2026-11-19
+
+### Added
+
+- **Function Hover Cards (`src/sql/intellisense-core.ts`):** Hover over a built-in function now shows:
+  - every documented signature with its return type;
+  - a line with the category and the platform tags `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`;
+  - a description, a **Parameters** list (type, optional, meaning) and a **Returns** line with the output columns of table functions or the input-to-result type mapping of aggregates (`SUM`, `AVG`, ...).
+- **Context-Aware Hover:**
+  - `LEFT JOIN` shows the keyword, while `LEFT(` shows the string function.
+  - Spatial methods get their card after `.` (`p1.ST_Distance(p2)`, `geom.ST_Area()`).
+  - `NEW ST_POINT(1, 2)` shows the constructor overloads, while a column type `ST_POINT(4326)` shows the data type.
+  - Niladic values render without parentheses (`CURRENT_DATE -> DATE`) (#43).
+- **Signature Help:** Every parameter is documented, and optional arguments are separate parameters (`ROUND(<number> [, <position> [, <rounding_mode>]])`). For clause syntax, the active parameter follows the clause keyword you typed last:
+  - `HIERARCHY` `SOURCE` / `START WHERE` / `SIBLING ORDER BY` / `DEPTH` / ...
+  - `CAST ... AS`, `TRIM ... FROM`, `EXTRACT ... FROM`
+  - `JSON_VALUE ... RETURNING` / `ON EMPTY` / `ON ERROR`
+  - `OPENCYPHER_TABLE ... QUERY`
+
+  Niladic values and library constants get no signature help, and completion inserts them without parentheses (`CURRENT_TIMESTAMP`) (#43).
+- **Built-in Functions (`docs/specs/catalogs/builtin-functions.json`):** All 564 entries now have real signatures, descriptions, return types, a kind and platform tags taken from the SAP reference that documents them, and 291 have parameter documentation. No `NAME(...)` placeholders or guessed return types such as `NVARCHAR | INTEGER` remain. Newly documented and highlighted:
+  - `SNIPPETS`, `HIGHLIGHTED`, `TRACE`, `SUBSTR`, `ARRAY`
+  - `ENCRYPTION_ROOT_KEYS_EXTRACT_ALL_KEYS_FOR_DATABASE`, `ENCRYPTION_ROOT_KEYS_VALIDATE_BACKUP`
+  - the typed `SERIES_GENERATE_<type>` / `SERIES_DISAGGREGATE_<type>` variants
+  - spatial constructors and methods (`ST_Point` ... `ST_Polygon`, `ST_3DLength`, `ST_AddMeasure`, `ST_InvalidReason`, `ST_GeomFromGeoHash`, ...)
+  - GraphScript built-ins (`VERTICES`, `EDGES`, `IN_DEGREE`, `REACHABLE_VERTICES`, `MAX_FLOW`, `VERTEX_EXISTS`, ...)
+
+  `scripts/extract-function-docs.js` distills these entries from the local reference corpus and never overwrites curated ones (#43).
+
+### Changed
+
+- **One SQL Word Catalog (`docs/specs/catalogs/sql-keywords.json`, `scripts/lib/sql-catalog.js`):** Every SQL / SQLScript word list is now generated from one catalog that records each word's roles and where each role applies. For example, `LEFT` is a join starter but `LEFT(` is a string function, and `SOURCE` is a clause keyword only inside `HIERARCHY*( ... )`. The generated lists are:
+  - the `hanasql` grammar's keyword and function alternations;
+  - the formatter's word classes (`src/formatter/keywords.ts`);
+  - about 95 analyzer and formatter word sets (now in `src/analyzer/keyword-sets.ts`);
+  - hover and completion data.
+
+  A test fails if a hand-written keyword set reappears in the analyzer or the SQL formatter, or if a generated file is out of date. The schema is in `docs/specs/SPEC_RULES.md` §C.1 (#77).
+- **Formatter:** The 18 SQLScript and GraphScript built-ins that are already highlighted as functions (`RECORD_COUNT`, `IS_EMPTY`, `IS_REACHABLE`, `VERTICES`, ...) now follow `hanasql.format.functionCase` when called (#77).
+- **Function Highlighting:** The SAP HANA references document none of these names, so they are no longer highlighted as functions:
+  - 23 `ST_*` names (`ST_SetSRID`, `ST_MakeEnvelope`, `ST_LineMerge`, ...);
+  - `BITAT`, `RECORD_LOCK_STATE`, `ROW_LOCK_WAIT_STATISTICS`, `TO_TIMS`.
+
+  Spatial constructors keep the data type scope in column definitions such as `geom ST_POINT(4326)` (#43, follow-up #96).
+
+### Fixed
+
+- **`ALTER SYSTEM SAVEPOINT` Highlighting:** The statement keyword no longer stops at `SAVE`. Generated word alternations now list longer words before their prefixes, as in `PROFILER` before `PROFILE` (#77).
+- **GraphScript Hover:** `VERTICES`, `EDGES`, `IN_DEGREE`, `OUT_DEGREE`, `DEGREE`, `IN_EDGES` and `OUT_EDGES` used to show "non-reserved keyword" on hover. They now show their function signature (#43).
+- **Platform Tags:** On-premise-only functions (`PLAINTEXT`, `MIMETYPE`, `TO_ALPHANUM`, ...) are no longer tagged `[CLOUD]`. Cloud-only functions (`AI_TEXT_COMPLETION`, `GET_DELTA_LAKE_TABLE_CHANGES`, ...) are no longer tagged `[XSC]` / `[XSA]` / `[HDI]` (#43).
+- **Specs & Tests:** Added `docs/specs/SPEC_RULES.md` §C.1 and `docs/specs/diagnostics/sql-intellisense.md` §6, plus catalog, guard, hover and signature help tests, bringing the test suite to `381` passing tests (`33` tracked `@todo` cases). The conformance baseline did not get worse (`docs/research/CONFORMANCE.md`).
+
 ## [0.10.3] - 2026-11-18
 
 ### Added
