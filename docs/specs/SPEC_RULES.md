@@ -54,10 +54,75 @@ Every artifact specification MUST contain:
 
 Catalogs MUST be valid, minifiable JSON arrays/objects so build scripts in `scripts/` can generate TextMate regexes, hover docs, and `.d.ts` files:
 
-- `sql-keywords.json`: `{"keywords": [{"name": "...", "category": "reserved|non-reserved", "scope": "...", "platforms": ["XSC","HDI","CLOUD"]}]}`
-- `builtin-functions.json`: `{"functions": [{"name": "...", "library": "SYS|SQLSCRIPT_STRING|...", "signatures": ["..."], "returnType": "...", "description": "..."}]}`
+- `sql-keywords.json` + `builtin-functions.json`: the **SQL word catalog** (schema below). The single source of every SQL / SQLScript word list.
 - `system-views.json`: `{"views": [{"schema": "SYS|_SYS_BIC|_SYS_REPO|_SYS_DI", "name": "...", "columns": [{"name": "...", "type": "...", "description": "..."}]}]}` *(Phase 4 live-catalog prerequisite)*
 - `xsjs-api.json`: Structured namespace tree (`$.db`, `$.hdb`, `$.net`, `$.session`, `$.security`, `$.util`, `$.jobs`, plus `sap.hana.xs.libs.dbutils.*`, `sap.hana.testtools.*`, and `jasmine.*` / XSUnit globals) with methods, parameter types, return types, and JSDoc descriptions for generating `resources/xsjs.d.ts`.
+
+#### C.1 SQL word catalog
+
+A word can mean different things in different places: `LEFT` starts a join, but `LEFT(` is a string function. `SOURCE` is a clause keyword inside `HIERARCHY(...)` and an ordinary column name elsewhere. The catalog therefore records **roles** per word, and every role says where it applies. Nothing else in the repository may keep its own list of SQL words.
+
+**`sql-keywords.json`**: every word that is not only a function name.
+
+```jsonc
+{
+  "roles": {
+    "<role-id>": {                       // kebab-case; registry order = hover precedence for lexical roles
+      "group": "lexical" | "context",    // lexical: what the word is; context: where a heuristic expects it
+      "const": "UPPER_SNAKE",            // generated constant name (required with emit / order)
+      "emit": ["analyzer", "formatter"], // src/analyzer/keyword-sets.ts, src/formatter/keywords.ts
+      "scope": "keyword.other.dml.hanasql", // lexical only: TextMate scope = highlighting and hover class
+      "format": "keyword" | "type",      // lexical only: formatter word class (keywordCase / dataTypeCase)
+      "description": "...",              // required: what the role means
+      "context": "...",                  // where the role applies, e.g. "Only inside HIERARCHY*( ... )"
+      "source": "<guide>/<chapter>.md § <heading>", // corpus path relative to research/refs/extracted/, or a spec section
+      "order": ["FROM", "INTO", ...]     // only for order-sensitive roles: exact member list, in display order
+    }
+  },
+  "artifactRoots": { "<languageId>": ["PROCEDURE", "CREATE"] }, // headerless HDI artifact roots [HDI]
+  "words": [
+    { "name": "LEFT", "roles": ["dml", "reserved", "join-starter", "expr-clause-terminator", ...],
+      "platforms": ["CLOUD"],            // omitted = [XSC] [XSA] [HDI] [CLOUD]
+      "source": "...", "note": "..." }   // optional per-word traceability
+  ]
+}
+```
+
+**`builtin-functions.json`**: every built-in function and SQLScript library member.
+
+```jsonc
+{
+  "categories": {
+    "<category-id>": { "scope": "support.function.string.hanasql", "description": "...", "source": "..." }
+    // a category without scope (sqlscript-library) is not highlighted as a global call
+  },
+  "functions": [
+    { "name": "LEFT", "library": "SYS", "category": "string",
+      "signatures": ["LEFT(<str>, <n>)"], "returnType": "NVARCHAR", "description": "...", "source": "..." }
+  ]
+}
+```
+
+Function-specific fields beyond these (parameters, return details, kinds, platforms) are specified in `docs/specs/diagnostics/sql-intellisense.md`.
+
+**Lexical roles** (registry order): `control-flow`, `dml`, `ddl`, `word-operator`, `literal`, `system-value`, `type`, `pragma`, `annotation`, `system-variable`, `hint`, `sqlscript-keyword`, `reserved`, `alter-system-word`, `statement-noun`, `clause-word`, `keyword` (non-reserved, cased by the formatter everywhere), `quote-protected` (must keep its quotes under `identifierQuotes: "removeUnnecessary"`). Function roles are not repeated in `sql-keywords.json`: a function's category is its role.
+
+**Context roles** replace the hand-written word sets of the analyzers and the SQL formatter, one role per set (`expr-clause-terminator`, `join-starter`, `hierarchy-clause`, `column-clause-modifier`, ...). Their `context` and `source` fields name the rule (`HANA-SYN-0xx`) or production they serve.
+
+**Generated from the catalog** (`npm run build:keywords`; never hand-edit):
+
+| Output | Content |
+| :--- | :--- |
+| `syntaxes/hanasql.tmLanguage.json` | Word alternations of every lexical role and function category with a `scope` (via `scripts/lib/hanasql-grammar.js`). Function categories match only before `(`. Phrases and punctuation stay in the grammar script. |
+| `src/formatter/keywords.ts` | `KEYWORDS` (roles with `format: "keyword"`), `TYPES`, `FUNCTIONS` (functions of scoped categories), `RESERVED`, `PROTECTED`, `SYSTEM_WORDS`, `STATEMENT_NOUNS`, and roles emitted to `formatter`. |
+| `src/analyzer/keyword-sets.ts` | Roles emitted to `analyzer`, `CE_FUNCTIONS` (category `calculation-engine`), `HDI_ROOT_TARGETS` (`artifactRoots`). |
+| `src/sql/sql-catalog.ts` | Hover / completion entries: words with a scoped role (kind and scope from the first scoped role), functions and library members. |
+
+**Validation** (build fails): role ids kebab-case with a description; every word role exists; no word listed twice; names match `^[A-Z_][A-Z0-9_]*$`; platforms from the four tags; every role has at least one word; an `order` lists exactly the role's words; two roles never emit the same constant into the same module; `artifactRoots` use catalog words; every function has a known category and at least one signature; `library:name` is unique.
+
+**Ordering**: generated sets are alphabetical. Grammar alternations put a word before any word it is a prefix of (`PROFILER` before `PROFILE`), so an alternation is correct even without a trailing `\b`.
+
+**Guard** (`test/keyword-catalog.test.ts`): `src/analyzer/*.ts` and `src/formatter/formatter.ts` must not declare a `new Set([...])` or named list of two or more catalog words, nor an inline list of six or more. Short inline lists are production alternatives (`expectAt(j, ['BEFORE', 'AFTER', 'INSTEAD'])`) and stay in code. The test keeps a small allowlist, with a reason for each entry, for ordered parser follow sets and `.hdbrole` privilege names. The same test fails when a generated file is stale.
 
 ### D. `docs/specs/diagnostics/<domain>-rules.md` (Linter, Syntax, Security, Migrator & IntelliSense)
 
