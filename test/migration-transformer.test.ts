@@ -503,3 +503,62 @@ test('#69 HANA-MIG-004: role header, extends lists, sql object lists and dropped
   assert.deepEqual(clean.notes, []);
   assert.equal(JSON.parse(clean.content).role.name, 'p::C');
 });
+
+test('#71: migration QuickFixes keep source comments or report them as dropped', () => {
+  // KV -> SQL: comments become a SQL header in source order (`//` -> `--`); comments in strings stay put.
+  const kvTable = `// owner: sales team
+table.schemaName = "S"; /* legacy */
+table.columns = [{name = "A"; sqlType = INTEGER; comment = "not // a comment";}];
+-- trailing note`;
+  const table = convertHdbtableKvToHdi(kvTable, 'T');
+  assert.match(table, /^-- owner: sales team\n\/\* legacy \*\/\n-- trailing note\nCOLUMN TABLE "T"/);
+  assert.match(table, /COMMENT 'not \/\/ a comment'/);
+  // ... and back: SQL header comments return as KV comments.
+  const kvBack = convertHdbtableHdiToKv(table, 'S');
+  assert.match(kvBack, /^\/\/ owner: sales team\n\/\* legacy \*\/\n\/\/ trailing note\ntable\.schemaName/);
+
+  assert.match(convertHdbviewKvToHdi('// v\nschema="S";\nquery="select 1 from dummy";', 'V'), /^-- v\nVIEW "V"/);
+  assert.match(convertHdbsequenceKvToHdi('/* s */\nschema="S";\nstart_with=1;', 'Q'), /^\/\* s \*\/\nSEQUENCE "Q"/);
+  assert.match(
+    convertHdbstructureKvToTableType('// tt\ntable.columns=[{name="A";sqlType=INTEGER;}];', 'TT'),
+    /^-- tt\nTYPE "TT" AS TABLE/
+  );
+
+  // Reverse view/sequence: comments in the copied query stay in it and are not duplicated as KV comments.
+  const viewBack = convertHdbviewHdiToKv('-- head\nVIEW "V"\nAS select 1 -- inner\nfrom dummy');
+  assert.match(viewBack, /^\/\/ head\nschema = /);
+  assert.equal((viewBack.match(/inner/g) ?? []).length, 1);
+  const seqBack = convertHdbsequenceHdiToKv('-- head\nSEQUENCE "Q"\n  RESET BY select 1 -- inner\n from dummy');
+  assert.match(seqBack, /^\/\/ head\nschema = /);
+  assert.equal((seqBack.match(/inner/g) ?? []).length, 1);
+
+  // .hdbindex TODO lines round-trip into table.indexes instead of becoming comments.
+  const withIdx = convertHdbtableKvToHdi(
+    'table.columns=[{name="A";sqlType=INTEGER;}];\ntable.indexes=[{name="I1";unique=true;indexType=B_TREE;indexColumns=["A"];}];',
+    'T'
+  );
+  const idxBack = convertHdbtableHdiToKv(withIdx);
+  assert.equal(/TODO/.test(idxBack), false);
+  assert.match(idxBack, /table\.indexes = \[\n {2}\{name = "I1"; unique = true; indexType = B_TREE; indexColumns = \["A"\];\}\n\];/);
+  assert.equal(convertHdbtableKvToHdi(idxBack, 'T'), withIdx);
+
+  // Role -> JSON cannot hold comments: each is listed in the HANA-MIG-004 message.
+  const role = `-- head\nrole p::R {\n  /* block\n  comment */\n  sql object p:T.hdbtable: SELECT; // tail\n}`;
+  const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(role);
+  assert.equal(/head|block|tail/.test(content), false);
+  assert.deepEqual(notes, [
+    '-- head — comment dropped: JSON .hdbrole cannot hold comments',
+    '/* block comment */ — comment dropped: JSON .hdbrole cannot hold comments',
+    '// tail — comment dropped: JSON .hdbrole cannot hold comments',
+  ]);
+  const roleDiag = analyzeDocument({ text: role, languageId: 'hdbrole' }).find((d) => d.ruleId === 'HANA-MIG-004');
+  assert.ok(roleDiag?.message.includes('-- head — comment dropped'));
+
+  // .hdbdd -> .hdbcds edits in place, so comments survive annotation removal.
+  const cds = `// model\ncontext C {\n  @Catalog.tableType: #COLUMN // store\n  entity E { key a : Integer; }; /* end */\n};`;
+  const cdsOut = convertHdbddToHdbcds(cds);
+  for (const c of ['// model', '// store', '/* end */']) assert.ok(cdsOut.includes(c), `${c} lost:\n${cdsOut}`);
+
+  // Negative: an artifact without comments gets no header.
+  assert.match(convertHdbviewKvToHdi('schema="S";\nquery="select 1 from dummy";', 'V'), /^VIEW "V"/);
+});
