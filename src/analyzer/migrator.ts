@@ -1,5 +1,6 @@
 import { cdsTokenize, type CdsToken } from '../formatter/cds';
 import {
+  kvTokenize,
   parseClassicKv,
   type KvAssignmentNode,
   type KvStructValue,
@@ -40,6 +41,47 @@ function escapeKvString(val: string): string {
 
 function escapeSqlSingleQuote(val: string): string {
   return `'${val.replace(/'/g, '\'\'')}'`;
+}
+
+/**
+ * Comments of a classic KV artifact (outside string values) as a SQL comment header, in source order.
+ * `//` becomes `--`; `--` and block comments are kept as they are.
+ */
+function kvCommentsAsSqlHeader(text: string): string {
+  const lines = kvTokenize(text)
+    .filter((t) => t.type === 'lineComment' || t.type === 'blockComment')
+    .map((t) => (t.type === 'lineComment' ? t.text.replace(/^\/\//, '--') : t.text));
+  return lines.length > 0 ? `${lines.join('\n')}\n` : '';
+}
+
+/**
+ * SQL comments that start before `before` (code after it is copied verbatim, comments included) as a
+ * classic KV comment header. `--` becomes `//`; block comments are kept as they are.
+ */
+function sqlCommentsAsKvHeader(comments: readonly Token[], before = Number.POSITIVE_INFINITY): string {
+  const lines = comments
+    .filter((t) => t.start < before)
+    .map((t) => (t.type === 'lineComment' ? t.text.replace(/^--/, '//') : t.text));
+  return lines.length > 0 ? `${lines.join('\n')}\n` : '';
+}
+
+function isSqlComment(t: Token): boolean {
+  return t.type === 'lineComment' || t.type === 'blockComment';
+}
+
+const HDBINDEX_TODO_RE = /^--\s*TODO\(\.hdbindex\):\s*(UNIQUE\s+)?(?:(\w+)\s+)?INDEX\s+"([^"]+)"\s+ON\s+"[^"]*"\s*\(([^)]*)\)\s*$/i;
+
+/** Reads back a `-- TODO(.hdbindex): ...` line written by `convertHdbtableKvToHdi` as a `table.indexes` struct. */
+function parseHdbindexTodo(comment: string): string | null {
+  const m = HDBINDEX_TODO_RE.exec(comment.trim());
+  if (!m) return null;
+  const cols = m[4]
+    .split(',')
+    .map((c) => c.trim().replace(/^"|"$/g, ''))
+    .filter((c) => c.length > 0)
+    .map(escapeKvString);
+  const typePart = m[2] ? ` indexType = ${m[2].toUpperCase()};` : '';
+  return `  {name = ${escapeKvString(m[3])}; unique = ${m[1] ? 'true' : 'false'};${typePart} indexColumns = [${cols.join(', ')}];}`;
 }
 
 export function deriveObjectName(filePath?: string, fallback = 'OBJECT_NAME'): string {
@@ -216,16 +258,22 @@ export function convertHdbtableKvToHdi(text: string, objectName = 'MY_TABLE'): s
     }
   }
 
-  return `${out}\n`;
+  return `${kvCommentsAsSqlHeader(text)}${out}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbtable` (`COLUMN TABLE ...`) into XSC Classic KV `.hdbtable`.
  */
 export function convertHdbtableHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
+  const indexStructs: string[] = [];
+  const keptComments: Token[] = [];
+  for (const c of allToks.filter(isSqlComment)) {
+    const idx = c.type === 'lineComment' ? parseHdbindexTodo(c.text) : null;
+    if (idx) indexStructs.push(idx);
+    else keptComments.push(c);
+  }
   let temporary = false;
   let tableType: 'COLUMNSTORE' | 'ROWSTORE' = 'COLUMNSTORE';
   let i = 0;
@@ -415,7 +463,10 @@ export function convertHdbtableHdiToKv(text: string, targetSchema = 'MYSCHEMA'):
   if (pkCols.length > 0) {
     lines.push(`table.primaryKey.pkcolumns = [${pkCols.join(', ')}];`);
   }
-  return `${lines.join('\n')}\n`;
+  if (indexStructs.length > 0) {
+    lines.push(`table.indexes = [\n${indexStructs.join(',\n')}\n];`);
+  }
+  return `${sqlCommentsAsKvHeader(keptComments)}${lines.join('\n')}\n`;
 }
 
 /**
@@ -443,16 +494,15 @@ export function convertHdbviewKvToHdi(text: string, objectName = 'MY_VIEW'): str
 
   cleanQuery = stripClassicSchemaRefs(cleanQuery, schema);
 
-  return `VIEW "${objectName}"\nAS ${cleanQuery}\n`;
+  return `${kvCommentsAsSqlHeader(text)}VIEW "${objectName}"\nAS ${cleanQuery}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbview` (`VIEW "..." AS ...`) into XSC Classic KV `.hdbview`.
  */
 export function convertHdbviewHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
   const asIdx = toks.findIndex((t) => t.type === 'word' && t.text.toUpperCase() === 'AS');
   if (asIdx === -1 || asIdx + 1 >= toks.length) return text;
 
@@ -486,7 +536,9 @@ export function convertHdbviewHdiToKv(text: string, targetSchema = 'MYSCHEMA'): 
   if (deps.size > 0) {
     lines.push(`depends_on = [${[...deps].join(', ')}];`);
   }
-  return `${suffixNote}${lines.join('\n')}\n`;
+  // Comments inside the query are copied with it; only the ones before it become KV comments.
+  const header = sqlCommentsAsKvHeader(allToks.filter(isSqlComment), queryStart);
+  return `${header}${suffixNote}${lines.join('\n')}\n`;
 }
 
 /**
@@ -524,17 +576,17 @@ export function convertHdbsequenceKvToHdi(text: string, objectName = 'MY_SEQ'): 
   }
 
   const body = clauses.length > 0 ? `\n  ${clauses.join('\n  ')}` : '';
-  return `SEQUENCE "${objectName}"${body}\n`;
+  return `${kvCommentsAsSqlHeader(text)}SEQUENCE "${objectName}"${body}\n`;
 }
 
 /**
  * Reverse-converts HDI DDL `.hdbsequence` into XSC Classic KV `.hdbsequence`.
  */
 export function convertHdbsequenceHdiToKv(text: string, targetSchema = 'MYSCHEMA'): string {
-  const toks = tokenize(text).filter(
-    (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
-  );
+  const allToks = tokenize(text);
+  const toks = allToks.filter((t) => !isSqlComment(t) && t.type !== 'raw');
   const lines: string[] = [`schema = ${escapeKvString(targetSchema)};`];
+  let verbatimFrom = Number.POSITIVE_INFINITY;
   for (let i = 0; i < toks.length; i++) {
     const w = toks[i].text.toUpperCase();
     const next = toks[i + 1]?.text.toUpperCase();
@@ -565,12 +617,13 @@ export function convertHdbsequenceHdiToKv(text: string, targetSchema = 'MYSCHEMA
     } else if (w === 'CYCLE') {
       lines.push('cycles = true;');
     } else if (w === 'RESET' && next === 'BY' && toks[i + 2]) {
-      const rest = text.slice(toks[i + 2].start).trim().replace(/;+\s*$/, '');
+      verbatimFrom = toks[i + 2].start;
+      const rest = text.slice(verbatimFrom).trim().replace(/;+\s*$/, '');
       lines.push(`reset_by = ${escapeKvString(rest)};`);
       break;
     }
   }
-  return `${lines.join('\n')}\n`;
+  return `${sqlCommentsAsKvHeader(allToks.filter(isSqlComment), verbatimFrom)}${lines.join('\n')}\n`;
 }
 
 /**
@@ -580,7 +633,7 @@ export function convertHdbstructureKvToTableType(text: string, objectName = 'MY_
   const assigns = getAssignmentsMap(text);
   const colLines = renderHdiColumnDefinitions(assigns.get('table.columns')?.value);
   const body = colLines.length > 0 ? `\n  ${colLines.join(',\n  ')}\n` : '';
-  return `TYPE "${objectName}" AS TABLE (${body})\n`;
+  return `${kvCommentsAsSqlHeader(text)}TYPE "${objectName}" AS TABLE (${body})\n`;
 }
 
 /** Classic repository object suffix -> HDI object privilege `type` `[XSC]` -> `[HDI]`. */
@@ -668,9 +721,14 @@ export interface RoleConversion {
  * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`, and reports what it drops.
  */
 export function convertClassicHdbroleToHdiJsonWithNotes(text: string): RoleConversion {
-  const tokens = roleTokenize(text).filter(
+  const allTokens = roleTokenize(text);
+  const tokens = allTokens.filter(
     (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
   );
+  // JSON cannot hold comments, so each one is reported instead of silently lost.
+  const commentNotes = allTokens
+    .filter((t) => t.type === 'lineComment' || t.type === 'blockComment')
+    .map((t) => `${t.text.replace(/\s+/g, ' ').trim()} — comment dropped: JSON .hdbrole cannot hold comments`);
 
   const stmts: RoleToken[][] = [];
   let cur: RoleToken[] = [];
@@ -688,7 +746,7 @@ export function convertClassicHdbroleToHdiJsonWithNotes(text: string): RoleConve
 
   let roleName = 'MY_ROLE';
   let needsGrantHash = false;
-  const notes: string[] = [];
+  const notes: string[] = [...commentNotes];
   const schemaRoles: string[] = [];
   const globalRoles: string[] = [];
   const systemPrivs: string[] = [];
