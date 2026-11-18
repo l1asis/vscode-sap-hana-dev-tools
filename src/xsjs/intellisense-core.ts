@@ -319,6 +319,12 @@ function resolveCatalogReturnType(typeExpr: string): ResolvedType | null {
   return null;
 }
 
+/** Overload identity: name, static flag, and parameter types/optionality (names ignored). */
+function methodOverloadKey(fn: XsjsMethodDoc): string {
+  const params = fn.params.map((p) => `${p.type}${p.optional ? '?' : ''}`).join(',');
+  return `${fn.static ? 'static ' : ''}${fn.name}(${params})`;
+}
+
 function collectInheritedMembers(entry: XsjsSymbolEntry): {
   children: readonly XsjsChildRef[];
   members: readonly XsjsMemberDoc[];
@@ -326,9 +332,12 @@ function collectInheritedMembers(entry: XsjsSymbolEntry): {
 } {
   const entries = getEntryAndAncestors(entry.fullName);
   const seenMembers = new Set<string>();
+  const seenMethods = new Set<string>();
   const members: XsjsMemberDoc[] = [];
   const methods: XsjsMethodDoc[] = [];
 
+  // `entries` is ordered most-derived first, so the first declaration of a
+  // property name / overload signature is the override that wins.
   for (const e of entries) {
     for (const m of e.members) {
       if (!seenMembers.has(m.name)) {
@@ -337,7 +346,11 @@ function collectInheritedMembers(entry: XsjsSymbolEntry): {
       }
     }
     for (const fn of e.methods) {
-      methods.push(fn);
+      const key = methodOverloadKey(fn);
+      if (!seenMethods.has(key)) {
+        seenMethods.add(key);
+        methods.push(fn);
+      }
     }
   }
   return {
@@ -511,27 +524,101 @@ function formatMethodSignature(name: string, method: XsjsMethodDoc, classOrNsPre
   return `${prefix}${name}(${params}): ${method.returnType}`;
 }
 
-function buildMethodDocumentation(overloads: readonly XsjsMethodDoc[]): string {
-  const sections: string[] = [];
-  for (const fn of overloads) {
-    const lines: string[] = [];
-    lines.push('```ts\n' + formatMethodSignature(fn.name, fn) + '\n```');
-    if (fn.deprecated) {
-      lines.push(`**@deprecated** ${fn.deprecated}`);
+function acceptsArgCount(fn: XsjsMethodDoc, argCount: number): boolean {
+  const hasRest = fn.params.some((p) => p.name.startsWith('...'));
+  const required = fn.params.filter((p) => !p.optional && !p.name.startsWith('...')).length;
+  return argCount >= required && (hasRest || argCount <= fn.params.length);
+}
+
+/**
+ * Renders one consolidated card for a method and all of its overloads:
+ * stacked signatures, deprecation notes, shared (or per-overload) description,
+ * and the deduplicated parameter list. See sql-intellisense.md §2.5.
+ */
+function buildMethodDocumentation(
+  overloads: readonly XsjsMethodDoc[],
+  options: { prefix?: string; callArgCount?: number } = {}
+): string {
+  if (overloads.length === 0) return '';
+  const { prefix, callArgCount } = options;
+
+  let ordered = overloads;
+  if (callArgCount !== undefined) {
+    const best = overloads.findIndex((fn) => acceptsArgCount(fn, callArgCount));
+    if (best > 0) {
+      ordered = [overloads[best], ...overloads.slice(0, best), ...overloads.slice(best + 1)];
     }
-    if (fn.description) {
-      lines.push(fn.description);
-    }
-    if (fn.params.length > 0) {
-      lines.push(
-        fn.params
-          .map((p) => `- \`${p.name}\` (\`${p.type}\`)${p.description ? `: ${p.description}` : ''}`)
-          .join('\n')
-      );
-    }
-    sections.push(lines.join('\n\n'));
   }
-  return sections.join('\n\n---\n\n');
+
+  const multi = ordered.length > 1;
+  const shortSig = (fn: XsjsMethodDoc): string =>
+    `\`${prefix ? `${prefix}.` : ''}${fn.name}(${fn.params.map((p) => p.name).join(', ')})\``;
+
+  const sections: string[] = [];
+  sections.push('```ts\n' + ordered.map((fn) => formatMethodSignature(fn.name, fn, prefix)).join('\n') + '\n```');
+
+  const deprecated = ordered.filter((fn) => fn.deprecated);
+  const sameDeprecation =
+    deprecated.length === ordered.length && new Set(deprecated.map((fn) => fn.deprecated)).size === 1;
+  if (sameDeprecation) {
+    sections.push(`**@deprecated** ${deprecated[0].deprecated}`);
+  } else if (deprecated.length > 0) {
+    sections.push(deprecated.map((fn) => `**@deprecated** ${shortSig(fn)}: ${fn.deprecated}`).join('\n\n'));
+  }
+
+  const descriptions = new Set(ordered.map((fn) => fn.description).filter(Boolean));
+  if (descriptions.size === 1) {
+    sections.push([...descriptions][0]);
+  } else if (descriptions.size > 1) {
+    sections.push(
+      ordered
+        .filter((fn) => fn.description)
+        .map((fn) => `- ${shortSig(fn)} — ${fn.description}`)
+        .join('\n')
+    );
+  }
+
+  const seenParams = new Set<string>();
+  const paramLines: string[] = [];
+  for (const fn of ordered) {
+    for (const p of fn.params) {
+      const key = `${p.name}\u0000${p.type}\u0000${p.description}`;
+      if (seenParams.has(key)) continue;
+      seenParams.add(key);
+      paramLines.push(`- \`${p.name}\` (\`${p.type}\`)${p.description ? `: ${p.description}` : ''}`);
+    }
+  }
+  if (paramLines.length > 0) {
+    sections.push((multi ? '**Parameters**\n\n' : '') + paramLines.join('\n'));
+  }
+
+  return sections.join('\n\n');
+}
+
+/**
+ * When the identifier ending at `end` is directly followed by `(...)`, returns
+ * the number of top-level call arguments; otherwise `undefined`.
+ */
+function countCallArgsAfter(masked: string, end: number): number | undefined {
+  let i = end;
+  while (i < masked.length && /\s/.test(masked[i])) i++;
+  if (masked[i] !== '(') return undefined;
+  let depth = 0;
+  let commas = 0;
+  let hasContent = false;
+  for (i = i + 1; i < masked.length; i++) {
+    const ch = masked[i];
+    if (ch === '(' || ch === '[' || ch === '{') {
+      depth++;
+    } else if (ch === ')' || ch === ']' || ch === '}') {
+      if (depth === 0) return hasContent ? commas + 1 : 0;
+      depth--;
+    } else if (ch === ',' && depth === 0) {
+      commas++;
+    }
+    if (!/\s/.test(ch)) hasContent = true;
+  }
+  return undefined;
 }
 
 function mapChildKind(child: XsjsChildRef): XsjsCompletionKind {
@@ -792,7 +879,7 @@ export function getXsjsHover(text: string, offset: number): XsjsHoverResult | nu
     const globalFns = XSJS_GLOBALS.filter((g) => g.name === ident);
     if (globalFns.length > 0) {
       return {
-        markdown: buildMethodDocumentation(globalFns),
+        markdown: buildMethodDocumentation(globalFns, { callArgCount: countCallArgsAfter(masked, end) }),
         start,
         end,
       };
@@ -821,7 +908,11 @@ export function getXsjsHover(text: string, offset: number): XsjsHoverResult | nu
   }
 
   const { members, methods } = collectInheritedMembers(entry);
-  const matchedMember = members.find((m) => m.name === ident);
+  // Same static/instance rule as getXsjsCompletions (sql-intellisense.md §2.5).
+  const isClassType = entry.kind === 'class';
+  const visible = (m: { readonly static?: boolean }): boolean =>
+    !isClassType || Boolean(m.static) !== resolved.isInstance;
+  const matchedMember = members.find((m) => m.name === ident && visible(m));
   if (matchedMember) {
     const dep = matchedMember.deprecated ? `\n\n**@deprecated** ${matchedMember.deprecated}` : '';
     const ro = matchedMember.readonly ? 'readonly ' : '';
@@ -832,17 +923,16 @@ export function getXsjsHover(text: string, offset: number): XsjsHoverResult | nu
     };
   }
 
-  const matchedMethods = methods.filter((m) => m.name === ident);
+  const matchedMethods = methods.filter((m) => m.name === ident && visible(m));
   if (matchedMethods.length > 0) {
-    const formatted = matchedMethods
-      .map((fn) => {
-        const header = '```ts\n' + formatMethodSignature(ident, fn, entry.fullName) + '\n```';
-        const dep = fn.deprecated ? `\n\n**@deprecated** ${fn.deprecated}` : '';
-        const desc = fn.description ? `\n\n${fn.description}` : '';
-        return `${header}${dep}${desc}`;
-      })
-      .join('\n\n---\n\n');
-    return { markdown: formatted, start, end };
+    return {
+      markdown: buildMethodDocumentation(matchedMethods, {
+        prefix: entry.fullName,
+        callArgCount: countCallArgsAfter(masked, end),
+      }),
+      start,
+      end,
+    };
   }
 
   return null;
