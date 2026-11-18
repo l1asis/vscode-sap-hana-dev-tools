@@ -15,6 +15,56 @@ import {
   type AnalyzerDiagnostic,
   type CodeFixSuggestion,
 } from './types';
+import {
+  BODY_STATEMENT_WORDS,
+  BODY_TYPO_TARGETS,
+  CALL_INFIX_OR_CLAUSE,
+  CALL_PREFIX_KEYWORDS_NO_OP,
+  CALL_PREFIX_WORDS,
+  COLUMN_CLAUSE_MODIFIERS,
+  COLUMN_END_MODIFIERS,
+  COLUMN_LIST_CONSTRAINT_STARTERS,
+  COMPARISON_WORDS,
+  COMPOUND_BOUNDARY_PREV_WORDS,
+  DATETIME_FIELDS,
+  DDL_TYPO_CANDIDATES,
+  END_COMPOUND_SUFFIXES,
+  EXPR_CLAUSE_TERMINATORS,
+  EXPR_INFIX_COMPOUND_AFTER_NOT,
+  EXPR_INFIX_DIRECT,
+  EXPR_PREFIX_WORDS,
+  GENERAL_SQL_VALID_ROOTS,
+  HDI_ROOT_TARGETS,
+  HIERARCHY_CLAUSE_FUNCTIONS,
+  HIERARCHY_CLAUSE_TERMINATORS,
+  INCOMPLETE_FROM_FOLLOW,
+  INCOMPLETE_HAVING_FOLLOW,
+  INCOMPLETE_WHERE_FOLLOW,
+  INTERVAL_UNITS,
+  JSON_CALL_CLAUSE_STARTERS,
+  JSON_CLAUSE_CALL_NAMES,
+  JSON_COLUMN_TRAILING_WORDS,
+  MIGRATION_TABLE_ROOTS,
+  ON_TARGET_DDL_NOUNS,
+  PARAM_MODES,
+  PAREN_EXPRESSION_PREV,
+  QUERY_START_PREV_WORDS,
+  SELECT_PREFIX_OP_WORDS,
+  SELECT_PRIVILEGE_PREV_CLAUSE,
+  SELECT_STOP_CLAUSES,
+  SET_STATEMENT_OBJECTS,
+  SPECIAL_CALL_NAMES,
+  SQL_TYPE_ARG_NAMES,
+  SQL_TYPE_ARG_UNITS,
+  STMT_BLOCK_END_STOP_PREV_WORDS,
+  SUBSELECT_CONTEXT_WORDS,
+  TABLE_COLUMNS_PREV,
+  TYPED_LITERAL_WORDS,
+  UNAMBIGUOUS_STMT_START_WORDS,
+  VALID_DDL_MODIFIERS,
+  VALID_DDL_NOUNS,
+  WINDOW_OR_ORDER_MODS,
+} from './keyword-sets';
 
 export { damerauLevenshtein, matchKeywordTypo, type TypoMatchOptions } from './typo';
 
@@ -42,187 +92,7 @@ const SQLSCRIPT_BLOCK_LANGUAGES = new Set<string>([
 
 const MIGRATION_MARKER_RE = /^\s*==\s*(?:version|dev-version|migration)\s*=\s*\d+.*$/i;
 
-/** Headerless roots of `.hdbmigrationtable` version sections `[HDI]` `[CLOUD]`. */
-const MIGRATION_TABLE_ROOTS: ReadonlySet<string> = new Set<string>(['COLUMN', 'ROW']);
-
 const KV_TRAILING_SEMI_OPTIONAL_SET = new Set<string>(['hdbview']);
-
-// Valid SAP HANA SQL statement/DDL keywords at anchor positions so we never flag valid statements.
-const VALID_DDL_NOUNS = new Set<string>([
-  'PROCEDURE',
-  'FUNCTION',
-  'TABLE',
-  'COLUMN',
-  'ROW',
-  'VIEW',
-  'TRIGGER',
-  'LIBRARY',
-  'SEQUENCE',
-  'INDEX',
-  'SCHEMA',
-  'SYNONYM',
-  'ROLE',
-  'USER',
-  'USERGROUP',
-  'TYPE',
-  'COLLECTION',
-  'PROJECTION',
-  'STATISTICS',
-  'STRUCTURED',
-  'VIRTUAL',
-  'CONSTRAINT',
-  'FULLTEXT',
-  'FUZZY',
-  'RESULT',
-  'GRAPH',
-  'SCHEDULER',
-  'REMOTE',
-  'SHARED',
-  'AUDIT',
-  'CERTIFICATE',
-  'PSE',
-  'JWT',
-  'SAML',
-  'LDAP',
-  'X509',
-  'WORKLOAD',
-  'AGENT',
-  'ADAPTER',
-  'SUBSCRIPTION',
-  'TASK',
-  'FLOWGRAPH',
-  'CREDENTIAL',
-]);
-
-const VALID_DDL_MODIFIERS = new Set<string>([
-  'OR',
-  'REPLACE',
-  'GLOBAL',
-  'LOCAL',
-  'TEMPORARY',
-  'PUBLIC',
-  'UNIQUE',
-  'ONLINE',
-  'HISTORY',
-  'SYSTEM',
-  'APPLICATION',
-  'NO',
-  'LOGGING',
-  'HASH',
-  'BLOCK',
-  'RANGE',
-  'BTREE',
-  'CPBTREE',
-  'INVERTED',
-  'ADJACENCY',
-  'SEARCH',
-]);
-
-const DDL_TYPO_CANDIDATES: readonly string[] = [
-  'PROCEDURE',
-  'FUNCTION',
-  'TABLE',
-  'COLUMN',
-  'ROW',
-  'VIEW',
-  'TRIGGER',
-  'LIBRARY',
-  'SEQUENCE',
-  'INDEX',
-  'SCHEMA',
-  'SYNONYM',
-  'ROLE',
-  'USER',
-  'TYPE',
-  'COLLECTION',
-  'PROJECTION',
-  'STATISTICS',
-  'STRUCTURED',
-  'VIRTUAL',
-  'CONSTRAINT',
-];
-
-const HDI_ROOT_TARGETS: Readonly<Record<string, readonly string[]>> = {
-  hdbprocedure: ['PROCEDURE', 'CREATE'],
-  hdbfunction: ['FUNCTION', 'CREATE'],
-  hdbtablefunction: ['FUNCTION', 'CREATE'],
-  hdbscalarfunction: ['FUNCTION', 'CREATE'],
-  hdbtrigger: ['TRIGGER', 'CREATE'],
-  hdblibrary: ['LIBRARY', 'CREATE'],
-  hdbtable: ['COLUMN', 'ROW', 'GLOBAL', 'LOCAL', 'TEMPORARY', 'TABLE', 'CREATE', 'HISTORY', 'VIRTUAL'],
-  hdbstructure: ['TYPE', 'CREATE', 'COLUMN', 'ROW'],
-  hdbtabletype: ['TYPE', 'CREATE', 'COLUMN', 'ROW'],
-  hdbview: ['VIEW', 'PROJECTION', 'CREATE'],
-  hdbsequence: ['SEQUENCE', 'CREATE'],
-  hdbindex: ['INDEX', 'UNIQUE', 'BTREE', 'CPBTREE', 'INVERTED', 'CREATE'],
-  hdbfulltextindex: ['FULLTEXT', 'FUZZY', 'INDEX', 'CREATE'],
-  hdbconstraint: ['ALTER', 'CONSTRAINT', 'CREATE'],
-  hdbvirtualtable: ['VIRTUAL', 'CREATE'],
-  hdbprojectionview: ['PROJECTION', 'VIEW', 'CREATE'],
-  hdbstructuredprivilege: ['STRUCTURED', 'CREATE'],
-  hdbstructuredfilter: ['STRUCTURED', 'CREATE'],
-  hdbresultcache: ['RESULT', 'CREATE'],
-  hdbstatistics: ['STATISTICS', 'CREATE'],
-  hdbsystemversioning: ['SYSTEM', 'ALTER', 'CREATE'],
-  hdbapplicationtime: ['APPLICATION', 'ALTER', 'CREATE'],
-  hdbschedulerjob: ['SCHEDULER', 'CREATE'],
-  hdbremotetablereplica: ['REMOTE', 'SHARED', 'CREATE'],
-  hdbcollection: ['COLLECTION', 'CREATE'],
-  hdbcollectionindex: ['HASH', 'BLOCK', 'INDEX', 'COLLECTION', 'CREATE'],
-  hdbcollectionadjindex: ['ADJACENCY', 'INDEX', 'CREATE'],
-  hdbfabricvirtualtable: ['SHARED', 'VIRTUAL', 'CREATE'],
-  hdbdropcreatetable: ['DROP', 'COLUMN', 'ROW', 'CREATE'],
-  hdbgraphworkspace: ['GRAPH', 'CREATE'],
-  hdbvirtualprocedure: ['VIRTUAL', 'PROCEDURE', 'CREATE'],
-  hdbvirtualfunction: ['VIRTUAL', 'FUNCTION', 'CREATE'],
-};
-
-const GENERAL_SQL_VALID_ROOTS = new Set<string>([
-  'SELECT',
-  'WITH',
-  'INSERT',
-  'UPDATE',
-  'DELETE',
-  'UPSERT',
-  'MERGE',
-  'REPLACE',
-  'CREATE',
-  'ALTER',
-  'DROP',
-  'GRANT',
-  'REVOKE',
-  'TRUNCATE',
-  'DO',
-  'CALL',
-  'SET',
-  'COMMENT',
-  'EXPLAIN',
-  'IMPORT',
-  'EXPORT',
-  'LOAD',
-  'UNLOAD',
-  'RENAME',
-  'LOCK',
-  'SIGNAL',
-  'DECLARE',
-  'CONNECT',
-  'DISCONNECT',
-  'COMMIT',
-  'ROLLBACK',
-  'SAVEPOINT',
-  'RELEASE',
-  'EXEC',
-  'EXECUTE',
-  'BEGIN',
-  'IF',
-  'FOR',
-  'WHILE',
-  'CASE',
-  'RECOVER',
-  'BACKUP',
-  'VALIDATE',
-  'PRIVILEGE',
-]);
 
 const CDS_DECLARATION_KEYWORDS: readonly string[] = [
   'namespace',
@@ -268,31 +138,6 @@ function makeReplaceFix(title: string, start: number, end: number, replacement: 
 function makeRemoveFix(title: string, start: number, end: number): CodeFixSuggestion {
   return makeReplaceFix(title, start, end, '');
 }
-
-const SQL_TYPE_ARG_NAMES = new Set<string>([
-  'DECIMAL',
-  'DEC',
-  'NUMERIC',
-  'SMALLDECIMAL',
-  'VARCHAR',
-  'NVARCHAR',
-  'CHAR',
-  'NCHAR',
-  'BINARY',
-  'VARBINARY',
-  'ALPHANUM',
-  'SHORTTEXT',
-  'FLOAT',
-  'DOUBLE',
-  'TIME',
-  'TIMESTAMP',
-  'SECONDDATE',
-  'VECTOR',
-  'ST_GEOMETRY',
-  'ST_POINT',
-]);
-
-const SQL_TYPE_ARG_UNITS = new Set<string>(['CHAR', 'CHARACTERS', 'BYTE', 'BYTES']);
 
 function isDoubledQuoteClosed(raw: string, quote: "'" | '"'): boolean {
   let k = 1;
@@ -733,8 +578,6 @@ const PROCEDURAL_HDI_LANGUAGES = new Set<string>([
   'hdbvirtualfunction',
 ]);
 
-const HDI_END_COMPOUND_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
-
 /** Counts top-level non-comment statements starting at `startIdx` inside `codeTokens`. */
 function countTrailingStatements(codeTokens: readonly Token[], startIdx: number): number {
   let count = 0;
@@ -782,7 +625,7 @@ function countTrailingStatements(codeTokens: readonly Token[], startIdx: number)
     }
     if (tUp === 'END') {
       const nextUp = codeTokens[k + 1]?.type === 'word' ? codeTokens[k + 1].text.toUpperCase() : '';
-      if (HDI_END_COMPOUND_SUFFIXES.has(nextUp)) {
+      if (END_COMPOUND_SUFFIXES.has(nextUp)) {
         skipNext = true;
         continue;
       }
@@ -894,7 +737,7 @@ function checkSingleObjectHdiTrailing(
     }
     if (up === 'END') {
       const nextUp = codeTokens[idx + 1]?.type === 'word' ? codeTokens[idx + 1].text.toUpperCase() : '';
-      if (HDI_END_COMPOUND_SUFFIXES.has(nextUp)) {
+      if (END_COMPOUND_SUFFIXES.has(nextUp)) {
         skipNext = true;
         continue;
       }
@@ -1112,7 +955,7 @@ function checkSqlHeaderTypos(
       if (!targetTok || targetTok.type !== 'word') continue;
       const targetUpper = targetTok.text.toUpperCase();
       if (VALID_DDL_NOUNS.has(targetUpper)) continue;
-      const fixKw = matchKeywordTypo(targetTok.text, DDL_TYPO_CANDIDATES);
+      const fixKw = matchKeywordTypo(targetTok.text, [...DDL_TYPO_CANDIDATES]);
       if (fixKw) {
         pushTypo(targetTok, fixKw, `Unexpected keyword '${targetTok.text}' after '${kw}'. Did you mean '${fixKw}'?`);
       }
@@ -1123,8 +966,8 @@ function checkSqlHeaderTypos(
   checkQueryClauseTypos(codeTokens, baseOffset, diagnostics);
 }
 
-const COMPARISON_AFTER_WORD_SET = new Set<string>(['=', '<>', '!=', '<', '>', '<=', '>=', '~=', '^=', 'IS', 'IN', 'LIKE', 'BETWEEN', 'NOT']);
-const QUERY_START_PREV = new Set<string>([';', '(', ':=', 'RETURN', 'BEGIN', 'THEN', 'ELSE', 'ELSEIF', 'DO', 'LOOP', 'UNION', 'ALL', 'INTERSECT', 'EXCEPT', 'MINUS']);
+const COMPARISON_AFTER_WORD_SET = new Set<string>(['=', '<>', '!=', '<', '>', '<=', '>=', '~=', '^=', ...COMPARISON_WORDS]);
+const QUERY_START_PREV = new Set<string>([';', '(', ':=', ...QUERY_START_PREV_WORDS]);
 
 function checkQueryClauseTypos(
   codeTokens: readonly Token[],
@@ -1258,7 +1101,7 @@ function hasKeywordBeforeBoundary(
   return false;
 }
 
-const COMPOUND_BOUNDARY_PREV = new Set([';', 'BEGIN', 'THEN', 'ELSE', 'ELSEIF', 'DO', 'LOOP', ':']);
+const COMPOUND_BOUNDARY_PREV = new Set<string>([';', ':', ...COMPOUND_BOUNDARY_PREV_WORDS]);
 
 function checkSqlScriptBlocks(
   codeTokens: readonly Token[],
@@ -1303,12 +1146,12 @@ function checkSqlScriptBlocks(
         nextText !== '.' &&
         nextText !== '(' &&
         nextText !== ',' &&
-        !['BEGIN', 'END', 'IF', 'ELSE', 'ELSEIF', 'FOR', 'WHILE', 'LOOP', 'CASE', 'DECLARE', 'RETURN', 'SELECT', 'INSERT', 'UPDATE', 'DELETE', 'UPSERT', 'MERGE', 'REPLACE', 'CALL', 'EXEC', 'EXECUTE', 'SIGNAL', 'RESIGNAL', 'DO', 'EXIT', 'CONTINUE', 'OPEN', 'FETCH', 'CLOSE', 'USING', 'TRUNCATE', 'COMMIT', 'ROLLBACK'].includes(up)
+        !BODY_STATEMENT_WORDS.has(up)
       ) {
         const bodyTypo =
           up === 'ELSIF'
             ? 'ELSEIF'
-            : matchKeywordTypo(tok.text, ['RETURN', 'DECLARE', 'ELSEIF', 'ELSE', 'WHILE', 'BEGIN'], { allowShort: false });
+            : matchKeywordTypo(tok.text, [...BODY_TYPO_TARGETS], { allowShort: false });
         if (bodyTypo) {
           diagnostics.push({
             ruleId: 'HANA-SYN-021',
@@ -1461,135 +1304,6 @@ function prevTextNotMember(prev: Token | null): boolean {
   return !prev || prev.text !== '.';
 }
 
-const SPECIAL_CALL_NAMES = new Set<string>([
-  'CAST',
-  'CONVERT',
-  'EXTRACT',
-  'SUBSTRING',
-  'TRIM',
-  'POSITION',
-  'OVERLAY',
-  'TREAT',
-  'XMLELEMENT',
-  'XMLFOREST',
-  'XMLAGG',
-  'XMLATTRIBUTES',
-  'XMLPARSE',
-  'XMLSERIALIZE',
-  'XMLTABLE',
-  'OPENJSON',
-  'JSON_TABLE',
-  'JSON_OBJECT',
-  'JSON_ARRAY',
-  'OVER',
-  'FILTER',
-  'WITHIN',
-  'EXISTS',
-  'USING',
-  'CHECK',
-  'CONSTRAINT',
-  'PRIMARY',
-  'UNIQUE',
-  'FOREIGN',
-  'REFERENCES',
-  'GENERATED',
-  'AS',
-  'PARTITION',
-  'SUBPARTITION',
-  'SERIES',
-  'RANGE',
-  'HASH',
-  'ROUNDROBIN',
-  'SET',
-  // Clause-syntax graph table function `[CLOUD]` `[HDI]`: `GRAPH WORKSPACE <ws> QUERY '<cypher>' [PARAMETERS (...)]`
-  'OPENCYPHER_TABLE',
-  // Clause-syntax hierarchy generator & navigation functions `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
-  // (`HIERARCHY_COMPOSITE_ID(a, b, ...)` is a plain comma-separated scalar call and stays checked.)
-  'HIERARCHY',
-  'HIERARCHY_LEVELED',
-  'HIERARCHY_SPANTREE',
-  'HIERARCHY_TEMPORAL',
-  'HIERARCHY_ANCESTORS',
-  'HIERARCHY_ANCESTORS_AGGREGATE',
-  'HIERARCHY_DESCENDANTS',
-  'HIERARCHY_DESCENDANTS_AGGREGATE',
-  'HIERARCHY_SIBLINGS',
-]);
-
-/** Clause-syntax hierarchy generator & navigation table functions (`<fn>(SOURCE ... START WHERE ... DEPTH ...)`). */
-const HIERARCHY_CLAUSE_FUNCTIONS = new Set<string>([
-  'HIERARCHY',
-  'HIERARCHY_LEVELED',
-  'HIERARCHY_SPANTREE',
-  'HIERARCHY_TEMPORAL',
-  'HIERARCHY_ANCESTORS',
-  'HIERARCHY_ANCESTORS_AGGREGATE',
-  'HIERARCHY_DESCENDANTS',
-  'HIERARCHY_DESCENDANTS_AGGREGATE',
-  'HIERARCHY_SIBLINGS',
-]);
-
-/**
- * Top-level clause keywords of hierarchy functions that end a preceding `START WHERE` / `WHERE` / `JOIN ... ON`
- * condition. These are non-reserved in SAP HANA, so they only act as terminators inside hierarchy call frames.
- */
-const HIERARCHY_CLAUSE_TERMINATORS = new Set<string>([
-  'SOURCE',
-  'START',
-  'JOIN',
-  'MEASURES',
-  'DISTANCE',
-  'LEVELS',
-  'SIBLING',
-  'VALID',
-  'DEPTH',
-  'MULTIPARENT',
-  'ORPHAN',
-  'CYCLE',
-  'CACHE',
-  'NO',
-  'LOAD',
-  'RETAIN',
-]);
-
-/**
- * `JSON_VALUE` / `JSON_QUERY` take `<ctx>, <path>` followed by space-separated clauses
- * (`RETURNING <type>`, `WITH|WITHOUT [...] WRAPPER`, `<behavior> ON EMPTY`, `<behavior> ON ERROR`).
- * Comma checking is disabled from the first clause keyword onward.
- */
-const JSON_CLAUSE_CALL_NAMES = new Set<string>(['JSON_VALUE', 'JSON_QUERY']);
-const JSON_CALL_CLAUSE_STARTERS = new Set<string>([
-  'RETURNING',
-  'WITH',
-  'WITHOUT',
-  'ERROR',
-  'NULL',
-  'DEFAULT',
-  'EMPTY',
-  'ON',
-  'KEEP',
-  'OMIT',
-]);
-
-/** Words that may follow a complete `JSON_TABLE` column definition (behaviors and wrapper clauses). */
-const JSON_COLUMN_TRAILING_WORDS = new Set<string>([
-  'ERROR',
-  'NULL',
-  'DEFAULT',
-  'EMPTY',
-  'ARRAY',
-  'OBJECT',
-  'ON',
-  'WITH',
-  'WITHOUT',
-  'CONDITIONAL',
-  'UNCONDITIONAL',
-  'WRAPPER',
-  'KEEP',
-  'OMIT',
-  'QUOTES',
-]);
-
 /** True when `(` at `openIdx` opens a `COLUMNS (...)` list of `JSON_TABLE` (incl. `NESTED [PATH] '...' COLUMNS (...)`). */
 function isJsonTableColumnsParen(codeTokens: readonly Token[], openIdx: number): boolean {
   const prev = openIdx > 0 ? codeTokens[openIdx - 1] : null;
@@ -1613,198 +1327,7 @@ function isJsonTableColumnsParen(codeTokens: readonly Token[], openIdx: number):
   return false;
 }
 
-const PARAM_MODES = new Set<string>(['IN', 'OUT', 'INOUT']);
-
-const COLUMN_END_MODIFIERS = new Set<string>([
-  'NOT',
-  'NULL',
-  'PRIMARY',
-  'KEY',
-  'UNIQUE',
-  'ARRAY',
-  'COLUMN',
-  'ROW',
-  'PAGE',
-  'LOADABLE',
-  'ONLINE',
-  'INVISIBLE',
-  'HIDDEN',
-  'AUTO',
-  'MERGE',
-  'ENCRYPTED',
-  'DETERMINISTIC',
-  'PRECISION',
-  'VARYING',
-  'TIME',
-  'ZONE',
-  'WITH',
-  'WITHOUT',
-  'LOCAL',
-  'ASC',
-  'DESC',
-]);
-
-const COLUMN_CLAUSE_MODIFIERS = new Set<string>([
-  'DEFAULT',
-  'COMMENT',
-  'CONSTRAINT',
-  'REFERENCES',
-  'AS',
-  'CHECK',
-  'GENERATED',
-  'ALWAYS',
-  'BY',
-  'IDENTITY',
-  'MEMORY',
-  'LOAD',
-  'UNLOAD',
-  'NUMA',
-  'PERSISTENT',
-  'FUZZY',
-  'WITH',
-  'IN',
-  'ON',
-  'MATCH',
-  'DELETE',
-  'UPDATE',
-  'SET',
-  'NO',
-  'GROUP',
-  'SERIES',
-  'PERIOD',
-  'DDIC_ACDAY',
-  'DDIC_ACMONTH',
-  'CS_FIXED',
-  'CS_INT',
-  'CS_DOUBLE',
-  'CS_STRING',
-  'LANGUAGE',
-]);
-
-const SELECT_STOP_CLAUSES = new Set<string>([
-  'FROM',
-  'INTO',
-  'BULK',
-  'WHERE',
-  'GROUP',
-  'HAVING',
-  'ORDER',
-  'UNION',
-  'INTERSECT',
-  'EXCEPT',
-  'MINUS',
-  'WINDOW',
-  'LIMIT',
-  'OFFSET',
-  'FOR',
-  'WITH',
-  'OPTION',
-  'WHEN',
-  'THEN',
-  'ELSE',
-]);
-
-const SELECT_PREFIX_OPS = new Set<string>([
-  '+',
-  '-',
-  '*',
-  '/',
-  '%',
-  '||',
-  '.',
-  '=',
-  '<>',
-  '!=',
-  '<',
-  '>',
-  '<=',
-  '>=',
-  '~=',
-  '^=',
-  '=>',
-  'AND',
-  'OR',
-  'NOT',
-  'IS',
-  'IN',
-  'LIKE',
-  'BETWEEN',
-  'ESCAPE',
-  'CASE',
-  'WHEN',
-  'THEN',
-  'ELSE',
-  'DATE',
-  'TIME',
-  'TIMESTAMP',
-  'INTERVAL',
-  'DISTINCT',
-  'ALL',
-  'PRIOR',
-  'NEW',
-  'CONNECT_BY_ROOT',
-  'OVER',
-  'FILTER',
-  'WITHIN',
-]);
-
-const CALL_INFIX_OR_CLAUSE = new Set<string>([
-  'AS',
-  'AND',
-  'OR',
-  'NOT',
-  'IN',
-  'IS',
-  'LIKE',
-  'BETWEEN',
-  'ESCAPE',
-  'ASC',
-  'DESC',
-  'NULLS',
-  'FIRST',
-  'LAST',
-  'ORDER',
-  'GROUP',
-  'PARTITION',
-  'WITHIN',
-  'OVER',
-  'FILTER',
-  'SEPARATOR',
-  'USING',
-  'FROM',
-  'FOR',
-  'TO',
-  'BY',
-  'DAY',
-  'MONTH',
-  'YEAR',
-  'HOUR',
-  'MINUTE',
-  'SECOND',
-  'ZONE',
-  'AT',
-  'RESPECT',
-  'IGNORE',
-  'NULL',
-]);
-
-const CALL_PREFIX_WORDS = new Set<string>([
-  'NOT',
-  'DATE',
-  'TIME',
-  'TIMESTAMP',
-  'INTERVAL',
-  'DISTINCT',
-  'ALL',
-  'CASE',
-  'WHEN',
-  'THEN',
-  'ELSE',
-  'CAST',
-  'NEW',
-  'PRIOR',
-  'ROW',
-]);
+const SELECT_PREFIX_OPS = new Set<string>(['+', '-', '*', '/', '%', '||', '.', '=', '<>', '!=', '<', '>', '<=', '>=', '~=', '^=', '=>', ...SELECT_PREFIX_OP_WORDS]);
 
 function makeInsertCommaFix(insertAt: number): CodeFixSuggestion {
   return {
@@ -1853,7 +1376,7 @@ function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'param
   const beforeUp = before.type === 'word' ? before.text.toUpperCase() : '';
   if (beforeUp === 'TABLE') {
     const prevUp = codeTokens[k - 1]?.type === 'word' ? codeTokens[k - 1].text.toUpperCase() : '';
-    if (['RETURNS', 'AS', 'COLUMN', 'ROW', 'TEMPORARY', 'GLOBAL', 'LOCAL', 'HISTORY', 'VIRTUAL', 'CREATE', 'IN', 'OUT', 'INOUT'].includes(prevUp)) {
+    if (TABLE_COLUMNS_PREV.has(prevUp)) {
       return 'columns';
     }
     // Check inside procedure/function parameter declaration: `IN im_tbl TABLE (...)`
@@ -1934,7 +1457,7 @@ function classifyParenFrame(
       for (let b = preNameIdx - 1; b >= Math.max(0, preNameIdx - 10); b--) {
         if (codeTokens[b].text === ';' || codeTokens[b].text === ')') break;
         const w = codeTokens[b].type === 'word' ? codeTokens[b].text.toUpperCase() : '';
-        if (['INDEX', 'ADJACENCY', 'GRAPH', 'TRIGGER', 'STATISTICS', 'PROJECTION'].includes(w)) return 'skip';
+        if (ON_TARGET_DDL_NOUNS.has(w)) return 'skip';
         if (w === 'SELECT' || w === 'JOIN' || w === 'WHERE' || w === 'SET') break;
       }
     }
@@ -1948,57 +1471,7 @@ function classifyParenFrame(
     // Exclude SQL keywords introducing parenthesized expressions or clauses rather than call arg lists
     if (
       prevUp &&
-      [
-        'SELECT',
-        'IF',
-        'ELSEIF',
-        'WHILE',
-        'FOR',
-        'WHERE',
-        'WHEN',
-        'THEN',
-        'ELSE',
-        'AND',
-        'OR',
-        'NOT',
-        'CASE',
-        'RETURN',
-        'RETURNS',
-        'ON',
-        'TO',
-        'FROM',
-        'JOIN',
-        'USING',
-        'HAVING',
-        'DO',
-        'UNTIL',
-        'BY',
-        'BETWEEN',
-        'LIKE',
-        'AS',
-        'ANY',
-        'ALL',
-        'SOME',
-        'DISTINCT',
-        'TOP',
-        'LIMIT',
-        'OFFSET',
-        'SET',
-        'INTO',
-        'WITH',
-        'EXISTS',
-        'UNIQUE',
-        'OVER',
-        'FILTER',
-        'WITHIN',
-        'GROUP',
-        'ORDER',
-        'PARTITION',
-        'UNION',
-        'INTERSECT',
-        'EXCEPT',
-        'MINUS',
-      ].includes(prevUp)
+      PAREN_EXPRESSION_PREV.has(prevUp)
     ) {
       return 'skip';
     }
@@ -2057,29 +1530,6 @@ function hasTopLevelCommaInParen(codeTokens: readonly Token[], openIdx: number):
   }
   return false;
 }
-
-const CALL_PREFIX_KEYWORDS_NO_OP = new Set<string>([
-  'CALL',
-  'FUNCTION',
-  'PROCEDURE',
-  'TABLE',
-  'VIEW',
-  'ON',
-  'INTO',
-  'FROM',
-  'JOIN',
-  'UPDATE',
-  'REFERENCES',
-  'INDEX',
-  'TRIGGER',
-  'SEQUENCE',
-  'SYNONYM',
-  'ROLE',
-  'SCHEMA',
-  'TYPE',
-  'EXISTS',
-  'USING',
-]);
 
 /**
  * True when `"COL" (` looks like an unqualified quoted column missing a binary operator
@@ -2373,7 +1823,7 @@ function checkSqlMissingCommas(
         }
 
         if (topParen.declPhase === 'start') {
-          if (['CONSTRAINT', 'PRIMARY', 'UNIQUE', 'FOREIGN', 'CHECK', 'PERIOD', 'LIKE'].includes(up)) {
+          if (COLUMN_LIST_CONSTRAINT_STARTERS.has(up)) {
             topParen.declPhase = 'inConstraint';
           } else if (tok.type === 'word' || tok.type === 'qident') {
             topParen.declPhase = 'sawName';
@@ -2593,7 +2043,7 @@ function checkSqlMissingCommas(
         continue;
       }
 
-      if (up === 'TIME' || up === 'ZONE' || up === 'AT' || (up === 'GROUP' && prevUp === 'WITHIN') || ['DAY', 'MONTH', 'YEAR', 'HOUR', 'MINUTE', 'SECOND'].includes(up)) {
+      if (up === 'TIME' || up === 'ZONE' || up === 'AT' || (up === 'GROUP' && prevUp === 'WITHIN') || DATETIME_FIELDS.has(up)) {
         topSel.expectOperand = up === 'AT' || up === 'TIME' || up === 'ZONE' || up === 'GROUP';
         topSel.lastItemEnd = tok.end;
         continue;
@@ -2645,168 +2095,7 @@ const EXPR_BINARY_ONLY_OPS = new Set<string>([
   '=>',
 ]);
 
-const EXPR_CLAUSE_TERMINATORS = new Set<string>([
-  'GROUP',
-  'HAVING',
-  'ORDER',
-  'UNION',
-  'INTERSECT',
-  'EXCEPT',
-  'MINUS',
-  'LIMIT',
-  'OFFSET',
-  'FOR',
-  'WITH',
-  'OPTION',
-  'WINDOW',
-  'START',
-  'CONNECT',
-  'RETURNING',
-  'END',
-  'WHERE',
-  'JOIN',
-  'INNER',
-  'LEFT',
-  'RIGHT',
-  'FULL',
-  'CROSS',
-  'NATURAL',
-  'USING',
-  'SET',
-  'VALUES',
-  'WHEN',
-  'THEN',
-  'ELSE',
-  'ELSEIF',
-  'DO',
-  'INTO',
-  'FROM',
-]);
-
-const EXPR_PREFIX_WORDS = new Set<string>([
-  'NOT',
-  'PRIOR',
-  'NEW',
-  'CONNECT_BY_ROOT',
-  'BINARY',
-  'DISTINCT',
-  'ALL',
-  'ANY',
-  'SOME',
-  'EXISTS',
-  'CAST',
-  'CASE',
-  'ROW',
-]);
-
-const EXPR_INFIX_COMPOUND_AFTER_NOT = new Set<string>([
-  'IN',
-  'LIKE',
-  'ILIKE',
-  'BETWEEN',
-  'SIMILAR',
-  'MEMBER',
-  'SUBMULTISET',
-  'REGEXP_LIKE',
-  'LIKE_REGEXPR',
-  'EXISTS',
-]);
-
-const EXPR_INFIX_DIRECT = new Set<string>([
-  'AND',
-  'OR',
-  'IN',
-  'LIKE',
-  'ILIKE',
-  'BETWEEN',
-  'ESCAPE',
-  // `<expr> [NOT] LIKE_REGEXPR <pattern> [FLAG <flags>]` (#60)
-  'LIKE_REGEXPR',
-  'FLAG',
-]);
-
-const TYPED_LITERAL_WORDS = new Set<string>(['DATE', 'TIME', 'TIMESTAMP', 'SECONDDATE']);
-const INTERVAL_UNITS = new Set<string>(['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND', 'FRACTION', 'TO']);
-const WINDOW_OR_ORDER_MODS = new Set<string>(['ASC', 'DESC', 'NULLS', 'FIRST', 'LAST']);
-
-const STMT_BLOCK_END_STOP_PREV = new Set<string>([
-  ';',
-  ',',
-  '(',
-  '[',
-  '.',
-  '::',
-  ':=',
-  '=',
-  '=>',
-  'BEGIN',
-  'THEN',
-  'ELSE',
-  'ELSEIF',
-  'DO',
-  'LOOP',
-  'CASE',
-  'WHEN',
-  'UNION',
-  'INTERSECT',
-  'EXCEPT',
-  'MINUS',
-  'RETURN',
-  'DECLARE',
-  'CREATE',
-  'ALTER',
-  'DROP',
-  'AS',
-  'WITH',
-  'ON',
-  'FOR',
-  'TO',
-  'BY',
-  'FROM',
-  'INTO',
-  'JOIN',
-  'INNER',
-  'LEFT',
-  'RIGHT',
-  'FULL',
-  'CROSS',
-  'OUTER',
-  'NATURAL',
-  'USING',
-  'VALUES',
-  'SET',
-  'WHERE',
-  'SELECT',
-  'AND',
-  'OR',
-  'NOT',
-  'IS',
-  'IN',
-  'LIKE',
-  'BETWEEN',
-  'SIGNAL',
-  'RESIGNAL',
-  'CALL',
-]);
-
-const UNAMBIGUOUS_STMT_START_WORDS = new Set<string>([
-  'RETURN',
-  'DECLARE',
-  'WHILE',
-  'LOOP',
-  'UPSERT',
-  'MERGE',
-  'CALL',
-  'EXEC',
-  'EXECUTE',
-  'SIGNAL',
-  'RESIGNAL',
-  'OPEN',
-  'FETCH',
-  'CLOSE',
-  'COMMIT',
-  'ROLLBACK',
-]);
+const STMT_BLOCK_END_STOP_PREV = new Set<string>([';', ',', '(', '[', '.', '::', ':=', '=', '=>', ...STMT_BLOCK_END_STOP_PREV_WORDS]);
 
 type ExprClauseKind =
   | 'select'
@@ -3112,7 +2401,7 @@ function checkSqlExpressionsAndClauses(
     }
 
     // Track whether current statement allows `SELECT` subclause without `;`
-    if (parenDepth === 0 && ['CREATE', 'ALTER', 'RETURN', 'AS', 'INSERT', 'UPSERT', 'MERGE', 'WITH', 'FOR', 'USING', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS'].includes(up)) {
+    if (parenDepth === 0 && SUBSELECT_CONTEXT_WORDS.has(up)) {
       stmtAllowsSubSelectAtDepth.set(0, true);
     }
 
@@ -3221,7 +2510,7 @@ function checkSqlExpressionsAndClauses(
 
     // Track clause entry & incomplete clauses (HANA-SYN-025)
     if (tok.type === 'word') {
-      if (up === 'SELECT' && !['GRANT', 'REVOKE', 'ALLOW', 'DENY', 'PRIVILEGE', 'COMMENT'].includes(prevUp)) {
+      if (up === 'SELECT' && !SELECT_PRIVILEGE_PREV_CLAUSE.has(prevUp)) {
         if (nextUp === 'FROM' || nextUp === 'INTO' || nextUp === ';' || nextUp === 'END' || nextUp === ')') {
           pushExprErr('HANA-SYN-025', tok, `Incomplete 'SELECT' clause: missing projection expression before '${next?.text ?? 'EOF'}'.`);
         }
@@ -3234,7 +2523,7 @@ function checkSqlExpressionsAndClauses(
         if (closingSelect) {
           checkDanglingBeforeBoundary(topE, 'FROM');
           exprStack.pop();
-          if (['WHERE', 'GROUP', 'HAVING', 'ORDER', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS', 'LIMIT', 'OFFSET', ';', 'END', ')'].includes(nextUp)) {
+          if (INCOMPLETE_FROM_FOLLOW.has(nextUp) || nextUp === ';' || nextUp === ')') {
             pushExprErr('HANA-SYN-025', tok, `Incomplete 'FROM' clause: missing table reference before '${next?.text ?? 'EOF'}'.`);
           }
           continue;
@@ -3246,7 +2535,7 @@ function checkSqlExpressionsAndClauses(
       if (up === 'WHERE') {
         popExprsAtDepth(parenDepth, 'WHERE');
         sawJoinOrMergeAtDepth.set(parenDepth, false);
-        if (['AND', 'OR', 'GROUP', 'HAVING', 'ORDER', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS', 'LIMIT', 'OFFSET', ';', 'END', ')'].includes(nextUp)) {
+        if (INCOMPLETE_WHERE_FOLLOW.has(nextUp) || nextUp === ';' || nextUp === ')') {
           pushExprErr('HANA-SYN-025', tok, `Incomplete 'WHERE' clause: missing condition predicate before '${next?.text ?? 'EOF'}'.`);
         }
         pushExprAtDepth('where', parenDepth);
@@ -3254,7 +2543,7 @@ function checkSqlExpressionsAndClauses(
       }
       if (up === 'HAVING') {
         popExprsAtDepth(parenDepth, 'HAVING');
-        if (['ORDER', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS', 'LIMIT', 'OFFSET', ';', 'END', ')'].includes(nextUp)) {
+        if (INCOMPLETE_HAVING_FOLLOW.has(nextUp) || nextUp === ';' || nextUp === ')') {
           pushExprErr('HANA-SYN-025', tok, `Incomplete 'HAVING' clause: missing condition predicate before '${next?.text ?? 'EOF'}'.`);
         }
         pushExprAtDepth('having', parenDepth);
@@ -3287,7 +2576,7 @@ function checkSqlExpressionsAndClauses(
         continue;
       }
     }
-    if (up === 'SET' && !['SCHEMA', 'TRANSACTION', 'SESSION', 'NULL', 'DEFAULT', 'USER', 'ROLE', 'PASSWORD', 'SQL', 'SYSTEM', 'STRING'].includes(nextUp) && prevUp !== 'ON') {
+    if (up === 'SET' && !SET_STATEMENT_OBJECTS.has(nextUp) && prevUp !== 'ON') {
       // Wait for `=` inside `SET col = <expr>`
       pushExprAtDepth('set_rhs', parenDepth, true);
       continue;
@@ -3393,7 +2682,7 @@ function checkSqlExpressionsAndClauses(
       exprStack.pop();
       // Special: `FROM` after `SELECT` may itself be incomplete (`SELECT 1 FROM WHERE`)
       if (up === 'FROM' && activeExpr.kind === 'select') {
-        if (['WHERE', 'GROUP', 'HAVING', 'ORDER', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS', 'LIMIT', 'OFFSET', ';', 'END', ')'].includes(nextUp)) {
+        if (INCOMPLETE_FROM_FOLLOW.has(nextUp) || nextUp === ';' || nextUp === ')') {
           pushExprErr('HANA-SYN-025', tok, `Incomplete 'FROM' clause: missing table reference before '${next?.text ?? 'EOF'}'.`);
         }
       }

@@ -16,80 +16,17 @@ import { type Token } from '../formatter/tokenizer';
 import { parseRoutineHeader } from './sql-header';
 import { matchKeywordTypo } from './typo';
 import { type AnalyzerDiagnostic, type CodeFixSuggestion } from './types';
+import {
+  CASE_BODY_STOPS,
+  END_SUFFIXES,
+  HEADER_WORDS,
+  IF_BODY_STOPS,
+  LIBRARY_MEMBER_STARTERS,
+  SQLSCRIPT_STATEMENT_STARTERS,
+  SQL_STATEMENT_STARTERS,
+} from './keyword-sets';
+export { SQL_STATEMENT_STARTERS, SQLSCRIPT_STATEMENT_STARTERS } from './keyword-sets';
 
-/** Documented SAP HANA SQL statement verbs (first word of every `<X> Statement` in the SQL Reference). */
-export const SQL_STATEMENT_STARTERS: ReadonlySet<string> = new Set<string>([
-  'ALTER',
-  'ANNOTATE',
-  'BACKUP',
-  'CALL',
-  'CANCEL',
-  'COMMENT',
-  'COMMIT',
-  'CONNECT',
-  'CREATE',
-  'DELETE',
-  'DO',
-  'DROP',
-  'EXPLAIN',
-  'EXPORT',
-  'GRANT',
-  'IMPORT',
-  'INSERT',
-  'LOAD',
-  'LOCK',
-  'MERGE',
-  'RECOVER',
-  'REFRESH',
-  'RELEASE',
-  'RENAME',
-  'REPLACE',
-  'REVOKE',
-  'ROLLBACK',
-  'SAVEPOINT',
-  'SELECT',
-  'SET',
-  'TRUNCATE',
-  'UNLOAD',
-  'UNSET',
-  'UPDATE',
-  'UPSERT',
-  'VALIDATE',
-  'VALUES',
-  'WITH',
-]);
-
-/** SQLScript imperative statement starters (SQLScript Reference, Imperative SQLScript Logic). */
-export const SQLSCRIPT_STATEMENT_STARTERS: ReadonlySet<string> = new Set<string>([
-  'BEGIN',
-  'BREAK',
-  'CALL',
-  'CASE',
-  'CLOSE',
-  'CONTINUE',
-  'DECLARE',
-  'DO',
-  'EXEC',
-  'EXECUTE',
-  'FETCH',
-  'FOR',
-  'IF',
-  'LOOP',
-  'OPEN',
-  'RESIGNAL',
-  'RETURN',
-  'SIGNAL',
-  'USING',
-  'WHILE',
-  'WITH',
-]);
-
-const LIBRARY_MEMBER_STARTERS: ReadonlySet<string> = new Set<string>(['PUBLIC', 'PRIVATE', 'USING', 'VARIABLE', 'PROCEDURE', 'FUNCTION']);
-
-/** Routine / header-like words that open a construct parsed by `parseRoutineHeader`. */
-const HEADER_WORDS: ReadonlySet<string> = new Set<string>(['CREATE', 'ALTER', 'VIRTUAL', 'PROCEDURE', 'FUNCTION', 'LIBRARY', 'TRIGGER', 'DO', 'PUBLIC', 'PRIVATE']);
-
-const END_SUFFIXES: ReadonlySet<string> = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR', 'CASE']);
 const BLOCK_MODIFIERS: ReadonlyArray<readonly [string, string]> = [
   ['SEQUENTIAL', 'EXECUTION'],
   ['PARALLEL', 'EXECUTION'],
@@ -308,8 +245,6 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
   };
 
   const BODY_STOPS = new Set(['END']);
-  const IF_STOPS = new Set(['END', 'ELSE', 'ELSEIF']);
-  const CASE_STOPS = new Set(['END', 'ELSE', 'WHEN']);
   const NO_STOPS: ReadonlySet<string> = new Set();
 
   /** Parses statements until a stop word at statement start; returns that index (or EOF). */
@@ -365,7 +300,7 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
         case 'IF': {
           let j = condition(i + 1, 'THEN') + 1;
           for (;;) {
-            j = parseList(j, 'block', IF_STOPS);
+            j = parseList(j, 'block', IF_BODY_STOPS);
             if (up(j) === 'ELSEIF') {
               j = condition(j + 1, 'THEN') + 1;
               continue;
@@ -388,7 +323,7 @@ export function checkSqlStatements(opts: SqlStatementOptions): void {
         case 'CASE': {
           let j = scanToKeyword(i + 1, 'WHEN');
           while (up(j) === 'WHEN') {
-            j = parseList(scanToKeyword(j + 1, 'THEN') + 1, 'block', CASE_STOPS);
+            j = parseList(scanToKeyword(j + 1, 'THEN') + 1, 'block', CASE_BODY_STOPS);
           }
           if (up(j) === 'ELSE') j = parseList(j + 1, 'block', BODY_STOPS);
           return consumeEnd(j, 'CASE');

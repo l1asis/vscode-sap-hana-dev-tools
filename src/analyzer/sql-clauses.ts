@@ -24,6 +24,17 @@ import { KEYWORDS, RESERVED } from '../formatter/keywords';
 import { type Token } from '../formatter/tokenizer';
 import { type StatementScope, type StatementWalkerHooks } from './sql-statements';
 import { matchKeywordTypo, suggestSlotKeyword } from './typo';
+import {
+  BLOCK_STOPS,
+  FOLLOW_HIDDEN,
+  INTERVAL_UNITS,
+  JOIN_STARTERS,
+  NON_ALIAS,
+  QUERY_CLAUSES,
+  RESERVED_OPERANDS,
+  TABLE_CONSTRAINT_STARTERS,
+  TYPED_LITERAL_WORDS,
+} from './keyword-sets';
 
 export interface ClauseIssue {
   readonly ruleId: 'HANA-SYN-021' | 'HANA-SYN-042';
@@ -44,61 +55,6 @@ class Stop {
 
 const BAIL = new Bail();
 
-/** Keywords that end a query expression / clause at the same nesting level. */
-const QUERY_CLAUSES = ['FROM', 'INTO', 'WHERE', 'GROUP', 'HAVING', 'ORDER', 'LIMIT', 'OFFSET', 'UNION', 'INTERSECT', 'EXCEPT', 'MINUS', 'FOR', 'WITH', 'WINDOW'];
-const JOIN_STARTERS = ['JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'NATURAL', 'MANY', 'ONE', 'EXACT'];
-const BLOCK_STOPS = ['END', 'ELSE', 'ELSEIF', 'WHEN'];
-
-/** Words that may never be an implicit alias (they continue or end the enclosing clause). */
-const NON_ALIAS = new Set<string>([
-  ...QUERY_CLAUSES,
-  ...JOIN_STARTERS,
-  ...BLOCK_STOPS,
-  'ON',
-  'USING',
-  'SET',
-  'VALUES',
-  'AND',
-  'OR',
-  'NOT',
-  'AS',
-  'ASC',
-  'DESC',
-  'NULLS',
-  'TABLESAMPLE',
-  'PARTITION',
-  'LATERAL',
-  'APPLY',
-  'OUTER',
-  'DEFAULT',
-  'THEN',
-  'DO',
-]);
-
-/** Reserved words usable as operands (niladic functions / pseudo-columns). */
-const RESERVED_OPERANDS = new Set<string>([
-  'CURRENT_CONNECTION',
-  'CURRENT_DATE',
-  'CURRENT_SCHEMA',
-  'CURRENT_TIME',
-  'CURRENT_TIMESTAMP',
-  'CURRENT_TRANSACTION_ISOLATION_LEVEL',
-  'CURRENT_USER',
-  'CURRENT_UTCDATE',
-  'CURRENT_UTCTIME',
-  'CURRENT_UTCTIMESTAMP',
-  'SESSION_USER',
-  'SYSUUID',
-  'UTCTIMESTAMP',
-  'ROWID',
-  'NULL',
-  'TRUE',
-  'FALSE',
-  'UNKNOWN',
-]);
-
-const TYPED_LITERALS = new Set<string>(['DATE', 'TIME', 'TIMESTAMP', 'SECONDDATE']);
-const INTERVAL_UNITS = new Set<string>(['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND', 'FRACTION', 'TO']);
 const COMPARISON_OPS = new Set<string>(['=', '<>', '!=', '<', '>', '<=', '>=']);
 
 /**
@@ -181,8 +137,7 @@ export function createClauseHooks(
       if (KEYWORDS.has(w) || RESERVED.has(w)) throw BAIL;
     }
     if (t.type === 'other' || t.type === 'raw') throw BAIL;
-    const hidden = new Set<string>([...BLOCK_STOPS, 'MANY', 'ONE', 'EXACT', 'NATURAL']);
-    const shownList = follow.filter((f) => !hidden.has(f));
+    const shownList = follow.filter((f) => !FOLLOW_HIDDEN.has(f));
     const shown = shownList.slice(0, 10).map((f) => `'${f}'`).join(', ');
     throw new Stop({
       ruleId: 'HANA-SYN-042',
@@ -358,7 +313,7 @@ export function createClauseHooks(
       primary();
       return;
     }
-    if (TYPED_LITERALS.has(w) && tok(i + 1)?.type === 'string') {
+    if (TYPED_LITERAL_WORDS.has(w) && tok(i + 1)?.type === 'string') {
       i += 2;
       return;
     }
@@ -915,7 +870,7 @@ export function createClauseHooks(
     i++;
     for (;;) {
       const w = up(i);
-      if (['PRIMARY', 'UNIQUE', 'CONSTRAINT', 'FOREIGN', 'CHECK', 'PERIOD', 'INDEX'].includes(w)) {
+      if (TABLE_CONSTRAINT_STARTERS.has(w)) {
         // table constraint: lenient up to the next top-level `,` / `)`
         while (!atEnd() && tx(i) !== ',' && tx(i) !== ')') {
           if (tx(i) === '(') skipGroup();

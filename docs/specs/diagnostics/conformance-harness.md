@@ -17,7 +17,7 @@ Every check takes one snippet `S` (language `hanasql` unless stated) and returns
 | :--- | :--- | :--- |
 | Analyzer | `syntax` | `analyzeDocument(S)` with only `syntax: true` yields zero diagnostics of category `syntax` |
 | Formatter | `formatter` | All invariants F1–F5 hold for `F = formatDocument(S)` with default options |
-| Grammar | `grammar` | No word of `S` that is a single-word entry of `sql-keywords.json` is left without a significant scope by `source.hanasql` |
+| Grammar | `grammar` | No word of `S` that is a catalog keyword (a `sql-keywords.json` word with at least one role that has a `scope`, see `SPEC_RULES.md` §C.1) is left without a significant scope by `source.hanasql` |
 | Catalog | *(report only)* | No `NAME(` call is unknown to both the grammar and `builtin-functions.json` |
 
 ### 1.1 Formatter invariants

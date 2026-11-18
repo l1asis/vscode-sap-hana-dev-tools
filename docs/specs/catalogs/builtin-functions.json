@@ -1,8 +1,113 @@
 {
+  "$comment": "SAP HANA built-in functions (#77, #43). Source of truth for function highlighting, formatter function case, hover, completion and signature help. Edit here, then run `npm run build:keywords`. Schema: docs/specs/SPEC_RULES.md §2.C.",
+  "categories": {
+    "aggregate": {
+      "scope": "support.function.aggregate.hanasql",
+      "description": "Aggregate function.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Aggregate Functions"
+    },
+    "window": {
+      "scope": "support.function.window.hanasql",
+      "description": "Window function (requires `OVER (...)`).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Window Functions"
+    },
+    "string": {
+      "scope": "support.function.string.hanasql",
+      "description": "String function.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § String Functions"
+    },
+    "numeric": {
+      "scope": "support.function.numeric.hanasql",
+      "description": "Numeric function.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Numeric Functions"
+    },
+    "datetime": {
+      "scope": "support.function.datetime.hanasql",
+      "description": "Datetime function.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Datetime Functions"
+    },
+    "conversion": {
+      "scope": "support.function.conversion.hanasql",
+      "description": "Data type conversion function.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Data Type Conversion Functions"
+    },
+    "misc": {
+      "scope": "support.function.hanasql",
+      "description": "Other SQL function: array, fulltext, hierarchy, JSON, miscellaneous, security, series data, text mining, vector, graph and AI functions.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § Miscellaneous Functions"
+    },
+    "spatial": {
+      "scope": "support.function.spatial.hanasql",
+      "description": "Spatial function, method or aggregate (`ST_*`)."
+    },
+    "calculation-engine": {
+      "scope": "support.function.sqlscript.hanasql",
+      "description": "Calculation Engine plan operator (`CE_*`) `[XSC]` `[XSA]` `[HDI]`, not supported in SAP HANA Cloud."
+    },
+    "sqlscript": {
+      "scope": "support.function.sqlscript.hanasql",
+      "description": "SQLScript built-in (table variable operators, MAP_MERGE / MAP_REDUCE, APPLY_FILTER, bind hints)."
+    },
+    "graphscript": {
+      "scope": "support.function.sqlscript.hanasql",
+      "description": "GraphScript built-in, valid only in `LANGUAGE GRAPH` procedures `[XSA]` `[HDI]` `[CLOUD]`.",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe"
+    },
+    "sqlscript-library": {
+      "description": "Member of a built-in `SYS.SQLSCRIPT_*` library, called as `<alias>:<member>(...)` after `USING`.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform § Built-In Libraries"
+    }
+  },
   "functions": [
+    {
+      "name": "DEGREE",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "DEGREE(<vertex>)"
+      ],
+      "returnType": "BIGINT",
+      "description": "Returns the number of incoming and outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/003_pages_61_90.md § DEGREE"
+    },
+    {
+      "name": "EDGES",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "EDGES(<graph>)",
+        "EDGES(<vertex>)"
+      ],
+      "returnType": "MULTISET<EDGE>",
+      "description": "Returns all edges of a GRAPH object, or all incoming and outgoing edges of a VERTEX. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/002_pages_31_60.md § EDGES"
+    },
+    {
+      "name": "IN_DEGREE",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "IN_DEGREE(<vertex>)"
+      ],
+      "returnType": "BIGINT",
+      "description": "Returns the number of incoming edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/003_pages_61_90.md § IN_DEGREE"
+    },
+    {
+      "name": "IN_EDGES",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "IN_EDGES(<vertex>)"
+      ],
+      "returnType": "MULTISET<EDGE>",
+      "description": "Returns all incoming edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/003_pages_61_90.md § IN_EDGES"
+    },
     {
       "name": "INDUCED_SUBGRAPH",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "INDUCED_SUBGRAPH(<graph>, <vertices>)"
       ],
@@ -12,6 +117,7 @@
     {
       "name": "INVERSE_GRAPH",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "INVERSE_GRAPH(<graph>)"
       ],
@@ -21,6 +127,7 @@
     {
       "name": "IS_REACHABLE",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "IS_REACHABLE(<graph>, <start_vertex>, <end_vertex> [, <direction>])"
       ],
@@ -30,6 +137,7 @@
     {
       "name": "K_SHORTEST_PATHS",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "K_SHORTEST_PATHS(<graph>, <source_vertex>, <target_vertex>, <k> [, <weight_closure>] [, <direction>])"
       ],
@@ -39,6 +147,7 @@
     {
       "name": "NEIGHBORS",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "NEIGHBORS(<graph>, <start_vertices>, <lower_bound>, <upper_bound> [, <direction>])"
       ],
@@ -46,8 +155,31 @@
       "description": "Returns vertices within hop distance [<lower_bound>, <upper_bound>] from <start_vertices> ([XSC]/[XSA]/[HDI]/[CLOUD])."
     },
     {
+      "name": "OUT_DEGREE",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "OUT_DEGREE(<vertex>)"
+      ],
+      "returnType": "BIGINT",
+      "description": "Returns the number of outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/003_pages_61_90.md § OUT_DEGREE"
+    },
+    {
+      "name": "OUT_EDGES",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "OUT_EDGES(<vertex>)"
+      ],
+      "returnType": "MULTISET<EDGE>",
+      "description": "Returns all outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/003_pages_61_90.md § OUT_EDGES"
+    },
+    {
       "name": "SHORTEST_PATH",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "SHORTEST_PATH(<graph>, <source_vertex>, <target_vertex> [, <weight_closure>] [, <direction>])"
       ],
@@ -57,6 +189,7 @@
     {
       "name": "SHORTEST_PATHS_ONE_TO_ALL",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "SHORTEST_PATHS_ONE_TO_ALL(<graph>, <source_vertex>, <weight_attribute> [, <weight_closure>] [, <direction>])"
       ],
@@ -66,6 +199,7 @@
     {
       "name": "STRONGLY_CONNECTED_COMPONENTS",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "STRONGLY_CONNECTED_COMPONENTS(<graph>)"
       ],
@@ -75,6 +209,7 @@
     {
       "name": "SUBGRAPH",
       "library": "GRAPHSCRIPT",
+      "category": "graphscript",
       "signatures": [
         "SUBGRAPH(<graph>, <vertices>)"
       ],
@@ -82,8 +217,20 @@
       "description": "Constructs a subgraph induced by <vertices> ([XSC]/[XSA]/[HDI]/[CLOUD])."
     },
     {
+      "name": "VERTICES",
+      "library": "GRAPHSCRIPT",
+      "category": "graphscript",
+      "signatures": [
+        "VERTICES(<graph>)"
+      ],
+      "returnType": "MULTISET<VERTEX>",
+      "description": "Returns all vertices of a GRAPH object. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD]).",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/002_pages_31_60.md § VERTICES"
+    },
+    {
       "name": "ADD_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "ADD_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -93,6 +240,7 @@
     {
       "name": "ADD_SQLSCRIPT_OBJECT",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "ADD_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL, IN level VARCHAR(7) DEFAULT NULL)"
       ],
@@ -102,6 +250,7 @@
     {
       "name": "CREATE_CONFIGURATION",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "CREATE_CONFIGURATION(IN configuration_name NVARCHAR(256))"
       ],
@@ -111,6 +260,7 @@
     {
       "name": "DROP_CONFIGURATION",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "DROP_CONFIGURATION(IN configuration_name NVARCHAR(256), IN drop_cascade BOOLEAN DEFAULT FALSE)"
       ],
@@ -120,6 +270,7 @@
     {
       "name": "LEVEL_DEBUG",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_DEBUG CONSTANT VARCHAR(7)"
       ],
@@ -129,6 +280,7 @@
     {
       "name": "LEVEL_ERROR",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_ERROR CONSTANT VARCHAR(7)"
       ],
@@ -138,6 +290,7 @@
     {
       "name": "LEVEL_FATAL",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_FATAL CONSTANT VARCHAR(7)"
       ],
@@ -147,6 +300,7 @@
     {
       "name": "LEVEL_INFO",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_INFO CONSTANT VARCHAR(7)"
       ],
@@ -156,6 +310,7 @@
     {
       "name": "LEVEL_WARNING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_WARNING CONSTANT VARCHAR(7)"
       ],
@@ -165,6 +320,7 @@
     {
       "name": "LOG",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LOG(IN level VARCHAR(7), IN topic NVARCHAR(256), IN message NVARCHAR(5000) [, IN <arg1> <any>, ...])"
       ],
@@ -174,6 +330,7 @@
     {
       "name": "REMOVE_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "REMOVE_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -183,6 +340,7 @@
     {
       "name": "REMOVE_SQLSCRIPT_OBJECT",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "REMOVE_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL)"
       ],
@@ -192,6 +350,7 @@
     {
       "name": "SET_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -201,6 +360,7 @@
     {
       "name": "SET_LEVEL",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_LEVEL(IN configuration_name NVARCHAR(256), IN level VARCHAR(7))"
       ],
@@ -210,6 +370,7 @@
     {
       "name": "SET_OUTPUT_TABLE",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_OUTPUT_TABLE(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN table_name NVARCHAR(256))"
       ],
@@ -219,6 +380,7 @@
     {
       "name": "START_LOGGING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "START_LOGGING(IN configuration_name NVARCHAR(256))"
       ],
@@ -228,6 +390,7 @@
     {
       "name": "STOP_LOGGING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "STOP_LOGGING(IN configuration_name NVARCHAR(256))"
       ],
@@ -237,6 +400,7 @@
     {
       "name": "UNSET_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "UNSET_FILTER(IN configuration_name NVARCHAR(256))"
       ],
@@ -246,6 +410,7 @@
     {
       "name": "PRINT_LINE",
       "library": "SQLSCRIPT_PRINT",
+      "category": "sqlscript-library",
       "signatures": [
         "PRINT_LINE(IN <input> NVARCHAR(8388607))"
       ],
@@ -255,6 +420,7 @@
     {
       "name": "PRINT_TABLE",
       "library": "SQLSCRIPT_PRINT",
+      "category": "sqlscript-library",
       "signatures": [
         "PRINT_TABLE(IN <tab> TABLE(...), IN <max_records> INT DEFAULT 100)"
       ],
@@ -264,6 +430,7 @@
     {
       "name": "FORMAT",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT(IN FORMAT NVARCHAR(5000), IN <arg1> <any>, ...)"
       ],
@@ -273,6 +440,7 @@
     {
       "name": "FORMAT_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT_TO_ARRAY(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
       ],
@@ -282,6 +450,7 @@
     {
       "name": "FORMAT_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT_TO_TABLE(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
       ],
@@ -291,6 +460,7 @@
     {
       "name": "SPLIT",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -300,6 +470,7 @@
     {
       "name": "SPLIT_REGEXPR",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -309,6 +480,7 @@
     {
       "name": "SPLIT_REGEXPR_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR_TO_ARRAY(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -318,6 +490,7 @@
     {
       "name": "SPLIT_REGEXPR_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR_TO_TABLE(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -327,6 +500,7 @@
     {
       "name": "SPLIT_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_TO_ARRAY(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -336,6 +510,7 @@
     {
       "name": "SPLIT_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_TO_TABLE(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -345,6 +520,7 @@
     {
       "name": "TABLE_SUMMARY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "TABLE_SUMMARY(IN TAB TABLE(...), IN ROWS INT DEFAULT 100)"
       ],
@@ -354,6 +530,7 @@
     {
       "name": "SLEEP_SECONDS",
       "library": "SQLSCRIPT_SYNC",
+      "category": "sqlscript-library",
       "signatures": [
         "SLEEP_SECONDS(IN <sleep_time> DOUBLE)"
       ],
@@ -363,6 +540,7 @@
     {
       "name": "WAKEUP_CONNECTION",
       "library": "SQLSCRIPT_SYNC",
+      "category": "sqlscript-library",
       "signatures": [
         "WAKEUP_CONNECTION(IN <connection_id> INTEGER)"
       ],
@@ -372,6 +550,7 @@
     {
       "name": "EXPECT_EQ",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_EQ(IN actual <any>, IN expected <any>)"
       ],
@@ -381,6 +560,7 @@
     {
       "name": "EXPECT_GE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_GE(IN actual <any>, IN expected <any>)"
       ],
@@ -390,6 +570,7 @@
     {
       "name": "EXPECT_GT",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_GT(IN actual <any>, IN expected <any>)"
       ],
@@ -399,6 +580,7 @@
     {
       "name": "EXPECT_LE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_LE(IN actual <any>, IN expected <any>)"
       ],
@@ -408,6 +590,7 @@
     {
       "name": "EXPECT_LT",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_LT(IN actual <any>, IN expected <any>)"
       ],
@@ -417,6 +600,7 @@
     {
       "name": "EXPECT_NE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_NE(IN actual <any>, IN expected <any>)"
       ],
@@ -426,6 +610,7 @@
     {
       "name": "EXPECT_NULL",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_NULL(IN actual <any>)"
       ],
@@ -435,6 +620,7 @@
     {
       "name": "EXPECT_TABLE_EQ",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_TABLE_EQ(IN actual TABLE(...), IN expected TABLE(...), IN ignore_order BOOLEAN DEFAULT FALSE)"
       ],
@@ -444,6 +630,7 @@
     {
       "name": "FAIL",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "FAIL(IN message NVARCHAR(5000) DEFAULT '')"
       ],
@@ -453,6 +640,7 @@
     {
       "name": "LIST_CONFIGURATIONS",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "LIST_CONFIGURATIONS(IN config_json NCLOB, OUT configs TABLE(...))"
       ],
@@ -462,6 +650,7 @@
     {
       "name": "LIST_TESTS",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "LIST_TESTS(IN config_json NCLOB, OUT tests TABLE(...))"
       ],
@@ -471,6 +660,7 @@
     {
       "name": "ABAP_ALPHANUM",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_ALPHANUM(...)"
       ],
@@ -480,6 +670,7 @@
     {
       "name": "ABAP_DF16RAW_TO_SMALLDECIMAL",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_DF16RAW_TO_SMALLDECIMAL(...)"
       ],
@@ -489,6 +680,7 @@
     {
       "name": "ABAP_DF34RAW_TO_DECIMAL",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_DF34RAW_TO_DECIMAL(...)"
       ],
@@ -498,6 +690,7 @@
     {
       "name": "ABAP_LOWER",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_LOWER(...)"
       ],
@@ -507,6 +700,7 @@
     {
       "name": "ABAP_NUMC",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_NUMC(...)"
       ],
@@ -516,6 +710,7 @@
     {
       "name": "ABAP_UPPER",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ABAP_UPPER(...)"
       ],
@@ -525,6 +720,7 @@
     {
       "name": "ABS",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ABS(...)"
       ],
@@ -534,6 +730,7 @@
     {
       "name": "ACOS",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ACOS(...)"
       ],
@@ -543,6 +740,7 @@
     {
       "name": "ADD_DAYS",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_DAYS(...)"
       ],
@@ -552,6 +750,7 @@
     {
       "name": "ADD_MONTHS",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_MONTHS(...)"
       ],
@@ -561,6 +760,7 @@
     {
       "name": "ADD_MONTHS_LAST",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_MONTHS_LAST(...)"
       ],
@@ -570,6 +770,7 @@
     {
       "name": "ADD_NANO100",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_NANO100(...)"
       ],
@@ -579,6 +780,7 @@
     {
       "name": "ADD_SECONDS",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_SECONDS(...)"
       ],
@@ -588,6 +790,7 @@
     {
       "name": "ADD_WORKDAYS",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_WORKDAYS(...)"
       ],
@@ -597,6 +800,7 @@
     {
       "name": "ADD_YEARS",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ADD_YEARS(...)"
       ],
@@ -606,6 +810,7 @@
     {
       "name": "AI_TEXT_COMPLETION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "AI_TEXT_COMPLETION(...)"
       ],
@@ -615,6 +820,7 @@
     {
       "name": "ALLOW_PRECISION_LOSS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ALLOW_PRECISION_LOSS(...)"
       ],
@@ -624,6 +830,7 @@
     {
       "name": "ANALYZE_SQLSCRIPT_DEFINITION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ANALYZE_SQLSCRIPT_DEFINITION(...)"
       ],
@@ -633,6 +840,7 @@
     {
       "name": "ANALYZE_SQLSCRIPT_OBJECTS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ANALYZE_SQLSCRIPT_OBJECTS(...)"
       ],
@@ -642,6 +850,7 @@
     {
       "name": "APPLY_FILTER",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "APPLY_FILTER(<table_or_view>, <dynamic_where_string>)"
       ],
@@ -651,6 +860,7 @@
     {
       "name": "ARRAY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ARRAY(...)"
       ],
@@ -660,6 +870,7 @@
     {
       "name": "ARRAY_AGG",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "ARRAY_AGG(...)"
       ],
@@ -669,6 +880,7 @@
     {
       "name": "ASCII",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "ASCII(...)"
       ],
@@ -678,6 +890,7 @@
     {
       "name": "ASIN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ASIN(...)"
       ],
@@ -687,6 +900,7 @@
     {
       "name": "ATAN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ATAN(...)"
       ],
@@ -696,6 +910,7 @@
     {
       "name": "ATAN2",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ATAN2(...)"
       ],
@@ -705,6 +920,7 @@
     {
       "name": "AUTO_CORR",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "AUTO_CORR(...)"
       ],
@@ -714,6 +930,7 @@
     {
       "name": "AVG",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "AVG(...)"
       ],
@@ -723,6 +940,7 @@
     {
       "name": "BIND_AS_PARAMETER",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "BIND_AS_PARAMETER(<scalar_expr>)"
       ],
@@ -732,6 +950,7 @@
     {
       "name": "BIND_AS_VALUE",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "BIND_AS_VALUE(<scalar_expr>)"
       ],
@@ -741,6 +960,7 @@
     {
       "name": "BINNING",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "BINNING(...)"
       ],
@@ -750,6 +970,7 @@
     {
       "name": "BINTOHEX",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "BINTOHEX(...)"
       ],
@@ -759,6 +980,7 @@
     {
       "name": "BINTONHEX",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "BINTONHEX(...)"
       ],
@@ -768,6 +990,7 @@
     {
       "name": "BINTOSTR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "BINTOSTR(...)"
       ],
@@ -777,6 +1000,7 @@
     {
       "name": "BITAND",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITAND(...)"
       ],
@@ -786,6 +1010,7 @@
     {
       "name": "BITAT",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITAT(...)"
       ],
@@ -795,6 +1020,7 @@
     {
       "name": "BITCOUNT",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITCOUNT(...)"
       ],
@@ -804,6 +1030,7 @@
     {
       "name": "BITNOT",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITNOT(...)"
       ],
@@ -813,6 +1040,7 @@
     {
       "name": "BITOR",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITOR(...)"
       ],
@@ -822,6 +1050,7 @@
     {
       "name": "BITSET",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITSET(...)"
       ],
@@ -831,6 +1060,7 @@
     {
       "name": "BITUNSET",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITUNSET(...)"
       ],
@@ -840,6 +1070,7 @@
     {
       "name": "BITXOR",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "BITXOR(...)"
       ],
@@ -849,6 +1080,7 @@
     {
       "name": "CARDINALITY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CARDINALITY(<array_or_vector>)"
       ],
@@ -858,6 +1090,7 @@
     {
       "name": "CAST",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "CAST(...)"
       ],
@@ -867,6 +1100,7 @@
     {
       "name": "CE_AGGREGATION",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_AGGREGATION(<tab>, [<agg_list>] [, [<group_by_cols>]])"
       ],
@@ -876,6 +1110,7 @@
     {
       "name": "CE_CALC",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_CALC('<expr>', <data_type>)"
       ],
@@ -885,6 +1120,7 @@
     {
       "name": "CE_CALC_VIEW",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_CALC_VIEW(<calc_view_name> [, [<attr_list>]])"
       ],
@@ -894,6 +1130,7 @@
     {
       "name": "CE_COLUMN_TABLE",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_COLUMN_TABLE(<table_name> [, [<attr_list>]])"
       ],
@@ -903,6 +1140,7 @@
     {
       "name": "CE_CONVERSION",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_CONVERSION(<tab>, [<conversion_params>] [, [<rename_list>]])"
       ],
@@ -912,6 +1150,7 @@
     {
       "name": "CE_JOIN",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
       ],
@@ -921,6 +1160,7 @@
     {
       "name": "CE_JOIN_VIEW",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_JOIN_VIEW(<view_name> [, [<attr_list>]])"
       ],
@@ -930,6 +1170,7 @@
     {
       "name": "CE_LEFT_OUTER_JOIN",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_LEFT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
       ],
@@ -939,6 +1180,7 @@
     {
       "name": "CE_OLAP_VIEW",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_OLAP_VIEW(<olap_view_name> [, [<dim_and_measures>]])"
       ],
@@ -948,6 +1190,7 @@
     {
       "name": "CE_PROJECTION",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_PROJECTION(<tab>, [<proj_list>] [, <filter_expr>])"
       ],
@@ -957,6 +1200,7 @@
     {
       "name": "CE_RIGHT_OUTER_JOIN",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_RIGHT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
       ],
@@ -966,6 +1210,7 @@
     {
       "name": "CE_UNION_ALL",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_UNION_ALL(<tab1>, <tab2>)"
       ],
@@ -975,6 +1220,7 @@
     {
       "name": "CE_VERTICAL_UNION",
       "library": "SYS",
+      "category": "calculation-engine",
       "signatures": [
         "CE_VERTICAL_UNION(<tab1>, [<cols1>], <tab2>, [<cols2>])"
       ],
@@ -984,6 +1230,7 @@
     {
       "name": "CEIL",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "CEIL(...)"
       ],
@@ -993,6 +1240,7 @@
     {
       "name": "CHAR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "CHAR(...)"
       ],
@@ -1002,6 +1250,7 @@
     {
       "name": "CHR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "CHR(<code>)"
       ],
@@ -1011,6 +1260,7 @@
     {
       "name": "COALESCE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "COALESCE(...)"
       ],
@@ -1020,6 +1270,7 @@
     {
       "name": "CONCAT",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "CONCAT(...)"
       ],
@@ -1029,6 +1280,7 @@
     {
       "name": "CONCAT_NAZ",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "CONCAT_NAZ(...)"
       ],
@@ -1038,6 +1290,7 @@
     {
       "name": "CONVERT_CURRENCY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CONVERT_CURRENCY(...)"
       ],
@@ -1047,6 +1300,7 @@
     {
       "name": "CONVERT_UNIT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CONVERT_UNIT(...)"
       ],
@@ -1056,6 +1310,7 @@
     {
       "name": "CORR",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "CORR(...)"
       ],
@@ -1065,6 +1320,7 @@
     {
       "name": "CORR_SPEARMAN",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "CORR_SPEARMAN(...)"
       ],
@@ -1074,6 +1330,7 @@
     {
       "name": "COS",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "COS(...)"
       ],
@@ -1083,6 +1340,7 @@
     {
       "name": "COSH",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "COSH(...)"
       ],
@@ -1092,6 +1350,7 @@
     {
       "name": "COSINE_SIMILARITY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "COSINE_SIMILARITY(<vector1>, <vector2>)"
       ],
@@ -1101,6 +1360,7 @@
     {
       "name": "COT",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "COT(...)"
       ],
@@ -1110,6 +1370,7 @@
     {
       "name": "COUNT",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "COUNT(...)"
       ],
@@ -1119,6 +1380,7 @@
     {
       "name": "CREATE_VECTOR_EMBEDDINGS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CREATE_VECTOR_EMBEDDINGS(<schema>, <table>, <text_col>, <embedding_col>, <text_type>, <model_and_version> [, <batch_size> [, <remote_schema>, <remote_source>]] [, <options>])"
       ],
@@ -1128,6 +1390,7 @@
     {
       "name": "CROSS_CORR",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "CROSS_CORR(...)"
       ],
@@ -1137,6 +1400,7 @@
     {
       "name": "CROSS_ENCODE",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "CROSS_ENCODE(<text_a>, <text_b>, <model_and_version> [, <options>]) OVER (<window_spec>)"
       ],
@@ -1146,6 +1410,7 @@
     {
       "name": "CUBIC_SPLINE_APPROX",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "CUBIC_SPLINE_APPROX(...)"
       ],
@@ -1155,6 +1420,7 @@
     {
       "name": "CUME_DIST",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "CUME_DIST(...)"
       ],
@@ -1164,6 +1430,7 @@
     {
       "name": "CURRENT_CONNECTION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_CONNECTION(...)"
       ],
@@ -1173,6 +1440,7 @@
     {
       "name": "CURRENT_DATABASE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_DATABASE(...)"
       ],
@@ -1182,6 +1450,7 @@
     {
       "name": "CURRENT_DATE",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_DATE(...)"
       ],
@@ -1191,6 +1460,7 @@
     {
       "name": "CURRENT_IDENTITY_VALUE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_IDENTITY_VALUE(...)"
       ],
@@ -1200,6 +1470,7 @@
     {
       "name": "CURRENT_MVCC_SNAPSHOT_TIMESTAMP",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_MVCC_SNAPSHOT_TIMESTAMP(...)"
       ],
@@ -1209,6 +1480,7 @@
     {
       "name": "CURRENT_OBJECT_SCHEMA",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_OBJECT_SCHEMA(...)"
       ],
@@ -1218,6 +1490,7 @@
     {
       "name": "CURRENT_ROLEGROUP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_ROLEGROUP(...)"
       ],
@@ -1227,6 +1500,7 @@
     {
       "name": "CURRENT_SCHEMA",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_SCHEMA(...)"
       ],
@@ -1236,6 +1510,7 @@
     {
       "name": "CURRENT_SITE_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_SITE_ID(...)"
       ],
@@ -1245,6 +1520,7 @@
     {
       "name": "CURRENT_TIME",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_TIME(...)"
       ],
@@ -1254,6 +1530,7 @@
     {
       "name": "CURRENT_TIMESTAMP",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_TIMESTAMP(...)"
       ],
@@ -1263,6 +1540,7 @@
     {
       "name": "CURRENT_TRANSACTION_ISOLATION_LEVEL",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_TRANSACTION_ISOLATION_LEVEL(...)"
       ],
@@ -1272,6 +1550,7 @@
     {
       "name": "CURRENT_UPDATE_STATEMENT_SEQUENCE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_UPDATE_STATEMENT_SEQUENCE(...)"
       ],
@@ -1281,6 +1560,7 @@
     {
       "name": "CURRENT_UPDATE_TRANSACTION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_UPDATE_TRANSACTION(...)"
       ],
@@ -1290,6 +1570,7 @@
     {
       "name": "CURRENT_USER",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_USER(...)"
       ],
@@ -1299,6 +1580,7 @@
     {
       "name": "CURRENT_USER_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_USER_ID(...)"
       ],
@@ -1308,6 +1590,7 @@
     {
       "name": "CURRENT_USERGROUP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "CURRENT_USERGROUP(...)"
       ],
@@ -1317,6 +1600,7 @@
     {
       "name": "CURRENT_UTCDATE",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_UTCDATE(...)"
       ],
@@ -1326,6 +1610,7 @@
     {
       "name": "CURRENT_UTCTIME",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_UTCTIME(...)"
       ],
@@ -1335,6 +1620,7 @@
     {
       "name": "CURRENT_UTCTIMESTAMP",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "CURRENT_UTCTIMESTAMP(...)"
       ],
@@ -1344,6 +1630,7 @@
     {
       "name": "DAYNAME",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "DAYNAME(...)"
       ],
@@ -1353,6 +1640,7 @@
     {
       "name": "DAYOFMONTH",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "DAYOFMONTH(...)"
       ],
@@ -1362,6 +1650,7 @@
     {
       "name": "DAYOFYEAR",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "DAYOFYEAR(...)"
       ],
@@ -1371,6 +1660,7 @@
     {
       "name": "DAYS_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "DAYS_BETWEEN(...)"
       ],
@@ -1380,6 +1670,7 @@
     {
       "name": "DENSE_RANK",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "DENSE_RANK(...)"
       ],
@@ -1389,6 +1680,7 @@
     {
       "name": "DFT",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "DFT(...)"
       ],
@@ -1398,6 +1690,7 @@
     {
       "name": "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS(...)"
       ],
@@ -1407,6 +1700,7 @@
     {
       "name": "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD(...)"
       ],
@@ -1416,6 +1710,7 @@
     {
       "name": "ESCAPE_DOUBLE_QUOTES",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ESCAPE_DOUBLE_QUOTES(...)"
       ],
@@ -1425,6 +1720,7 @@
     {
       "name": "ESCAPE_SINGLE_QUOTES",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ESCAPE_SINGLE_QUOTES(...)"
       ],
@@ -1434,6 +1730,7 @@
     {
       "name": "EXP",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "EXP(...)"
       ],
@@ -1443,6 +1740,7 @@
     {
       "name": "EXPRESSION_MACRO",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "EXPRESSION_MACRO(...)"
       ],
@@ -1452,6 +1750,7 @@
     {
       "name": "EXTRACT",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "EXTRACT(...)"
       ],
@@ -1461,6 +1760,7 @@
     {
       "name": "FIRST_VALUE",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "FIRST_VALUE(...)"
       ],
@@ -1470,6 +1770,7 @@
     {
       "name": "FLOOR",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "FLOOR(...)"
       ],
@@ -1479,6 +1780,7 @@
     {
       "name": "GENERATE_PASSWORD",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GENERATE_PASSWORD(...)"
       ],
@@ -1488,6 +1790,7 @@
     {
       "name": "GET_DELTA_LAKE_TABLE_CHANGES",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GET_DELTA_LAKE_TABLE_CHANGES(...)"
       ],
@@ -1497,6 +1800,7 @@
     {
       "name": "GET_DELTA_LAKE_TABLE_VERSION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GET_DELTA_LAKE_TABLE_VERSION(...)"
       ],
@@ -1506,6 +1810,7 @@
     {
       "name": "GET_NUM_SERVERS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GET_NUM_SERVERS()"
       ],
@@ -1515,6 +1820,7 @@
     {
       "name": "GET_REMOTE_SOURCE_AI_MODELS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GET_REMOTE_SOURCE_AI_MODELS(<remote_source_name>, OUT <models_table>)"
       ],
@@ -1524,6 +1830,7 @@
     {
       "name": "GET_X509_USER_MAPPING_DETAILS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GET_X509_USER_MAPPING_DETAILS(...)"
       ],
@@ -1533,6 +1840,7 @@
     {
       "name": "GREATEST",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GREATEST(...)"
       ],
@@ -1542,6 +1850,7 @@
     {
       "name": "GROUP_SCORE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GROUP_SCORE(...)"
       ],
@@ -1551,6 +1860,7 @@
     {
       "name": "GROUPING",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GROUPING(...)"
       ],
@@ -1560,6 +1870,7 @@
     {
       "name": "GROUPING_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "GROUPING_ID(...)"
       ],
@@ -1569,6 +1880,7 @@
     {
       "name": "HAMMING_DISTANCE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "HAMMING_DISTANCE(...)"
       ],
@@ -1578,6 +1890,7 @@
     {
       "name": "HASH_MD5",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HASH_MD5(...)"
       ],
@@ -1587,6 +1900,7 @@
     {
       "name": "HASH_SHA256",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HASH_SHA256(...)"
       ],
@@ -1596,6 +1910,7 @@
     {
       "name": "HEXTOBIN",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "HEXTOBIN(...)"
       ],
@@ -1605,6 +1920,7 @@
     {
       "name": "HEXTONUM",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "HEXTONUM(...)"
       ],
@@ -1614,6 +1930,7 @@
     {
       "name": "HIERARCHY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [MULTIPARENT ...] [ORPHAN ...] [CYCLE ...] [CACHE ...] [LOAD ...])"
       ],
@@ -1623,6 +1940,7 @@
     {
       "name": "HIERARCHY_ANCESTORS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_ANCESTORS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
       ],
@@ -1632,6 +1950,7 @@
     {
       "name": "HIERARCHY_ANCESTORS_AGGREGATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_ANCESTORS_AGGREGATE(SOURCE <hierarchy> [START ...] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...])"
       ],
@@ -1641,6 +1960,7 @@
     {
       "name": "HIERARCHY_COMPOSITE_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_COMPOSITE_ID(<expr1>, <expr2> [, ...])"
       ],
@@ -1650,6 +1970,7 @@
     {
       "name": "HIERARCHY_DESCENDANTS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_DESCENDANTS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
       ],
@@ -1659,6 +1980,7 @@
     {
       "name": "HIERARCHY_DESCENDANTS_AGGREGATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE <hierarchy> [JOIN <table> ON <cond>] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...] [WITH SUBTOTAL] [WITH BALANCE] [WITH NOT MATCHED] [WITH TOTAL])"
       ],
@@ -1668,6 +1990,7 @@
     {
       "name": "HIERARCHY_LEVELED",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_LEVELED(SOURCE <source> [LEVELS (<col_list>)] [SIBLING ORDER BY <order>] [CACHE ...] [RETAIN NULLS ...])"
       ],
@@ -1677,6 +2000,7 @@
     {
       "name": "HIERARCHY_SIBLINGS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_SIBLINGS(SOURCE <hierarchy> [START ...])"
       ],
@@ -1686,6 +2010,7 @@
     {
       "name": "HIERARCHY_SPANTREE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_SPANTREE(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [CACHE ...] [LOAD ...])"
       ],
@@ -1695,6 +2020,7 @@
     {
       "name": "HIERARCHY_TEMPORAL",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "HIERARCHY_TEMPORAL(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] VALID {FROM <t1> UNTIL <t2> | AT <t>} ...)"
       ],
@@ -1704,6 +2030,7 @@
     {
       "name": "HOUR",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "HOUR(...)"
       ],
@@ -1713,6 +2040,7 @@
     {
       "name": "IFNULL",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "IFNULL(...)"
       ],
@@ -1722,6 +2050,7 @@
     {
       "name": "INDEXING_ERROR_CODE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "INDEXING_ERROR_CODE(...)"
       ],
@@ -1731,6 +2060,7 @@
     {
       "name": "INDEXING_ERROR_MESSAGE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "INDEXING_ERROR_MESSAGE(...)"
       ],
@@ -1740,6 +2070,7 @@
     {
       "name": "INDEXING_STATUS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "INDEXING_STATUS(...)"
       ],
@@ -1749,6 +2080,7 @@
     {
       "name": "INITCAP",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "INITCAP(...)"
       ],
@@ -1758,6 +2090,7 @@
     {
       "name": "IS_EMPTY",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "IS_EMPTY(<table_variable>)"
       ],
@@ -1767,6 +2100,7 @@
     {
       "name": "IS_SQL_INJECTION_SAFE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "IS_SQL_INJECTION_SAFE(...)"
       ],
@@ -1776,6 +2110,7 @@
     {
       "name": "ISOWEEK",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "ISOWEEK(...)"
       ],
@@ -1785,6 +2120,7 @@
     {
       "name": "JSON_QUERY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "JSON_QUERY(<json_doc>, '<json_path>' [RETURNING {NVARCHAR(<n>) | JSON}] [WRAPPER] [ON EMPTY] [ON ERROR])"
       ],
@@ -1794,6 +2130,7 @@
     {
       "name": "JSON_TABLE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "JSON_TABLE(<json_doc>, '<json_path>' COLUMNS (<col_specs>) [{ERROR | EMPTY} ON ERROR])"
       ],
@@ -1803,6 +2140,7 @@
     {
       "name": "JSON_VALUE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "JSON_VALUE(<json_doc>, '<json_path>' [RETURNING <data_type>] [{ERROR | NULL | DEFAULT <val>} ON EMPTY] [{ERROR | NULL | DEFAULT <val>} ON ERROR])"
       ],
@@ -1812,6 +2150,7 @@
     {
       "name": "L2DISTANCE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "L2DISTANCE(<vector1>, <vector2>)"
       ],
@@ -1821,6 +2160,7 @@
     {
       "name": "L2NORM",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "L2NORM(<vector>)"
       ],
@@ -1830,6 +2170,7 @@
     {
       "name": "L2NORMALIZE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "L2NORMALIZE(<vector>)"
       ],
@@ -1839,6 +2180,7 @@
     {
       "name": "LAG",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "LAG(...)"
       ],
@@ -1848,6 +2190,7 @@
     {
       "name": "LANGUAGE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "LANGUAGE(...)"
       ],
@@ -1857,6 +2200,7 @@
     {
       "name": "LAST_DAY",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "LAST_DAY(...)"
       ],
@@ -1866,6 +2210,7 @@
     {
       "name": "LAST_VALUE",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "LAST_VALUE(...)"
       ],
@@ -1875,6 +2220,7 @@
     {
       "name": "LCASE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LCASE(...)"
       ],
@@ -1884,6 +2230,7 @@
     {
       "name": "LEAD",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "LEAD(...)"
       ],
@@ -1893,6 +2240,7 @@
     {
       "name": "LEAST",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "LEAST(...)"
       ],
@@ -1902,6 +2250,7 @@
     {
       "name": "LEFT",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LEFT(...)"
       ],
@@ -1911,6 +2260,7 @@
     {
       "name": "LENGTH",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LENGTH(...)"
       ],
@@ -1920,6 +2270,7 @@
     {
       "name": "LINEAR_APPROX",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "LINEAR_APPROX(...)"
       ],
@@ -1929,6 +2280,7 @@
     {
       "name": "LN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "LN(...)"
       ],
@@ -1938,6 +2290,7 @@
     {
       "name": "LOCALTOUTC",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "LOCALTOUTC(...)"
       ],
@@ -1947,6 +2300,7 @@
     {
       "name": "LOCATE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LOCATE(...)"
       ],
@@ -1956,6 +2310,7 @@
     {
       "name": "LOCATE_REGEXPR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LOCATE_REGEXPR(...)"
       ],
@@ -1965,6 +2320,7 @@
     {
       "name": "LOG",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "LOG(...)"
       ],
@@ -1974,6 +2330,7 @@
     {
       "name": "LOWER",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LOWER(...)"
       ],
@@ -1983,6 +2340,7 @@
     {
       "name": "LPAD",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LPAD(...)"
       ],
@@ -1992,6 +2350,7 @@
     {
       "name": "LTRIM",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "LTRIM(...)"
       ],
@@ -2001,6 +2360,7 @@
     {
       "name": "MAP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "MAP(...)"
       ],
@@ -2010,6 +2370,7 @@
     {
       "name": "MAP_MERGE",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "MAP_MERGE(<input_table>, <mapper_func>(<input_table>.<col1>, ...))"
       ],
@@ -2019,6 +2380,7 @@
     {
       "name": "MAP_REDUCE",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "MAP_REDUCE(<input_table>, <mapper_func>(...), <reducer_func>(...))"
       ],
@@ -2028,6 +2390,7 @@
     {
       "name": "MAX",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "MAX(...)"
       ],
@@ -2037,6 +2400,7 @@
     {
       "name": "MEDIAN",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "MEDIAN(...)"
       ],
@@ -2046,6 +2410,7 @@
     {
       "name": "MEMBER_AT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "MEMBER_AT(<array_or_vector>, <position> [, <default_value>])"
       ],
@@ -2055,6 +2420,7 @@
     {
       "name": "MIMETYPE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "MIMETYPE(...)"
       ],
@@ -2064,6 +2430,7 @@
     {
       "name": "MIN",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "MIN(...)"
       ],
@@ -2073,6 +2440,7 @@
     {
       "name": "MINUTE",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "MINUTE(...)"
       ],
@@ -2082,6 +2450,7 @@
     {
       "name": "MOD",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "MOD(...)"
       ],
@@ -2091,6 +2460,7 @@
     {
       "name": "MONTH",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "MONTH(...)"
       ],
@@ -2100,6 +2470,7 @@
     {
       "name": "MONTHNAME",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "MONTHNAME(...)"
       ],
@@ -2109,6 +2480,7 @@
     {
       "name": "MONTHS_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "MONTHS_BETWEEN(...)"
       ],
@@ -2118,6 +2490,7 @@
     {
       "name": "NANO100_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "NANO100_BETWEEN(...)"
       ],
@@ -2127,6 +2500,7 @@
     {
       "name": "NCHAR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "NCHAR(...)"
       ],
@@ -2136,6 +2510,7 @@
     {
       "name": "NDIV0",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "NDIV0(...)"
       ],
@@ -2145,6 +2520,7 @@
     {
       "name": "NEWUID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "NEWUID(...)"
       ],
@@ -2154,6 +2530,7 @@
     {
       "name": "NEXT_DAY",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "NEXT_DAY(...)"
       ],
@@ -2163,6 +2540,7 @@
     {
       "name": "NORMALIZE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "NORMALIZE(...)"
       ],
@@ -2172,6 +2550,7 @@
     {
       "name": "NOW",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "NOW(...)"
       ],
@@ -2181,6 +2560,7 @@
     {
       "name": "NTH_VALUE",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "NTH_VALUE(...)"
       ],
@@ -2190,6 +2570,7 @@
     {
       "name": "NTILE",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "NTILE(...)"
       ],
@@ -2199,6 +2580,7 @@
     {
       "name": "NULLIF",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "NULLIF(...)"
       ],
@@ -2208,6 +2590,7 @@
     {
       "name": "NUMTOHEX",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "NUMTOHEX(...)"
       ],
@@ -2217,6 +2600,7 @@
     {
       "name": "OCCURRENCES_REGEXPR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "OCCURRENCES_REGEXPR(...)"
       ],
@@ -2226,6 +2610,7 @@
     {
       "name": "OPENCYPHER_TABLE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "OPENCYPHER_TABLE(GRAPH WORKSPACE <workspace_name> QUERY <cypher_query_string> [PARAMETERS (<param_list>)])"
       ],
@@ -2235,6 +2620,7 @@
     {
       "name": "PARSE_CERTIFICATES",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "PARSE_CERTIFICATES(...)"
       ],
@@ -2244,6 +2630,7 @@
     {
       "name": "PARSE_JSON",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "PARSE_JSON(<json_string>)"
       ],
@@ -2253,6 +2640,7 @@
     {
       "name": "PARTITION_ALLOCATION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "PARTITION_ALLOCATION(...)"
       ],
@@ -2262,6 +2650,7 @@
     {
       "name": "PARTITION_HASH",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "PARTITION_HASH(...)"
       ],
@@ -2271,6 +2660,7 @@
     {
       "name": "PERCENT_RANK",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "PERCENT_RANK(...)"
       ],
@@ -2280,6 +2670,7 @@
     {
       "name": "PERCENTILE_CONT",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "PERCENTILE_CONT(...)"
       ],
@@ -2289,6 +2680,7 @@
     {
       "name": "PERCENTILE_DISC",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "PERCENTILE_DISC(...)"
       ],
@@ -2298,6 +2690,7 @@
     {
       "name": "PLAINTEXT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "PLAINTEXT(...)"
       ],
@@ -2307,6 +2700,7 @@
     {
       "name": "POWER",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "POWER(...)"
       ],
@@ -2316,6 +2710,7 @@
     {
       "name": "QUARTER",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "QUARTER(...)"
       ],
@@ -2325,6 +2720,7 @@
     {
       "name": "RAND",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "RAND(...)"
       ],
@@ -2334,6 +2730,7 @@
     {
       "name": "RAND_SECURE",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "RAND_SECURE(...)"
       ],
@@ -2343,6 +2740,7 @@
     {
       "name": "RANDOM_PARTITION",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "RANDOM_PARTITION(...)"
       ],
@@ -2352,6 +2750,7 @@
     {
       "name": "RANK",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "RANK(...)"
       ],
@@ -2361,6 +2760,7 @@
     {
       "name": "RDF_GRAPH_FROM_GRAPH_WORKSPACE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RDF_GRAPH_FROM_GRAPH_WORKSPACE(<workspace_schema>, <workspace_name>, <graph_uri>, <base_uri>, <vocabulary_uri>, <options>, OUT <result>)"
       ],
@@ -2370,6 +2770,7 @@
     {
       "name": "RDF_GRAPH_TO_GRAPH_WORKSPACE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RDF_GRAPH_TO_GRAPH_WORKSPACE(<graph_uri>, <workspace_schema>, <workspace_name>, <tables_schema>, <options>, OUT <result>)"
       ],
@@ -2379,6 +2780,7 @@
     {
       "name": "RECORD_COMMIT_TIMESTAMP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RECORD_COMMIT_TIMESTAMP(...)"
       ],
@@ -2388,6 +2790,7 @@
     {
       "name": "RECORD_COUNT",
       "library": "SYS",
+      "category": "sqlscript",
       "signatures": [
         "RECORD_COUNT(<table_variable>)"
       ],
@@ -2397,6 +2800,7 @@
     {
       "name": "RECORD_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RECORD_ID(...)"
       ],
@@ -2406,6 +2810,7 @@
     {
       "name": "RECORD_LOCK_STATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RECORD_LOCK_STATE(...)"
       ],
@@ -2415,6 +2820,7 @@
     {
       "name": "REPLACE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "REPLACE(...)"
       ],
@@ -2424,6 +2830,7 @@
     {
       "name": "REPLACE_REGEXPR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "REPLACE_REGEXPR(...)"
       ],
@@ -2433,6 +2840,7 @@
     {
       "name": "RESULT_CACHE_ID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RESULT_CACHE_ID(...)"
       ],
@@ -2442,6 +2850,7 @@
     {
       "name": "RESULT_CACHE_REFRESH_TIME",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "RESULT_CACHE_REFRESH_TIME(...)"
       ],
@@ -2451,6 +2860,7 @@
     {
       "name": "RIGHT",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "RIGHT(...)"
       ],
@@ -2460,6 +2870,7 @@
     {
       "name": "ROUND",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "ROUND(...)"
       ],
@@ -2469,6 +2880,7 @@
     {
       "name": "ROW_LOCK_WAIT_STATISTICS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "ROW_LOCK_WAIT_STATISTICS(...)"
       ],
@@ -2478,6 +2890,7 @@
     {
       "name": "ROW_NUMBER",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "ROW_NUMBER(...)"
       ],
@@ -2487,6 +2900,7 @@
     {
       "name": "RPAD",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "RPAD(...)"
       ],
@@ -2496,6 +2910,7 @@
     {
       "name": "RTRIM",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "RTRIM(...)"
       ],
@@ -2505,6 +2920,7 @@
     {
       "name": "SCORE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SCORE(...)"
       ],
@@ -2514,6 +2930,7 @@
     {
       "name": "SECOND",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "SECOND(...)"
       ],
@@ -2523,6 +2940,7 @@
     {
       "name": "SECONDS_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "SECONDS_BETWEEN(...)"
       ],
@@ -2532,6 +2950,7 @@
     {
       "name": "SERIES_DISAGGREGATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE(...)"
       ],
@@ -2541,6 +2960,7 @@
     {
       "name": "SERIES_DISAGGREGATE_BIGINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_BIGINT(...)"
       ],
@@ -2550,6 +2970,7 @@
     {
       "name": "SERIES_DISAGGREGATE_DATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_DATE(...)"
       ],
@@ -2559,6 +2980,7 @@
     {
       "name": "SERIES_DISAGGREGATE_DECIMAL",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_DECIMAL(...)"
       ],
@@ -2568,6 +2990,7 @@
     {
       "name": "SERIES_DISAGGREGATE_INTEGER",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_INTEGER(...)"
       ],
@@ -2577,6 +3000,7 @@
     {
       "name": "SERIES_DISAGGREGATE_SECONDDATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_SECONDDATE(...)"
       ],
@@ -2586,6 +3010,7 @@
     {
       "name": "SERIES_DISAGGREGATE_SMALLINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_SMALLINT(...)"
       ],
@@ -2595,6 +3020,7 @@
     {
       "name": "SERIES_DISAGGREGATE_TIME",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_TIME(...)"
       ],
@@ -2604,6 +3030,7 @@
     {
       "name": "SERIES_DISAGGREGATE_TIMESTAMP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_TIMESTAMP(...)"
       ],
@@ -2613,6 +3040,7 @@
     {
       "name": "SERIES_DISAGGREGATE_TINYINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_DISAGGREGATE_TINYINT(...)"
       ],
@@ -2622,6 +3050,7 @@
     {
       "name": "SERIES_ELEMENT_TO_PERIOD",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_ELEMENT_TO_PERIOD(...)"
       ],
@@ -2631,6 +3060,7 @@
     {
       "name": "SERIES_FILTER",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "SERIES_FILTER(...)"
       ],
@@ -2640,6 +3070,7 @@
     {
       "name": "SERIES_GENERATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE(...)"
       ],
@@ -2649,6 +3080,7 @@
     {
       "name": "SERIES_GENERATE_BIGINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_BIGINT(...)"
       ],
@@ -2658,6 +3090,7 @@
     {
       "name": "SERIES_GENERATE_DATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_DATE(...)"
       ],
@@ -2667,6 +3100,7 @@
     {
       "name": "SERIES_GENERATE_DECIMAL",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_DECIMAL(...)"
       ],
@@ -2676,6 +3110,7 @@
     {
       "name": "SERIES_GENERATE_INTEGER",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_INTEGER(...)"
       ],
@@ -2685,6 +3120,7 @@
     {
       "name": "SERIES_GENERATE_SECONDDATE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_SECONDDATE(...)"
       ],
@@ -2694,6 +3130,7 @@
     {
       "name": "SERIES_GENERATE_SMALLINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_SMALLINT(...)"
       ],
@@ -2703,6 +3140,7 @@
     {
       "name": "SERIES_GENERATE_TIME",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_TIME(...)"
       ],
@@ -2712,6 +3150,7 @@
     {
       "name": "SERIES_GENERATE_TIMESTAMP",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_TIMESTAMP(...)"
       ],
@@ -2721,6 +3160,7 @@
     {
       "name": "SERIES_GENERATE_TINYINT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_GENERATE_TINYINT(...)"
       ],
@@ -2730,6 +3170,7 @@
     {
       "name": "SERIES_PERIOD_TO_ELEMENT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_PERIOD_TO_ELEMENT(...)"
       ],
@@ -2739,6 +3180,7 @@
     {
       "name": "SERIES_ROUND",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SERIES_ROUND(...)"
       ],
@@ -2748,6 +3190,7 @@
     {
       "name": "SESSION_CONTEXT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SESSION_CONTEXT(...)"
       ],
@@ -2757,6 +3200,7 @@
     {
       "name": "SESSION_USER",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SESSION_USER(...)"
       ],
@@ -2766,6 +3210,7 @@
     {
       "name": "SIGN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "SIGN(...)"
       ],
@@ -2775,6 +3220,7 @@
     {
       "name": "SIN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "SIN(...)"
       ],
@@ -2784,6 +3230,7 @@
     {
       "name": "SINH",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "SINH(...)"
       ],
@@ -2793,6 +3240,7 @@
     {
       "name": "SOUNDEX",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SOUNDEX(...)"
       ],
@@ -2802,6 +3250,7 @@
     {
       "name": "SPARQL_EXECUTE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SPARQL_EXECUTE(IN <request_string> NCLOB, IN <headers_string> NCLOB, OUT <response_body> NCLOB, OUT <response_headers> NCLOB)"
       ],
@@ -2811,6 +3260,7 @@
     {
       "name": "SPARQL_TABLE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SPARQL_TABLE(<sparql_select_query_string> [, <accept_header_string>])"
       ],
@@ -2820,6 +3270,7 @@
     {
       "name": "SQL_TABLE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SQL_TABLE(<sql_query_string>)"
       ],
@@ -2829,6 +3280,7 @@
     {
       "name": "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA(...)"
       ],
@@ -2838,6 +3290,7 @@
     {
       "name": "SQRT",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "SQRT(...)"
       ],
@@ -2847,6 +3300,7 @@
     {
       "name": "ST_ADDPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ADDPOINT(...)"
       ],
@@ -2856,6 +3310,7 @@
     {
       "name": "ST_ALLOCATEDSIZE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALLOCATEDSIZE(...)"
       ],
@@ -2865,6 +3320,7 @@
     {
       "name": "ST_ALPHASHAPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALPHASHAPE(...)"
       ],
@@ -2874,6 +3330,7 @@
     {
       "name": "ST_ALPHASHAPEAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALPHASHAPEAGGR(...)"
       ],
@@ -2883,6 +3340,7 @@
     {
       "name": "ST_ALPHASHAPEAREA",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALPHASHAPEAREA(...)"
       ],
@@ -2892,6 +3350,7 @@
     {
       "name": "ST_ALPHASHAPEAREAAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALPHASHAPEAREAAGGR(...)"
       ],
@@ -2901,6 +3360,7 @@
     {
       "name": "ST_ALPHASHAPEEDGE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ALPHASHAPEEDGE(...)"
       ],
@@ -2910,6 +3370,7 @@
     {
       "name": "ST_AREA",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_AREA(...)"
       ],
@@ -2919,6 +3380,7 @@
     {
       "name": "ST_ASBINARY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASBINARY(...)"
       ],
@@ -2928,6 +3390,7 @@
     {
       "name": "ST_ASESRIJSON",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASESRIJSON(...)"
       ],
@@ -2937,6 +3400,7 @@
     {
       "name": "ST_ASESRISHAPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASESRISHAPE(...)"
       ],
@@ -2946,6 +3410,7 @@
     {
       "name": "ST_ASEWKB",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASEWKB(...)"
       ],
@@ -2955,6 +3420,7 @@
     {
       "name": "ST_ASEWKT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASEWKT(...)"
       ],
@@ -2964,6 +3430,7 @@
     {
       "name": "ST_ASGEOJSON",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASGEOJSON(...)"
       ],
@@ -2973,6 +3440,7 @@
     {
       "name": "ST_ASMVT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASMVT(...)"
       ],
@@ -2982,6 +3450,7 @@
     {
       "name": "ST_ASMVTGEOM",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASMVTGEOM(...)"
       ],
@@ -2991,6 +3460,7 @@
     {
       "name": "ST_ASSVG",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASSVG(...)"
       ],
@@ -3000,6 +3470,7 @@
     {
       "name": "ST_ASSVGAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASSVGAGGR(...)"
       ],
@@ -3009,6 +3480,7 @@
     {
       "name": "ST_ASTEXT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASTEXT(...)"
       ],
@@ -3018,6 +3490,7 @@
     {
       "name": "ST_ASWKB",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASWKB(...)"
       ],
@@ -3027,6 +3500,7 @@
     {
       "name": "ST_ASWKT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ASWKT(...)"
       ],
@@ -3036,6 +3510,7 @@
     {
       "name": "ST_BOUNDARY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_BOUNDARY(...)"
       ],
@@ -3045,6 +3520,7 @@
     {
       "name": "ST_BUFFER",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_BUFFER(...)"
       ],
@@ -3054,6 +3530,7 @@
     {
       "name": "ST_CENTROID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CENTROID(...)"
       ],
@@ -3063,6 +3540,7 @@
     {
       "name": "ST_CLOSESTPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CLOSESTPOINT(...)"
       ],
@@ -3072,6 +3550,7 @@
     {
       "name": "ST_CLUSTERCELL",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CLUSTERCELL(...)"
       ],
@@ -3081,6 +3560,7 @@
     {
       "name": "ST_CLUSTERCENTROID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CLUSTERCENTROID(...)"
       ],
@@ -3090,6 +3570,7 @@
     {
       "name": "ST_CLUSTERENVELOPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CLUSTERENVELOPE(...)"
       ],
@@ -3099,6 +3580,7 @@
     {
       "name": "ST_CLUSTERID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CLUSTERID(...)"
       ],
@@ -3108,6 +3590,7 @@
     {
       "name": "ST_COLLECT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_COLLECT(...)"
       ],
@@ -3117,6 +3600,7 @@
     {
       "name": "ST_COLLECTAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_COLLECTAGGR(...)"
       ],
@@ -3126,6 +3610,7 @@
     {
       "name": "ST_CONCAVEHULL",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CONCAVEHULL(...)"
       ],
@@ -3135,6 +3620,7 @@
     {
       "name": "ST_CONCAVEHULLAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CONCAVEHULLAGGR(...)"
       ],
@@ -3144,6 +3630,7 @@
     {
       "name": "ST_CONTAINS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CONTAINS(...)"
       ],
@@ -3153,6 +3640,7 @@
     {
       "name": "ST_CONVEXHULL",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CONVEXHULL(...)"
       ],
@@ -3162,6 +3650,7 @@
     {
       "name": "ST_CONVEXHULLAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CONVEXHULLAGGR(...)"
       ],
@@ -3171,6 +3660,7 @@
     {
       "name": "ST_COORDDIM",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_COORDDIM(...)"
       ],
@@ -3180,6 +3670,7 @@
     {
       "name": "ST_COVEREDBY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_COVEREDBY(...)"
       ],
@@ -3189,6 +3680,7 @@
     {
       "name": "ST_COVERS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_COVERS(...)"
       ],
@@ -3198,6 +3690,7 @@
     {
       "name": "ST_CROSSES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CROSSES(...)"
       ],
@@ -3207,6 +3700,7 @@
     {
       "name": "ST_CURVETOLINE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_CURVETOLINE(...)"
       ],
@@ -3216,6 +3710,7 @@
     {
       "name": "ST_DIFFERENCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_DIFFERENCE(...)"
       ],
@@ -3225,6 +3720,7 @@
     {
       "name": "ST_DIMENSION",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_DIMENSION(...)"
       ],
@@ -3234,6 +3730,7 @@
     {
       "name": "ST_DISJOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_DISJOINT(...)"
       ],
@@ -3243,6 +3740,7 @@
     {
       "name": "ST_DISTANCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_DISTANCE(...)"
       ],
@@ -3252,6 +3750,7 @@
     {
       "name": "ST_DUPLICATES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_DUPLICATES(...)"
       ],
@@ -3261,6 +3760,7 @@
     {
       "name": "ST_ENDPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ENDPOINT(...)"
       ],
@@ -3270,6 +3770,7 @@
     {
       "name": "ST_ENVELOPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ENVELOPE(...)"
       ],
@@ -3279,6 +3780,7 @@
     {
       "name": "ST_ENVELOPEAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ENVELOPEAGGR(...)"
       ],
@@ -3288,6 +3790,7 @@
     {
       "name": "ST_EQUALS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_EQUALS(...)"
       ],
@@ -3297,6 +3800,7 @@
     {
       "name": "ST_EXTERIORRING",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_EXTERIORRING(...)"
       ],
@@ -3306,6 +3810,7 @@
     {
       "name": "ST_FLIPCOORDINATES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FLIPCOORDINATES(...)"
       ],
@@ -3315,6 +3820,7 @@
     {
       "name": "ST_FORCE2D",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FORCE2D(...)"
       ],
@@ -3324,6 +3830,7 @@
     {
       "name": "ST_FORCE3DM",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FORCE3DM(...)"
       ],
@@ -3333,6 +3840,7 @@
     {
       "name": "ST_FORCE3DZ",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FORCE3DZ(...)"
       ],
@@ -3342,6 +3850,7 @@
     {
       "name": "ST_FORCE4D",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FORCE4D(...)"
       ],
@@ -3351,6 +3860,7 @@
     {
       "name": "ST_FRECHETDISTANCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_FRECHETDISTANCE(...)"
       ],
@@ -3360,6 +3870,7 @@
     {
       "name": "ST_GENERATEPOINTS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GENERATEPOINTS(...)"
       ],
@@ -3369,6 +3880,7 @@
     {
       "name": "ST_GEOHASH",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOHASH(...)"
       ],
@@ -3378,6 +3890,7 @@
     {
       "name": "ST_GEOHASHBOUNDARY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOHASHBOUNDARY(...)"
       ],
@@ -3387,6 +3900,7 @@
     {
       "name": "ST_GEOHASHNEIGHBORS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOHASHNEIGHBORS(...)"
       ],
@@ -3396,6 +3910,7 @@
     {
       "name": "ST_GEOMETRYN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMETRYN(...)"
       ],
@@ -3405,6 +3920,7 @@
     {
       "name": "ST_GEOMETRYTYPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMETRYTYPE(...)"
       ],
@@ -3414,6 +3930,7 @@
     {
       "name": "ST_GEOMFROMESRISHAPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMESRISHAPE(...)"
       ],
@@ -3423,6 +3940,7 @@
     {
       "name": "ST_GEOMFROMEWKB",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMEWKB(...)"
       ],
@@ -3432,6 +3950,7 @@
     {
       "name": "ST_GEOMFROMEWKT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMEWKT(...)"
       ],
@@ -3441,6 +3960,7 @@
     {
       "name": "ST_GEOMFROMGEOJSON",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMGEOJSON(...)"
       ],
@@ -3450,6 +3970,7 @@
     {
       "name": "ST_GEOMFROMTEXT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMTEXT(...)"
       ],
@@ -3459,6 +3980,7 @@
     {
       "name": "ST_GEOMFROMWKB",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMWKB(...)"
       ],
@@ -3468,6 +3990,7 @@
     {
       "name": "ST_GEOMFROMWKT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_GEOMFROMWKT(...)"
       ],
@@ -3477,6 +4000,7 @@
     {
       "name": "ST_HAUSDORFFDISTANCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_HAUSDORFFDISTANCE(...)"
       ],
@@ -3486,6 +4010,7 @@
     {
       "name": "ST_HEXAGONGRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_HEXAGONGRID(...)"
       ],
@@ -3495,6 +4020,7 @@
     {
       "name": "ST_HEXAGONGRIDBOUNDINGBOX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_HEXAGONGRIDBOUNDINGBOX(...)"
       ],
@@ -3504,6 +4030,7 @@
     {
       "name": "ST_INTERIORRINGN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERIORRINGN(...)"
       ],
@@ -3513,6 +4040,7 @@
     {
       "name": "ST_INTERPOLATEPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERPOLATEPOINT(...)"
       ],
@@ -3522,6 +4050,7 @@
     {
       "name": "ST_INTERSECTION",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTION(...)"
       ],
@@ -3531,6 +4060,7 @@
     {
       "name": "ST_INTERSECTIONAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTIONAGGR(...)"
       ],
@@ -3540,6 +4070,7 @@
     {
       "name": "ST_INTERSECTS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTS(...)"
       ],
@@ -3549,6 +4080,7 @@
     {
       "name": "ST_INTERSECTSFILTER",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTSFILTER(...)"
       ],
@@ -3558,6 +4090,7 @@
     {
       "name": "ST_INTERSECTSRECT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTSRECT(...)"
       ],
@@ -3567,6 +4100,7 @@
     {
       "name": "ST_INTERSECTSRECTPLANAR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_INTERSECTSRECTPLANAR(...)"
       ],
@@ -3576,6 +4110,7 @@
     {
       "name": "ST_IS3D",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_IS3D(...)"
       ],
@@ -3585,6 +4120,7 @@
     {
       "name": "ST_ISCLOSED",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISCLOSED(...)"
       ],
@@ -3594,6 +4130,7 @@
     {
       "name": "ST_ISEMPTY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISEMPTY(...)"
       ],
@@ -3603,6 +4140,7 @@
     {
       "name": "ST_ISMEASURED",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISMEASURED(...)"
       ],
@@ -3612,6 +4150,7 @@
     {
       "name": "ST_ISRING",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISRING(...)"
       ],
@@ -3621,6 +4160,7 @@
     {
       "name": "ST_ISSIMPLE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISSIMPLE(...)"
       ],
@@ -3630,6 +4170,7 @@
     {
       "name": "ST_ISVALID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ISVALID(...)"
       ],
@@ -3639,6 +4180,7 @@
     {
       "name": "ST_LENGTH",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LENGTH(...)"
       ],
@@ -3648,6 +4190,7 @@
     {
       "name": "ST_LINEHASH",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LINEHASH(...)"
       ],
@@ -3657,6 +4200,7 @@
     {
       "name": "ST_LINEINTERPOLATEPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LINEINTERPOLATEPOINT(...)"
       ],
@@ -3666,6 +4210,7 @@
     {
       "name": "ST_LINELOCATEPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LINELOCATEPOINT(...)"
       ],
@@ -3675,6 +4220,7 @@
     {
       "name": "ST_LINEMERGE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LINEMERGE(...)"
       ],
@@ -3684,6 +4230,7 @@
     {
       "name": "ST_LINESUBSTRING",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LINESUBSTRING(...)"
       ],
@@ -3693,6 +4240,7 @@
     {
       "name": "ST_LOCATEALONG",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LOCATEALONG(...)"
       ],
@@ -3702,6 +4250,7 @@
     {
       "name": "ST_LOCATEBETWEEN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_LOCATEBETWEEN(...)"
       ],
@@ -3711,6 +4260,7 @@
     {
       "name": "ST_M",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_M(...)"
       ],
@@ -3720,6 +4270,7 @@
     {
       "name": "ST_MAKEENVELOPE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MAKEENVELOPE(...)"
       ],
@@ -3729,6 +4280,7 @@
     {
       "name": "ST_MAKELINE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MAKELINE(...)"
       ],
@@ -3738,6 +4290,7 @@
     {
       "name": "ST_MAKELINEAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MAKELINEAGGR(...)"
       ],
@@ -3747,6 +4300,7 @@
     {
       "name": "ST_MAKEPOLYGON",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MAKEPOLYGON(...)"
       ],
@@ -3756,6 +4310,7 @@
     {
       "name": "ST_MAKEVALID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MAKEVALID(...)"
       ],
@@ -3765,6 +4320,7 @@
     {
       "name": "ST_MINIMUMBOUNDINGCIRCLE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MINIMUMBOUNDINGCIRCLE(...)"
       ],
@@ -3774,6 +4330,7 @@
     {
       "name": "ST_MMAX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MMAX(...)"
       ],
@@ -3783,6 +4340,7 @@
     {
       "name": "ST_MMIN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_MMIN(...)"
       ],
@@ -3792,6 +4350,7 @@
     {
       "name": "ST_NUMGEOMETRIES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_NUMGEOMETRIES(...)"
       ],
@@ -3801,6 +4360,7 @@
     {
       "name": "ST_NUMINTERIORRING",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_NUMINTERIORRING(...)"
       ],
@@ -3810,6 +4370,7 @@
     {
       "name": "ST_NUMINTERIORRINGS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_NUMINTERIORRINGS(...)"
       ],
@@ -3819,6 +4380,7 @@
     {
       "name": "ST_NUMPATCHES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_NUMPATCHES(...)"
       ],
@@ -3828,6 +4390,7 @@
     {
       "name": "ST_NUMPOINTS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_NUMPOINTS(...)"
       ],
@@ -3837,6 +4400,7 @@
     {
       "name": "ST_ORDERINGEQUALS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ORDERINGEQUALS(...)"
       ],
@@ -3846,6 +4410,7 @@
     {
       "name": "ST_OVERLAPS",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_OVERLAPS(...)"
       ],
@@ -3855,6 +4420,7 @@
     {
       "name": "ST_PATCHN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_PATCHN(...)"
       ],
@@ -3864,6 +4430,7 @@
     {
       "name": "ST_PERIMETER",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_PERIMETER(...)"
       ],
@@ -3873,6 +4440,7 @@
     {
       "name": "ST_POINTN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_POINTN(...)"
       ],
@@ -3882,6 +4450,7 @@
     {
       "name": "ST_POINTONSURFACE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_POINTONSURFACE(...)"
       ],
@@ -3891,6 +4460,7 @@
     {
       "name": "ST_RECTANGLEGRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_RECTANGLEGRID(...)"
       ],
@@ -3900,6 +4470,7 @@
     {
       "name": "ST_RECTANGLEGRIDBOUNDINGBOX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_RECTANGLEGRIDBOUNDINGBOX(...)"
       ],
@@ -3909,6 +4480,7 @@
     {
       "name": "ST_RELATE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_RELATE(...)"
       ],
@@ -3918,6 +4490,7 @@
     {
       "name": "ST_REMOVEPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_REMOVEPOINT(...)"
       ],
@@ -3927,6 +4500,7 @@
     {
       "name": "ST_REVERSE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_REVERSE(...)"
       ],
@@ -3936,6 +4510,7 @@
     {
       "name": "ST_ROTATE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ROTATE(...)"
       ],
@@ -3945,6 +4520,7 @@
     {
       "name": "ST_SCALE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SCALE(...)"
       ],
@@ -3954,6 +4530,7 @@
     {
       "name": "ST_SETPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SETPOINT(...)"
       ],
@@ -3963,6 +4540,7 @@
     {
       "name": "ST_SETSRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SETSRID(...)"
       ],
@@ -3972,6 +4550,7 @@
     {
       "name": "ST_SHORTESTLINE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SHORTESTLINE(...)"
       ],
@@ -3981,6 +4560,7 @@
     {
       "name": "ST_SIMPLIFY",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SIMPLIFY(...)"
       ],
@@ -3990,6 +4570,7 @@
     {
       "name": "ST_SNAPTOGRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SNAPTOGRID(...)"
       ],
@@ -3999,6 +4580,7 @@
     {
       "name": "ST_SPLIT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SPLIT(...)"
       ],
@@ -4008,6 +4590,7 @@
     {
       "name": "ST_SQUAREGRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SQUAREGRID(...)"
       ],
@@ -4017,6 +4600,7 @@
     {
       "name": "ST_SRID",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SRID(...)"
       ],
@@ -4026,6 +4610,7 @@
     {
       "name": "ST_STARTPOINT",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_STARTPOINT(...)"
       ],
@@ -4035,6 +4620,7 @@
     {
       "name": "ST_SUBDIVIDE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SUBDIVIDE(...)"
       ],
@@ -4044,6 +4630,7 @@
     {
       "name": "ST_SYMDIFFERENCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_SYMDIFFERENCE(...)"
       ],
@@ -4053,6 +4640,7 @@
     {
       "name": "ST_TOUCHES",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_TOUCHES(...)"
       ],
@@ -4062,6 +4650,7 @@
     {
       "name": "ST_TRANSFORM",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_TRANSFORM(...)"
       ],
@@ -4071,6 +4660,7 @@
     {
       "name": "ST_TRANSLATE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_TRANSLATE(...)"
       ],
@@ -4080,6 +4670,7 @@
     {
       "name": "ST_TRANSLATE3D",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_TRANSLATE3D(...)"
       ],
@@ -4089,6 +4680,7 @@
     {
       "name": "ST_UNION",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_UNION(...)"
       ],
@@ -4098,6 +4690,7 @@
     {
       "name": "ST_UNIONAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_UNIONAGGR(...)"
       ],
@@ -4107,6 +4700,7 @@
     {
       "name": "ST_VORONOICELL",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_VORONOICELL(...)"
       ],
@@ -4116,6 +4710,7 @@
     {
       "name": "ST_VORONOICELLAGGR",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_VORONOICELLAGGR(...)"
       ],
@@ -4125,6 +4720,7 @@
     {
       "name": "ST_WITHIN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_WITHIN(...)"
       ],
@@ -4134,6 +4730,7 @@
     {
       "name": "ST_WITHINDISTANCE",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_WITHINDISTANCE(...)"
       ],
@@ -4143,6 +4740,7 @@
     {
       "name": "ST_X",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_X(...)"
       ],
@@ -4152,6 +4750,7 @@
     {
       "name": "ST_XMAX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_XMAX(...)"
       ],
@@ -4161,6 +4760,7 @@
     {
       "name": "ST_XMIN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_XMIN(...)"
       ],
@@ -4170,6 +4770,7 @@
     {
       "name": "ST_Y",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_Y(...)"
       ],
@@ -4179,6 +4780,7 @@
     {
       "name": "ST_YMAX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_YMAX(...)"
       ],
@@ -4188,6 +4790,7 @@
     {
       "name": "ST_YMIN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_YMIN(...)"
       ],
@@ -4197,6 +4800,7 @@
     {
       "name": "ST_Z",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_Z(...)"
       ],
@@ -4206,6 +4810,7 @@
     {
       "name": "ST_ZMAX",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ZMAX(...)"
       ],
@@ -4215,6 +4820,7 @@
     {
       "name": "ST_ZMIN",
       "library": "SYS",
+      "category": "spatial",
       "signatures": [
         "ST_ZMIN(...)"
       ],
@@ -4224,6 +4830,7 @@
     {
       "name": "STATEMENT_EXECUTION_HOST",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "STATEMENT_EXECUTION_HOST(...)"
       ],
@@ -4233,6 +4840,7 @@
     {
       "name": "STATEMENT_EXECUTION_PORT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "STATEMENT_EXECUTION_PORT(...)"
       ],
@@ -4242,6 +4850,7 @@
     {
       "name": "STDDEV",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "STDDEV(...)"
       ],
@@ -4251,6 +4860,7 @@
     {
       "name": "STDDEV_POP",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "STDDEV_POP(...)"
       ],
@@ -4260,6 +4870,7 @@
     {
       "name": "STDDEV_SAMP",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "STDDEV_SAMP(...)"
       ],
@@ -4269,6 +4880,7 @@
     {
       "name": "STRING_AGG",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "STRING_AGG(...)"
       ],
@@ -4278,6 +4890,7 @@
     {
       "name": "STRTOBIN",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "STRTOBIN(...)"
       ],
@@ -4287,6 +4900,7 @@
     {
       "name": "SUBARRAY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SUBARRAY(...)"
       ],
@@ -4296,6 +4910,7 @@
     {
       "name": "SUBSTR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SUBSTR(...)"
       ],
@@ -4305,6 +4920,7 @@
     {
       "name": "SUBSTR_AFTER",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SUBSTR_AFTER(...)"
       ],
@@ -4314,6 +4930,7 @@
     {
       "name": "SUBSTR_BEFORE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SUBSTR_BEFORE(...)"
       ],
@@ -4323,6 +4940,7 @@
     {
       "name": "SUBSTR_REGEXPR",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SUBSTR_REGEXPR(...)"
       ],
@@ -4332,6 +4950,7 @@
     {
       "name": "SUBSTRING",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SUBSTRING(...)"
       ],
@@ -4341,6 +4960,7 @@
     {
       "name": "SUBSTRING_REGEXPR",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "SUBSTRING_REGEXPR(...)"
       ],
@@ -4350,6 +4970,7 @@
     {
       "name": "SUBVECTOR",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SUBVECTOR(<vector>, <start_position>, <dimension>)"
       ],
@@ -4359,6 +4980,7 @@
     {
       "name": "SUM",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "SUM(...)"
       ],
@@ -4368,6 +4990,7 @@
     {
       "name": "SYSUUID",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "SYSUUID(...)"
       ],
@@ -4377,6 +5000,7 @@
     {
       "name": "TAN",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "TAN(...)"
       ],
@@ -4386,6 +5010,7 @@
     {
       "name": "TANH",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "TANH(...)"
       ],
@@ -4395,6 +5020,7 @@
     {
       "name": "TM_CATEGORIZE_KNN",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_CATEGORIZE_KNN(...)"
       ],
@@ -4404,6 +5030,7 @@
     {
       "name": "TM_GET_RELATED_DOCUMENTS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_GET_RELATED_DOCUMENTS(...)"
       ],
@@ -4413,6 +5040,7 @@
     {
       "name": "TM_GET_RELATED_TERMS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_GET_RELATED_TERMS(...)"
       ],
@@ -4422,6 +5050,7 @@
     {
       "name": "TM_GET_RELEVANT_DOCUMENTS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_GET_RELEVANT_DOCUMENTS(...)"
       ],
@@ -4431,6 +5060,7 @@
     {
       "name": "TM_GET_RELEVANT_TERMS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_GET_RELEVANT_TERMS(...)"
       ],
@@ -4440,6 +5070,7 @@
     {
       "name": "TM_GET_SUGGESTED_TERMS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TM_GET_SUGGESTED_TERMS(...)"
       ],
@@ -4449,6 +5080,7 @@
     {
       "name": "TO_ALPHANUM",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_ALPHANUM(...)"
       ],
@@ -4458,6 +5090,7 @@
     {
       "name": "TO_ARRAY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TO_ARRAY(<vector>)"
       ],
@@ -4467,6 +5100,7 @@
     {
       "name": "TO_BIGINT",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_BIGINT(...)"
       ],
@@ -4476,6 +5110,7 @@
     {
       "name": "TO_BINARY",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_BINARY(...)"
       ],
@@ -4485,6 +5120,7 @@
     {
       "name": "TO_BLOB",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_BLOB(...)"
       ],
@@ -4494,6 +5130,7 @@
     {
       "name": "TO_BOOLEAN",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_BOOLEAN(...)"
       ],
@@ -4503,6 +5140,7 @@
     {
       "name": "TO_CHAR",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_CHAR(<value> [, <format>])"
       ],
@@ -4512,6 +5150,7 @@
     {
       "name": "TO_CLOB",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_CLOB(...)"
       ],
@@ -4521,6 +5160,7 @@
     {
       "name": "TO_DATE",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_DATE(...)"
       ],
@@ -4530,6 +5170,7 @@
     {
       "name": "TO_DATS",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_DATS(...)"
       ],
@@ -4539,6 +5180,7 @@
     {
       "name": "TO_DECIMAL",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_DECIMAL(...)"
       ],
@@ -4548,6 +5190,7 @@
     {
       "name": "TO_DOUBLE",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_DOUBLE(...)"
       ],
@@ -4557,6 +5200,7 @@
     {
       "name": "TO_FIXEDCHAR",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_FIXEDCHAR(...)"
       ],
@@ -4566,6 +5210,7 @@
     {
       "name": "TO_HALF_VECTOR",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TO_HALF_VECTOR(<vector_representation>)"
       ],
@@ -4575,6 +5220,7 @@
     {
       "name": "TO_INT",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_INT(...)"
       ],
@@ -4584,6 +5230,7 @@
     {
       "name": "TO_INTEGER",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_INTEGER(...)"
       ],
@@ -4593,6 +5240,7 @@
     {
       "name": "TO_JSON_BOOLEAN",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_JSON_BOOLEAN(<value>)"
       ],
@@ -4602,6 +5250,7 @@
     {
       "name": "TO_NCHAR",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_NCHAR(<value> [, <format>])"
       ],
@@ -4611,6 +5260,7 @@
     {
       "name": "TO_NCLOB",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_NCLOB(...)"
       ],
@@ -4620,6 +5270,7 @@
     {
       "name": "TO_NVARCHAR",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_NVARCHAR(...)"
       ],
@@ -4629,6 +5280,7 @@
     {
       "name": "TO_REAL",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_REAL(...)"
       ],
@@ -4638,6 +5290,7 @@
     {
       "name": "TO_REAL_VECTOR",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TO_REAL_VECTOR(<vector_representation>)"
       ],
@@ -4647,6 +5300,7 @@
     {
       "name": "TO_SECONDDATE",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_SECONDDATE(...)"
       ],
@@ -4656,6 +5310,7 @@
     {
       "name": "TO_SMALLDECIMAL",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_SMALLDECIMAL(...)"
       ],
@@ -4665,6 +5320,7 @@
     {
       "name": "TO_SMALLINT",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_SMALLINT(...)"
       ],
@@ -4674,6 +5330,7 @@
     {
       "name": "TO_TIME",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_TIME(...)"
       ],
@@ -4683,6 +5340,7 @@
     {
       "name": "TO_TIMESTAMP",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_TIMESTAMP(...)"
       ],
@@ -4692,6 +5350,7 @@
     {
       "name": "TO_TIMS",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_TIMS(...)"
       ],
@@ -4701,6 +5360,7 @@
     {
       "name": "TO_TINYINT",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_TINYINT(...)"
       ],
@@ -4710,6 +5370,7 @@
     {
       "name": "TO_VARBINARY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TO_VARBINARY(...)"
       ],
@@ -4719,6 +5380,7 @@
     {
       "name": "TO_VARCHAR",
       "library": "SYS",
+      "category": "conversion",
       "signatures": [
         "TO_VARCHAR(...)"
       ],
@@ -4728,6 +5390,7 @@
     {
       "name": "TRIM",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "TRIM(...)"
       ],
@@ -4737,6 +5400,7 @@
     {
       "name": "TRIM_ARRAY",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "TRIM_ARRAY(...)"
       ],
@@ -4746,6 +5410,7 @@
     {
       "name": "UCASE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "UCASE(...)"
       ],
@@ -4755,6 +5420,7 @@
     {
       "name": "UMINUS",
       "library": "SYS",
+      "category": "numeric",
       "signatures": [
         "UMINUS(...)"
       ],
@@ -4764,6 +5430,7 @@
     {
       "name": "UNICODE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "UNICODE(...)"
       ],
@@ -4773,6 +5440,7 @@
     {
       "name": "UNNEST",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "UNNEST(...)"
       ],
@@ -4782,6 +5450,7 @@
     {
       "name": "UPPER",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "UPPER(...)"
       ],
@@ -4791,6 +5460,7 @@
     {
       "name": "UTCTOLOCAL",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "UTCTOLOCAL(...)"
       ],
@@ -4800,6 +5470,7 @@
     {
       "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "VALIDATE_USERGROUP_CONNECT_RESTRICTION(...)"
       ],
@@ -4809,6 +5480,7 @@
     {
       "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS(...)"
       ],
@@ -4818,6 +5490,7 @@
     {
       "name": "VAR",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "VAR(...)"
       ],
@@ -4827,6 +5500,7 @@
     {
       "name": "VAR_POP",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "VAR_POP(...)"
       ],
@@ -4836,6 +5510,7 @@
     {
       "name": "VAR_SAMP",
       "library": "SYS",
+      "category": "aggregate",
       "signatures": [
         "VAR_SAMP(...)"
       ],
@@ -4845,6 +5520,7 @@
     {
       "name": "VECTOR_EMBEDDING",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "VECTOR_EMBEDDING(<text>, {'DOCUMENT' | 'QUERY'}, <model_and_version> [, <remote_source_schema>, <remote_source>] [, <options>])"
       ],
@@ -4854,6 +5530,7 @@
     {
       "name": "WEEK",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "WEEK(...)"
       ],
@@ -4863,6 +5540,7 @@
     {
       "name": "WEEKDAY",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "WEEKDAY(...)"
       ],
@@ -4872,6 +5550,7 @@
     {
       "name": "WEIGHTED_AVG",
       "library": "SYS",
+      "category": "window",
       "signatures": [
         "WEIGHTED_AVG(...)"
       ],
@@ -4881,6 +5560,7 @@
     {
       "name": "WIDTH_BUCKET",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "WIDTH_BUCKET(...)"
       ],
@@ -4890,6 +5570,7 @@
     {
       "name": "WORKDAYS_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "WORKDAYS_BETWEEN(...)"
       ],
@@ -4899,6 +5580,7 @@
     {
       "name": "XMLEXTRACT",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "XMLEXTRACT(...)"
       ],
@@ -4908,6 +5590,7 @@
     {
       "name": "XMLEXTRACTVALUE",
       "library": "SYS",
+      "category": "misc",
       "signatures": [
         "XMLEXTRACTVALUE(...)"
       ],
@@ -4917,6 +5600,7 @@
     {
       "name": "XMLTABLE",
       "library": "SYS",
+      "category": "string",
       "signatures": [
         "XMLTABLE(...)"
       ],
@@ -4926,6 +5610,7 @@
     {
       "name": "YEAR",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "YEAR(...)"
       ],
@@ -4935,6 +5620,7 @@
     {
       "name": "YEARS_BETWEEN",
       "library": "SYS",
+      "category": "datetime",
       "signatures": [
         "YEARS_BETWEEN(...)"
       ],

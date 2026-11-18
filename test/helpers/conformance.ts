@@ -244,7 +244,8 @@ export function formatterViolations(text: string, languageId = 'hanasql'): Forma
 // ---------------------------------------------------------------------------
 
 interface KeywordCatalog {
-  keywords: Array<{ name: string }>;
+  roles: Record<string, { scope?: string }>;
+  words: Array<{ name: string; roles: string[] }>;
 }
 
 interface FunctionCatalog {
@@ -258,13 +259,16 @@ function readJson<T>(rel: string): T {
 let keywordSet: ReadonlySet<string> | undefined;
 let functionSet: ReadonlySet<string> | undefined;
 
-/** Single-word catalog keywords (`docs/specs/catalogs/sql-keywords.json`), upper case. */
+/**
+ * Catalog keywords (`docs/specs/catalogs/sql-keywords.json`), upper case: words with at least one role that
+ * carries a TextMate scope. Words known only to analyzer heuristics (context roles) are not counted.
+ */
 export function catalogKeywords(): ReadonlySet<string> {
-  keywordSet ??= new Set(
-    readJson<KeywordCatalog>('docs/specs/catalogs/sql-keywords.json')
-      .keywords.map((k) => k.name.toUpperCase())
-      .filter((k) => /^[A-Z_][A-Z0-9_]*$/.test(k))
-  );
+  if (!keywordSet) {
+    const cat = readJson<KeywordCatalog>('docs/specs/catalogs/sql-keywords.json');
+    const scoped = new Set(Object.entries(cat.roles).filter(([, r]) => r.scope).map(([id]) => id));
+    keywordSet = new Set(cat.words.filter((w) => w.roles.some((r) => scoped.has(r))).map((w) => w.name.toUpperCase()));
+  }
   return keywordSet;
 }
 

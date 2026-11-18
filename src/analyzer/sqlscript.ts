@@ -7,6 +7,12 @@ import {
   type DiagnosticSeverityLevel,
   type TextEditSpan,
 } from './types';
+import {
+  CE_FUNCTIONS,
+  DML_KEYWORDS,
+  IDENT_CONTEXT_KEYWORDS,
+  PROCEDURE_DDL_KEYWORDS,
+} from './keyword-sets';
 
 interface IndexedStatement {
   readonly tokens: readonly Token[];
@@ -15,37 +21,6 @@ interface IndexedStatement {
   readonly inProcedureBody: boolean;
   readonly loopDepth: number;
 }
-
-const CE_FUNCTIONS = new Set([
-  'CE_COLUMN_TABLE',
-  'CE_JOIN_VIEW',
-  'CE_OLAP_VIEW',
-  'CE_CALC_VIEW',
-  'CE_JOIN',
-  'CE_LEFT_OUTER_JOIN',
-  'CE_RIGHT_OUTER_JOIN',
-  'CE_PROJECTION',
-  'CE_CALC',
-  'CE_AGGREGATION',
-  'CE_UNION_ALL',
-  'CE_VERTICAL_UNION',
-  'CE_CONVERSION',
-]);
-
-const DML_KEYWORDS = new Set(['INSERT', 'UPDATE', 'UPSERT', 'DELETE', 'MERGE']);
-const DDL_KEYWORDS = new Set(['CREATE', 'ALTER', 'DROP', 'TRUNCATE']);
-const IDENT_CONTEXT_KEYWORDS = new Set([
-  'FROM',
-  'JOIN',
-  'INTO',
-  'TABLE',
-  'UPDATE',
-  'CALL',
-  'VIEW',
-  'PROCEDURE',
-  'FUNCTION',
-  'ON',
-]);
 
 function upper(tok: Token | undefined): string {
   return tok ? tok.text.toUpperCase() : '';
@@ -1248,7 +1223,7 @@ export function analyzeSqlScript(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     const isAssignSql = toks.length >= 3 && toks[1].text === '=' && isWord(toks[2], 'SELECT');
     const isSelect = !stmtHadCe && (firstKw === 'SELECT' || isAssignSql || firstKw === 'WITH');
     const isDml = DML_KEYWORDS.has(firstKw);
-    const isDdl = stmt.inProcedureBody && DDL_KEYWORDS.has(firstKw);
+    const isDdl = stmt.inProcedureBody && PROCEDURE_DDL_KEYWORDS.has(firstKw);
 
     if (isSelect || isDml) {
       hasPlainSqlInFile = true;
