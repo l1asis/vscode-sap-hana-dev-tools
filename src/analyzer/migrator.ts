@@ -583,35 +583,91 @@ export function convertHdbstructureKvToTableType(text: string, objectName = 'MY_
   return `TYPE "${objectName}" AS TABLE (${body})\n`;
 }
 
-function inferObjectTypeFromClassicSubject(subject: string): string {
-  const lower = subject.toLowerCase();
-  if (lower.endsWith('.hdbview') || lower.endsWith('.view') || lower.endsWith('.calculationview')) return 'VIEW';
-  if (lower.endsWith('.hdbprocedure') || lower.endsWith('.procedure')) return 'PROCEDURE';
-  if (lower.endsWith('.hdbfunction') || lower.endsWith('.hdbtablefunction')) return 'FUNCTION';
-  if (lower.endsWith('.hdbsequence')) return 'SEQUENCE';
-  return 'TABLE';
+/** Classic repository object suffix -> HDI object privilege `type` `[XSC]` -> `[HDI]`. */
+const CLASSIC_OBJECT_TYPES: Readonly<Record<string, string>> = {
+  hdbtable: 'TABLE',
+  table: 'TABLE',
+  hdbview: 'VIEW',
+  view: 'VIEW',
+  attributeview: 'VIEW',
+  analyticview: 'VIEW',
+  calculationview: 'VIEW',
+  hdbcalculationview: 'VIEW',
+  hdbprocedure: 'PROCEDURE',
+  procedure: 'PROCEDURE',
+  hdbfunction: 'FUNCTION',
+  hdbtablefunction: 'FUNCTION',
+  hdbscalarfunction: 'FUNCTION',
+  hdbsequence: 'SEQUENCE',
+  sequence: 'SEQUENCE',
+  hdbsynonym: 'SYNONYM',
+};
+
+interface ClassicObjectRef {
+  readonly name: string;
+  readonly type: string;
+  /** False when no known suffix was found and `type` is the `TABLE` placeholder. */
+  readonly typeKnown: boolean;
 }
 
-function normalizeClassicObjectName(rawToks: readonly RoleToken[]): string {
-  const joined = rawToks.map((t) => t.text.replace(/^"|"$/g, '')).join('');
-  // Strip `.hdbtable` etc. suffix cleanly and keep package::Object form
-  const strippedExt = joined.replace(/\.(?:hdbtable|hdbview|hdbprocedure|hdbfunction|hdbsequence|hdbschema|calculationview)$/i, '');
-  const parts = strippedExt.split(':');
-  if (parts.length === 2 && !strippedExt.includes('::')) {
-    return `${parts[0]}::${parts[1].replace(/\..+$/, '')}`;
+/** `pkg:OBJ.suffix` (or `pkg::OBJ.suffix`) -> `{ name: "pkg::OBJ", type }`. */
+function convertClassicObjectRef(raw: string): ClassicObjectRef {
+  let pkg: string | null = null;
+  let rest = raw;
+  const dcolon = raw.indexOf('::');
+  const colon = raw.indexOf(':');
+  if (dcolon !== -1) {
+    pkg = raw.slice(0, dcolon);
+    rest = raw.slice(dcolon + 2);
+  } else if (colon !== -1) {
+    pkg = raw.slice(0, colon);
+    rest = raw.slice(colon + 1);
   }
-  if (strippedExt.includes('::')) {
-    const [pkg, objWithSub] = strippedExt.split('::');
-    const obj = objWithSub.split('.')[0];
-    return `${pkg}::${obj}`;
+  const dot = rest.lastIndexOf('.');
+  const suffix = dot > 0 ? rest.slice(dot + 1).toLowerCase() : '';
+  const type = CLASSIC_OBJECT_TYPES[suffix];
+  const obj = type ? rest.slice(0, dot) : rest;
+  return { name: pkg ? `${pkg}::${obj}` : obj, type: type ?? 'TABLE', typeKnown: type !== undefined };
+}
+
+function unquoteRoleToken(tok: RoleToken): string {
+  return tok.type === 'qident' ? tok.text.slice(1, -1).replace(/""/g, '"') : tok.text;
+}
+
+/** Joins tokens of one name (`demo . roles :: X` -> `demo.roles::X`, `"R"` -> `R`). */
+function roleTokensText(toks: readonly RoleToken[]): string {
+  return toks.map(unquoteRoleToken).join('');
+}
+
+function splitRoleTokensOnCommas(toks: readonly RoleToken[]): RoleToken[][] {
+  const out: RoleToken[][] = [];
+  let cur: RoleToken[] = [];
+  for (const t of toks) {
+    if (t.type === 'comma') {
+      if (cur.length > 0) out.push(cur);
+      cur = [];
+    } else {
+      cur.push(t);
+    }
   }
-  return strippedExt;
+  if (cur.length > 0) out.push(cur);
+  return out;
+}
+
+function isRoleWord(tok: RoleToken | undefined, word: string): boolean {
+  return tok !== undefined && tok.type === 'word' && tok.text.toUpperCase() === word;
+}
+
+export interface RoleConversion {
+  readonly content: string;
+  /** Classic content that HDI JSON cannot hold, for the diagnostic message. */
+  readonly notes: readonly string[];
 }
 
 /**
- * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`.
+ * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`, and reports what it drops.
  */
-export function convertClassicHdbroleToHdiJson(text: string): string {
+export function convertClassicHdbroleToHdiJsonWithNotes(text: string): RoleConversion {
   const tokens = roleTokenize(text).filter(
     (t) => t.type !== 'lineComment' && t.type !== 'blockComment' && t.type !== 'raw'
   );
@@ -632,6 +688,7 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
 
   let roleName = 'MY_ROLE';
   let needsGrantHash = false;
+  const notes: string[] = [];
   const schemaRoles: string[] = [];
   const globalRoles: string[] = [];
   const systemPrivs: string[] = [];
@@ -639,8 +696,37 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
   const objectPrivs: Array<Record<string, unknown>> = [];
   const analyticPrivs: Array<Record<string, unknown>> = [];
 
+  /** `extends role a, b` / `extends catalog role "R1", "R2"` (in the header or as a body statement). */
+  const readExtends = (toks: readonly RoleToken[]): void => {
+    if (isRoleWord(toks[1], 'CATALOG') && isRoleWord(toks[2], 'ROLE')) {
+      for (const n of splitRoleTokensOnCommas(toks.slice(3))) globalRoles.push(roleTokensText(n));
+    } else if (isRoleWord(toks[1], 'ROLE')) {
+      for (const n of splitRoleTokensOnCommas(toks.slice(2))) schemaRoles.push(roleTokensText(n));
+    }
+  };
+  /** Splits `role X extends ... extends ...` at each `extends`. */
+  const splitOnExtends = (toks: readonly RoleToken[]): RoleToken[][] => {
+    const parts: RoleToken[][] = [[]];
+    for (const t of toks) {
+      if (isRoleWord(t, 'EXTENDS')) parts.push([]);
+      parts[parts.length - 1].push(t);
+    }
+    return parts;
+  };
+
   for (const stmt of stmts) {
     if (stmt.length === 0) continue;
+    if (isRoleWord(stmt[0], 'ROLE')) {
+      const [head, ...exts] = splitOnExtends(stmt);
+      if (head.length > 1) roleName = roleTokensText(head.slice(1));
+      for (const ext of exts) readExtends(ext);
+      continue;
+    }
+    if (isRoleWord(stmt[0], 'EXTENDS')) {
+      readExtends(stmt);
+      continue;
+    }
+
     let colonIdx = -1;
     for (let k = stmt.length - 1; k >= 0; k--) {
       if (stmt[k].type === 'colon') {
@@ -648,77 +734,65 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
         break;
       }
     }
-    const lhs = colonIdx >= 0 ? stmt.slice(0, colonIdx) : stmt;
-    const lhsUpper = lhs.map((t) => t.text.toUpperCase()).join(' ');
-
-    if (lhs[0]?.text.toUpperCase() === 'ROLE') {
-      roleName = lhs.slice(1).map((t) => t.text.replace(/^"|"$/g, '')).join('');
-      continue;
-    }
-    if (lhsUpper.startsWith('EXTENDS CATALOG ROLE')) {
-      globalRoles.push(lhs[lhs.length - 1].text.replace(/^"|"$/g, ''));
-      continue;
-    }
-    if (lhsUpper.startsWith('EXTENDS ROLE')) {
-      schemaRoles.push(lhs.slice(2).map((t) => t.text.replace(/^"|"$/g, '')).join(''));
-      continue;
-    }
     if (colonIdx === -1) continue;
+    const lhs = stmt.slice(0, colonIdx);
+    const lhsUpper = lhs.map((t) => t.text.toUpperCase()).join(' ');
+    const stmtText = text.slice(stmt[0].start, stmt[stmt.length - 1].end).replace(/\s+/g, ' ');
 
     let endIdx = stmt.length;
     let withGrantOption = false;
     if (
       endIdx >= 3 &&
-      stmt[endIdx - 3].text.toUpperCase() === 'WITH' &&
-      stmt[endIdx - 2].text.toUpperCase() === 'GRANT' &&
-      stmt[endIdx - 1].text.toUpperCase() === 'OPTION'
+      isRoleWord(stmt[endIdx - 3], 'WITH') &&
+      isRoleWord(stmt[endIdx - 2], 'GRANT') &&
+      isRoleWord(stmt[endIdx - 1], 'OPTION')
     ) {
       withGrantOption = true;
-      needsGrantHash = true;
       endIdx -= 3;
     }
 
-    const privs: string[] = [];
-    let group: RoleToken[] = [];
-    for (let i = colonIdx + 1; i < endIdx; i++) {
-      if (stmt[i].type === 'comma') {
-        if (group.length > 0) privs.push(group.map((t) => t.text.replace(/^"|"$/g, '')).join(' '));
-        group = [];
-      } else {
-        group.push(stmt[i]);
-      }
-    }
-    if (group.length > 0) privs.push(group.map((t) => t.text.replace(/^"|"$/g, '')).join(' '));
-
+    const privs = splitRoleTokensOnCommas(stmt.slice(colonIdx + 1, endIdx)).map((g) =>
+      g.map(unquoteRoleToken).join(' ')
+    );
     const privKey = withGrantOption ? 'privileges_with_grant_option' : 'privileges';
+    let granted = true;
 
     if (lhsUpper.startsWith('SYSTEM PRIVILEGE')) {
       systemPrivs.push(...privs);
+      granted = false; // HDI JSON has no grant-option form for system privileges
+      if (withGrantOption) notes.push(`${stmtText} — WITH GRANT OPTION dropped: HDI system_privileges have no grant-option form`);
     } else if (lhsUpper.startsWith('CATALOG SCHEMA')) {
-      const refName = lhs[lhs.length - 1]?.text.replace(/^"|"$/g, '') ?? 'EXTERNAL_SCHEMA';
+      const refName = lhs.length > 2 ? unquoteRoleToken(lhs[lhs.length - 1]) : 'EXTERNAL_SCHEMA';
       schemaPrivs.push({ reference: refName, [privKey]: privs });
     } else if (lhsUpper.startsWith('SCHEMA')) {
       schemaPrivs.push({ [privKey]: privs });
     } else if (lhsUpper.startsWith('CATALOG SQL OBJECT')) {
-      const rawSubject = lhs.slice(3).map((t) => t.text).join('');
-      const parts = rawSubject.split('.');
-      const objName = (parts[parts.length - 1] ?? rawSubject).replace(/^"|"$/g, '');
-      objectPrivs.push({
-        name: objName,
-        type: inferObjectTypeFromClassicSubject(rawSubject),
-        [privKey]: privs,
-      });
+      const subject = lhs.slice(3);
+      const objName = subject.length > 0 ? unquoteRoleToken(subject[subject.length - 1]) : 'OBJECT';
+      objectPrivs.push({ name: objName, type: 'TABLE', [privKey]: privs });
+      notes.push(
+        `${stmtText} — create a .hdbsynonym for the external object ${roleTokensText(subject)} and confirm its type (TABLE assumed)`
+      );
     } else if (lhsUpper.startsWith('SQL OBJECT')) {
-      const subjectTokens = lhs.slice(2);
-      const rawJoined = subjectTokens.map((t) => t.text).join('');
-      objectPrivs.push({
-        name: normalizeClassicObjectName(subjectTokens),
-        type: inferObjectTypeFromClassicSubject(rawJoined),
-        [privKey]: privs,
-      });
+      for (const subject of splitRoleTokensOnCommas(lhs.slice(2))) {
+        const raw = roleTokensText(subject);
+        const ref = convertClassicObjectRef(raw);
+        objectPrivs.push({ name: ref.name, type: ref.type, [privKey]: privs });
+        if (!ref.typeKnown) notes.push(`sql object ${raw} — unknown object type, TABLE assumed`);
+      }
     } else if (lhsUpper.startsWith('ANALYTIC PRIVILEGE') || lhsUpper.startsWith('CATALOG ANALYTIC PRIVILEGE')) {
       analyticPrivs.push({ [privKey]: privs });
+    } else if (lhsUpper.startsWith('APPLICATION PRIVILEGE')) {
+      granted = false;
+      notes.push(`${stmtText} — dropped: define the application privilege as an XSUAA scope in xs-security.json`);
+    } else if (lhsUpper.startsWith('PACKAGE')) {
+      granted = false;
+      notes.push(`${stmtText} — dropped: repository package privileges do not exist in HDI`);
+    } else {
+      granted = false;
+      notes.push(`${stmtText} — dropped: no HDI JSON equivalent`);
     }
+    if (granted && withGrantOption) needsGrantHash = true;
   }
 
   if (needsGrantHash && !roleName.endsWith('#')) {
@@ -733,7 +807,14 @@ export function convertClassicHdbroleToHdiJson(text: string): string {
   if (objectPrivs.length > 0) roleObj.object_privileges = objectPrivs;
   if (analyticPrivs.length > 0) roleObj.schema_analytic_privileges = analyticPrivs;
 
-  return `${JSON.stringify({ role: roleObj }, null, 2)}\n`;
+  return { content: `${JSON.stringify({ role: roleObj }, null, 2)}\n`, notes };
+}
+
+/**
+ * Converts XSC Classic `.hdbrole` privilege DSL into HDI JSON `.hdbrole`.
+ */
+export function convertClassicHdbroleToHdiJson(text: string): string {
+  return convertClassicHdbroleToHdiJsonWithNotes(text).content;
 }
 
 /**
@@ -1197,7 +1278,8 @@ export function convertArtifactDirection(
       note: 'HDI replaces .hdbstructure with .hdbtabletype',
     };
   } else if (languageId === 'hdbrole' && direction === 'toHdi' && isClassicHdbrole(text)) {
-    return { content: convertClassicHdbroleToHdiJson(text) };
+    const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(text);
+    return notes.length > 0 ? { content, note: notes.join('\n') } : { content };
   } else if ((languageId === 'hdbdd' || languageId === 'hdbcds') && direction === 'toHdi') {
     return {
       content: convertHdbddToHdbcds(text),
@@ -1259,15 +1341,16 @@ export function analyzeMigration(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       fixes: [fullRangeFix('Convert Classic .hdbsequence to HDI DDL syntax', converted)],
     });
   } else if (languageId === 'hdbrole' && isClassicHdbrole(text)) {
-    const converted = convertClassicHdbroleToHdiJson(text);
+    const { content, notes } = convertClassicHdbroleToHdiJsonWithNotes(text);
+    const base = 'XS Classic .hdbrole DSL can be migrated to HDI JSON .hdbrole schema.';
     diagnostics.push({
       ruleId: 'HANA-MIG-004',
       category: 'migration',
       severity: 'information',
-      message: 'XS Classic .hdbrole DSL can be migrated to HDI JSON .hdbrole schema.',
+      message: notes.length > 0 ? `${base}\nNot carried over by the QuickFix:\n- ${notes.join('\n- ')}` : base,
       start: 0,
       end: endOffset,
-      fixes: [fullRangeFix('Convert Classic .hdbrole to HDI JSON .hdbrole', converted)],
+      fixes: [fullRangeFix('Convert Classic .hdbrole to HDI JSON .hdbrole', content)],
     });
   } else if (languageId === 'hdbdd' || languageId === 'hdbcds') {
     const hits = findHdbddMigrationSpans(text);
