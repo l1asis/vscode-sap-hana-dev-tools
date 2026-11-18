@@ -192,7 +192,7 @@ test('HANA-MIG-005: inline @Schema, single-line entity @Catalog.tableType / @Cat
   const convertedInline = convertHdbddToHdbcds(inlineBefore);
   assert.equal(/@Schema|@Catalog|@WithStructuredPrivilegeCheck/.test(convertedInline), false);
   assert.match(convertedInline, /^namespace demo\.app; context C \{/);
-  assert.match(convertedInline, /technical configuration \{ row store; unique index IDX_A on \(a asc\); \};/);
+  assert.match(convertedInline, /entity E \{ key a : Integer; \} technical configuration \{ row store; unique index IDX_A on \(a\) asc; \};/);
 
   // Negative case: commented / quoted annotations must NOT trigger HANA-MIG-005 or get mutated
   const commentedOnly = `namespace demo.hdi;
@@ -370,4 +370,86 @@ reset_by = "SELECT MAX(\\"ID\\") + 1 FROM \\"MYSCHEMA\\".\\"pkg::T\\" JOIN \\"OT
   const legacy = convertHdbsequenceHdiToKv('SEQUENCE "S"\n  NOMAXVALUE\n  NOMINVALUE\n');
   assert.match(legacy, /^nomaxvalue = true;$/m);
   assert.match(legacy, /^nominvalue = true;$/m);
+});
+
+test('#68 HANA-MIG-005: technical configuration goes after the entity brace, merged, never duplicated', () => {
+  const countTc = (s: string): number => (s.match(/technical configuration/g) ?? []).length;
+  const idempotent = (out: string): void => assert.equal(convertHdbddToHdbcds(out), out, 'fix on its own output must be a no-op');
+
+  // Multi-line entity without a technical configuration: new block after `}` with element indentation.
+  const plain = `context C {
+    @Catalog.tableType: #COLUMN
+    entity E {
+        key id : Integer;
+    };
+};`;
+  const plainOut = convertHdbddToHdbcds(plain);
+  assert.equal(
+    plainOut,
+    `context C {
+    entity E {
+        key id : Integer;
+    } technical configuration {
+        column store;
+    };
+};`
+  );
+  idempotent(plainOut);
+
+  // Existing post-brace block with a store clause: annotation removed, nothing added (the issue's repro).
+  const withTc = `@Catalog.tableType: #COLUMN
+entity Item {
+    key id : Integer;
+    price : Decimal(15, 2);
+} technical configuration {
+    column store;
+    partition by hash(id) partitions 4;
+};`;
+  const withTcOut = convertHdbddToHdbcds(withTc);
+  assert.equal(withTcOut, withTc.replace('@Catalog.tableType: #COLUMN\n', ''));
+  assert.equal(countTc(withTcOut), 1);
+  idempotent(withTcOut);
+
+  // Existing block without a store clause: store + index merged into it.
+  const merge = `@Catalog.tableType: #ROW
+@Catalog.index: [ { name: 'IDX_AB', unique: false, order: #DESC, elementNames: ['a', 'b'] } ]
+entity M {
+  key a : Integer;
+  b : Integer;
+} technical configuration {
+  partition by hash(a) partitions 2;
+};`;
+  const mergeOut = convertHdbddToHdbcds(merge);
+  assert.equal(
+    mergeOut,
+    `entity M {
+  key a : Integer;
+  b : Integer;
+} technical configuration {
+  partition by hash(a) partitions 2;
+  row store;
+  index IDX_AB on (a, b) desc;
+};`
+  );
+  idempotent(mergeOut);
+
+  // Index already declared in the block: not duplicated.
+  const dupIdx = `@Catalog.index: [ { name: 'IDX_A', elementNames: ['a'] } ]
+entity D { key a : Integer; } technical configuration { index IDX_A on (a) asc; };`;
+  const dupOut = convertHdbddToHdbcds(dupIdx);
+  assert.equal(dupOut, `entity D { key a : Integer; } technical configuration { index IDX_A on (a) asc; };`);
+
+  // Single-line entity without `;` after the brace gets one.
+  const noSemi = `@Catalog.tableType: #ROW
+entity S { key a : Integer; }`;
+  assert.equal(convertHdbddToHdbcds(noSemi), `entity S { key a : Integer; } technical configuration { row store; };`);
+
+  // CRLF files keep CRLF line endings.
+  const crlfOut = convertHdbddToHdbcds(plain.replace(/\n/g, '\r\n'));
+  assert.equal(crlfOut, plainOut.replace(/\n/g, '\r\n'));
+
+  // Negative: the block is never placed inside the element list.
+  for (const out of [plainOut, withTcOut, mergeOut]) {
+    assert.equal(/;\s*technical configuration/.test(out), false, `technical configuration inside entity braces:\n${out}`);
+  }
 });
