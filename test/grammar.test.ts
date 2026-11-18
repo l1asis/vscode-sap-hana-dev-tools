@@ -525,14 +525,16 @@ test('Phase 1 SQL, SQLScript, Vector, Spatial, Graph, Hierarchy, JSON & Catalogs
 
   // Verify catalog JSON schemas
   const kwCatalog = JSON.parse(fs.readFileSync(path.join(rootDir, 'docs', 'specs', 'catalogs', 'sql-keywords.json'), 'utf8')) as {
-    keywords: Array<{ name: string; category: string; scope: string; platforms: string[] }>;
+    roles: Record<string, { group: string; scope?: string }>;
+    words: Array<{ name: string; roles: string[]; platforms?: string[] }>;
   };
-  assert.ok(Array.isArray(kwCatalog.keywords) && kwCatalog.keywords.length >= 400);
-  assert.ok(kwCatalog.keywords.some((k) => k.name === 'SELECT' && k.category === 'reserved'));
-  assert.ok(kwCatalog.keywords.some((k) => k.name === 'REAL_VECTOR' && k.platforms.includes('CLOUD')));
+  assert.ok(Array.isArray(kwCatalog.words) && kwCatalog.words.length >= 400);
+  assert.ok(kwCatalog.words.some((k) => k.name === 'SELECT' && k.roles.includes('reserved')));
+  assert.ok(kwCatalog.words.some((k) => k.name === 'REAL_VECTOR' && k.platforms?.length === 1 && k.platforms[0] === 'CLOUD'));
+  assert.equal(kwCatalog.roles.reserved.group, 'lexical');
 
   const fnCatalog = JSON.parse(fs.readFileSync(path.join(rootDir, 'docs', 'specs', 'catalogs', 'builtin-functions.json'), 'utf8')) as {
-    functions: Array<{ name: string; library: string; signatures: string[]; returnType: string; description: string }>;
+    functions: Array<{ name: string; library: string; category: string; signatures: string[]; returnType: string; description: string }>;
   };
   assert.ok(Array.isArray(fnCatalog.functions) && fnCatalog.functions.length >= 500);
   for (const lib of ['SYS', 'SQLSCRIPT_SYNC', 'SQLSCRIPT_STRING', 'SQLSCRIPT_PRINT', 'SQLSCRIPT_LOGGING', 'SQLSCRIPT_TEST']) {

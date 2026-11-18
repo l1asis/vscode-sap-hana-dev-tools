@@ -14,6 +14,8 @@ export interface SqlKeywordEntry {
 export interface SqlFunctionEntry {
   readonly name: string;
   readonly library: string;
+  /** `builtin-functions.json` category (`aggregate`, `string`, `spatial`, `graphscript`, ...). */
+  readonly category: string;
   readonly signatures: readonly string[];
   readonly returnType: string;
   readonly description: string;
@@ -269,18 +271,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "APPLY_FILTER",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "ARRAY",
     "kind": "type",
     "category": "non-reserved",
@@ -465,30 +455,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "BIND_AS_PARAMETER",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "BIND_AS_VALUE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -1319,18 +1285,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "DELETE",
     "kind": "keyword",
     "category": "non-reserved",
@@ -1479,18 +1433,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.clause.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2128,30 +2070,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "IN_DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "IN_EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "INCREMENT",
     "kind": "keyword",
     "category": "non-reserved",
@@ -2180,18 +2098,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.ddl.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "INDUCED_SUBGRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2320,18 +2226,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "INVERSE_GRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "INVOKER",
     "kind": "keyword",
     "category": "non-reserved",
@@ -2348,30 +2242,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "reserved",
     "scope": "keyword.operator.logical.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "IS_EMPTY",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "IS_REACHABLE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2417,18 +2287,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "K_SHORTEST_PATHS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2649,6 +2507,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
+    "name": "LOADABLE",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
     "name": "LOB",
     "kind": "keyword",
     "category": "non-reserved",
@@ -2724,30 +2594,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "reserved",
     "scope": "keyword.control.flow.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "MAP_MERGE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "MAP_REDUCE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2961,18 +2807,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "NEIGHBORS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -3230,30 +3064,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "OUT_DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "OUT_EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "OUTER",
     "kind": "keyword",
     "category": "non-reserved",
@@ -3291,6 +3101,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
   },
   {
     "name": "PACKAGE",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
+    "name": "PAGE",
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
@@ -3740,18 +3562,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "RECORD_COUNT",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "REFERENCE",
     "kind": "keyword",
     "category": "non-reserved",
@@ -3828,6 +3638,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.dml.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
+    "name": "REPLICA",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -4301,22 +4123,10 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "SHORTEST_PATH",
-    "kind": "function",
+    "name": "SHARED",
+    "kind": "keyword",
     "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "SHORTEST_PATHS_ONE_TO_ALL",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -4400,6 +4210,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
+    "name": "SNAPSHOT",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -4756,34 +4578,10 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "STRONGLY_CONNECTED_COMPONENTS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "STRUCTURED",
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
-    "name": "SUBGRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -5515,18 +5313,6 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
-    "name": "VERTICES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  {
     "name": "VIEW",
     "kind": "keyword",
     "category": "non-reserved",
@@ -5896,18 +5682,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "APPLY_FILTER": {
-    "name": "APPLY_FILTER",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "ARRAY": {
     "name": "ARRAY",
     "kind": "type",
@@ -6093,30 +5867,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "BIND_AS_PARAMETER": {
-    "name": "BIND_AS_PARAMETER",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "BIND_AS_VALUE": {
-    "name": "BIND_AS_VALUE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -6946,18 +6696,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "DEGREE": {
-    "name": "DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "DELETE": {
     "name": "DELETE",
     "kind": "keyword",
@@ -7107,18 +6845,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.clause.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "EDGES": {
-    "name": "EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7755,30 +7481,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "IN_DEGREE": {
-    "name": "IN_DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "IN_EDGES": {
-    "name": "IN_EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "INCREMENT": {
     "name": "INCREMENT",
     "kind": "keyword",
@@ -7808,18 +7510,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.ddl.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "INDUCED_SUBGRAPH": {
-    "name": "INDUCED_SUBGRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7947,18 +7637,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "INVERSE_GRAPH": {
-    "name": "INVERSE_GRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "INVOKER": {
     "name": "INVOKER",
     "kind": "keyword",
@@ -7976,30 +7654,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "reserved",
     "scope": "keyword.operator.logical.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "IS_EMPTY": {
-    "name": "IS_EMPTY",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "IS_REACHABLE": {
-    "name": "IS_REACHABLE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8045,18 +7699,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "K_SHORTEST_PATHS": {
-    "name": "K_SHORTEST_PATHS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8276,6 +7918,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
+  "LOADABLE": {
+    "name": "LOADABLE",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
   "LOB": {
     "name": "LOB",
     "kind": "keyword",
@@ -8352,30 +8006,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "reserved",
     "scope": "keyword.control.flow.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "MAP_MERGE": {
-    "name": "MAP_MERGE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "MAP_REDUCE": {
-    "name": "MAP_REDUCE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8589,18 +8219,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "NEIGHBORS": {
-    "name": "NEIGHBORS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8857,30 +8475,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "OUT_DEGREE": {
-    "name": "OUT_DEGREE",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "OUT_EDGES": {
-    "name": "OUT_EDGES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "OUTER": {
     "name": "OUTER",
     "kind": "keyword",
@@ -8919,6 +8513,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
   },
   "PACKAGE": {
     "name": "PACKAGE",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  "PAGE": {
+    "name": "PAGE",
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
@@ -9367,18 +8973,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "RECORD_COUNT": {
-    "name": "RECORD_COUNT",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "REFERENCE": {
     "name": "REFERENCE",
     "kind": "keyword",
@@ -9456,6 +9050,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.dml.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  "REPLICA": {
+    "name": "REPLICA",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -9928,23 +9534,11 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "SHORTEST_PATH": {
-    "name": "SHORTEST_PATH",
-    "kind": "function",
+  "SHARED": {
+    "name": "SHARED",
+    "kind": "keyword",
     "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "SHORTEST_PATHS_ONE_TO_ALL": {
-    "name": "SHORTEST_PATHS_ONE_TO_ALL",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -10028,6 +9622,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "type",
     "category": "non-reserved",
     "scope": "storage.type.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  "SNAPSHOT": {
+    "name": "SNAPSHOT",
+    "kind": "keyword",
+    "category": "non-reserved",
+    "scope": "keyword.other.statement.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -10383,35 +9989,11 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "STRONGLY_CONNECTED_COMPONENTS": {
-    "name": "STRONGLY_CONNECTED_COMPONENTS",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "STRUCTURED": {
     "name": "STRUCTURED",
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
-  "SUBGRAPH": {
-    "name": "SUBGRAPH",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -11142,18 +10724,6 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
-  "VERTICES": {
-    "name": "VERTICES",
-    "kind": "function",
-    "category": "non-reserved",
-    "scope": "support.function.sqlscript.hanasql",
-    "platforms": [
-      "XSC",
-      "XSA",
-      "HDI",
-      "CLOUD"
-    ]
-  },
   "VIEW": {
     "name": "VIEW",
     "kind": "keyword",
@@ -11390,6 +10960,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_ALPHANUM",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_ALPHANUM(...)"
     ],
@@ -11399,6 +10970,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_DF16RAW_TO_SMALLDECIMAL",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_DF16RAW_TO_SMALLDECIMAL(...)"
     ],
@@ -11408,6 +10980,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_DF34RAW_TO_DECIMAL",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_DF34RAW_TO_DECIMAL(...)"
     ],
@@ -11417,6 +10990,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_LOWER",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_LOWER(...)"
     ],
@@ -11426,6 +11000,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_NUMC",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_NUMC(...)"
     ],
@@ -11435,6 +11010,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABAP_UPPER",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ABAP_UPPER(...)"
     ],
@@ -11444,6 +11020,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ABS",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ABS(...)"
     ],
@@ -11453,6 +11030,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ACOS",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ACOS(...)"
     ],
@@ -11462,6 +11040,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_DAYS",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_DAYS(...)"
     ],
@@ -11471,6 +11050,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_MONTHS",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_MONTHS(...)"
     ],
@@ -11480,6 +11060,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_MONTHS_LAST",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_MONTHS_LAST(...)"
     ],
@@ -11489,6 +11070,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_NANO100",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_NANO100(...)"
     ],
@@ -11498,6 +11080,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_SECONDS",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_SECONDS(...)"
     ],
@@ -11507,6 +11090,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_WORKDAYS",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_WORKDAYS(...)"
     ],
@@ -11516,6 +11100,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ADD_YEARS",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ADD_YEARS(...)"
     ],
@@ -11525,6 +11110,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "AI_TEXT_COMPLETION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "AI_TEXT_COMPLETION(...)"
     ],
@@ -11534,6 +11120,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ALLOW_PRECISION_LOSS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ALLOW_PRECISION_LOSS(...)"
     ],
@@ -11543,6 +11130,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ANALYZE_SQLSCRIPT_DEFINITION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ANALYZE_SQLSCRIPT_DEFINITION(...)"
     ],
@@ -11552,6 +11140,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ANALYZE_SQLSCRIPT_OBJECTS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ANALYZE_SQLSCRIPT_OBJECTS(...)"
     ],
@@ -11561,6 +11150,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "APPLY_FILTER",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "APPLY_FILTER(<table_or_view>, <dynamic_where_string>)"
     ],
@@ -11570,6 +11160,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ARRAY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ARRAY(...)"
     ],
@@ -11579,6 +11170,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ARRAY_AGG",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "ARRAY_AGG(...)"
     ],
@@ -11588,6 +11180,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ASCII",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "ASCII(...)"
     ],
@@ -11597,6 +11190,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ASIN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ASIN(...)"
     ],
@@ -11606,6 +11200,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ATAN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ATAN(...)"
     ],
@@ -11615,6 +11210,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ATAN2",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ATAN2(...)"
     ],
@@ -11624,6 +11220,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "AUTO_CORR",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "AUTO_CORR(...)"
     ],
@@ -11633,6 +11230,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "AVG",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "AVG(...)"
     ],
@@ -11642,6 +11240,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BIND_AS_PARAMETER",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "BIND_AS_PARAMETER(<scalar_expr>)"
     ],
@@ -11651,6 +11250,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BIND_AS_VALUE",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "BIND_AS_VALUE(<scalar_expr>)"
     ],
@@ -11660,6 +11260,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BINNING",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "BINNING(...)"
     ],
@@ -11669,6 +11270,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BINTOHEX",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "BINTOHEX(...)"
     ],
@@ -11678,6 +11280,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BINTONHEX",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "BINTONHEX(...)"
     ],
@@ -11687,6 +11290,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BINTOSTR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "BINTOSTR(...)"
     ],
@@ -11696,6 +11300,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITAND",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITAND(...)"
     ],
@@ -11705,6 +11310,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITAT",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITAT(...)"
     ],
@@ -11714,6 +11320,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITCOUNT",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITCOUNT(...)"
     ],
@@ -11723,6 +11330,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITNOT",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITNOT(...)"
     ],
@@ -11732,6 +11340,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITOR",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITOR(...)"
     ],
@@ -11741,6 +11350,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITSET",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITSET(...)"
     ],
@@ -11750,6 +11360,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITUNSET",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITUNSET(...)"
     ],
@@ -11759,6 +11370,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "BITXOR",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "BITXOR(...)"
     ],
@@ -11768,6 +11380,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CARDINALITY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CARDINALITY(<array_or_vector>)"
     ],
@@ -11777,6 +11390,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CAST",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "CAST(...)"
     ],
@@ -11786,6 +11400,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_AGGREGATION",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_AGGREGATION(<tab>, [<agg_list>] [, [<group_by_cols>]])"
     ],
@@ -11796,6 +11411,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_CALC",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_CALC('<expr>', <data_type>)"
     ],
@@ -11806,6 +11422,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_CALC_VIEW",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_CALC_VIEW(<calc_view_name> [, [<attr_list>]])"
     ],
@@ -11816,6 +11433,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_COLUMN_TABLE",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_COLUMN_TABLE(<table_name> [, [<attr_list>]])"
     ],
@@ -11826,6 +11444,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_CONVERSION",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_CONVERSION(<tab>, [<conversion_params>] [, [<rename_list>]])"
     ],
@@ -11836,6 +11455,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_JOIN",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
     ],
@@ -11846,6 +11466,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_JOIN_VIEW",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_JOIN_VIEW(<view_name> [, [<attr_list>]])"
     ],
@@ -11856,6 +11477,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_LEFT_OUTER_JOIN",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_LEFT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
     ],
@@ -11866,6 +11488,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_OLAP_VIEW",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_OLAP_VIEW(<olap_view_name> [, [<dim_and_measures>]])"
     ],
@@ -11876,6 +11499,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_PROJECTION",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_PROJECTION(<tab>, [<proj_list>] [, <filter_expr>])"
     ],
@@ -11886,6 +11510,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_RIGHT_OUTER_JOIN",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_RIGHT_OUTER_JOIN(<left_tab>, <right_tab>, [<join_attrs>] [, [<proj_list>]])"
     ],
@@ -11896,6 +11521,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_UNION_ALL",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_UNION_ALL(<tab1>, <tab2>)"
     ],
@@ -11906,6 +11532,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CE_VERTICAL_UNION",
     "library": "SYS",
+    "category": "calculation-engine",
     "signatures": [
       "CE_VERTICAL_UNION(<tab1>, [<cols1>], <tab2>, [<cols2>])"
     ],
@@ -11916,6 +11543,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CEIL",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "CEIL(...)"
     ],
@@ -11925,6 +11553,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CHAR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "CHAR(...)"
     ],
@@ -11934,6 +11563,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CHR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "CHR(<code>)"
     ],
@@ -11943,6 +11573,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COALESCE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "COALESCE(...)"
     ],
@@ -11952,6 +11583,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CONCAT",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "CONCAT(...)"
     ],
@@ -11961,6 +11593,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CONCAT_NAZ",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "CONCAT_NAZ(...)"
     ],
@@ -11970,6 +11603,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CONVERT_CURRENCY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CONVERT_CURRENCY(...)"
     ],
@@ -11979,6 +11613,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CONVERT_UNIT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CONVERT_UNIT(...)"
     ],
@@ -11988,6 +11623,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CORR",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "CORR(...)"
     ],
@@ -11997,6 +11633,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CORR_SPEARMAN",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "CORR_SPEARMAN(...)"
     ],
@@ -12006,6 +11643,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COS",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "COS(...)"
     ],
@@ -12015,6 +11653,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COSH",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "COSH(...)"
     ],
@@ -12024,6 +11663,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COSINE_SIMILARITY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "COSINE_SIMILARITY(<vector1>, <vector2>)"
     ],
@@ -12033,6 +11673,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COT",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "COT(...)"
     ],
@@ -12042,6 +11683,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "COUNT",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "COUNT(...)"
     ],
@@ -12051,6 +11693,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CREATE_VECTOR_EMBEDDINGS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CREATE_VECTOR_EMBEDDINGS(<schema>, <table>, <text_col>, <embedding_col>, <text_type>, <model_and_version> [, <batch_size> [, <remote_schema>, <remote_source>]] [, <options>])"
     ],
@@ -12060,6 +11703,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CROSS_CORR",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "CROSS_CORR(...)"
     ],
@@ -12069,6 +11713,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CROSS_ENCODE",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "CROSS_ENCODE(<text_a>, <text_b>, <model_and_version> [, <options>]) OVER (<window_spec>)"
     ],
@@ -12078,6 +11723,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CUBIC_SPLINE_APPROX",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "CUBIC_SPLINE_APPROX(...)"
     ],
@@ -12087,6 +11733,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CUME_DIST",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "CUME_DIST(...)"
     ],
@@ -12096,6 +11743,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_CONNECTION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_CONNECTION(...)"
     ],
@@ -12105,6 +11753,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_DATABASE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_DATABASE(...)"
     ],
@@ -12114,6 +11763,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_DATE",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_DATE(...)"
     ],
@@ -12123,6 +11773,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_IDENTITY_VALUE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_IDENTITY_VALUE(...)"
     ],
@@ -12132,6 +11783,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_MVCC_SNAPSHOT_TIMESTAMP",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_MVCC_SNAPSHOT_TIMESTAMP(...)"
     ],
@@ -12141,6 +11793,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_OBJECT_SCHEMA",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_OBJECT_SCHEMA(...)"
     ],
@@ -12150,6 +11803,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_ROLEGROUP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_ROLEGROUP(...)"
     ],
@@ -12159,6 +11813,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_SCHEMA",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_SCHEMA(...)"
     ],
@@ -12168,6 +11823,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_SITE_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_SITE_ID(...)"
     ],
@@ -12177,6 +11833,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_TIME",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_TIME(...)"
     ],
@@ -12186,6 +11843,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_TIMESTAMP",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_TIMESTAMP(...)"
     ],
@@ -12195,6 +11853,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_TRANSACTION_ISOLATION_LEVEL",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_TRANSACTION_ISOLATION_LEVEL(...)"
     ],
@@ -12204,6 +11863,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_UPDATE_STATEMENT_SEQUENCE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_UPDATE_STATEMENT_SEQUENCE(...)"
     ],
@@ -12213,6 +11873,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_UPDATE_TRANSACTION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_UPDATE_TRANSACTION(...)"
     ],
@@ -12222,6 +11883,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_USER",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_USER(...)"
     ],
@@ -12231,6 +11893,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_USER_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_USER_ID(...)"
     ],
@@ -12240,6 +11903,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_USERGROUP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "CURRENT_USERGROUP(...)"
     ],
@@ -12249,6 +11913,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_UTCDATE",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_UTCDATE(...)"
     ],
@@ -12258,6 +11923,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_UTCTIME",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_UTCTIME(...)"
     ],
@@ -12267,6 +11933,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "CURRENT_UTCTIMESTAMP",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "CURRENT_UTCTIMESTAMP(...)"
     ],
@@ -12276,6 +11943,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "DAYNAME",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "DAYNAME(...)"
     ],
@@ -12285,6 +11953,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "DAYOFMONTH",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "DAYOFMONTH(...)"
     ],
@@ -12294,6 +11963,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "DAYOFYEAR",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "DAYOFYEAR(...)"
     ],
@@ -12303,6 +11973,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "DAYS_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "DAYS_BETWEEN(...)"
     ],
@@ -12310,8 +11981,19 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL datetime function DAYS_BETWEEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "DEGREE",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "DEGREE(<vertex>)"
+    ],
+    "returnType": "BIGINT",
+    "description": "Returns the number of incoming and outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "DENSE_RANK",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "DENSE_RANK(...)"
     ],
@@ -12321,6 +12003,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "DFT",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "DFT(...)"
     ],
@@ -12328,8 +12011,20 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL aggregate function DFT ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "EDGES",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "EDGES(<graph>)",
+      "EDGES(<vertex>)"
+    ],
+    "returnType": "MULTISET<EDGE>",
+    "description": "Returns all edges of a GRAPH object, or all incoming and outgoing edges of a VERTEX. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ENCRYPTION_ROOT_KEYS_EXTRACT_KEYS(...)"
     ],
@@ -12339,6 +12034,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ENCRYPTION_ROOT_KEYS_HAS_BACKUP_PASSWORD(...)"
     ],
@@ -12348,6 +12044,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ESCAPE_DOUBLE_QUOTES",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ESCAPE_DOUBLE_QUOTES(...)"
     ],
@@ -12357,6 +12054,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ESCAPE_SINGLE_QUOTES",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ESCAPE_SINGLE_QUOTES(...)"
     ],
@@ -12366,6 +12064,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "EXP",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "EXP(...)"
     ],
@@ -12375,6 +12074,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "EXPRESSION_MACRO",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "EXPRESSION_MACRO(...)"
     ],
@@ -12384,6 +12084,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "EXTRACT",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "EXTRACT(...)"
     ],
@@ -12393,6 +12094,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "FIRST_VALUE",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "FIRST_VALUE(...)"
     ],
@@ -12402,6 +12104,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "FLOOR",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "FLOOR(...)"
     ],
@@ -12411,6 +12114,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GENERATE_PASSWORD",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GENERATE_PASSWORD(...)"
     ],
@@ -12420,6 +12124,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GET_DELTA_LAKE_TABLE_CHANGES",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GET_DELTA_LAKE_TABLE_CHANGES(...)"
     ],
@@ -12429,6 +12134,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GET_DELTA_LAKE_TABLE_VERSION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GET_DELTA_LAKE_TABLE_VERSION(...)"
     ],
@@ -12438,6 +12144,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GET_NUM_SERVERS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GET_NUM_SERVERS()"
     ],
@@ -12447,6 +12154,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GET_REMOTE_SOURCE_AI_MODELS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GET_REMOTE_SOURCE_AI_MODELS(<remote_source_name>, OUT <models_table>)"
     ],
@@ -12456,6 +12164,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GET_X509_USER_MAPPING_DETAILS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GET_X509_USER_MAPPING_DETAILS(...)"
     ],
@@ -12465,6 +12174,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GREATEST",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GREATEST(...)"
     ],
@@ -12474,6 +12184,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GROUP_SCORE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GROUP_SCORE(...)"
     ],
@@ -12483,6 +12194,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GROUPING",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GROUPING(...)"
     ],
@@ -12492,6 +12204,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "GROUPING_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "GROUPING_ID(...)"
     ],
@@ -12501,6 +12214,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HAMMING_DISTANCE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "HAMMING_DISTANCE(...)"
     ],
@@ -12510,6 +12224,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HASH_MD5",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HASH_MD5(...)"
     ],
@@ -12519,6 +12234,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HASH_SHA256",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HASH_SHA256(...)"
     ],
@@ -12528,6 +12244,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HEXTOBIN",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "HEXTOBIN(...)"
     ],
@@ -12537,6 +12254,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HEXTONUM",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "HEXTONUM(...)"
     ],
@@ -12546,6 +12264,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [MULTIPARENT ...] [ORPHAN ...] [CYCLE ...] [CACHE ...] [LOAD ...])"
     ],
@@ -12555,6 +12274,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_ANCESTORS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_ANCESTORS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
     ],
@@ -12564,6 +12284,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_ANCESTORS_AGGREGATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_ANCESTORS_AGGREGATE(SOURCE <hierarchy> [START ...] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...])"
     ],
@@ -12573,6 +12294,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_COMPOSITE_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_COMPOSITE_ID(<expr1>, <expr2> [, ...])"
     ],
@@ -12582,6 +12304,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_DESCENDANTS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_DESCENDANTS(SOURCE <hierarchy> [START ...] [DISTANCE ...])"
     ],
@@ -12591,6 +12314,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_DESCENDANTS_AGGREGATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_DESCENDANTS_AGGREGATE(SOURCE <hierarchy> [JOIN <table> ON <cond>] MEASURES (<agg> AS <alias> [, ...]) [WHERE ...] [WITH SUBTOTAL] [WITH BALANCE] [WITH NOT MATCHED] [WITH TOTAL])"
     ],
@@ -12600,6 +12324,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_LEVELED",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_LEVELED(SOURCE <source> [LEVELS (<col_list>)] [SIBLING ORDER BY <order>] [CACHE ...] [RETAIN NULLS ...])"
     ],
@@ -12609,6 +12334,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_SIBLINGS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_SIBLINGS(SOURCE <hierarchy> [START ...])"
     ],
@@ -12618,6 +12344,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_SPANTREE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_SPANTREE(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] [DEPTH <n>] [CACHE ...] [LOAD ...])"
     ],
@@ -12627,6 +12354,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HIERARCHY_TEMPORAL",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "HIERARCHY_TEMPORAL(SOURCE <source> [START WHERE <cond>] [SIBLING ORDER BY <order>] VALID {FROM <t1> UNTIL <t2> | AT <t>} ...)"
     ],
@@ -12636,6 +12364,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "HOUR",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "HOUR(...)"
     ],
@@ -12645,6 +12374,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "IFNULL",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "IFNULL(...)"
     ],
@@ -12652,8 +12382,29 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "IN_DEGREE",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "IN_DEGREE(<vertex>)"
+    ],
+    "returnType": "BIGINT",
+    "description": "Returns the number of incoming edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
+    "name": "IN_EDGES",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "IN_EDGES(<vertex>)"
+    ],
+    "returnType": "MULTISET<EDGE>",
+    "description": "Returns all incoming edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "INDEXING_ERROR_CODE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "INDEXING_ERROR_CODE(...)"
     ],
@@ -12663,6 +12414,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "INDEXING_ERROR_MESSAGE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "INDEXING_ERROR_MESSAGE(...)"
     ],
@@ -12672,6 +12424,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "INDEXING_STATUS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "INDEXING_STATUS(...)"
     ],
@@ -12681,6 +12434,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "INDUCED_SUBGRAPH",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "INDUCED_SUBGRAPH(<graph>, <vertices>)"
     ],
@@ -12690,6 +12444,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "INITCAP",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "INITCAP(...)"
     ],
@@ -12699,6 +12454,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "INVERSE_GRAPH",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "INVERSE_GRAPH(<graph>)"
     ],
@@ -12708,6 +12464,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "IS_EMPTY",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "IS_EMPTY(<table_variable>)"
     ],
@@ -12717,6 +12474,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "IS_REACHABLE",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "IS_REACHABLE(<graph>, <start_vertex>, <end_vertex> [, <direction>])"
     ],
@@ -12726,6 +12484,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "IS_SQL_INJECTION_SAFE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "IS_SQL_INJECTION_SAFE(...)"
     ],
@@ -12735,6 +12494,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ISOWEEK",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "ISOWEEK(...)"
     ],
@@ -12744,6 +12504,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "JSON_QUERY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "JSON_QUERY(<json_doc>, '<json_path>' [RETURNING {NVARCHAR(<n>) | JSON}] [WRAPPER] [ON EMPTY] [ON ERROR])"
     ],
@@ -12753,6 +12514,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "JSON_TABLE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "JSON_TABLE(<json_doc>, '<json_path>' COLUMNS (<col_specs>) [{ERROR | EMPTY} ON ERROR])"
     ],
@@ -12762,6 +12524,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "JSON_VALUE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "JSON_VALUE(<json_doc>, '<json_path>' [RETURNING <data_type>] [{ERROR | NULL | DEFAULT <val>} ON EMPTY] [{ERROR | NULL | DEFAULT <val>} ON ERROR])"
     ],
@@ -12771,6 +12534,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "K_SHORTEST_PATHS",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "K_SHORTEST_PATHS(<graph>, <source_vertex>, <target_vertex>, <k> [, <weight_closure>] [, <direction>])"
     ],
@@ -12780,6 +12544,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "L2DISTANCE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "L2DISTANCE(<vector1>, <vector2>)"
     ],
@@ -12789,6 +12554,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "L2NORM",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "L2NORM(<vector>)"
     ],
@@ -12798,6 +12564,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "L2NORMALIZE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "L2NORMALIZE(<vector>)"
     ],
@@ -12807,6 +12574,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LAG",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "LAG(...)"
     ],
@@ -12816,6 +12584,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LANGUAGE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "LANGUAGE(...)"
     ],
@@ -12825,6 +12594,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LAST_DAY",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "LAST_DAY(...)"
     ],
@@ -12834,6 +12604,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LAST_VALUE",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "LAST_VALUE(...)"
     ],
@@ -12843,6 +12614,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LCASE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LCASE(...)"
     ],
@@ -12852,6 +12624,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LEAD",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "LEAD(...)"
     ],
@@ -12861,6 +12634,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LEAST",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "LEAST(...)"
     ],
@@ -12870,6 +12644,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LEFT",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LEFT(...)"
     ],
@@ -12879,6 +12654,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LENGTH",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LENGTH(...)"
     ],
@@ -12888,6 +12664,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LINEAR_APPROX",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "LINEAR_APPROX(...)"
     ],
@@ -12897,6 +12674,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "LN(...)"
     ],
@@ -12906,6 +12684,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LOCALTOUTC",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "LOCALTOUTC(...)"
     ],
@@ -12915,6 +12694,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LOCATE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LOCATE(...)"
     ],
@@ -12924,6 +12704,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LOCATE_REGEXPR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LOCATE_REGEXPR(...)"
     ],
@@ -12933,6 +12714,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LOG",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "LOG(...)"
     ],
@@ -12942,6 +12724,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LOWER",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LOWER(...)"
     ],
@@ -12951,6 +12734,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LPAD",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LPAD(...)"
     ],
@@ -12960,6 +12744,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "LTRIM",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "LTRIM(...)"
     ],
@@ -12969,6 +12754,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MAP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "MAP(...)"
     ],
@@ -12978,6 +12764,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MAP_MERGE",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "MAP_MERGE(<input_table>, <mapper_func>(<input_table>.<col1>, ...))"
     ],
@@ -12987,6 +12774,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MAP_REDUCE",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "MAP_REDUCE(<input_table>, <mapper_func>(...), <reducer_func>(...))"
     ],
@@ -12996,6 +12784,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MAX",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "MAX(...)"
     ],
@@ -13005,6 +12794,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MEDIAN",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "MEDIAN(...)"
     ],
@@ -13014,6 +12804,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MEMBER_AT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "MEMBER_AT(<array_or_vector>, <position> [, <default_value>])"
     ],
@@ -13023,6 +12814,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MIMETYPE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "MIMETYPE(...)"
     ],
@@ -13032,6 +12824,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MIN",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "MIN(...)"
     ],
@@ -13041,6 +12834,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MINUTE",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "MINUTE(...)"
     ],
@@ -13050,6 +12844,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MOD",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "MOD(...)"
     ],
@@ -13059,6 +12854,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MONTH",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "MONTH(...)"
     ],
@@ -13068,6 +12864,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MONTHNAME",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "MONTHNAME(...)"
     ],
@@ -13077,6 +12874,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "MONTHS_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "MONTHS_BETWEEN(...)"
     ],
@@ -13086,6 +12884,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NANO100_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "NANO100_BETWEEN(...)"
     ],
@@ -13095,6 +12894,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NCHAR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "NCHAR(...)"
     ],
@@ -13104,6 +12904,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NDIV0",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "NDIV0(...)"
     ],
@@ -13113,6 +12914,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NEIGHBORS",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "NEIGHBORS(<graph>, <start_vertices>, <lower_bound>, <upper_bound> [, <direction>])"
     ],
@@ -13122,6 +12924,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NEWUID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "NEWUID(...)"
     ],
@@ -13131,6 +12934,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NEXT_DAY",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "NEXT_DAY(...)"
     ],
@@ -13140,6 +12944,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NORMALIZE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "NORMALIZE(...)"
     ],
@@ -13149,6 +12954,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NOW",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "NOW(...)"
     ],
@@ -13158,6 +12964,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NTH_VALUE",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "NTH_VALUE(...)"
     ],
@@ -13167,6 +12974,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NTILE",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "NTILE(...)"
     ],
@@ -13176,6 +12984,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NULLIF",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "NULLIF(...)"
     ],
@@ -13185,6 +12994,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "NUMTOHEX",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "NUMTOHEX(...)"
     ],
@@ -13194,6 +13004,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "OCCURRENCES_REGEXPR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "OCCURRENCES_REGEXPR(...)"
     ],
@@ -13203,6 +13014,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "OPENCYPHER_TABLE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "OPENCYPHER_TABLE(GRAPH WORKSPACE <workspace_name> QUERY <cypher_query_string> [PARAMETERS (<param_list>)])"
     ],
@@ -13210,8 +13022,29 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Executes an OpenCypher pattern-matching query on a SAP HANA Property Graph workspace ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "OUT_DEGREE",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "OUT_DEGREE(<vertex>)"
+    ],
+    "returnType": "BIGINT",
+    "description": "Returns the number of outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
+    "name": "OUT_EDGES",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "OUT_EDGES(<vertex>)"
+    ],
+    "returnType": "MULTISET<EDGE>",
+    "description": "Returns all outgoing edges of a vertex. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "PARSE_CERTIFICATES",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "PARSE_CERTIFICATES(...)"
     ],
@@ -13221,6 +13054,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PARSE_JSON",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "PARSE_JSON(<json_string>)"
     ],
@@ -13230,6 +13064,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PARTITION_ALLOCATION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "PARTITION_ALLOCATION(...)"
     ],
@@ -13239,6 +13074,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PARTITION_HASH",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "PARTITION_HASH(...)"
     ],
@@ -13248,6 +13084,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PERCENT_RANK",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "PERCENT_RANK(...)"
     ],
@@ -13257,6 +13094,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PERCENTILE_CONT",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "PERCENTILE_CONT(...)"
     ],
@@ -13266,6 +13104,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PERCENTILE_DISC",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "PERCENTILE_DISC(...)"
     ],
@@ -13275,6 +13114,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "PLAINTEXT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "PLAINTEXT(...)"
     ],
@@ -13284,6 +13124,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "POWER",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "POWER(...)"
     ],
@@ -13293,6 +13134,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "QUARTER",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "QUARTER(...)"
     ],
@@ -13302,6 +13144,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RAND",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "RAND(...)"
     ],
@@ -13311,6 +13154,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RAND_SECURE",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "RAND_SECURE(...)"
     ],
@@ -13320,6 +13164,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RANDOM_PARTITION",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "RANDOM_PARTITION(...)"
     ],
@@ -13329,6 +13174,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RANK",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "RANK(...)"
     ],
@@ -13338,6 +13184,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RDF_GRAPH_FROM_GRAPH_WORKSPACE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RDF_GRAPH_FROM_GRAPH_WORKSPACE(<workspace_schema>, <workspace_name>, <graph_uri>, <base_uri>, <vocabulary_uri>, <options>, OUT <result>)"
     ],
@@ -13347,6 +13194,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RDF_GRAPH_TO_GRAPH_WORKSPACE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RDF_GRAPH_TO_GRAPH_WORKSPACE(<graph_uri>, <workspace_schema>, <workspace_name>, <tables_schema>, <options>, OUT <result>)"
     ],
@@ -13356,6 +13204,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RECORD_COMMIT_TIMESTAMP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RECORD_COMMIT_TIMESTAMP(...)"
     ],
@@ -13365,6 +13214,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RECORD_COUNT",
     "library": "SYS",
+    "category": "sqlscript",
     "signatures": [
       "RECORD_COUNT(<table_variable>)"
     ],
@@ -13374,6 +13224,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RECORD_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RECORD_ID(...)"
     ],
@@ -13383,6 +13234,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RECORD_LOCK_STATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RECORD_LOCK_STATE(...)"
     ],
@@ -13392,6 +13244,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "REPLACE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "REPLACE(...)"
     ],
@@ -13401,6 +13254,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "REPLACE_REGEXPR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "REPLACE_REGEXPR(...)"
     ],
@@ -13410,6 +13264,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RESULT_CACHE_ID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RESULT_CACHE_ID(...)"
     ],
@@ -13419,6 +13274,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RESULT_CACHE_REFRESH_TIME",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "RESULT_CACHE_REFRESH_TIME(...)"
     ],
@@ -13428,6 +13284,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RIGHT",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "RIGHT(...)"
     ],
@@ -13437,6 +13294,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ROUND",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "ROUND(...)"
     ],
@@ -13446,6 +13304,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ROW_LOCK_WAIT_STATISTICS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "ROW_LOCK_WAIT_STATISTICS(...)"
     ],
@@ -13455,6 +13314,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ROW_NUMBER",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "ROW_NUMBER(...)"
     ],
@@ -13464,6 +13324,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RPAD",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "RPAD(...)"
     ],
@@ -13473,6 +13334,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "RTRIM",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "RTRIM(...)"
     ],
@@ -13482,6 +13344,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SCORE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SCORE(...)"
     ],
@@ -13491,6 +13354,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SECOND",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "SECOND(...)"
     ],
@@ -13500,6 +13364,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SECONDS_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "SECONDS_BETWEEN(...)"
     ],
@@ -13509,6 +13374,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE(...)"
     ],
@@ -13518,6 +13384,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_BIGINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_BIGINT(...)"
     ],
@@ -13527,6 +13394,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_DATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_DATE(...)"
     ],
@@ -13536,6 +13404,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_DECIMAL",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_DECIMAL(...)"
     ],
@@ -13545,6 +13414,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_INTEGER",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_INTEGER(...)"
     ],
@@ -13554,6 +13424,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_SECONDDATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_SECONDDATE(...)"
     ],
@@ -13563,6 +13434,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_SMALLINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_SMALLINT(...)"
     ],
@@ -13572,6 +13444,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_TIME",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_TIME(...)"
     ],
@@ -13581,6 +13454,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_TIMESTAMP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_TIMESTAMP(...)"
     ],
@@ -13590,6 +13464,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_DISAGGREGATE_TINYINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_DISAGGREGATE_TINYINT(...)"
     ],
@@ -13599,6 +13474,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_ELEMENT_TO_PERIOD",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_ELEMENT_TO_PERIOD(...)"
     ],
@@ -13608,6 +13484,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_FILTER",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "SERIES_FILTER(...)"
     ],
@@ -13617,6 +13494,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE(...)"
     ],
@@ -13626,6 +13504,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_BIGINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_BIGINT(...)"
     ],
@@ -13635,6 +13514,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_DATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_DATE(...)"
     ],
@@ -13644,6 +13524,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_DECIMAL",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_DECIMAL(...)"
     ],
@@ -13653,6 +13534,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_INTEGER",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_INTEGER(...)"
     ],
@@ -13662,6 +13544,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_SECONDDATE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_SECONDDATE(...)"
     ],
@@ -13671,6 +13554,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_SMALLINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_SMALLINT(...)"
     ],
@@ -13680,6 +13564,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_TIME",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_TIME(...)"
     ],
@@ -13689,6 +13574,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_TIMESTAMP",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_TIMESTAMP(...)"
     ],
@@ -13698,6 +13584,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_GENERATE_TINYINT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_GENERATE_TINYINT(...)"
     ],
@@ -13707,6 +13594,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_PERIOD_TO_ELEMENT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_PERIOD_TO_ELEMENT(...)"
     ],
@@ -13716,6 +13604,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SERIES_ROUND",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SERIES_ROUND(...)"
     ],
@@ -13725,6 +13614,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SESSION_CONTEXT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SESSION_CONTEXT(...)"
     ],
@@ -13734,6 +13624,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SESSION_USER",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SESSION_USER(...)"
     ],
@@ -13743,6 +13634,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SHORTEST_PATH",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "SHORTEST_PATH(<graph>, <source_vertex>, <target_vertex> [, <weight_closure>] [, <direction>])"
     ],
@@ -13752,6 +13644,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SHORTEST_PATHS_ONE_TO_ALL",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "SHORTEST_PATHS_ONE_TO_ALL(<graph>, <source_vertex>, <weight_attribute> [, <weight_closure>] [, <direction>])"
     ],
@@ -13761,6 +13654,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SIGN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "SIGN(...)"
     ],
@@ -13770,6 +13664,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SIN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "SIN(...)"
     ],
@@ -13779,6 +13674,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SINH",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "SINH(...)"
     ],
@@ -13788,6 +13684,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SOUNDEX",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SOUNDEX(...)"
     ],
@@ -13797,6 +13694,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SPARQL_EXECUTE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SPARQL_EXECUTE(IN <request_string> NCLOB, IN <headers_string> NCLOB, OUT <response_body> NCLOB, OUT <response_headers> NCLOB)"
     ],
@@ -13806,6 +13704,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SPARQL_TABLE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SPARQL_TABLE(<sparql_select_query_string> [, <accept_header_string>])"
     ],
@@ -13815,6 +13714,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SQL_TABLE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SQL_TABLE(<sql_query_string>)"
     ],
@@ -13824,6 +13724,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA(...)"
     ],
@@ -13833,6 +13734,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SQRT",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "SQRT(...)"
     ],
@@ -13842,6 +13744,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ADDPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ADDPOINT(...)"
     ],
@@ -13851,6 +13754,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALLOCATEDSIZE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALLOCATEDSIZE(...)"
     ],
@@ -13860,6 +13764,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALPHASHAPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALPHASHAPE(...)"
     ],
@@ -13869,6 +13774,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALPHASHAPEAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALPHASHAPEAGGR(...)"
     ],
@@ -13878,6 +13784,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALPHASHAPEAREA",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALPHASHAPEAREA(...)"
     ],
@@ -13887,6 +13794,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALPHASHAPEAREAAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALPHASHAPEAREAAGGR(...)"
     ],
@@ -13896,6 +13804,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ALPHASHAPEEDGE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ALPHASHAPEEDGE(...)"
     ],
@@ -13905,6 +13814,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_AREA",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_AREA(...)"
     ],
@@ -13914,6 +13824,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASBINARY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASBINARY(...)"
     ],
@@ -13923,6 +13834,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASESRIJSON",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASESRIJSON(...)"
     ],
@@ -13932,6 +13844,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASESRISHAPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASESRISHAPE(...)"
     ],
@@ -13941,6 +13854,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASEWKB",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASEWKB(...)"
     ],
@@ -13950,6 +13864,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASEWKT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASEWKT(...)"
     ],
@@ -13959,6 +13874,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASGEOJSON",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASGEOJSON(...)"
     ],
@@ -13968,6 +13884,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASMVT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASMVT(...)"
     ],
@@ -13977,6 +13894,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASMVTGEOM",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASMVTGEOM(...)"
     ],
@@ -13986,6 +13904,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASSVG",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASSVG(...)"
     ],
@@ -13995,6 +13914,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASSVGAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASSVGAGGR(...)"
     ],
@@ -14004,6 +13924,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASTEXT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASTEXT(...)"
     ],
@@ -14013,6 +13934,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASWKB",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASWKB(...)"
     ],
@@ -14022,6 +13944,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ASWKT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ASWKT(...)"
     ],
@@ -14031,6 +13954,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_BOUNDARY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_BOUNDARY(...)"
     ],
@@ -14040,6 +13964,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_BUFFER",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_BUFFER(...)"
     ],
@@ -14049,6 +13974,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CENTROID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CENTROID(...)"
     ],
@@ -14058,6 +13984,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CLOSESTPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CLOSESTPOINT(...)"
     ],
@@ -14067,6 +13994,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CLUSTERCELL",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CLUSTERCELL(...)"
     ],
@@ -14076,6 +14004,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CLUSTERCENTROID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CLUSTERCENTROID(...)"
     ],
@@ -14085,6 +14014,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CLUSTERENVELOPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CLUSTERENVELOPE(...)"
     ],
@@ -14094,6 +14024,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CLUSTERID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CLUSTERID(...)"
     ],
@@ -14103,6 +14034,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_COLLECT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_COLLECT(...)"
     ],
@@ -14112,6 +14044,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_COLLECTAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_COLLECTAGGR(...)"
     ],
@@ -14121,6 +14054,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CONCAVEHULL",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CONCAVEHULL(...)"
     ],
@@ -14130,6 +14064,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CONCAVEHULLAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CONCAVEHULLAGGR(...)"
     ],
@@ -14139,6 +14074,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CONTAINS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CONTAINS(...)"
     ],
@@ -14148,6 +14084,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CONVEXHULL",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CONVEXHULL(...)"
     ],
@@ -14157,6 +14094,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CONVEXHULLAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CONVEXHULLAGGR(...)"
     ],
@@ -14166,6 +14104,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_COORDDIM",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_COORDDIM(...)"
     ],
@@ -14175,6 +14114,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_COVEREDBY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_COVEREDBY(...)"
     ],
@@ -14184,6 +14124,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_COVERS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_COVERS(...)"
     ],
@@ -14193,6 +14134,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CROSSES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CROSSES(...)"
     ],
@@ -14202,6 +14144,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_CURVETOLINE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_CURVETOLINE(...)"
     ],
@@ -14211,6 +14154,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_DIFFERENCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_DIFFERENCE(...)"
     ],
@@ -14220,6 +14164,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_DIMENSION",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_DIMENSION(...)"
     ],
@@ -14229,6 +14174,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_DISJOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_DISJOINT(...)"
     ],
@@ -14238,6 +14184,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_DISTANCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_DISTANCE(...)"
     ],
@@ -14247,6 +14194,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_DUPLICATES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_DUPLICATES(...)"
     ],
@@ -14256,6 +14204,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ENDPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ENDPOINT(...)"
     ],
@@ -14265,6 +14214,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ENVELOPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ENVELOPE(...)"
     ],
@@ -14274,6 +14224,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ENVELOPEAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ENVELOPEAGGR(...)"
     ],
@@ -14283,6 +14234,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_EQUALS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_EQUALS(...)"
     ],
@@ -14292,6 +14244,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_EXTERIORRING",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_EXTERIORRING(...)"
     ],
@@ -14301,6 +14254,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FLIPCOORDINATES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FLIPCOORDINATES(...)"
     ],
@@ -14310,6 +14264,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FORCE2D",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FORCE2D(...)"
     ],
@@ -14319,6 +14274,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FORCE3DM",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FORCE3DM(...)"
     ],
@@ -14328,6 +14284,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FORCE3DZ",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FORCE3DZ(...)"
     ],
@@ -14337,6 +14294,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FORCE4D",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FORCE4D(...)"
     ],
@@ -14346,6 +14304,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_FRECHETDISTANCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_FRECHETDISTANCE(...)"
     ],
@@ -14355,6 +14314,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GENERATEPOINTS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GENERATEPOINTS(...)"
     ],
@@ -14364,6 +14324,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOHASH",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOHASH(...)"
     ],
@@ -14373,6 +14334,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOHASHBOUNDARY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOHASHBOUNDARY(...)"
     ],
@@ -14382,6 +14344,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOHASHNEIGHBORS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOHASHNEIGHBORS(...)"
     ],
@@ -14391,6 +14354,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMETRYN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMETRYN(...)"
     ],
@@ -14400,6 +14364,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMETRYTYPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMETRYTYPE(...)"
     ],
@@ -14409,6 +14374,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMESRISHAPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMESRISHAPE(...)"
     ],
@@ -14418,6 +14384,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMEWKB",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMEWKB(...)"
     ],
@@ -14427,6 +14394,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMEWKT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMEWKT(...)"
     ],
@@ -14436,6 +14404,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMGEOJSON",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMGEOJSON(...)"
     ],
@@ -14445,6 +14414,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMTEXT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMTEXT(...)"
     ],
@@ -14454,6 +14424,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMWKB",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMWKB(...)"
     ],
@@ -14463,6 +14434,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_GEOMFROMWKT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_GEOMFROMWKT(...)"
     ],
@@ -14472,6 +14444,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_HAUSDORFFDISTANCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_HAUSDORFFDISTANCE(...)"
     ],
@@ -14481,6 +14454,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_HEXAGONGRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_HEXAGONGRID(...)"
     ],
@@ -14490,6 +14464,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_HEXAGONGRIDBOUNDINGBOX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_HEXAGONGRIDBOUNDINGBOX(...)"
     ],
@@ -14499,6 +14474,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERIORRINGN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERIORRINGN(...)"
     ],
@@ -14508,6 +14484,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERPOLATEPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERPOLATEPOINT(...)"
     ],
@@ -14517,6 +14494,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTION",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTION(...)"
     ],
@@ -14526,6 +14504,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTIONAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTIONAGGR(...)"
     ],
@@ -14535,6 +14514,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTS(...)"
     ],
@@ -14544,6 +14524,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTSFILTER",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTSFILTER(...)"
     ],
@@ -14553,6 +14534,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTSRECT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTSRECT(...)"
     ],
@@ -14562,6 +14544,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_INTERSECTSRECTPLANAR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_INTERSECTSRECTPLANAR(...)"
     ],
@@ -14571,6 +14554,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_IS3D",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_IS3D(...)"
     ],
@@ -14580,6 +14564,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISCLOSED",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISCLOSED(...)"
     ],
@@ -14589,6 +14574,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISEMPTY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISEMPTY(...)"
     ],
@@ -14598,6 +14584,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISMEASURED",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISMEASURED(...)"
     ],
@@ -14607,6 +14594,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISRING",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISRING(...)"
     ],
@@ -14616,6 +14604,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISSIMPLE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISSIMPLE(...)"
     ],
@@ -14625,6 +14614,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ISVALID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ISVALID(...)"
     ],
@@ -14634,6 +14624,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LENGTH",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LENGTH(...)"
     ],
@@ -14643,6 +14634,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LINEHASH",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LINEHASH(...)"
     ],
@@ -14652,6 +14644,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LINEINTERPOLATEPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LINEINTERPOLATEPOINT(...)"
     ],
@@ -14661,6 +14654,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LINELOCATEPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LINELOCATEPOINT(...)"
     ],
@@ -14670,6 +14664,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LINEMERGE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LINEMERGE(...)"
     ],
@@ -14679,6 +14674,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LINESUBSTRING",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LINESUBSTRING(...)"
     ],
@@ -14688,6 +14684,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LOCATEALONG",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LOCATEALONG(...)"
     ],
@@ -14697,6 +14694,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_LOCATEBETWEEN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_LOCATEBETWEEN(...)"
     ],
@@ -14706,6 +14704,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_M",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_M(...)"
     ],
@@ -14715,6 +14714,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MAKEENVELOPE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MAKEENVELOPE(...)"
     ],
@@ -14724,6 +14724,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MAKELINE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MAKELINE(...)"
     ],
@@ -14733,6 +14734,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MAKELINEAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MAKELINEAGGR(...)"
     ],
@@ -14742,6 +14744,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MAKEPOLYGON",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MAKEPOLYGON(...)"
     ],
@@ -14751,6 +14754,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MAKEVALID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MAKEVALID(...)"
     ],
@@ -14760,6 +14764,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MINIMUMBOUNDINGCIRCLE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MINIMUMBOUNDINGCIRCLE(...)"
     ],
@@ -14769,6 +14774,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MMAX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MMAX(...)"
     ],
@@ -14778,6 +14784,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_MMIN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_MMIN(...)"
     ],
@@ -14787,6 +14794,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_NUMGEOMETRIES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_NUMGEOMETRIES(...)"
     ],
@@ -14796,6 +14804,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_NUMINTERIORRING",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_NUMINTERIORRING(...)"
     ],
@@ -14805,6 +14814,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_NUMINTERIORRINGS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_NUMINTERIORRINGS(...)"
     ],
@@ -14814,6 +14824,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_NUMPATCHES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_NUMPATCHES(...)"
     ],
@@ -14823,6 +14834,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_NUMPOINTS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_NUMPOINTS(...)"
     ],
@@ -14832,6 +14844,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ORDERINGEQUALS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ORDERINGEQUALS(...)"
     ],
@@ -14841,6 +14854,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_OVERLAPS",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_OVERLAPS(...)"
     ],
@@ -14850,6 +14864,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_PATCHN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_PATCHN(...)"
     ],
@@ -14859,6 +14874,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_PERIMETER",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_PERIMETER(...)"
     ],
@@ -14868,6 +14884,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_POINTN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_POINTN(...)"
     ],
@@ -14877,6 +14894,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_POINTONSURFACE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_POINTONSURFACE(...)"
     ],
@@ -14886,6 +14904,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_RECTANGLEGRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_RECTANGLEGRID(...)"
     ],
@@ -14895,6 +14914,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_RECTANGLEGRIDBOUNDINGBOX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_RECTANGLEGRIDBOUNDINGBOX(...)"
     ],
@@ -14904,6 +14924,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_RELATE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_RELATE(...)"
     ],
@@ -14913,6 +14934,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_REMOVEPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_REMOVEPOINT(...)"
     ],
@@ -14922,6 +14944,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_REVERSE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_REVERSE(...)"
     ],
@@ -14931,6 +14954,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ROTATE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ROTATE(...)"
     ],
@@ -14940,6 +14964,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SCALE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SCALE(...)"
     ],
@@ -14949,6 +14974,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SETPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SETPOINT(...)"
     ],
@@ -14958,6 +14984,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SETSRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SETSRID(...)"
     ],
@@ -14967,6 +14994,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SHORTESTLINE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SHORTESTLINE(...)"
     ],
@@ -14976,6 +15004,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SIMPLIFY",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SIMPLIFY(...)"
     ],
@@ -14985,6 +15014,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SNAPTOGRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SNAPTOGRID(...)"
     ],
@@ -14994,6 +15024,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SPLIT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SPLIT(...)"
     ],
@@ -15003,6 +15034,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SQUAREGRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SQUAREGRID(...)"
     ],
@@ -15012,6 +15044,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SRID",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SRID(...)"
     ],
@@ -15021,6 +15054,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_STARTPOINT",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_STARTPOINT(...)"
     ],
@@ -15030,6 +15064,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SUBDIVIDE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SUBDIVIDE(...)"
     ],
@@ -15039,6 +15074,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_SYMDIFFERENCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_SYMDIFFERENCE(...)"
     ],
@@ -15048,6 +15084,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_TOUCHES",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_TOUCHES(...)"
     ],
@@ -15057,6 +15094,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_TRANSFORM",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_TRANSFORM(...)"
     ],
@@ -15066,6 +15104,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_TRANSLATE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_TRANSLATE(...)"
     ],
@@ -15075,6 +15114,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_TRANSLATE3D",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_TRANSLATE3D(...)"
     ],
@@ -15084,6 +15124,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_UNION",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_UNION(...)"
     ],
@@ -15093,6 +15134,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_UNIONAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_UNIONAGGR(...)"
     ],
@@ -15102,6 +15144,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_VORONOICELL",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_VORONOICELL(...)"
     ],
@@ -15111,6 +15154,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_VORONOICELLAGGR",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_VORONOICELLAGGR(...)"
     ],
@@ -15120,6 +15164,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_WITHIN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_WITHIN(...)"
     ],
@@ -15129,6 +15174,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_WITHINDISTANCE",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_WITHINDISTANCE(...)"
     ],
@@ -15138,6 +15184,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_X",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_X(...)"
     ],
@@ -15147,6 +15194,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_XMAX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_XMAX(...)"
     ],
@@ -15156,6 +15204,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_XMIN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_XMIN(...)"
     ],
@@ -15165,6 +15214,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_Y",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_Y(...)"
     ],
@@ -15174,6 +15224,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_YMAX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_YMAX(...)"
     ],
@@ -15183,6 +15234,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_YMIN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_YMIN(...)"
     ],
@@ -15192,6 +15244,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_Z",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_Z(...)"
     ],
@@ -15201,6 +15254,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ZMAX",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ZMAX(...)"
     ],
@@ -15210,6 +15264,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "ST_ZMIN",
     "library": "SYS",
+    "category": "spatial",
     "signatures": [
       "ST_ZMIN(...)"
     ],
@@ -15219,6 +15274,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STATEMENT_EXECUTION_HOST",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "STATEMENT_EXECUTION_HOST(...)"
     ],
@@ -15228,6 +15284,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STATEMENT_EXECUTION_PORT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "STATEMENT_EXECUTION_PORT(...)"
     ],
@@ -15237,6 +15294,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STDDEV",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "STDDEV(...)"
     ],
@@ -15246,6 +15304,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STDDEV_POP",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "STDDEV_POP(...)"
     ],
@@ -15255,6 +15314,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STDDEV_SAMP",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "STDDEV_SAMP(...)"
     ],
@@ -15264,6 +15324,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STRING_AGG",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "STRING_AGG(...)"
     ],
@@ -15273,6 +15334,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STRONGLY_CONNECTED_COMPONENTS",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "STRONGLY_CONNECTED_COMPONENTS(<graph>)"
     ],
@@ -15282,6 +15344,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "STRTOBIN",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "STRTOBIN(...)"
     ],
@@ -15291,6 +15354,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBARRAY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SUBARRAY(...)"
     ],
@@ -15300,6 +15364,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBGRAPH",
     "library": "GRAPHSCRIPT",
+    "category": "graphscript",
     "signatures": [
       "SUBGRAPH(<graph>, <vertices>)"
     ],
@@ -15309,6 +15374,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SUBSTR(...)"
     ],
@@ -15318,6 +15384,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTR_AFTER",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SUBSTR_AFTER(...)"
     ],
@@ -15327,6 +15394,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTR_BEFORE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SUBSTR_BEFORE(...)"
     ],
@@ -15336,6 +15404,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTR_REGEXPR",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SUBSTR_REGEXPR(...)"
     ],
@@ -15345,6 +15414,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTRING",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SUBSTRING(...)"
     ],
@@ -15354,6 +15424,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBSTRING_REGEXPR",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "SUBSTRING_REGEXPR(...)"
     ],
@@ -15363,6 +15434,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUBVECTOR",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SUBVECTOR(<vector>, <start_position>, <dimension>)"
     ],
@@ -15372,6 +15444,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SUM",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "SUM(...)"
     ],
@@ -15381,6 +15454,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "SYSUUID",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "SYSUUID(...)"
     ],
@@ -15390,6 +15464,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TAN",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "TAN(...)"
     ],
@@ -15399,6 +15474,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TANH",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "TANH(...)"
     ],
@@ -15408,6 +15484,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_CATEGORIZE_KNN",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_CATEGORIZE_KNN(...)"
     ],
@@ -15417,6 +15494,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_GET_RELATED_DOCUMENTS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_GET_RELATED_DOCUMENTS(...)"
     ],
@@ -15426,6 +15504,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_GET_RELATED_TERMS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_GET_RELATED_TERMS(...)"
     ],
@@ -15435,6 +15514,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_GET_RELEVANT_DOCUMENTS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_GET_RELEVANT_DOCUMENTS(...)"
     ],
@@ -15444,6 +15524,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_GET_RELEVANT_TERMS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_GET_RELEVANT_TERMS(...)"
     ],
@@ -15453,6 +15534,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TM_GET_SUGGESTED_TERMS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TM_GET_SUGGESTED_TERMS(...)"
     ],
@@ -15462,6 +15544,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_ALPHANUM",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_ALPHANUM(...)"
     ],
@@ -15471,6 +15554,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_ARRAY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TO_ARRAY(<vector>)"
     ],
@@ -15480,6 +15564,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_BIGINT",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_BIGINT(...)"
     ],
@@ -15489,6 +15574,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_BINARY",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_BINARY(...)"
     ],
@@ -15498,6 +15584,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_BLOB",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_BLOB(...)"
     ],
@@ -15507,6 +15594,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_BOOLEAN",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_BOOLEAN(...)"
     ],
@@ -15516,6 +15604,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_CHAR",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_CHAR(<value> [, <format>])"
     ],
@@ -15525,6 +15614,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_CLOB",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_CLOB(...)"
     ],
@@ -15534,6 +15624,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_DATE",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_DATE(...)"
     ],
@@ -15543,6 +15634,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_DATS",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_DATS(...)"
     ],
@@ -15552,6 +15644,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_DECIMAL",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_DECIMAL(...)"
     ],
@@ -15561,6 +15654,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_DOUBLE",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_DOUBLE(...)"
     ],
@@ -15570,6 +15664,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_FIXEDCHAR",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_FIXEDCHAR(...)"
     ],
@@ -15579,6 +15674,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_HALF_VECTOR",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TO_HALF_VECTOR(<vector_representation>)"
     ],
@@ -15588,6 +15684,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_INT",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_INT(...)"
     ],
@@ -15597,6 +15694,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_INTEGER",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_INTEGER(...)"
     ],
@@ -15606,6 +15704,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_JSON_BOOLEAN",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_JSON_BOOLEAN(<value>)"
     ],
@@ -15615,6 +15714,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_NCHAR",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_NCHAR(<value> [, <format>])"
     ],
@@ -15624,6 +15724,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_NCLOB",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_NCLOB(...)"
     ],
@@ -15633,6 +15734,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_NVARCHAR",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_NVARCHAR(...)"
     ],
@@ -15642,6 +15744,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_REAL",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_REAL(...)"
     ],
@@ -15651,6 +15754,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_REAL_VECTOR",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TO_REAL_VECTOR(<vector_representation>)"
     ],
@@ -15660,6 +15764,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_SECONDDATE",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_SECONDDATE(...)"
     ],
@@ -15669,6 +15774,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_SMALLDECIMAL",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_SMALLDECIMAL(...)"
     ],
@@ -15678,6 +15784,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_SMALLINT",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_SMALLINT(...)"
     ],
@@ -15687,6 +15794,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_TIME",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_TIME(...)"
     ],
@@ -15696,6 +15804,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_TIMESTAMP",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_TIMESTAMP(...)"
     ],
@@ -15705,6 +15814,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_TIMS",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_TIMS(...)"
     ],
@@ -15714,6 +15824,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_TINYINT",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_TINYINT(...)"
     ],
@@ -15723,6 +15834,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_VARBINARY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TO_VARBINARY(...)"
     ],
@@ -15732,6 +15844,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TO_VARCHAR",
     "library": "SYS",
+    "category": "conversion",
     "signatures": [
       "TO_VARCHAR(...)"
     ],
@@ -15741,6 +15854,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TRIM",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "TRIM(...)"
     ],
@@ -15750,6 +15864,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "TRIM_ARRAY",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "TRIM_ARRAY(...)"
     ],
@@ -15759,6 +15874,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UCASE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "UCASE(...)"
     ],
@@ -15768,6 +15884,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UMINUS",
     "library": "SYS",
+    "category": "numeric",
     "signatures": [
       "UMINUS(...)"
     ],
@@ -15777,6 +15894,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UNICODE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "UNICODE(...)"
     ],
@@ -15786,6 +15904,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UNNEST",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "UNNEST(...)"
     ],
@@ -15795,6 +15914,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UPPER",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "UPPER(...)"
     ],
@@ -15804,6 +15924,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "UTCTOLOCAL",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "UTCTOLOCAL(...)"
     ],
@@ -15813,6 +15934,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "VALIDATE_USERGROUP_CONNECT_RESTRICTION(...)"
     ],
@@ -15822,6 +15944,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "VALIDATE_USERGROUP_CONNECT_RESTRICTION_DETAILS(...)"
     ],
@@ -15831,6 +15954,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VAR",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "VAR(...)"
     ],
@@ -15840,6 +15964,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VAR_POP",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "VAR_POP(...)"
     ],
@@ -15849,6 +15974,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VAR_SAMP",
     "library": "SYS",
+    "category": "aggregate",
     "signatures": [
       "VAR_SAMP(...)"
     ],
@@ -15858,6 +15984,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "VECTOR_EMBEDDING",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "VECTOR_EMBEDDING(<text>, {'DOCUMENT' | 'QUERY'}, <model_and_version> [, <remote_source_schema>, <remote_source>] [, <options>])"
     ],
@@ -15865,8 +15992,19 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Generates a vector embedding for <text> using SAP HANA NLP or SAP AI Core ([CLOUD])."
   },
   {
+    "name": "VERTICES",
+    "library": "GRAPHSCRIPT",
+    "category": "graphscript",
+    "signatures": [
+      "VERTICES(<graph>)"
+    ],
+    "returnType": "MULTISET<VERTEX>",
+    "description": "Returns all vertices of a GRAPH object. GraphScript (`LANGUAGE GRAPH`) only ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "WEEK",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "WEEK(...)"
     ],
@@ -15876,6 +16014,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "WEEKDAY",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "WEEKDAY(...)"
     ],
@@ -15885,6 +16024,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "WEIGHTED_AVG",
     "library": "SYS",
+    "category": "window",
     "signatures": [
       "WEIGHTED_AVG(...)"
     ],
@@ -15894,6 +16034,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "WIDTH_BUCKET",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "WIDTH_BUCKET(...)"
     ],
@@ -15903,6 +16044,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "WORKDAYS_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "WORKDAYS_BETWEEN(...)"
     ],
@@ -15912,6 +16054,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "XMLEXTRACT",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "XMLEXTRACT(...)"
     ],
@@ -15921,6 +16064,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "XMLEXTRACTVALUE",
     "library": "SYS",
+    "category": "misc",
     "signatures": [
       "XMLEXTRACTVALUE(...)"
     ],
@@ -15930,6 +16074,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "XMLTABLE",
     "library": "SYS",
+    "category": "string",
     "signatures": [
       "XMLTABLE(...)"
     ],
@@ -15939,6 +16084,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "YEAR",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "YEAR(...)"
     ],
@@ -15948,6 +16094,7 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
   {
     "name": "YEARS_BETWEEN",
     "library": "SYS",
+    "category": "datetime",
     "signatures": [
       "YEARS_BETWEEN(...)"
     ],
@@ -15961,6 +16108,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SLEEP_SECONDS",
       "library": "SQLSCRIPT_SYNC",
+      "category": "sqlscript-library",
       "signatures": [
         "SLEEP_SECONDS(IN <sleep_time> DOUBLE)"
       ],
@@ -15970,6 +16118,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "WAKEUP_CONNECTION",
       "library": "SQLSCRIPT_SYNC",
+      "category": "sqlscript-library",
       "signatures": [
         "WAKEUP_CONNECTION(IN <connection_id> INTEGER)"
       ],
@@ -15981,6 +16130,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "FORMAT",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT(IN FORMAT NVARCHAR(5000), IN <arg1> <any>, ...)"
       ],
@@ -15990,6 +16140,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "FORMAT_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT_TO_ARRAY(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
       ],
@@ -15999,6 +16150,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "FORMAT_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "FORMAT_TO_TABLE(IN FORMAT NVARCHAR(5000), IN TAB TABLE(...))"
       ],
@@ -16008,6 +16160,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16017,6 +16170,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT_REGEXPR",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16026,6 +16180,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT_REGEXPR_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR_TO_ARRAY(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16035,6 +16190,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT_REGEXPR_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_REGEXPR_TO_TABLE(IN VALUE NVARCHAR(5000), IN REGEXPR NVARCHAR(5000), IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16044,6 +16200,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT_TO_ARRAY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_TO_ARRAY(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16053,6 +16210,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SPLIT_TO_TABLE",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "SPLIT_TO_TABLE(IN VALUE NVARCHAR(5000), IN SEPARATOR NVARCHAR(5000) DEFAULT ',', IN MAXSPLIT INT DEFAULT -1)"
       ],
@@ -16062,6 +16220,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "TABLE_SUMMARY",
       "library": "SQLSCRIPT_STRING",
+      "category": "sqlscript-library",
       "signatures": [
         "TABLE_SUMMARY(IN TAB TABLE(...), IN ROWS INT DEFAULT 100)"
       ],
@@ -16073,6 +16232,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "PRINT_LINE",
       "library": "SQLSCRIPT_PRINT",
+      "category": "sqlscript-library",
       "signatures": [
         "PRINT_LINE(IN <input> NVARCHAR(8388607))"
       ],
@@ -16082,6 +16242,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "PRINT_TABLE",
       "library": "SQLSCRIPT_PRINT",
+      "category": "sqlscript-library",
       "signatures": [
         "PRINT_TABLE(IN <tab> TABLE(...), IN <max_records> INT DEFAULT 100)"
       ],
@@ -16093,6 +16254,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "ADD_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "ADD_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -16102,6 +16264,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "ADD_SQLSCRIPT_OBJECT",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "ADD_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL, IN level VARCHAR(7) DEFAULT NULL)"
       ],
@@ -16111,6 +16274,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "CREATE_CONFIGURATION",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "CREATE_CONFIGURATION(IN configuration_name NVARCHAR(256))"
       ],
@@ -16120,6 +16284,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "DROP_CONFIGURATION",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "DROP_CONFIGURATION(IN configuration_name NVARCHAR(256), IN drop_cascade BOOLEAN DEFAULT FALSE)"
       ],
@@ -16129,6 +16294,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LEVEL_DEBUG",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_DEBUG CONSTANT VARCHAR(7)"
       ],
@@ -16139,6 +16305,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LEVEL_ERROR",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_ERROR CONSTANT VARCHAR(7)"
       ],
@@ -16149,6 +16316,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LEVEL_FATAL",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_FATAL CONSTANT VARCHAR(7)"
       ],
@@ -16159,6 +16327,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LEVEL_INFO",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_INFO CONSTANT VARCHAR(7)"
       ],
@@ -16169,6 +16338,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LEVEL_WARNING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LEVEL_WARNING CONSTANT VARCHAR(7)"
       ],
@@ -16179,6 +16349,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LOG",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "LOG(IN level VARCHAR(7), IN topic NVARCHAR(256), IN message NVARCHAR(5000) [, IN <arg1> <any>, ...])"
       ],
@@ -16188,6 +16359,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "REMOVE_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "REMOVE_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -16197,6 +16369,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "REMOVE_SQLSCRIPT_OBJECT",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "REMOVE_SQLSCRIPT_OBJECT(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN object_name NVARCHAR(256), IN library_member_name NVARCHAR(256) DEFAULT NULL)"
       ],
@@ -16206,6 +16379,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SET_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_FILTER(IN configuration_name NVARCHAR(256), IN filter_values NVARCHAR(5000))"
       ],
@@ -16215,6 +16389,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SET_LEVEL",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_LEVEL(IN configuration_name NVARCHAR(256), IN level VARCHAR(7))"
       ],
@@ -16224,6 +16399,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "SET_OUTPUT_TABLE",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "SET_OUTPUT_TABLE(IN configuration_name NVARCHAR(256), IN schema_name NVARCHAR(256), IN table_name NVARCHAR(256))"
       ],
@@ -16233,6 +16409,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "START_LOGGING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "START_LOGGING(IN configuration_name NVARCHAR(256))"
       ],
@@ -16242,6 +16419,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "STOP_LOGGING",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "STOP_LOGGING(IN configuration_name NVARCHAR(256))"
       ],
@@ -16251,6 +16429,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "UNSET_FILTER",
       "library": "SQLSCRIPT_LOGGING",
+      "category": "sqlscript-library",
       "signatures": [
         "UNSET_FILTER(IN configuration_name NVARCHAR(256))"
       ],
@@ -16262,6 +16441,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_EQ",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_EQ(IN actual <any>, IN expected <any>)"
       ],
@@ -16271,6 +16451,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_GE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_GE(IN actual <any>, IN expected <any>)"
       ],
@@ -16280,6 +16461,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_GT",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_GT(IN actual <any>, IN expected <any>)"
       ],
@@ -16289,6 +16471,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_LE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_LE(IN actual <any>, IN expected <any>)"
       ],
@@ -16298,6 +16481,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_LT",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_LT(IN actual <any>, IN expected <any>)"
       ],
@@ -16307,6 +16491,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_NE",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_NE(IN actual <any>, IN expected <any>)"
       ],
@@ -16316,6 +16501,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_NULL",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_NULL(IN actual <any>)"
       ],
@@ -16325,6 +16511,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "EXPECT_TABLE_EQ",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "EXPECT_TABLE_EQ(IN actual TABLE(...), IN expected TABLE(...), IN ignore_order BOOLEAN DEFAULT FALSE)"
       ],
@@ -16334,6 +16521,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "FAIL",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "FAIL(IN message NVARCHAR(5000) DEFAULT '')"
       ],
@@ -16343,6 +16531,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LIST_CONFIGURATIONS",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "LIST_CONFIGURATIONS(IN config_json NCLOB, OUT configs TABLE(...))"
       ],
@@ -16352,6 +16541,7 @@ export const SQL_LIBRARY_MEMBERS: Readonly<Record<string, readonly SqlFunctionEn
     {
       "name": "LIST_TESTS",
       "library": "SQLSCRIPT_TEST",
+      "category": "sqlscript-library",
       "signatures": [
         "LIST_TESTS(IN config_json NCLOB, OUT tests TABLE(...))"
       ],

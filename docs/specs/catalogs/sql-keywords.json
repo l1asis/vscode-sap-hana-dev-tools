@@ -1,5156 +1,1589 @@
 {
-  "keywords": [
-    {
-      "name": "ABSTRACT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+  "$comment": "SAP HANA SQL / SQLScript word catalog (#77). Source of truth for highlighting, formatting, analyzer word sets and hover. Edit here, then run `npm run build:keywords`. Schema: docs/specs/SPEC_RULES.md §2.C.",
+  "roles": {
+    "control-flow": {
+      "group": "lexical",
+      "scope": "keyword.control.flow.hanasql",
+      "format": "keyword",
+      "description": "SQLScript control-flow and block keyword.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md § Imperative SQLScript Logic"
     },
-    {
-      "name": "ADAPTER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ADD",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ADJACENCY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ADOPT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AFTER",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AGENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ALL",
-      "category": "reserved",
+    "dml": {
+      "group": "lexical",
       "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "format": "keyword",
+      "description": "Query and data manipulation keyword.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § SQL Statements"
     },
-    {
-      "name": "ALPHANUM",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "ALTER",
-      "category": "reserved",
+    "ddl": {
+      "group": "lexical",
       "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "format": "keyword",
+      "description": "Data definition keyword (statement verbs, object kinds, column and routine options).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § SQL Statements"
     },
-    {
-      "name": "ALWAYS",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ANALYTIC",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ANALYZERSUPPRESS",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AND",
-      "category": "non-reserved",
+    "word-operator": {
+      "group": "lexical",
       "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ANNOTATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ANY",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "APPLICATION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "APPLY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "APPLY_FILTER",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ARRAY",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AS",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ASC",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ASYNCHRONOUS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ATOMIC",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AUDIT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AUTO",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AUTOCOMMIT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "AUTONOMOUS",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BALANCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BEFORE",
-      "category": "reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BEGIN",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BETWEEN",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BFS",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BIGINT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BIND_AS_PARAMETER",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BIND_AS_VALUE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BINTEXT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "BLOB",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BLOCK",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BOOLEAN",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BOTH",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BREAK",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BREAKUP",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BULK",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "BY",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CACHE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CALL",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CAPTURE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CASCADE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CASE",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CELLS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CERTIFICATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CHAR",
-      "category": "reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CHECK",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLASS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLEAR",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLIENTSIDE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLOB",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLOSE",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLUSTER",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CLUSTERS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "COLLECTION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "COLUMN",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "COMMENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "COMMIT",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONDITION",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONFIGURATION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONNECT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONSISTENCY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONSTANT",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONSTRAINT",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONTAINS",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONTENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CONTINUE",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CREATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CREDENTIAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CROSS",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CUBE",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_CONNECTION",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_DATE",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_LINE_NUMBER",
-      "category": "non-reserved",
-      "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_OBJECT_NAME",
-      "category": "non-reserved",
-      "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_OBJECT_SCHEMA",
-      "category": "non-reserved",
-      "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_SCHEMA",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_TIME",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_TIMESTAMP",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_TRANSACTION_ISOLATION_LEVEL",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_USER",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_UTCDATE",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_UTCTIME",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRENT_UTCTIMESTAMP",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURRVAL",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CURSOR",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "CYCLE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DATA",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DATABASE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DATE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DAYDATE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "DBSCAN",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DDL",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DEC",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DECIMAL",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DECLARE",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DEFAULT",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DEFINER",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DEGREE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DELETE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DELTA",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DESC",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DETERMINISTIC",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DFS",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DISABLE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DISTINCT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DO",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DOUBLE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DROP",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "DYNAMIC",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EACH",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EDGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EDGES",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ELSE",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ELSEIF",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ENABLE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ENCRYPTION",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "END",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ENTRY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EPS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EQUIDISTANT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ESCAPE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXCEPT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXCEPTION",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXCHANGER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXCLUDED",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXEC",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXECUTE",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXECUTION",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXISTS",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXIT",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "EXPLAIN",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FALSE",
-      "category": "reserved",
+      "format": "keyword",
+      "description": "Logical operator or predicate written as a word (AND, IN, LIKE, BETWEEN, ...).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md § Predicates"
+    },
+    "literal": {
+      "group": "lexical",
       "scope": "constant.language.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "format": "keyword",
+      "description": "Literal constant (TRUE, FALSE, NULL, UNKNOWN).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md § Reserved Words"
     },
-    {
-      "name": "FETCH",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+    "system-value": {
+      "group": "lexical",
+      "scope": "support.constant.hanasql",
+      "format": "keyword",
+      "description": "Niladic system value written without parentheses (CURRENT_DATE, SESSION_USER, SYSUUID, ...).",
+      "context": "An operand. The same names followed by `(` are highlighted as functions.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md § Reserved Words"
     },
-    {
-      "name": "FILE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FILTER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FIRST",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FLOAT",
-      "category": "non-reserved",
+    "type": {
+      "group": "lexical",
       "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "format": "type",
+      "description": "Built-in data type.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md § Data Types"
     },
-    {
-      "name": "FOLLOWING",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FOR",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FORCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FOREACH",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FOREIGN",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FROM",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FULL",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FUNCTION",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "FUZZY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GENERATED",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GEOCODE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GLOBAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GRANT",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GRAPH",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GRID",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "GROUP",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HALF_VECTOR",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HANDLER",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HASH",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HAVING",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HEXAGON",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HINT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HISTORY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "HNSW",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IDENTITY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IF",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IMMEDIATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IN",
-      "category": "reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IN_DEGREE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IN_EDGES",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INCREMENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INCREMENTAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INDEX",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INDUCED_SUBGRAPH",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INIFILE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INLINE",
-      "category": "non-reserved",
+    "pragma": {
+      "group": "lexical",
       "scope": "keyword.control.directive.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INNER",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INOUT",
-      "category": "reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INSERT",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INSTEAD",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INTEGER",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INTERSECT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INTO",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INVERSE_GRAPH",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "INVOKER",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IS",
-      "category": "reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IS_EMPTY",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "IS_REACHABLE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "JOB",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "JOIN",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "JSON",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "JWT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "K_SHORTEST_PATHS",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "KERNEL",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "KEY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "KEYPAIR",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "KMEANS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LABEL",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LANGUAGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LAST",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LATERAL",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LDAP",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LEADING",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LEAVES",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LEFT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LEVELS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LIBRARY",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LIKE",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LIKE_REGEXPR",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LIMIT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOAD",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOB",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOCAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOCATION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOG",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LOGIN",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "LONGDATE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "LOOP",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MAP_MERGE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MAP_REDUCE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MAPPING",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MASK",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MATCHED",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MATERIALIZED",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MAXVALUE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MEASURE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MEASURES",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MERGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MINPTS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MINUS",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MINVALUE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MODEL",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MODIFIES",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MONITORING",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "MULTIPARENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NATURAL",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NCHAR",
-      "category": "reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NCLOB",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NEIGHBORS",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NEXTVAL",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NO",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NO_INLINE",
-      "category": "non-reserved",
-      "scope": "keyword.control.directive.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NO_VECTOR_INDEX",
-      "category": "non-reserved",
-      "scope": "support.constant.hint.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NOT",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NOWAIT",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NULL",
-      "category": "reserved",
-      "scope": "constant.language.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NULLS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "NVARCHAR",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OCCURRENCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OF",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OFFSET",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ON",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ONLINE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ONLY",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OPEN",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OR",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ORDER",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ORDINALITY",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ORPHAN",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OUT",
-      "category": "reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OUT_DEGREE",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OUT_EDGES",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OUTER",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OVER",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "OVERRIDING",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PACKAGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PARALLEL",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PARAMETERS",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PARTITION",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PATH",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PERFTRACE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PERIOD",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PIECEWISE",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PLACEMENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PLAN",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "POLICY",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "POPSCOPE",
-      "category": "non-reserved",
+      "description": "SQLScript pragma written as `#[NAME]`.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/009_pages_241_270.md § SQLScript Pragmas"
+    },
+    "annotation": {
+      "group": "lexical",
+      "const": "SQLSCRIPT_ANNOTATIONS",
+      "emit": [
+        "analyzer"
+      ],
       "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "description": "SQLScript annotation written as `@Name` (compiler pragmas, `SQLSCRIPT_TEST` annotations, `@AnalyzerSuppress`) `[XSA]` `[HDI]` `[CLOUD]`.",
+      "source": "docs/specs/grammars/sql-sqlscript.md §2 (SQLScript Pragma / Annotation)"
     },
-    {
-      "name": "PRECEDING",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PREDEFINED",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRIMARY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRIOR",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRIORITY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRIVATE",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRIVILEGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PROCEDURE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PROFILE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PROFILER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PROJECTION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PROVIDER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PRUNE",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PSE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PUBLIC",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PUBLICATION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "PUSHSCOPE",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RANGE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RDF",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "READ",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "READS",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REAL",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REAL_VECTOR",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RECLAIM",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RECOMPILE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RECONFIGURE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RECORD_COUNT",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REFERENCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REFERENCES",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REFRESH",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REMOTE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REMOVE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RENAME",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REPLACE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RESET",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RESIGNAL",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RESULT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RETAIN",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RETENTION",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RETURN",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RETURNS",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REVERSE",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "REVOKE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RIGHT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROLE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROLEGROUP",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROLLBACK",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROLLUP",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROOT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROUTE_TO",
-      "category": "non-reserved",
-      "scope": "support.constant.hint.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROW",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROWCOUNT",
-      "category": "non-reserved",
+    "system-variable": {
+      "group": "lexical",
       "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROWID",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ROWS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "RUNTIMEDUMP",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SAML",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SATISFIES",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SAVE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SAVEPOINT",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SCHEDULER",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SCHEMA",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SEARCH",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SECONDDATE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SECTIONS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SECURITY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SELECT",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SEQUENCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SEQUENTIAL",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SERIES",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SERVICE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SESSION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SESSION_USER",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SET",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SHORTEST_PATH",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SHORTEST_PATHS_ONE_TO_ALL",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SHORTTEXT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "SIBLING",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SIBLINGS",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SIGNAL",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SIMILARITY",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SMALLDECIMAL",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SMALLINT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SOME",
-      "category": "non-reserved",
-      "scope": "keyword.operator.logical.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SOURCE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SPACE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SPATIAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQL",
-      "category": "reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQL_ERROR_CODE",
-      "category": "non-reserved",
-      "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQL_ERROR_MESSAGE",
-      "category": "non-reserved",
-      "scope": "support.variable.system.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQLEXCEPTION",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQLSCRIPT",
-      "category": "non-reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQLSCRIPT_LOGGING_TABLE_TYPE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQLSCRIPT_STATEMENT_STATISTICS_TYPE",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SQLWARNING",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_CIRCULARSTRING",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_GEOMETRY",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_GEOMETRYCOLLECTION",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_LINESTRING",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_MULTILINESTRING",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_MULTIPOINT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_MULTIPOLYGON",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_POINT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_POINTM",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_POINTZ",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_POINTZM",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "ST_POLYGON",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "START",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STATEMENT",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STATIC",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STATISTICS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STOP",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STRONGLY_CONNECTED_COMPONENTS",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "STRUCTURED",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SUBGRAPH",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SUBSCRIPTION",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SUBTOTAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SYNONYM",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SYSTEM",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SYSTEMS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "SYSUUID",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TABLE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TABLESAMPLE",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TARGET",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TEMPORARY",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TEST",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTCLASSIFICATION",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTSETUP",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTSETUPCONFIG",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTSETUPLIBRARY",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTSETUPTEST",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTTEARDOWN",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTTEARDOWNCONFIG",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTTEARDOWNLIBRARY",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TESTTEARDOWNTEST",
-      "category": "non-reserved",
-      "scope": "storage.type.annotation.pragma.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TEXT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI"
-      ]
-    },
-    {
-      "name": "THEN",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "THREADS",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TIME",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TIMESTAMP",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TIMEZONE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TINYINT",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TO",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TOKEN",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TOP",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRACEPROFILE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRACES",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRAILING",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRANSACTION",
-      "category": "non-reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRAVERSE",
-      "category": "non-reserved",
-      "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRIGGER",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRUE",
-      "category": "reserved",
-      "scope": "constant.language.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TRUNCATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "TYPE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNBOUNDED",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNION",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNIQUE",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNIT",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNKNOWN",
-      "category": "reserved",
-      "scope": "constant.language.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNLOAD",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNSET",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNTIL",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UNUSED",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UPDATE",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UPSERT",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "USER",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "USERGROUP",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "USING",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "UTCTIMESTAMP",
-      "category": "reserved",
-      "scope": "support.constant.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VALID",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VALUES",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VARBINARY",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VARCHAR",
-      "category": "non-reserved",
-      "scope": "storage.type.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VECTOR",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VECTOR_INDEX",
-      "category": "non-reserved",
+      "description": "SQLScript system variable (`::ROWCOUNT`, `::SQL_ERROR_CODE`, ...).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/007_pages_181_210.md § System Variables"
+    },
+    "hint": {
+      "group": "lexical",
       "scope": "support.constant.hint.hanasql",
-      "platforms": [
-        "CLOUD"
-      ]
+      "description": "Hint name inside `WITH HINT (...)`.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/003_pages_61_90.md § Hints"
     },
-    {
-      "name": "VERTEX",
-      "category": "non-reserved",
-      "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VERTICES",
-      "category": "non-reserved",
-      "scope": "support.function.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VIEW",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VIRTUAL",
-      "category": "non-reserved",
-      "scope": "keyword.other.ddl.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "VISIT",
-      "category": "non-reserved",
+    "sqlscript-keyword": {
+      "group": "lexical",
       "scope": "keyword.control.sqlscript.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "description": "SQLScript-only keyword (routine options, exception classes, library visibility, GraphScript traversal).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md § Imperative SQLScript Logic"
     },
-    {
-      "name": "WAITGRAPH",
-      "category": "non-reserved",
+    "reserved": {
+      "group": "lexical",
+      "scope": "keyword.other.sql.hanasql",
+      "format": "keyword",
+      "description": "Reserved word: cannot be an unquoted identifier.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md § Reserved Words"
+    },
+    "alter-system-word": {
+      "group": "lexical",
       "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "description": "Word of an `ALTER SYSTEM ...` statement head.",
+      "context": "Directly after `ALTER SYSTEM`. Elsewhere it is an ordinary word.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/013_pages_361_390.md § ALTER SYSTEM ... (All ALTER SYSTEM Statements)"
     },
-    {
-      "name": "WHEN",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WHERE",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WHILE",
-      "category": "reserved",
-      "scope": "keyword.control.flow.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WINDOW",
-      "category": "non-reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WITH",
-      "category": "reserved",
-      "scope": "keyword.other.dml.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WORKLOAD",
-      "category": "non-reserved",
+    "statement-noun": {
+      "group": "lexical",
       "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
+      "description": "Object noun of a DDL statement head (`CREATE REMOTE SOURCE`, `ALTER WORKLOAD CLASS`, ...).",
+      "context": "Within the first words of a CREATE / ALTER / DROP / ... statement or a headerless HDI artifact.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § SQL Statements"
     },
-    {
-      "name": "WORKSPACE",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSA",
-        "HDI",
-        "CLOUD"
-      ]
-    },
-    {
-      "name": "WRAPPER",
-      "category": "non-reserved",
+    "clause-word": {
+      "group": "lexical",
       "scope": "keyword.other.clause.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
+      "description": "Non-reserved word that is a keyword only inside a specific clause (window frames, hierarchy generators, series tables, JSON_TABLE, graph workspaces, ...).",
+      "context": "Only inside its clause; an ordinary identifier elsewhere."
+    },
+    "keyword": {
+      "group": "lexical",
+      "format": "keyword",
+      "description": "Non-reserved keyword that the formatter cases as a keyword in any position."
+    },
+    "quote-protected": {
+      "group": "lexical",
+      "description": "Non-reserved word that `identifierQuotes: \"removeUnnecessary\"` must not unquote, because it is a keyword somewhere."
+    },
+    "sql-statement-starter": {
+      "group": "context",
+      "const": "SQL_STATEMENT_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "First word of a documented SAP HANA SQL statement (`<X> Statement` chapters of the SQL Reference).",
+      "context": "Statement start (HANA-SYN-024 / 025 statement boundaries).",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/011_pages_301_330.md § SQL Statements"
+    },
+    "sqlscript-statement-starter": {
+      "group": "context",
+      "const": "SQLSCRIPT_STATEMENT_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "First word of a SQLScript imperative statement.",
+      "context": "Statement start inside a procedure, function or DO block body.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/004_pages_91_120.md § Imperative SQLScript Logic"
+    },
+    "general-sql-root": {
+      "group": "context",
+      "const": "GENERAL_SQL_VALID_ROOTS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Valid first word of a top-level SQL statement or script; suppresses root typo QuickFixes.",
+      "context": "First token of a file or statement (HANA-SYN-021)."
+    },
+    "unambiguous-statement-start": {
+      "group": "context",
+      "const": "UNAMBIGUOUS_STMT_START_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that can only start a statement, so a preceding statement must have ended with `;`.",
+      "context": "Inside a SQLScript block (HANA-SYN-024 missing semicolon).",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-024)"
+    },
+    "block-end-stop-prev": {
+      "group": "context",
+      "const": "STMT_BLOCK_END_STOP_PREV_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after which a following statement word does not need a separating `;`.",
+      "context": "Previous token of a statement-start candidate (HANA-SYN-024). Combined with punctuation in `syntax.ts`.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-024)"
+    },
+    "statement-exit-word": {
+      "group": "context",
+      "const": "STMT_EXIT_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Statement word that ends an open query when it begins a new line.",
+      "context": "Line start after a FROM clause, in SQLScript bodies (clause order check)."
+    },
+    "statement-continuation-prev": {
+      "group": "context",
+      "const": "STMT_CONTINUATION_PREV",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after which a line-leading statement word continues the current query instead of starting a new statement.",
+      "context": "Previous word of a `statement-exit-word` candidate (clause order check)."
+    },
+    "top-level-imperative": {
+      "group": "context",
+      "const": "TOP_LEVEL_IMPERATIVE_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "SQLScript imperative statement that is only valid inside a procedure, function or DO block body.",
+      "context": "Top level of a plain SQL file."
+    },
+    "terminator-statement": {
+      "group": "context",
+      "const": "TERMINATOR_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Statement that leaves the current block, making the rest of the block unreachable.",
+      "context": "SQLScript block scope tracking."
+    },
+    "dml-write-statement": {
+      "group": "context",
+      "const": "DML_WRITE_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Statement that writes table data.",
+      "context": "Statement start in a routine body (READS SQL DATA / read-only checks)."
+    },
+    "ddl-statement": {
+      "group": "context",
+      "const": "DDL_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "DDL statement verb.",
+      "context": "Statement start in a routine body (read-only checks)."
+    },
+    "procedure-dml-statement": {
+      "group": "context",
+      "const": "DML_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "DML statement verb checked in procedure bodies by the SQLScript performance rules.",
+      "context": "First keyword of a statement inside a procedure body."
+    },
+    "procedure-ddl-statement": {
+      "group": "context",
+      "const": "PROCEDURE_DDL_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "DDL statement verb checked in procedure bodies by the SQLScript performance rules.",
+      "context": "First keyword of a statement inside a procedure body."
+    },
+    "set-operator": {
+      "group": "context",
+      "const": "SET_OPERATORS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Query set operator.",
+      "context": "Between query blocks."
+    },
+    "select-privilege-prev": {
+      "group": "context",
+      "const": "SELECT_PRIVILEGE_PREV",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word before `SELECT` that makes `SELECT` a privilege name, not a query (clause order check).",
+      "context": "`GRANT SELECT ON ...`, `COMMENT ON ...`, structured privileges."
+    },
+    "select-privilege-prev-clause": {
+      "group": "context",
+      "const": "SELECT_PRIVILEGE_PREV_CLAUSE",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word before `SELECT` that makes `SELECT` a privilege name, not a query (incomplete-clause check).",
+      "context": "HANA-SYN-025 incomplete SELECT.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-025)"
+    },
+    "subselect-context": {
+      "group": "context",
+      "const": "SUBSELECT_CONTEXT_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Statement word after which a nested `SELECT` belongs to the same statement (no `;` expected before it).",
+      "context": "Top paren depth of a statement (HANA-SYN-024).",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-024)"
+    },
+    "set-statement-object": {
+      "group": "context",
+      "const": "SET_STATEMENT_OBJECTS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after `SET` that makes it a `SET <object>` statement rather than an `UPDATE ... SET col = <expr>` assignment.",
+      "context": "Word after `SET` (HANA-SYN-023 assignment tracking)."
+    },
+    "end-compound-suffix": {
+      "group": "context",
+      "const": "END_COMPOUND_SUFFIXES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after `END` that closes a compound statement (`END IF`, `END LOOP`, `END WHILE`, `END FOR`).",
+      "context": "Directly after `END`."
+    },
+    "end-suffix": {
+      "group": "context",
+      "const": "END_SUFFIXES",
+      "emit": [
+        "analyzer",
+        "formatter"
+      ],
+      "description": "Word after `END` that closes a compound statement or a `CASE` expression.",
+      "context": "Directly after `END`."
+    },
+    "block-stop": {
+      "group": "context",
+      "const": "BLOCK_STOPS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "SQLScript block word that ends an embedded SQL statement.",
+      "context": "Clause parser follow sets inside SQLScript blocks."
+    },
+    "if-body-stop": {
+      "group": "context",
+      "const": "IF_BODY_STOPS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that ends the statement list of an `IF` / `ELSEIF` branch.",
+      "context": "Statement list of an IF statement."
+    },
+    "case-body-stop": {
+      "group": "context",
+      "const": "CASE_BODY_STOPS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that ends the statement list of a `CASE` statement branch.",
+      "context": "Statement list of a CASE statement."
+    },
+    "body-statement-word": {
+      "group": "context",
+      "const": "BODY_STATEMENT_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that may start a statement in a SQLScript body; any other word at a statement boundary is checked as a keyword typo.",
+      "context": "Statement boundary in a SQLScript block (HANA-SYN-021)."
+    },
+    "body-typo-target": {
+      "group": "context",
+      "const": "BODY_TYPO_TARGETS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "SQLScript keyword suggested by the statement-boundary typo QuickFix.",
+      "context": "Statement boundary in a SQLScript block (HANA-SYN-021)."
+    },
+    "compound-boundary-prev": {
+      "group": "context",
+      "const": "COMPOUND_BOUNDARY_PREV_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after which the next token starts a new SQLScript statement.",
+      "context": "Previous token at a SQLScript statement boundary. Combined with `;` and `:` in `syntax.ts`."
+    },
+    "library-member-starter": {
+      "group": "context",
+      "const": "LIBRARY_MEMBER_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that may start a member declaration of a SQLScript library.",
+      "context": "Body of `CREATE LIBRARY` / `.hdblibrary`."
+    },
+    "routine-header-opener": {
+      "group": "context",
+      "const": "HEADER_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that opens a construct parsed by the routine header parser.",
+      "context": "Statement start."
+    },
+    "cursor-attribute": {
+      "group": "context",
+      "const": "CURSOR_ATTRIBUTES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "SQLScript cursor attribute (`c::ISCLOSED`, `c::NOTFOUND`, `c::ROWCOUNT`).",
+      "context": "After `<cursor>::`.",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/005_pages_121_150.md § Cursors"
+    },
+    "routine-clause-starter": {
+      "group": "context",
+      "const": "CLAUSE_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "First word of a routine header clause before `AS`.",
+      "context": "CREATE PROCEDURE / FUNCTION header (HANA-SYN-040)."
+    },
+    "routine-language": {
+      "group": "context",
+      "const": "KNOWN_LANGUAGES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Value of `LANGUAGE` in a routine header.",
+      "context": "After `LANGUAGE` in a routine header."
+    },
+    "routine-language-typo-target": {
+      "group": "context",
+      "const": "LANGUAGE_TYPO_TARGETS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Language suggested by the routine header `LANGUAGE` typo QuickFix.",
+      "context": "After `LANGUAGE` in a routine header."
+    },
+    "routine-management-action": {
+      "group": "context",
+      "const": "MANAGEMENT_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Action of an `ALTER PROCEDURE` / `ALTER FUNCTION` management statement (not a header redefinition).",
+      "context": "After `ALTER PROCEDURE | FUNCTION <name>`."
+    },
+    "param-mode": {
+      "group": "context",
+      "const": "PARAM_MODES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Routine parameter mode.",
+      "context": "Start of a routine parameter."
+    },
+    "ddl-noun": {
+      "group": "context",
+      "const": "VALID_DDL_NOUNS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Object noun that may follow a DDL verb.",
+      "context": "After CREATE / ALTER / DROP (HANA-SYN-021 object keyword check)."
+    },
+    "ddl-modifier": {
+      "group": "context",
+      "const": "VALID_DDL_MODIFIERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Modifier that may sit between a DDL verb and its object noun.",
+      "context": "After CREATE / ALTER / DROP, before the object noun."
+    },
+    "ddl-typo-target": {
+      "group": "context",
+      "const": "DDL_TYPO_CANDIDATES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Object noun suggested by the DDL object keyword typo QuickFix.",
+      "context": "After CREATE / ALTER / DROP (HANA-SYN-021)."
+    },
+    "migration-table-root": {
+      "group": "context",
+      "const": "MIGRATION_TABLE_ROOTS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Headerless root of a `.hdbmigrationtable` version section `[HDI]` `[CLOUD]`.",
+      "context": "First word after a `== version = N` marker."
+    },
+    "table-columns-prev": {
+      "group": "context",
+      "const": "TABLE_COLUMNS_PREV",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word before `TABLE (` that makes the parenthesis a column definition list.",
+      "context": "`RETURNS TABLE (...)`, `CREATE COLUMN TABLE t (...)`, `IN p TABLE (...)`."
+    },
+    "on-target-ddl-noun": {
+      "group": "context",
+      "const": "ON_TARGET_DDL_NOUNS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "DDL object noun whose `ON <name> (...)` parenthesis is a column list, not a call.",
+      "context": "CREATE INDEX / TRIGGER / STATISTICS ... ON <name> (...)."
+    },
+    "table-constraint-starter": {
+      "group": "context",
+      "const": "TABLE_CONSTRAINT_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that starts a table constraint or index in a CREATE TABLE element list.",
+      "context": "Start of a CREATE TABLE element (clause parser)."
+    },
+    "column-list-constraint-starter": {
+      "group": "context",
+      "const": "COLUMN_LIST_CONSTRAINT_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that starts a table constraint (or `LIKE`) instead of a column definition.",
+      "context": "Start of an element of a column definition list (HANA-SYN-023)."
+    },
+    "column-end-modifier": {
+      "group": "context",
+      "const": "COLUMN_END_MODIFIERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Column definition modifier that may end a column definition.",
+      "context": "After the data type in a column definition (HANA-SYN-023)."
+    },
+    "column-clause-modifier": {
+      "group": "context",
+      "const": "COLUMN_CLAUSE_MODIFIERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Column definition clause keyword (`DEFAULT`, `GENERATED`, `FUZZY SEARCH INDEX`, `BTREE`, ...).",
+      "context": "Only inside a column definition."
+    },
+    "type-with-args": {
+      "group": "context",
+      "const": "SQL_TYPE_ARG_NAMES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Data type that takes a length / precision argument list.",
+      "context": "`<type> (` in a column or parameter definition."
+    },
+    "type-length-unit": {
+      "group": "context",
+      "const": "SQL_TYPE_ARG_UNITS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Length unit inside a data type argument list (`NVARCHAR(10 CHAR)`).",
+      "context": "Inside a data type argument list."
+    },
+    "unquoted-default": {
+      "group": "context",
+      "const": "SQL_UNQUOTED_DEFAULTS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Column default that classic `.hdbtable` writes as a quoted string but HDI must write unquoted `[XSC]` -> `[HDI]`.",
+      "context": "XSC -> HDI table migration."
+    },
+    "query-clause": {
+      "group": "context",
+      "const": "QUERY_CLAUSES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword that ends a query expression or clause at the same nesting level.",
+      "context": "Clause parser follow sets. Listed in clause order: the order of the HANA-SYN-042 \"expected ...\" message.",
+      "order": [
+        "FROM",
+        "INTO",
+        "WHERE",
+        "GROUP",
+        "HAVING",
+        "ORDER",
+        "LIMIT",
+        "OFFSET",
+        "UNION",
+        "INTERSECT",
+        "EXCEPT",
+        "MINUS",
+        "FOR",
+        "WITH",
+        "WINDOW"
       ]
     },
-    {
-      "name": "X509",
-      "category": "non-reserved",
-      "scope": "keyword.other.statement.hanasql",
-      "platforms": [
-        "XSC",
-        "XSA",
-        "HDI",
-        "CLOUD"
+    "join-starter": {
+      "group": "context",
+      "const": "JOIN_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that starts a join, including the cardinality prefixes `MANY` / `ONE` / `EXACT`.",
+      "context": "FROM clause only. `LEFT (` / `RIGHT (` are string function calls.",
+      "order": [
+        "JOIN",
+        "INNER",
+        "LEFT",
+        "RIGHT",
+        "FULL",
+        "CROSS",
+        "NATURAL",
+        "MANY",
+        "ONE",
+        "EXACT"
       ]
+    },
+    "non-alias": {
+      "group": "context",
+      "const": "NON_ALIAS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that is never an implicit alias, because it continues or ends the enclosing clause.",
+      "context": "After a table reference or select item (clause parser)."
+    },
+    "follow-hidden": {
+      "group": "context",
+      "const": "FOLLOW_HIDDEN",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Follow-set word left out of the HANA-SYN-042 \"expected ...\" message.",
+      "context": "Clause parser diagnostics."
+    },
+    "reserved-operand": {
+      "group": "context",
+      "const": "RESERVED_OPERANDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Reserved word usable as an operand (niladic system value or pseudo-column).",
+      "context": "Expression operand position."
+    },
+    "reserved-after-dot": {
+      "group": "context",
+      "const": "RESERVED_AFTER_DOT",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Reserved word valid after `.` (sequence pseudo-columns, `ROWID`).",
+      "context": "`<seq>.NEXTVAL`, `<tab>.ROWID`."
+    },
+    "typed-literal-prefix": {
+      "group": "context",
+      "const": "TYPED_LITERAL_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Data type that prefixes a typed literal (`DATE '2024-01-01'`).",
+      "context": "Directly before a string literal."
+    },
+    "interval-unit": {
+      "group": "context",
+      "const": "INTERVAL_UNITS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Interval qualifier word (`INTERVAL '1' DAY TO SECOND`).",
+      "context": "After an interval literal."
+    },
+    "datetime-field": {
+      "group": "context",
+      "const": "DATETIME_FIELDS",
+      "emit": [
+        "analyzer",
+        "formatter"
+      ],
+      "description": "Datetime field name (`EXTRACT(YEAR FROM ...)`).",
+      "context": "First argument of `EXTRACT`; a keyword when followed by `FROM`."
+    },
+    "query-start-prev": {
+      "group": "context",
+      "const": "QUERY_START_PREV_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word after which a query may start without a separating `;`.",
+      "context": "Previous token of `SELECT` / `WITH`. Combined with `;`, `(` and `:=` in `syntax.ts`."
+    },
+    "comparison-word": {
+      "group": "context",
+      "const": "COMPARISON_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Predicate word that may follow a column operand.",
+      "context": "Second token after a column operand. Combined with comparison operators in `syntax.ts`."
+    },
+    "select-stop-clause": {
+      "group": "context",
+      "const": "SELECT_STOP_CLAUSES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword that ends a select list.",
+      "context": "Select list (HANA-SYN-023 / 025)."
+    },
+    "select-prefix-op": {
+      "group": "context",
+      "const": "SELECT_PREFIX_OP_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that continues a select item expression (operator words, `OVER`, `FILTER`, `WITHIN`, ...).",
+      "context": "Select list. Combined with operators in `syntax.ts`."
+    },
+    "incomplete-from-follow": {
+      "group": "context",
+      "const": "INCOMPLETE_FROM_FOLLOW",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Clause keyword that cannot directly follow `FROM` (missing table reference).",
+      "context": "Token after `FROM` (HANA-SYN-025). Combined with `;` and `)`.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-025)"
+    },
+    "incomplete-where-follow": {
+      "group": "context",
+      "const": "INCOMPLETE_WHERE_FOLLOW",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword that cannot directly follow `WHERE` (missing condition).",
+      "context": "Token after `WHERE` (HANA-SYN-025). Combined with `;` and `)`.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-025)"
+    },
+    "incomplete-having-follow": {
+      "group": "context",
+      "const": "INCOMPLETE_HAVING_FOLLOW",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword that cannot directly follow `HAVING` (missing condition).",
+      "context": "Token after `HAVING` (HANA-SYN-025). Combined with `;` and `)`.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-025)"
+    },
+    "ident-context": {
+      "group": "context",
+      "const": "IDENT_CONTEXT_KEYWORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword after which dynamic SQL concatenates an identifier, not a value.",
+      "context": "End of a dynamic SQL string before `||` (SQL injection rule)."
+    },
+    "expr-clause-terminator": {
+      "group": "context",
+      "const": "EXPR_CLAUSE_TERMINATORS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword that ends an expression (dangling-operator check).",
+      "context": "Expression scanning (HANA-SYN-023). `LEFT (` / `RIGHT (` are calls, not terminators.",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-023)"
+    },
+    "expr-prefix-word": {
+      "group": "context",
+      "const": "EXPR_PREFIX_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that expects an operand after it (unary / prefix keyword).",
+      "context": "Expression scanning (HANA-SYN-023).",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-023)"
+    },
+    "expr-infix-direct": {
+      "group": "context",
+      "const": "EXPR_INFIX_DIRECT",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Infix predicate word that needs an operand on both sides.",
+      "context": "Expression scanning (HANA-SYN-023).",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-023)"
+    },
+    "expr-infix-after-not": {
+      "group": "context",
+      "const": "EXPR_INFIX_COMPOUND_AFTER_NOT",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Predicate word that forms an infix operator with a preceding `NOT` (`NOT IN`, `NOT LIKE`, ...).",
+      "context": "After `NOT` in an expression (HANA-SYN-023).",
+      "source": "docs/specs/diagnostics/syntax-rules.md (HANA-SYN-023)"
+    },
+    "window-order-modifier": {
+      "group": "context",
+      "const": "WINDOW_OR_ORDER_MODS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Sort modifier in `ORDER BY` and window specifications.",
+      "context": "After an `ORDER BY` item."
+    },
+    "nondeterministic-call": {
+      "group": "context",
+      "const": "NONDETERMINISTIC_CALLS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Function whose result changes between calls; a DETERMINISTIC function must not call it.",
+      "context": "Followed by `(` in a DETERMINISTIC function body."
+    },
+    "nondeterministic-value": {
+      "group": "context",
+      "const": "NONDETERMINISTIC_NILADIC",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Niladic system value that changes between calls.",
+      "context": "Operand in a DETERMINISTIC function body."
+    },
+    "special-call": {
+      "group": "context",
+      "const": "SPECIAL_CALL_NAMES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Function with clause syntax in its argument list (`CAST(x AS t)`, `EXTRACT(YEAR FROM d)`, `TRIM(BOTH ...)`), so comma checking is skipped.",
+      "context": "Name before `(` (HANA-SYN-023 argument checks)."
+    },
+    "hierarchy-clause-function": {
+      "group": "context",
+      "const": "HIERARCHY_CLAUSE_FUNCTIONS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Hierarchy generator or navigation function with clause syntax (`SOURCE ... START WHERE ... DEPTH ...`).",
+      "context": "Name before `(`.",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide"
+    },
+    "hierarchy-clause": {
+      "group": "context",
+      "const": "HIERARCHY_CLAUSE_TERMINATORS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Top-level clause keyword of a hierarchy function; ends a preceding `START WHERE` / `WHERE` / `JOIN ... ON` condition.",
+      "context": "Only inside `HIERARCHY*( ... )` argument lists: the words are non-reserved elsewhere.",
+      "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide"
+    },
+    "json-clause-function": {
+      "group": "context",
+      "const": "JSON_CLAUSE_CALL_NAMES",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "JSON function that takes space-separated clauses after its path argument.",
+      "context": "Name before `(`."
+    },
+    "json-call-clause": {
+      "group": "context",
+      "const": "JSON_CALL_CLAUSE_STARTERS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Clause keyword inside `JSON_VALUE` / `JSON_QUERY` (`RETURNING`, `WRAPPER`, `ON EMPTY`, ...).",
+      "context": "Only inside JSON_VALUE / JSON_QUERY argument lists."
+    },
+    "json-column-trailing": {
+      "group": "context",
+      "const": "JSON_COLUMN_TRAILING_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that may follow a complete `JSON_TABLE` column definition.",
+      "context": "Only inside `JSON_TABLE ( ... COLUMNS ( ... ) )`."
+    },
+    "call-infix-or-clause": {
+      "group": "context",
+      "const": "CALL_INFIX_OR_CLAUSE",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that may appear between arguments of a function call (clause keywords, `AS`, `RESPECT NULLS`, ...).",
+      "context": "Inside a function call argument list (HANA-SYN-023)."
+    },
+    "call-prefix-word": {
+      "group": "context",
+      "const": "CALL_PREFIX_WORDS",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Word that may start a function argument (`DISTINCT`, `ALL`, `NOT`, ...).",
+      "context": "Start of a function call argument."
+    },
+    "call-prefix-no-op": {
+      "group": "context",
+      "const": "CALL_PREFIX_KEYWORDS_NO_OP",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword before `<name> (` that makes the parenthesis a call or definition, not an operand.",
+      "context": "Two tokens before `(` (HANA-SYN-023)."
+    },
+    "paren-expression-prev": {
+      "group": "context",
+      "const": "PAREN_EXPRESSION_PREV",
+      "emit": [
+        "analyzer"
+      ],
+      "description": "Keyword before `(` that introduces a parenthesized expression, subquery or clause, not a call argument list.",
+      "context": "Previous word of `(` (HANA-SYN-023 paren classification)."
+    },
+    "fmt-join-starter": {
+      "group": "context",
+      "const": "JOIN_STARTERS",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Word that starts a join phrase on a new line.",
+      "context": "FROM clause layout."
+    },
+    "fmt-join-phrase": {
+      "group": "context",
+      "const": "JOIN_PHRASE",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Word that may appear inside a join phrase before `JOIN`.",
+      "context": "FROM clause layout."
+    },
+    "fmt-begin-modifier": {
+      "group": "context",
+      "const": "BEGIN_MODS",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Modifier after `BEGIN` that stays on the `BEGIN` line.",
+      "context": "`BEGIN [SEQUENTIAL EXECUTION | PARALLEL EXECUTION | AUTONOMOUS TRANSACTION]`."
+    },
+    "fmt-object-type": {
+      "group": "context",
+      "const": "OBJ_TYPES",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Object kind that ends a DDL statement head.",
+      "context": "CREATE / ALTER / DROP statement heads."
+    },
+    "fmt-statement-verb": {
+      "group": "context",
+      "const": "STMT_VERBS",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Statement verb after which `statement-noun` words are cased as keywords.",
+      "context": "First word of a statement."
+    },
+    "fmt-hdi-first": {
+      "group": "context",
+      "const": "HDI_FIRST",
+      "emit": [
+        "formatter"
+      ],
+      "description": "First word of a headerless HDI artifact statement.",
+      "context": "First word of an HDI design-time file."
+    },
+    "fmt-header-word": {
+      "group": "context",
+      "const": "HEADER_WORDS",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Routine header clause word that starts a new header line.",
+      "context": "CREATE PROCEDURE / FUNCTION headers."
+    },
+    "fmt-non-value": {
+      "group": "context",
+      "const": "NON_VALUE",
+      "emit": [
+        "formatter"
+      ],
+      "description": "Keyword after which `+` / `-` is unary and `*` a wildcard, not a binary operator.",
+      "context": "Operator spacing."
     }
+  },
+  "artifactRoots": {
+    "hdbprocedure": ["PROCEDURE","CREATE"],
+    "hdbfunction": ["FUNCTION","CREATE"],
+    "hdbtablefunction": ["FUNCTION","CREATE"],
+    "hdbscalarfunction": ["FUNCTION","CREATE"],
+    "hdbtrigger": ["TRIGGER","CREATE"],
+    "hdblibrary": ["LIBRARY","CREATE"],
+    "hdbtable": ["COLUMN","ROW","GLOBAL","LOCAL","TEMPORARY","TABLE","CREATE","HISTORY","VIRTUAL"],
+    "hdbstructure": ["TYPE","CREATE","COLUMN","ROW"],
+    "hdbtabletype": ["TYPE","CREATE","COLUMN","ROW"],
+    "hdbview": ["VIEW","PROJECTION","CREATE"],
+    "hdbsequence": ["SEQUENCE","CREATE"],
+    "hdbindex": ["INDEX","UNIQUE","BTREE","CPBTREE","INVERTED","CREATE"],
+    "hdbfulltextindex": ["FULLTEXT","FUZZY","INDEX","CREATE"],
+    "hdbconstraint": ["ALTER","CONSTRAINT","CREATE"],
+    "hdbvirtualtable": ["VIRTUAL","CREATE"],
+    "hdbprojectionview": ["PROJECTION","VIEW","CREATE"],
+    "hdbstructuredprivilege": ["STRUCTURED","CREATE"],
+    "hdbstructuredfilter": ["STRUCTURED","CREATE"],
+    "hdbresultcache": ["RESULT","CREATE"],
+    "hdbstatistics": ["STATISTICS","CREATE"],
+    "hdbsystemversioning": ["SYSTEM","ALTER","CREATE"],
+    "hdbapplicationtime": ["APPLICATION","ALTER","CREATE"],
+    "hdbschedulerjob": ["SCHEDULER","CREATE"],
+    "hdbremotetablereplica": ["REMOTE","SHARED","CREATE"],
+    "hdbcollection": ["COLLECTION","CREATE"],
+    "hdbcollectionindex": ["HASH","BLOCK","INDEX","COLLECTION","CREATE"],
+    "hdbcollectionadjindex": ["ADJACENCY","INDEX","CREATE"],
+    "hdbfabricvirtualtable": ["SHARED","VIRTUAL","CREATE"],
+    "hdbdropcreatetable": ["DROP","COLUMN","ROW","CREATE"],
+    "hdbgraphworkspace": ["GRAPH","CREATE"],
+    "hdbvirtualprocedure": ["VIRTUAL","PROCEDURE","CREATE"],
+    "hdbvirtualfunction": ["VIRTUAL","FUNCTION","CREATE"]
+  },
+  "words": [
+    {"name": "ABSTRACT", "roles": ["alter-system-word"]},
+    {"name": "ADAPTER", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "ADD", "roles": ["ddl", "alter-system-word", "routine-management-action"]},
+    {"name": "ADJACENCY", "roles": ["statement-noun", "ddl-modifier", "on-target-ddl-noun", "fmt-hdi-first"], "platforms": ["CLOUD"]},
+    {"name": "ADOPT", "roles": ["clause-word"]},
+    {"name": "AFLLANG", "roles": ["routine-language", "routine-language-typo-target"]},
+    {"name": "AFTER", "roles": ["clause-word", "keyword"]},
+    {"name": "AGENT", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "ALL", "roles": ["dml", "reserved", "alter-system-word", "query-start-prev", "select-prefix-op", "expr-prefix-word", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ALLOW", "roles": ["select-privilege-prev", "select-privilege-prev-clause"]},
+    {"name": "ALPHANUM", "roles": ["type", "type-with-args"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "ALTER", "roles": ["ddl", "reserved", "alter-system-word", "sql-statement-starter", "general-sql-root", "block-end-stop-prev", "ddl-statement", "procedure-ddl-statement", "subselect-context", "routine-header-opener", "routine-management-action", "fmt-statement-verb"]},
+    {"name": "ALWAYS", "roles": ["ddl", "column-clause-modifier"]},
+    {"name": "ANALYTIC", "roles": ["statement-noun"]},
+    {"name": "ANALYZERSUPPRESS", "roles": ["annotation"]},
+    {"name": "AND", "roles": ["word-operator", "block-end-stop-prev", "statement-continuation-prev", "non-alias", "select-prefix-op", "incomplete-where-follow", "expr-infix-direct", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ANNOTATE", "roles": ["ddl", "sql-statement-starter"]},
+    {"name": "ANY", "roles": ["word-operator", "expr-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "APPLICATION", "roles": ["alter-system-word", "ddl-modifier", "fmt-hdi-first"]},
+    {"name": "APPLY", "roles": ["alter-system-word", "non-alias"]},
+    {"name": "ARRAY", "roles": ["type", "column-end-modifier", "json-column-trailing"]},
+    {"name": "AS", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "subselect-context", "routine-clause-starter", "table-columns-prev", "column-clause-modifier", "non-alias", "special-call", "call-infix-or-clause", "paren-expression-prev", "fmt-header-word", "fmt-non-value"]},
+    {"name": "ASC", "roles": ["dml", "column-end-modifier", "non-alias", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "ASYNCHRONOUS", "roles": ["alter-system-word"]},
+    {"name": "AT", "roles": ["clause-word", "keyword", "routine-clause-starter", "call-infix-or-clause"]},
+    {"name": "ATOMIC", "roles": ["clause-word", "keyword", "fmt-begin-modifier"]},
+    {"name": "AUDIT", "roles": ["alter-system-word", "statement-noun", "ddl-noun"]},
+    {"name": "AUTO", "roles": ["ddl", "column-end-modifier"]},
+    {"name": "AUTOCOMMIT", "roles": ["statement-noun", "routine-clause-starter"]},
+    {"name": "AUTONOMOUS", "roles": ["control-flow", "routine-clause-starter", "fmt-begin-modifier"]},
+    {"name": "BACKUP", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "BALANCE", "roles": ["clause-word"]},
+    {"name": "BEFORE", "roles": ["ddl", "reserved"]},
+    {"name": "BEGIN", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "body-statement-word", "body-typo-target", "compound-boundary-prev", "routine-clause-starter", "query-start-prev", "fmt-non-value"]},
+    {"name": "BETWEEN", "roles": ["word-operator", "block-end-stop-prev", "comparison-word", "select-prefix-op", "expr-infix-direct", "expr-infix-after-not", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "BFS", "roles": ["sqlscript-keyword"]},
+    {"name": "BIGINT", "roles": ["type"]},
+    {"name": "BINARY", "roles": ["type-with-args", "expr-prefix-word"]},
+    {"name": "BINTEXT", "roles": ["type"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "BLOB", "roles": ["type"]},
+    {"name": "BLOCK", "roles": ["statement-noun", "ddl-modifier", "fmt-hdi-first"]},
+    {"name": "BOOLEAN", "roles": ["type"]},
+    {"name": "BOTH", "roles": ["dml", "reserved"]},
+    {"name": "BREAK", "roles": ["control-flow", "sqlscript-statement-starter", "statement-exit-word", "top-level-imperative", "terminator-statement"]},
+    {"name": "BREAKUP", "roles": ["clause-word"]},
+    {"name": "BTREE", "roles": ["ddl-modifier"]},
+    {"name": "BULK", "roles": ["clause-word", "select-stop-clause"]},
+    {"name": "BY", "roles": ["dml", "block-end-stop-prev", "statement-continuation-prev", "column-clause-modifier", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "BYTE", "roles": ["type-length-unit"]},
+    {"name": "BYTES", "roles": ["type-length-unit"]},
+    {"name": "CACHE", "roles": ["alter-system-word", "routine-clause-starter", "hierarchy-clause"]},
+    {"name": "CALL", "roles": ["control-flow", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "body-statement-word", "ident-context", "call-prefix-no-op"]},
+    {"name": "CANCEL", "roles": ["sql-statement-starter"]},
+    {"name": "CAPTURE", "roles": ["alter-system-word"]},
+    {"name": "CASCADE", "roles": ["ddl"]},
+    {"name": "CASE", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "end-suffix", "body-statement-word", "select-prefix-op", "expr-prefix-word", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "CAST", "roles": ["expr-prefix-word", "special-call", "call-prefix-word"]},
+    {"name": "CELLS", "roles": ["clause-word"]},
+    {"name": "CERTIFICATE", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "CHAR", "roles": ["type", "reserved", "type-with-args", "type-length-unit"]},
+    {"name": "CHARACTERS", "roles": ["type-length-unit"]},
+    {"name": "CHECK", "roles": ["ddl", "alter-system-word", "table-constraint-starter", "column-list-constraint-starter", "column-clause-modifier", "special-call"]},
+    {"name": "CLASS", "roles": ["statement-noun"]},
+    {"name": "CLEAR", "roles": ["alter-system-word"]},
+    {"name": "CLIENTSIDE", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "CLOB", "roles": ["type"]},
+    {"name": "CLOSE", "roles": ["control-flow", "sqlscript-statement-starter", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "CLUSTER", "roles": ["clause-word"]},
+    {"name": "CLUSTERS", "roles": ["clause-word"]},
+    {"name": "COLLATE", "roles": ["quote-protected"]},
+    {"name": "COLLECTION", "roles": ["statement-noun", "ddl-noun", "ddl-typo-target", "fmt-hdi-first"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "COLUMN", "roles": ["ddl", "alter-system-word", "ddl-noun", "ddl-typo-target", "migration-table-root", "table-columns-prev", "column-end-modifier", "fmt-hdi-first"]},
+    {"name": "COMMENT", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "select-privilege-prev", "select-privilege-prev-clause", "column-clause-modifier"]},
+    {"name": "COMMIT", "roles": ["dml", "sql-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "CONDITION", "roles": ["control-flow", "reserved"]},
+    {"name": "CONDITIONAL", "roles": ["json-column-trailing"]},
+    {"name": "CONFIGURATION", "roles": ["alter-system-word", "routine-clause-starter"]},
+    {"name": "CONNECT", "roles": ["dml", "reserved", "sql-statement-starter", "general-sql-root", "expr-clause-terminator"]},
+    {"name": "CONNECT_BY_ROOT", "roles": ["select-prefix-op", "expr-prefix-word"]},
+    {"name": "CONSISTENCY", "roles": ["alter-system-word"]},
+    {"name": "CONSTANT", "roles": ["sqlscript-keyword", "keyword"]},
+    {"name": "CONSTRAINT", "roles": ["ddl", "ddl-noun", "ddl-typo-target", "table-constraint-starter", "column-list-constraint-starter", "column-clause-modifier", "special-call"]},
+    {"name": "CONTAINS", "roles": ["word-operator"]},
+    {"name": "CONTENT", "roles": ["alter-system-word"]},
+    {"name": "CONTINUE", "roles": ["control-flow", "sqlscript-statement-starter", "statement-exit-word", "top-level-imperative", "terminator-statement", "body-statement-word"]},
+    {"name": "CONVERT", "roles": ["special-call"]},
+    {"name": "CPBTREE", "roles": ["ddl-modifier"]},
+    {"name": "CREATE", "roles": ["ddl", "alter-system-word", "sql-statement-starter", "general-sql-root", "block-end-stop-prev", "ddl-statement", "procedure-ddl-statement", "subselect-context", "routine-header-opener", "table-columns-prev", "fmt-statement-verb"]},
+    {"name": "CREDENTIAL", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "CROSS", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "CS_DOUBLE", "roles": ["column-clause-modifier"]},
+    {"name": "CS_FIXED", "roles": ["column-clause-modifier"]},
+    {"name": "CS_INT", "roles": ["column-clause-modifier"]},
+    {"name": "CS_STRING", "roles": ["column-clause-modifier"]},
+    {"name": "CUBE", "roles": ["dml", "reserved"]},
+    {"name": "CURRENT", "roles": ["quote-protected"]},
+    {"name": "CURRENT_CONNECTION", "roles": ["system-value", "reserved", "reserved-operand"]},
+    {"name": "CURRENT_DATE", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_LINE_NUMBER", "roles": ["system-variable"]},
+    {"name": "CURRENT_MVCC_SNAPSHOT_TIMESTAMP", "roles": ["nondeterministic-value"]},
+    {"name": "CURRENT_OBJECT_NAME", "roles": ["system-variable"]},
+    {"name": "CURRENT_OBJECT_SCHEMA", "roles": ["system-variable"]},
+    {"name": "CURRENT_SCHEMA", "roles": ["system-value", "reserved", "reserved-operand"]},
+    {"name": "CURRENT_TIME", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_TIMESTAMP", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_TRANSACTION_ISOLATION_LEVEL", "roles": ["system-value", "reserved", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_USER", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand"]},
+    {"name": "CURRENT_UTCDATE", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_UTCTIME", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRENT_UTCTIMESTAMP", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "CURRVAL", "roles": ["dml", "reserved", "reserved-after-dot"]},
+    {"name": "CURSOR", "roles": ["control-flow", "reserved"]},
+    {"name": "CYCLE", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "DATA", "roles": ["alter-system-word", "keyword"]},
+    {"name": "DATABASE", "roles": ["statement-noun"]},
+    {"name": "DATE", "roles": ["type", "typed-literal-prefix", "select-prefix-op", "call-prefix-word"]},
+    {"name": "DAY", "roles": ["quote-protected", "interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "DAYDATE", "roles": ["type"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "DBSCAN", "roles": ["clause-word"]},
+    {"name": "DDIC_ACDAY", "roles": ["column-clause-modifier"]},
+    {"name": "DDIC_ACMONTH", "roles": ["column-clause-modifier"]},
+    {"name": "DDL", "roles": ["statement-noun"]},
+    {"name": "DEC", "roles": ["type", "type-with-args"]},
+    {"name": "DECIMAL", "roles": ["type", "type-with-args"]},
+    {"name": "DECLARE", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "top-level-imperative", "body-statement-word", "body-typo-target"]},
+    {"name": "DEFAULT", "roles": ["ddl", "set-statement-object", "routine-clause-starter", "column-clause-modifier", "non-alias", "json-call-clause", "json-column-trailing", "fmt-header-word"]},
+    {"name": "DEFINER", "roles": ["ddl"]},
+    {"name": "DELETE", "roles": ["dml", "sql-statement-starter", "general-sql-root", "statement-exit-word", "dml-write-statement", "procedure-dml-statement", "body-statement-word", "column-clause-modifier"]},
+    {"name": "DELTA", "roles": ["statement-noun"]},
+    {"name": "DENY", "roles": ["select-privilege-prev", "select-privilege-prev-clause"]},
+    {"name": "DEPTH", "roles": ["hierarchy-clause"]},
+    {"name": "DESC", "roles": ["dml", "column-end-modifier", "non-alias", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "DETERMINISTIC", "roles": ["sqlscript-keyword", "keyword", "routine-clause-starter", "column-end-modifier", "fmt-header-word"]},
+    {"name": "DFS", "roles": ["sqlscript-keyword"]},
+    {"name": "DISABLE", "roles": ["alter-system-word", "routine-management-action"]},
+    {"name": "DISCONNECT", "roles": ["general-sql-root"]},
+    {"name": "DISTANCE", "roles": ["hierarchy-clause"]},
+    {"name": "DISTINCT", "roles": ["dml", "reserved", "select-prefix-op", "expr-prefix-word", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "DO", "roles": ["control-flow", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "body-statement-word", "compound-boundary-prev", "routine-header-opener", "non-alias", "query-start-prev", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "DOUBLE", "roles": ["type", "type-with-args"]},
+    {"name": "DROP", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "block-end-stop-prev", "ddl-statement", "procedure-ddl-statement", "routine-management-action", "fmt-statement-verb"]},
+    {"name": "DYNAMIC", "roles": ["clause-word"]},
+    {"name": "EACH", "roles": ["clause-word", "keyword"]},
+    {"name": "EDGE", "roles": ["clause-word"]},
+    {"name": "ELSE", "roles": ["control-flow", "reserved", "block-end-stop-prev", "statement-exit-word", "block-stop", "if-body-stop", "case-body-stop", "body-statement-word", "body-typo-target", "compound-boundary-prev", "non-alias", "follow-hidden", "query-start-prev", "select-stop-clause", "select-prefix-op", "expr-clause-terminator", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ELSEIF", "roles": ["control-flow", "reserved", "block-end-stop-prev", "statement-exit-word", "block-stop", "if-body-stop", "body-statement-word", "body-typo-target", "compound-boundary-prev", "non-alias", "follow-hidden", "query-start-prev", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "EMPTY", "roles": ["json-call-clause", "json-column-trailing"]},
+    {"name": "ENABLE", "roles": ["alter-system-word", "routine-management-action"]},
+    {"name": "ENCRYPTED", "roles": ["column-end-modifier"]},
+    {"name": "ENCRYPTION", "roles": ["sqlscript-keyword", "alter-system-word", "keyword", "routine-management-action"]},
+    {"name": "END", "roles": ["control-flow", "reserved", "block-stop", "if-body-stop", "case-body-stop", "body-statement-word", "non-alias", "follow-hidden", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator"]},
+    {"name": "ENTRY", "roles": ["alter-system-word"]},
+    {"name": "EPS", "roles": ["clause-word"]},
+    {"name": "EQUIDISTANT", "roles": ["clause-word"]},
+    {"name": "ERROR", "roles": ["json-call-clause", "json-column-trailing"]},
+    {"name": "ESCAPE", "roles": ["clause-word", "keyword", "select-prefix-op", "expr-infix-direct", "call-infix-or-clause"]},
+    {"name": "EXACT", "roles": ["join-starter", "non-alias", "follow-hidden"]},
+    {"name": "EXCEPT", "roles": ["dml", "reserved", "block-end-stop-prev", "set-operator", "subselect-context", "query-clause", "non-alias", "query-start-prev", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "EXCEPTION", "roles": ["control-flow", "reserved"]},
+    {"name": "EXCHANGER", "roles": ["statement-noun"]},
+    {"name": "EXCLUDED", "roles": ["clause-word"]},
+    {"name": "EXEC", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "EXECUTE", "roles": ["control-flow", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "EXECUTION", "roles": ["sqlscript-keyword", "keyword", "fmt-begin-modifier"]},
+    {"name": "EXISTS", "roles": ["word-operator", "expr-prefix-word", "expr-infix-after-not", "special-call", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "EXIT", "roles": ["control-flow", "body-statement-word"]},
+    {"name": "EXPLAIN", "roles": ["dml", "sql-statement-starter", "general-sql-root"]},
+    {"name": "EXPORT", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "EXTRACT", "roles": ["special-call"]},
+    {"name": "FALSE", "roles": ["literal", "reserved", "unquoted-default", "reserved-operand"]},
+    {"name": "FETCH", "roles": ["control-flow", "sqlscript-statement-starter", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "FILE", "roles": ["alter-system-word"]},
+    {"name": "FILTER", "roles": ["statement-noun", "select-prefix-op", "special-call", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "FIRST", "roles": ["clause-word", "keyword", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "FLAG", "roles": ["expr-infix-direct"]},
+    {"name": "FLOAT", "roles": ["type", "type-with-args"]},
+    {"name": "FLOWGRAPH", "roles": ["ddl-noun"]},
+    {"name": "FOLLOWING", "roles": ["clause-word", "keyword"]},
+    {"name": "FOR", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "top-level-imperative", "subselect-context", "end-compound-suffix", "end-suffix", "body-statement-word", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "FORCE", "roles": ["clause-word"]},
+    {"name": "FOREACH", "roles": ["control-flow"]},
+    {"name": "FOREIGN", "roles": ["ddl", "table-constraint-starter", "column-list-constraint-starter", "special-call"]},
+    {"name": "FRACTION", "roles": ["interval-unit"]},
+    {"name": "FROM", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "non-alias", "select-stop-clause", "ident-context", "expr-clause-terminator", "call-infix-or-clause", "call-prefix-no-op", "paren-expression-prev"]},
+    {"name": "FULL", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "FULLTEXT", "roles": ["ddl-noun", "fmt-hdi-first"]},
+    {"name": "FUNCTION", "roles": ["ddl", "statement-noun", "library-member-starter", "routine-header-opener", "ddl-noun", "ddl-typo-target", "ident-context", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "FUZZY", "roles": ["statement-noun", "ddl-noun", "column-clause-modifier", "fmt-hdi-first"]},
+    {"name": "GENERATED", "roles": ["ddl", "column-clause-modifier", "special-call"]},
+    {"name": "GEOCODE", "roles": ["statement-noun"]},
+    {"name": "GLOBAL", "roles": ["ddl", "ddl-modifier", "table-columns-prev"]},
+    {"name": "GRANT", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "select-privilege-prev", "select-privilege-prev-clause"]},
+    {"name": "GRAPH", "roles": ["statement-noun", "routine-language", "routine-language-typo-target", "ddl-noun", "on-target-ddl-noun", "fmt-hdi-first"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "GRID", "roles": ["clause-word"]},
+    {"name": "GROUP", "roles": ["dml", "reserved", "statement-noun", "column-clause-modifier", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "expr-clause-terminator", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "HALF_VECTOR", "roles": ["type"], "platforms": ["CLOUD"]},
+    {"name": "HANDLER", "roles": ["control-flow"]},
+    {"name": "HASH", "roles": ["statement-noun", "ddl-modifier", "special-call", "fmt-hdi-first"]},
+    {"name": "HAVING", "roles": ["dml", "reserved", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "HEADER", "roles": ["routine-clause-starter"]},
+    {"name": "HEXAGON", "roles": ["clause-word"]},
+    {"name": "HIDDEN", "roles": ["column-end-modifier"]},
+    {"name": "HIERARCHY", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_ANCESTORS", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_ANCESTORS_AGGREGATE", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_DESCENDANTS", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_DESCENDANTS_AGGREGATE", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_LEVELED", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_SIBLINGS", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_SPANTREE", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HIERARCHY_TEMPORAL", "roles": ["special-call", "hierarchy-clause-function"]},
+    {"name": "HINT", "roles": ["clause-word", "keyword"]},
+    {"name": "HISTORY", "roles": ["alter-system-word", "ddl-modifier", "table-columns-prev"]},
+    {"name": "HNSW", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "HOUR", "roles": ["interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "IDENTITY", "roles": ["ddl", "column-clause-modifier"]},
+    {"name": "IF", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "statement-exit-word", "top-level-imperative", "end-compound-suffix", "end-suffix", "body-statement-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "IGNORE", "roles": ["call-infix-or-clause"]},
+    {"name": "ILIKE", "roles": ["expr-infix-direct", "expr-infix-after-not"]},
+    {"name": "IMMEDIATE", "roles": ["clause-word", "keyword"]},
+    {"name": "IMPORT", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "IN", "roles": ["ddl", "word-operator", "reserved", "block-end-stop-prev", "param-mode", "table-columns-prev", "column-clause-modifier", "comparison-word", "select-prefix-op", "expr-infix-direct", "expr-infix-after-not", "call-infix-or-clause", "fmt-non-value"]},
+    {"name": "INCREMENT", "roles": ["clause-word"]},
+    {"name": "INCREMENTAL", "roles": ["clause-word"]},
+    {"name": "INDEX", "roles": ["ddl", "statement-noun", "ddl-noun", "ddl-typo-target", "on-target-ddl-noun", "table-constraint-starter", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "INIFILE", "roles": ["alter-system-word"]},
+    {"name": "INLINE", "roles": ["pragma", "hint"]},
+    {"name": "INNER", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "INOUT", "roles": ["ddl", "reserved", "param-mode", "table-columns-prev"]},
+    {"name": "INSERT", "roles": ["dml", "sql-statement-starter", "general-sql-root", "statement-exit-word", "dml-write-statement", "procedure-dml-statement", "subselect-context", "body-statement-word"]},
+    {"name": "INSTEAD", "roles": ["clause-word", "keyword"]},
+    {"name": "INT", "roles": ["type"]},
+    {"name": "INTEGER", "roles": ["type"]},
+    {"name": "INTERSECT", "roles": ["dml", "reserved", "block-end-stop-prev", "set-operator", "subselect-context", "query-clause", "non-alias", "query-start-prev", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "INTERVAL", "roles": ["quote-protected", "select-prefix-op", "call-prefix-word"]},
+    {"name": "INTO", "roles": ["dml", "reserved", "block-end-stop-prev", "query-clause", "non-alias", "select-stop-clause", "ident-context", "expr-clause-terminator", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "INVERTED", "roles": ["ddl-modifier", "fmt-hdi-first"]},
+    {"name": "INVISIBLE", "roles": ["column-end-modifier"]},
+    {"name": "INVOKER", "roles": ["ddl"]},
+    {"name": "IS", "roles": ["word-operator", "reserved", "block-end-stop-prev", "comparison-word", "select-prefix-op", "call-infix-or-clause", "fmt-non-value"]},
+    {"name": "ISCLOSED", "roles": ["cursor-attribute"]},
+    {"name": "JOB", "roles": ["statement-noun"]},
+    {"name": "JOIN", "roles": ["dml", "reserved", "alter-system-word", "block-end-stop-prev", "join-starter", "non-alias", "ident-context", "expr-clause-terminator", "hierarchy-clause", "call-prefix-no-op", "paren-expression-prev", "fmt-join-starter"]},
+    {"name": "JSON", "roles": ["type"], "platforms": ["CLOUD"]},
+    {"name": "JSON_ARRAY", "roles": ["special-call"]},
+    {"name": "JSON_OBJECT", "roles": ["special-call"]},
+    {"name": "JSON_QUERY", "roles": ["json-clause-function"]},
+    {"name": "JSON_TABLE", "roles": ["special-call"]},
+    {"name": "JSON_VALUE", "roles": ["json-clause-function"]},
+    {"name": "JWT", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "KEEP", "roles": ["json-call-clause", "json-column-trailing"]},
+    {"name": "KERNEL", "roles": ["alter-system-word"]},
+    {"name": "KEY", "roles": ["ddl", "statement-noun", "column-end-modifier"]},
+    {"name": "KEYPAIR", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "KMEANS", "roles": ["clause-word"]},
+    {"name": "LABEL", "roles": ["clause-word"]},
+    {"name": "LANGUAGE", "roles": ["ddl", "routine-clause-starter", "column-clause-modifier", "fmt-header-word"]},
+    {"name": "LAST", "roles": ["clause-word", "keyword", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "LATERAL", "roles": ["dml", "reserved", "non-alias"]},
+    {"name": "LDAP", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "LEADING", "roles": ["dml", "reserved"]},
+    {"name": "LEAVES", "roles": ["clause-word"]},
+    {"name": "LEFT", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "LEVELS", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "LIBRARY", "roles": ["sqlscript-keyword", "statement-noun", "keyword", "routine-header-opener", "ddl-noun", "ddl-typo-target", "fmt-object-type", "fmt-hdi-first"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "LIKE", "roles": ["word-operator", "block-end-stop-prev", "column-list-constraint-starter", "comparison-word", "select-prefix-op", "expr-infix-direct", "expr-infix-after-not", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "LIKE_REGEXPR", "roles": ["word-operator", "expr-infix-direct", "expr-infix-after-not"]},
+    {"name": "LIMIT", "roles": ["dml", "reserved", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "LOAD", "roles": ["dml", "alter-system-word", "sql-statement-starter", "general-sql-root", "column-clause-modifier", "hierarchy-clause"]},
+    {"name": "LOADABLE", "roles": ["statement-noun", "column-end-modifier"]},
+    {"name": "LOB", "roles": ["alter-system-word"]},
+    {"name": "LOCAL", "roles": ["ddl", "ddl-modifier", "table-columns-prev", "column-end-modifier"]},
+    {"name": "LOCATION", "roles": ["alter-system-word"]},
+    {"name": "LOCK", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "LOG", "roles": ["alter-system-word"]},
+    {"name": "LOGGING", "roles": ["ddl-modifier"]},
+    {"name": "LOGIN", "roles": ["statement-noun"]},
+    {"name": "LONGDATE", "roles": ["type"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "LOOP", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "top-level-imperative", "end-compound-suffix", "end-suffix", "body-statement-word", "compound-boundary-prev", "query-start-prev", "fmt-non-value"]},
+    {"name": "MANY", "roles": ["join-starter", "non-alias", "follow-hidden"]},
+    {"name": "MAPPING", "roles": ["statement-noun"]},
+    {"name": "MASK", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "MATCH", "roles": ["column-clause-modifier"]},
+    {"name": "MATCHED", "roles": ["clause-word", "keyword"]},
+    {"name": "MATERIALIZED", "roles": ["statement-noun"]},
+    {"name": "MAXVALUE", "roles": ["clause-word"]},
+    {"name": "MEASURE", "roles": ["statement-noun"]},
+    {"name": "MEASURES", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "MEMBER", "roles": ["expr-infix-after-not"]},
+    {"name": "MEMORY", "roles": ["column-clause-modifier"]},
+    {"name": "MERGE", "roles": ["dml", "ddl", "sql-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "dml-write-statement", "procedure-dml-statement", "subselect-context", "body-statement-word", "column-end-modifier", "fmt-statement-verb"]},
+    {"name": "MINPTS", "roles": ["clause-word"]},
+    {"name": "MINUS", "roles": ["dml", "reserved", "block-end-stop-prev", "set-operator", "subselect-context", "query-clause", "non-alias", "query-start-prev", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "MINUTE", "roles": ["interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "MINVALUE", "roles": ["clause-word"]},
+    {"name": "MODEL", "roles": ["statement-noun"]},
+    {"name": "MODIFIES", "roles": ["ddl", "fmt-header-word"]},
+    {"name": "MONITORING", "roles": ["alter-system-word"]},
+    {"name": "MONTH", "roles": ["interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "MULTIPARENT", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "NATURAL", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "follow-hidden", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "NCHAR", "roles": ["type", "reserved", "type-with-args"]},
+    {"name": "NCLOB", "roles": ["type"]},
+    {"name": "NEW", "roles": ["select-prefix-op", "expr-prefix-word", "call-prefix-word"]},
+    {"name": "NEXTVAL", "roles": ["dml", "reserved", "reserved-after-dot"]},
+    {"name": "NO", "roles": ["clause-word", "keyword", "routine-clause-starter", "ddl-modifier", "column-clause-modifier", "hierarchy-clause"]},
+    {"name": "NOT", "roles": ["word-operator", "block-end-stop-prev", "column-end-modifier", "non-alias", "comparison-word", "select-prefix-op", "expr-prefix-word", "call-infix-or-clause", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "NOTFOUND", "roles": ["cursor-attribute"]},
+    {"name": "NOW", "roles": ["nondeterministic-call"]},
+    {"name": "NOWAIT", "roles": ["ddl"]},
+    {"name": "NO_INLINE", "roles": ["pragma", "hint"]},
+    {"name": "NO_VECTOR_INDEX", "roles": ["hint"], "platforms": ["CLOUD"]},
+    {"name": "NULL", "roles": ["literal", "reserved", "set-statement-object", "column-end-modifier", "unquoted-default", "reserved-operand", "json-call-clause", "json-column-trailing", "call-infix-or-clause"]},
+    {"name": "NULLS", "roles": ["clause-word", "keyword", "non-alias", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "NUMA", "roles": ["column-clause-modifier"]},
+    {"name": "NUMERIC", "roles": ["type-with-args"]},
+    {"name": "NVARCHAR", "roles": ["type", "type-with-args"]},
+    {"name": "OBJECT", "roles": ["json-column-trailing"]},
+    {"name": "OCCURRENCE", "roles": ["dml"]},
+    {"name": "OF", "roles": ["clause-word", "keyword"]},
+    {"name": "OFFSET", "roles": ["dml", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "OMIT", "roles": ["json-call-clause", "json-column-trailing"]},
+    {"name": "ON", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "select-privilege-prev", "column-clause-modifier", "non-alias", "ident-context", "json-call-clause", "json-column-trailing", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ONE", "roles": ["join-starter", "non-alias", "follow-hidden"]},
+    {"name": "ONLINE", "roles": ["clause-word", "ddl-modifier", "column-end-modifier"]},
+    {"name": "ONLY", "roles": ["clause-word", "keyword"]},
+    {"name": "OPEN", "roles": ["control-flow", "sqlscript-statement-starter", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "OPENCYPHER_TABLE", "roles": ["special-call"]},
+    {"name": "OPENJSON", "roles": ["special-call"]},
+    {"name": "OPTION", "roles": ["select-stop-clause", "expr-clause-terminator"]},
+    {"name": "OR", "roles": ["word-operator", "block-end-stop-prev", "statement-continuation-prev", "ddl-modifier", "non-alias", "select-prefix-op", "incomplete-where-follow", "expr-infix-direct", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ORDER", "roles": ["dml", "reserved", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "ORDINALITY", "roles": ["clause-word"]},
+    {"name": "ORPHAN", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "OUT", "roles": ["ddl", "reserved", "param-mode", "table-columns-prev"]},
+    {"name": "OUTER", "roles": ["dml", "block-end-stop-prev", "non-alias", "fmt-join-phrase"]},
+    {"name": "OVER", "roles": ["dml", "select-prefix-op", "special-call", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "OVERLAY", "roles": ["special-call"]},
+    {"name": "OVERRIDING", "roles": ["clause-word", "keyword"]},
+    {"name": "PACKAGE", "roles": ["statement-noun"]},
+    {"name": "PAGE", "roles": ["statement-noun", "column-end-modifier"]},
+    {"name": "PARALLEL", "roles": ["sqlscript-keyword", "keyword", "routine-clause-starter", "fmt-begin-modifier"]},
+    {"name": "PARAMETERS", "roles": ["ddl"]},
+    {"name": "PARTITION", "roles": ["dml", "non-alias", "special-call", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "PASSWORD", "roles": ["set-statement-object"]},
+    {"name": "PATH", "roles": ["clause-word"]},
+    {"name": "PERFTRACE", "roles": ["alter-system-word"]},
+    {"name": "PERIOD", "roles": ["clause-word", "table-constraint-starter", "column-list-constraint-starter", "column-clause-modifier"]},
+    {"name": "PERSISTENT", "roles": ["column-clause-modifier"]},
+    {"name": "PIECEWISE", "roles": ["clause-word"]},
+    {"name": "PLACEMENT", "roles": ["alter-system-word"]},
+    {"name": "PLAN", "roles": ["alter-system-word"]},
+    {"name": "POLICY", "roles": ["statement-noun"]},
+    {"name": "POPSCOPE", "roles": ["annotation"]},
+    {"name": "POSITION", "roles": ["special-call"]},
+    {"name": "PRECEDING", "roles": ["clause-word", "keyword"]},
+    {"name": "PRECISION", "roles": ["column-end-modifier"]},
+    {"name": "PREDEFINED", "roles": ["statement-noun"]},
+    {"name": "PRIMARY", "roles": ["ddl", "table-constraint-starter", "column-list-constraint-starter", "column-end-modifier", "special-call"]},
+    {"name": "PRIOR", "roles": ["dml", "reserved", "select-prefix-op", "expr-prefix-word", "call-prefix-word"]},
+    {"name": "PRIORITY", "roles": ["ddl"]},
+    {"name": "PRIVATE", "roles": ["sqlscript-keyword", "library-member-starter", "routine-header-opener"]},
+    {"name": "PRIVILEGE", "roles": ["statement-noun", "general-sql-root", "select-privilege-prev", "select-privilege-prev-clause"]},
+    {"name": "PROCEDURE", "roles": ["ddl", "statement-noun", "library-member-starter", "routine-header-opener", "ddl-noun", "ddl-typo-target", "ident-context", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "PROFILE", "roles": ["alter-system-word"]},
+    {"name": "PROFILER", "roles": ["alter-system-word"]},
+    {"name": "PROJECTION", "roles": ["statement-noun", "ddl-noun", "ddl-typo-target", "on-target-ddl-noun", "fmt-hdi-first"]},
+    {"name": "PROVIDER", "roles": ["statement-noun"]},
+    {"name": "PRUNE", "roles": ["sqlscript-keyword"]},
+    {"name": "PSE", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "PUBLIC", "roles": ["sqlscript-keyword", "statement-noun", "library-member-starter", "routine-header-opener", "ddl-modifier"]},
+    {"name": "PUBLICATION", "roles": ["statement-noun"]},
+    {"name": "PUSHSCOPE", "roles": ["annotation"]},
+    {"name": "QUOTES", "roles": ["json-column-trailing"]},
+    {"name": "R", "roles": ["routine-language"]},
+    {"name": "RAND", "roles": ["nondeterministic-call"]},
+    {"name": "RAND_SECURE", "roles": ["nondeterministic-call"]},
+    {"name": "RANGE", "roles": ["statement-noun", "clause-word", "keyword", "ddl-modifier", "special-call"]},
+    {"name": "RDF", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "READ", "roles": ["clause-word", "keyword"]},
+    {"name": "READS", "roles": ["ddl", "routine-clause-starter", "fmt-header-word"]},
+    {"name": "REAL", "roles": ["type"]},
+    {"name": "REAL_VECTOR", "roles": ["type"], "platforms": ["CLOUD"]},
+    {"name": "RECLAIM", "roles": ["alter-system-word"]},
+    {"name": "RECOMPILE", "roles": ["alter-system-word", "routine-management-action"]},
+    {"name": "RECONFIGURE", "roles": ["alter-system-word"]},
+    {"name": "RECOVER", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "REFERENCE", "roles": ["statement-noun"]},
+    {"name": "REFERENCES", "roles": ["ddl", "column-clause-modifier", "special-call", "call-prefix-no-op"]},
+    {"name": "REFRESH", "roles": ["ddl", "alter-system-word", "sql-statement-starter", "fmt-statement-verb"]},
+    {"name": "REGEXP_LIKE", "roles": ["expr-infix-after-not"]},
+    {"name": "RELEASE", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "REMOTE", "roles": ["statement-noun", "ddl-noun", "fmt-hdi-first"]},
+    {"name": "REMOVE", "roles": ["alter-system-word"]},
+    {"name": "RENAME", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "ddl-statement", "fmt-statement-verb"]},
+    {"name": "REPLACE", "roles": ["dml", "sql-statement-starter", "general-sql-root", "dml-write-statement", "body-statement-word", "ddl-modifier"]},
+    {"name": "REPLICA", "roles": ["statement-noun"]},
+    {"name": "RESET", "roles": ["alter-system-word"]},
+    {"name": "RESIGNAL", "roles": ["control-flow", "sqlscript-statement-starter", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "top-level-imperative", "terminator-statement", "body-statement-word"]},
+    {"name": "RESPECT", "roles": ["call-infix-or-clause"]},
+    {"name": "RESULT", "roles": ["alter-system-word", "ddl-noun", "fmt-hdi-first"]},
+    {"name": "RETAIN", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "RETENTION", "roles": ["clause-word"]},
+    {"name": "RETURN", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "top-level-imperative", "terminator-statement", "subselect-context", "body-statement-word", "body-typo-target", "query-start-prev", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "RETURNING", "roles": ["expr-clause-terminator", "json-call-clause"]},
+    {"name": "RETURNS", "roles": ["control-flow", "reserved", "routine-clause-starter", "table-columns-prev", "paren-expression-prev", "fmt-header-word", "fmt-non-value"]},
+    {"name": "REVERSE", "roles": ["dml", "reserved"]},
+    {"name": "REVOKE", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "select-privilege-prev", "select-privilege-prev-clause"]},
+    {"name": "RIGHT", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
+    {"name": "RLANG", "roles": ["routine-language", "routine-language-typo-target"]},
+    {"name": "ROLE", "roles": ["ddl", "set-statement-object", "ddl-noun", "ddl-typo-target", "call-prefix-no-op", "fmt-object-type"]},
+    {"name": "ROLEGROUP", "roles": ["statement-noun"], "platforms": ["CLOUD"]},
+    {"name": "ROLLBACK", "roles": ["dml", "sql-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
+    {"name": "ROLLUP", "roles": ["dml", "reserved"]},
+    {"name": "ROOT", "roles": ["clause-word"]},
+    {"name": "ROUNDROBIN", "roles": ["special-call"]},
+    {"name": "ROUTE_TO", "roles": ["hint"]},
+    {"name": "ROW", "roles": ["ddl", "ddl-noun", "ddl-typo-target", "migration-table-root", "table-columns-prev", "column-end-modifier", "expr-prefix-word", "call-prefix-word", "fmt-hdi-first"]},
+    {"name": "ROWCOUNT", "roles": ["system-variable", "cursor-attribute"]},
+    {"name": "ROWID", "roles": ["dml", "reserved", "reserved-operand", "reserved-after-dot"]},
+    {"name": "ROWS", "roles": ["clause-word", "keyword"]},
+    {"name": "RUNTIMEDUMP", "roles": ["alter-system-word"]},
+    {"name": "SAML", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "SATISFIES", "roles": ["clause-word"]},
+    {"name": "SAVE", "roles": ["alter-system-word"]},
+    {"name": "SAVEPOINT", "roles": ["dml", "alter-system-word", "sql-statement-starter", "general-sql-root"]},
+    {"name": "SCHEDULER", "roles": ["statement-noun", "ddl-noun", "fmt-hdi-first"]},
+    {"name": "SCHEMA", "roles": ["ddl", "statement-noun", "set-statement-object", "ddl-noun", "ddl-typo-target", "call-prefix-no-op", "fmt-object-type"]},
+    {"name": "SEARCH", "roles": ["statement-noun", "ddl-modifier"]},
+    {"name": "SECOND", "roles": ["interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "SECONDDATE", "roles": ["type", "type-with-args", "typed-literal-prefix"]},
+    {"name": "SECTIONS", "roles": ["alter-system-word"]},
+    {"name": "SECURITY", "roles": ["ddl"]},
+    {"name": "SELECT", "roles": ["dml", "reserved", "sql-statement-starter", "general-sql-root", "block-end-stop-prev", "statement-continuation-prev", "body-statement-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "SEPARATOR", "roles": ["call-infix-or-clause"]},
+    {"name": "SEQUENCE", "roles": ["ddl", "ddl-noun", "ddl-typo-target", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "SEQUENTIAL", "roles": ["sqlscript-keyword", "keyword", "routine-clause-starter", "fmt-begin-modifier"]},
+    {"name": "SERIES", "roles": ["clause-word", "column-clause-modifier", "special-call"]},
+    {"name": "SERVICE", "roles": ["alter-system-word"]},
+    {"name": "SESSION", "roles": ["statement-noun", "quote-protected", "set-statement-object"]},
+    {"name": "SESSION_CONTEXT", "roles": ["nondeterministic-call"]},
+    {"name": "SESSION_USER", "roles": ["system-value", "reserved", "unquoted-default", "reserved-operand", "nondeterministic-value"]},
+    {"name": "SET", "roles": ["dml", "reserved", "sql-statement-starter", "general-sql-root", "block-end-stop-prev", "column-clause-modifier", "non-alias", "expr-clause-terminator", "special-call", "paren-expression-prev", "fmt-statement-verb", "fmt-non-value"]},
+    {"name": "SHARED", "roles": ["statement-noun", "ddl-noun", "fmt-hdi-first"]},
+    {"name": "SHORTTEXT", "roles": ["type", "type-with-args"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "SIBLING", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "SIBLINGS", "roles": ["clause-word"]},
+    {"name": "SIGNAL", "roles": ["control-flow", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "block-end-stop-prev", "statement-exit-word", "top-level-imperative", "terminator-statement", "body-statement-word"]},
+    {"name": "SIMILAR", "roles": ["expr-infix-after-not"]},
+    {"name": "SIMILARITY", "roles": ["clause-word"]},
+    {"name": "SMALLDECIMAL", "roles": ["type", "type-with-args"]},
+    {"name": "SMALLINT", "roles": ["type"]},
+    {"name": "SNAPSHOT", "roles": ["statement-noun"]},
+    {"name": "SOME", "roles": ["word-operator", "expr-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "SOURCE", "roles": ["statement-noun", "hierarchy-clause"]},
+    {"name": "SPACE", "roles": ["alter-system-word"]},
+    {"name": "SPATIAL", "roles": ["statement-noun"]},
+    {"name": "SQL", "roles": ["ddl", "reserved", "alter-system-word", "set-statement-object", "routine-clause-starter", "routine-language", "fmt-header-word"]},
+    {"name": "SQLEXCEPTION", "roles": ["sqlscript-keyword", "keyword"]},
+    {"name": "SQLSCRIPT", "roles": ["system-value", "routine-language", "routine-language-typo-target"]},
+    {"name": "SQLSCRIPT_LOGGING_TABLE_TYPE", "roles": ["type"]},
+    {"name": "SQLSCRIPT_STATEMENT_STATISTICS_TYPE", "roles": ["type"]},
+    {"name": "SQLWARNING", "roles": ["sqlscript-keyword", "keyword"]},
+    {"name": "SQL_ERROR_CODE", "roles": ["system-variable", "keyword"]},
+    {"name": "SQL_ERROR_MESSAGE", "roles": ["system-variable", "keyword"]},
+    {"name": "START", "roles": ["dml", "reserved", "alter-system-word", "expr-clause-terminator", "hierarchy-clause"]},
+    {"name": "STATEMENT", "roles": ["clause-word", "keyword"]},
+    {"name": "STATIC", "roles": ["clause-word"]},
+    {"name": "STATISTICS", "roles": ["alter-system-word", "statement-noun", "ddl-noun", "ddl-typo-target", "on-target-ddl-noun", "fmt-hdi-first"]},
+    {"name": "STOP", "roles": ["alter-system-word"]},
+    {"name": "STRING", "roles": ["set-statement-object"]},
+    {"name": "STRUCTURED", "roles": ["statement-noun", "routine-clause-starter", "ddl-noun", "ddl-typo-target", "fmt-hdi-first"]},
+    {"name": "ST_CIRCULARSTRING", "roles": ["type"]},
+    {"name": "ST_GEOMETRY", "roles": ["type", "type-with-args"]},
+    {"name": "ST_GEOMETRYCOLLECTION", "roles": ["type"]},
+    {"name": "ST_LINESTRING", "roles": ["type"]},
+    {"name": "ST_MULTILINESTRING", "roles": ["type"]},
+    {"name": "ST_MULTIPOINT", "roles": ["type"]},
+    {"name": "ST_MULTIPOLYGON", "roles": ["type"]},
+    {"name": "ST_POINT", "roles": ["type", "type-with-args"]},
+    {"name": "ST_POINTM", "roles": ["type"]},
+    {"name": "ST_POINTZ", "roles": ["type"]},
+    {"name": "ST_POINTZM", "roles": ["type"]},
+    {"name": "ST_POLYGON", "roles": ["type"]},
+    {"name": "SUBMULTISET", "roles": ["expr-infix-after-not"]},
+    {"name": "SUBPARTITION", "roles": ["special-call"]},
+    {"name": "SUBSCRIPTION", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "SUBSTRING", "roles": ["special-call"]},
+    {"name": "SUBTOTAL", "roles": ["clause-word"]},
+    {"name": "SYNONYM", "roles": ["ddl", "statement-noun", "ddl-noun", "ddl-typo-target", "call-prefix-no-op", "fmt-object-type"]},
+    {"name": "SYSTEM", "roles": ["alter-system-word", "quote-protected", "set-statement-object", "ddl-modifier", "fmt-hdi-first"]},
+    {"name": "SYSTEMS", "roles": ["statement-noun"]},
+    {"name": "SYSUUID", "roles": ["system-value", "reserved", "reserved-operand", "nondeterministic-value"]},
+    {"name": "TABLE", "roles": ["ddl", "alter-system-word", "statement-noun", "ddl-noun", "ddl-typo-target", "ident-context", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "TABLESAMPLE", "roles": ["dml", "reserved", "non-alias"]},
+    {"name": "TARGET", "roles": ["clause-word"]},
+    {"name": "TASK", "roles": ["ddl-noun"]},
+    {"name": "TEMPORARY", "roles": ["ddl", "ddl-modifier", "table-columns-prev"]},
+    {"name": "TEST", "roles": ["annotation", "sqlscript-keyword", "routine-clause-starter"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "TESTCLASSIFICATION", "roles": ["annotation"]},
+    {"name": "TESTSETUP", "roles": ["annotation"]},
+    {"name": "TESTSETUPCONFIG", "roles": ["annotation"]},
+    {"name": "TESTSETUPLIBRARY", "roles": ["annotation"]},
+    {"name": "TESTSETUPTEST", "roles": ["annotation"]},
+    {"name": "TESTTEARDOWN", "roles": ["annotation"]},
+    {"name": "TESTTEARDOWNCONFIG", "roles": ["annotation"]},
+    {"name": "TESTTEARDOWNLIBRARY", "roles": ["annotation"]},
+    {"name": "TESTTEARDOWNTEST", "roles": ["annotation"]},
+    {"name": "TEXT", "roles": ["type", "statement-noun"], "platforms": ["XSC", "XSA", "HDI"]},
+    {"name": "THEN", "roles": ["control-flow", "block-end-stop-prev", "compound-boundary-prev", "non-alias", "query-start-prev", "select-stop-clause", "select-prefix-op", "expr-clause-terminator", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "THREADS", "roles": ["alter-system-word"]},
+    {"name": "TIME", "roles": ["type", "column-end-modifier", "type-with-args", "typed-literal-prefix", "select-prefix-op", "call-prefix-word"]},
+    {"name": "TIMESTAMP", "roles": ["type", "type-with-args", "typed-literal-prefix", "select-prefix-op", "call-prefix-word"]},
+    {"name": "TIMEZONE", "roles": ["alter-system-word"]},
+    {"name": "TINYINT", "roles": ["type"]},
+    {"name": "TO", "roles": ["clause-word", "keyword", "block-end-stop-prev", "interval-unit", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "TOKEN", "roles": ["statement-noun"]},
+    {"name": "TOP", "roles": ["dml", "reserved", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "TRACEPROFILE", "roles": ["alter-system-word"]},
+    {"name": "TRACES", "roles": ["alter-system-word"]},
+    {"name": "TRAILING", "roles": ["dml", "reserved"]},
+    {"name": "TRANSACTION", "roles": ["control-flow", "statement-noun", "set-statement-object", "fmt-begin-modifier"]},
+    {"name": "TRAVERSE", "roles": ["sqlscript-keyword"]},
+    {"name": "TREAT", "roles": ["special-call"]},
+    {"name": "TRIGGER", "roles": ["ddl", "routine-header-opener", "ddl-noun", "ddl-typo-target", "on-target-ddl-noun", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "TRIM", "roles": ["special-call"]},
+    {"name": "TRUE", "roles": ["literal", "reserved", "unquoted-default", "reserved-operand"]},
+    {"name": "TRUNCATE", "roles": ["dml", "sql-statement-starter", "general-sql-root", "ddl-statement", "procedure-ddl-statement", "body-statement-word"]},
+    {"name": "TYPE", "roles": ["ddl", "ddl-noun", "ddl-typo-target", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "UNBOUNDED", "roles": ["clause-word", "keyword"]},
+    {"name": "UNCONDITIONAL", "roles": ["json-column-trailing"]},
+    {"name": "UNION", "roles": ["dml", "reserved", "block-end-stop-prev", "set-operator", "subselect-context", "query-clause", "non-alias", "query-start-prev", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "UNIQUE", "roles": ["ddl", "ddl-modifier", "table-constraint-starter", "column-list-constraint-starter", "column-end-modifier", "special-call", "paren-expression-prev", "fmt-hdi-first"]},
+    {"name": "UNIT", "roles": ["statement-noun"]},
+    {"name": "UNKNOWN", "roles": ["literal", "reserved", "reserved-operand"]},
+    {"name": "UNLOAD", "roles": ["dml", "sql-statement-starter", "general-sql-root", "column-clause-modifier"]},
+    {"name": "UNSET", "roles": ["dml", "sql-statement-starter", "fmt-statement-verb"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "UNTIL", "roles": ["clause-word", "paren-expression-prev"]},
+    {"name": "UNUSED", "roles": ["statement-noun"]},
+    {"name": "UPDATE", "roles": ["dml", "sql-statement-starter", "general-sql-root", "statement-exit-word", "dml-write-statement", "procedure-dml-statement", "body-statement-word", "column-clause-modifier", "ident-context", "call-prefix-no-op"]},
+    {"name": "UPSERT", "roles": ["dml", "sql-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "dml-write-statement", "procedure-dml-statement", "subselect-context", "body-statement-word"]},
+    {"name": "USER", "roles": ["ddl", "set-statement-object", "ddl-noun", "ddl-typo-target", "fmt-object-type"]},
+    {"name": "USERGROUP", "roles": ["statement-noun", "ddl-noun"], "platforms": ["CLOUD"]},
+    {"name": "USING", "roles": ["dml", "reserved", "sqlscript-statement-starter", "block-end-stop-prev", "subselect-context", "body-statement-word", "library-member-starter", "routine-clause-starter", "non-alias", "expr-clause-terminator", "special-call", "call-infix-or-clause", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "UTCTIMESTAMP", "roles": ["system-value", "reserved", "reserved-operand"]},
+    {"name": "VALID", "roles": ["clause-word", "hierarchy-clause"]},
+    {"name": "VALIDATE", "roles": ["sql-statement-starter", "general-sql-root", "fmt-statement-verb"]},
+    {"name": "VALUE", "roles": ["quote-protected"]},
+    {"name": "VALUES", "roles": ["dml", "reserved", "sql-statement-starter", "block-end-stop-prev", "non-alias", "expr-clause-terminator", "fmt-non-value"]},
+    {"name": "VARBINARY", "roles": ["type", "type-with-args"]},
+    {"name": "VARCHAR", "roles": ["type", "type-with-args"]},
+    {"name": "VARIABLE", "roles": ["library-member-starter", "routine-clause-starter"]},
+    {"name": "VARYING", "roles": ["column-end-modifier"]},
+    {"name": "VECTOR", "roles": ["statement-noun", "type-with-args"]},
+    {"name": "VECTOR_INDEX", "roles": ["hint"], "platforms": ["CLOUD"]},
+    {"name": "VERTEX", "roles": ["clause-word"]},
+    {"name": "VIEW", "roles": ["ddl", "alter-system-word", "statement-noun", "ddl-noun", "ddl-typo-target", "ident-context", "call-prefix-no-op", "fmt-object-type", "fmt-hdi-first"]},
+    {"name": "VIRTUAL", "roles": ["ddl", "statement-noun", "routine-header-opener", "ddl-noun", "ddl-typo-target", "table-columns-prev", "fmt-hdi-first"]},
+    {"name": "VISIT", "roles": ["sqlscript-keyword"]},
+    {"name": "WAITGRAPH", "roles": ["alter-system-word"]},
+    {"name": "WHEN", "roles": ["control-flow", "reserved", "block-end-stop-prev", "block-stop", "case-body-stop", "non-alias", "follow-hidden", "select-stop-clause", "select-prefix-op", "expr-clause-terminator", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "WHERE", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "WHILE", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "top-level-imperative", "end-compound-suffix", "end-suffix", "body-statement-word", "body-typo-target", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "WINDOW", "roles": ["dml", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator"]},
+    {"name": "WITH", "roles": ["dml", "reserved", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "subselect-context", "routine-clause-starter", "column-end-modifier", "column-clause-modifier", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator", "json-call-clause", "json-column-trailing", "paren-expression-prev"]},
+    {"name": "WITHIN", "roles": ["quote-protected", "select-prefix-op", "special-call", "call-infix-or-clause", "paren-expression-prev"]},
+    {"name": "WITHOUT", "roles": ["quote-protected", "column-end-modifier", "json-call-clause", "json-column-trailing"]},
+    {"name": "WORKLOAD", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "WORKSPACE", "roles": ["statement-noun"], "platforms": ["XSA", "HDI", "CLOUD"]},
+    {"name": "WRAPPER", "roles": ["clause-word", "json-column-trailing"]},
+    {"name": "X509", "roles": ["statement-noun", "ddl-noun"]},
+    {"name": "XMLAGG", "roles": ["special-call"]},
+    {"name": "XMLATTRIBUTES", "roles": ["special-call"]},
+    {"name": "XMLELEMENT", "roles": ["special-call"]},
+    {"name": "XMLFOREST", "roles": ["special-call"]},
+    {"name": "XMLPARSE", "roles": ["special-call"]},
+    {"name": "XMLSERIALIZE", "roles": ["special-call"]},
+    {"name": "XMLTABLE", "roles": ["special-call"]},
+    {"name": "YEAR", "roles": ["interval-unit", "datetime-field", "call-infix-or-clause"]},
+    {"name": "ZONE", "roles": ["column-end-modifier", "call-infix-or-clause"]}
   ]
 }

@@ -15,6 +15,12 @@
 import { TYPES } from '../formatter/keywords';
 import { type Token } from '../formatter/tokenizer';
 import { suggestSlotKeyword } from './typo';
+import {
+  CLAUSE_STARTERS,
+  KNOWN_LANGUAGES,
+  LANGUAGE_TYPO_TARGETS,
+  MANAGEMENT_WORDS,
+} from './keyword-sets';
 
 export type HeaderKind = 'procedure' | 'function' | 'library' | 'trigger' | 'do';
 
@@ -64,36 +70,6 @@ export interface HeaderParseOptions {
   /** Parse a `.hdblibrary` member (`[PUBLIC | PRIVATE] PROCEDURE | FUNCTION ...`). */
   readonly inLibrary: boolean;
 }
-
-/** First words of every pre-`AS` routine clause (used for boundary detection). */
-const CLAUSE_STARTERS = new Set<string>([
-  'LANGUAGE',
-  'SQL',
-  'DEFAULT',
-  'READS',
-  'VARIABLE',
-  'DETERMINISTIC',
-  'WITH',
-  'AUTOCOMMIT',
-  'STRUCTURED',
-  'NO',
-  'CACHE',
-  'SEQUENTIAL',
-  'PARALLEL',
-  'AUTONOMOUS',
-  'HEADER',
-  'RETURNS',
-  'TEST',
-  'CONFIGURATION',
-  'AT',
-  'AS',
-  'BEGIN',
-  'USING',
-]);
-
-const KNOWN_LANGUAGES = ['SQLSCRIPT', 'R', 'RLANG', 'GRAPH', 'AFLLANG', 'SQL'];
-const LANGUAGE_TYPO_TARGETS = ['SQLSCRIPT', 'RLANG', 'GRAPH', 'AFLLANG'];
-const MANAGEMENT_WORDS = new Set<string>(['RECOMPILE', 'ENCRYPTION', 'ADD', 'DROP', 'ALTER', 'DISABLE', 'ENABLE']);
 
 /** Expected keywords (display form) for the pre-`AS` slot of each header kind. */
 function expectedBeforeAs(kind: HeaderKind, isVirtual: boolean): string[] {
@@ -356,8 +332,8 @@ export function parseRoutineHeader(
           return j + 1;
         }
         const lang = t.text.toUpperCase();
-        if (!KNOWN_LANGUAGES.includes(lang)) {
-          const fix = suggestSlotKeyword(t.text, LANGUAGE_TYPO_TARGETS);
+        if (!KNOWN_LANGUAGES.has(lang)) {
+          const fix = suggestSlotKeyword(t.text, [...LANGUAGE_TYPO_TARGETS]);
           if (fix) {
             issue('HANA-SYN-021', j + 1, `Unknown keyword '${t.text}' after 'LANGUAGE'. Did you mean '${fix}'?`, { replaceWith: fix });
             language = fix;

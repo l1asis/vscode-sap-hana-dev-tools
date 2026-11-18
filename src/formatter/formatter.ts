@@ -8,6 +8,18 @@ import {
   ResolvedFormatterOptions,
   resolveOptions,
 } from './options';
+import {
+  BEGIN_MODS,
+  DATETIME_FIELDS,
+  END_SUFFIXES,
+  HDI_FIRST,
+  HEADER_WORDS,
+  JOIN_PHRASE,
+  JOIN_STARTERS,
+  NON_VALUE,
+  OBJ_TYPES,
+  STMT_VERBS,
+} from './keywords';
 
 // ---------------------------------------------------------------------------
 // types & interfaces
@@ -137,20 +149,6 @@ interface WrapCandidate {
 // constants
 // ---------------------------------------------------------------------------
 
-const JOIN_STARTERS: ReadonlySet<string> = new Set(['JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'NATURAL']);
-const JOIN_PHRASE: ReadonlySet<string> = new Set(['NATURAL', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS']);
-const BEGIN_MODS: ReadonlySet<string> = new Set(['AUTONOMOUS', 'TRANSACTION', 'SEQUENTIAL', 'PARALLEL', 'EXECUTION', 'ATOMIC']);
-const END_SUFFIX: ReadonlySet<string> = new Set(['IF', 'WHILE', 'FOR', 'LOOP', 'CASE']);
-const OBJ_TYPES: ReadonlySet<string> = new Set(['TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION', 'TRIGGER', 'TYPE', 'LIBRARY', 'SCHEMA', 'SEQUENCE', 'SYNONYM', 'INDEX', 'ROLE', 'USER']);
-const STMT_VERBS: ReadonlySet<string> = new Set(['CREATE', 'ALTER', 'DROP', 'SET', 'UNSET', 'REFRESH', 'VALIDATE', 'RENAME', 'MERGE', 'IMPORT', 'EXPORT', 'LOCK', 'RELEASE', 'BACKUP', 'RECOVER']);
-const HDI_FIRST: ReadonlySet<string> = new Set(['APPLICATION', 'GRAPH', 'PROCEDURE', 'FUNCTION', 'VIEW', 'COLUMN', 'ROW', 'TABLE', 'VIRTUAL', 'PROJECTION', 'TYPE', 'STRUCTURED', 'RESULT', 'SYSTEM', 'SCHEDULER', 'REMOTE', 'COLLECTION', 'LIBRARY', 'STATISTICS', 'INDEX', 'FUZZY', 'FULLTEXT', 'UNIQUE', 'HASH', 'BLOCK', 'ADJACENCY', 'INVERTED', 'SEQUENCE', 'TRIGGER', 'SHARED']);
-const HEADER_WORDS: ReadonlySet<string> = new Set(['LANGUAGE', 'RETURNS', 'DEFAULT', 'SQL', 'READS', 'MODIFIES', 'DETERMINISTIC', 'AS']);
-// keywords after which a following + - * is unary / a wildcard, not a binary operator
-const NON_VALUE: ReadonlySet<string> = new Set([
-  'SELECT', 'DISTINCT', 'ALL', 'WHERE', 'ON', 'AND', 'OR', 'NOT', 'WHEN', 'THEN', 'ELSE', 'CASE', 'BY', 'IN', 'IS', 'AS',
-  'RETURN', 'RETURNS', 'HAVING', 'SET', 'VALUES', 'BETWEEN', 'LIKE', 'EXISTS', 'ANY', 'SOME', 'UNION', 'INTERSECT',
-  'EXCEPT', 'MINUS', 'TOP', 'USING', 'DO', 'IF', 'ELSEIF', 'WHILE', 'FOR', 'LOOP', 'BEGIN', 'INTO', 'LIMIT', 'OFFSET',
-]);
 const WRAP_BINARY: ReadonlySet<string> = new Set(['||', '+', '-', '*', '/', '%']);
 
 class Line {
@@ -297,7 +295,7 @@ class Layout {
       if (isT && isF) {
         typeCtx = !!prevT && ((prevT.type === 'word' && (!K.KEYWORDS.has(prevT.text.toUpperCase()) || prevT.text.toUpperCase() === 'AS')) || prevT.type === 'qident');
       }
-      if (['YEAR', 'MONTH', 'DAY', 'HOUR', 'MINUTE', 'SECOND'].includes(up) && nextT && nextT.text.toUpperCase() === 'FROM') cls = 'keyword';
+      if (DATETIME_FIELDS.has(up) && nextT && nextT.text.toUpperCase() === 'FROM') cls = 'keyword';
       else if (isF && nextParen && !typeCtx) cls = 'function';
       else if (isT) cls = 'type';
       else if (K.KEYWORDS.has(up)) cls = 'keyword';
@@ -1059,7 +1057,7 @@ class Layout {
       if (blk && blk.hdiRoot && this.blocks.length === 0) this.stmt!.hdiRoot = true;
       this.emit(tok, i);
       const nx = this.t[i + 1];
-      if (nx && nx.type === 'word' && END_SUFFIX.has(nx.text.toUpperCase())) {
+      if (nx && nx.type === 'word' && END_SUFFIXES.has(nx.text.toUpperCase())) {
         this.emit(nx, i + 1);
         return 1;
       }

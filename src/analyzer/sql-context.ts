@@ -7,6 +7,15 @@ import {
   type DiagnosticSeverityLevel,
   type DiagnosticTagKind,
 } from './types';
+import {
+  DDL_KEYWORDS,
+  DML_WRITE_KEYWORDS,
+  END_COMPOUND_SUFFIXES,
+  NONDETERMINISTIC_CALLS,
+  NONDETERMINISTIC_NILADIC,
+  TERMINATOR_KEYWORDS,
+  TOP_LEVEL_IMPERATIVE_KEYWORDS,
+} from './keyword-sets';
 
 export interface SqlContextOptions {
   readonly languageId: string;
@@ -89,36 +98,6 @@ interface BlockScope {
   readonly seenConditions: Set<string>;
   firstMemberStart?: number;
 }
-
-const TERMINATOR_KEYWORDS = new Set<string>(['RETURN', 'SIGNAL', 'RESIGNAL', 'BREAK', 'CONTINUE']);
-const END_COMPOUND_SUFFIXES = new Set<string>(['IF', 'LOOP', 'WHILE', 'FOR']);
-const TOP_LEVEL_IMPERATIVE_KEYWORDS = new Set<string>([
-  'DECLARE',
-  'IF',
-  'LOOP',
-  'WHILE',
-  'FOR',
-  'BREAK',
-  'CONTINUE',
-  'SIGNAL',
-  'RESIGNAL',
-  'RETURN',
-]);
-const DML_WRITE_KEYWORDS = new Set<string>(['INSERT', 'UPDATE', 'DELETE', 'UPSERT', 'MERGE', 'REPLACE']);
-const DDL_KEYWORDS = new Set<string>(['CREATE', 'ALTER', 'DROP', 'RENAME', 'TRUNCATE']);
-const NONDETERMINISTIC_CALLS = new Set<string>(['RAND', 'RAND_SECURE', 'SESSION_CONTEXT', 'NOW']);
-const NONDETERMINISTIC_NILADIC = new Set<string>([
-  'SYSUUID',
-  'SESSION_USER',
-  'CURRENT_TIMESTAMP',
-  'CURRENT_UTCTIMESTAMP',
-  'CURRENT_DATE',
-  'CURRENT_TIME',
-  'CURRENT_UTCDATE',
-  'CURRENT_UTCTIME',
-  'CURRENT_MVCC_SNAPSHOT_TIMESTAMP',
-  'CURRENT_TRANSACTION_ISOLATION_LEVEL',
-]);
 
 function wordUpper(tok: Token | undefined): string {
   return tok && tok.type === 'word' ? tok.text.toUpperCase() : '';

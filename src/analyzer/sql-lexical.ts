@@ -8,6 +8,11 @@
 import { RESERVED } from '../formatter/keywords';
 import { type Token } from '../formatter/tokenizer';
 import { type AnalyzerDiagnostic, type CodeFixSuggestion } from './types';
+import {
+  CURSOR_ATTRIBUTES,
+  RESERVED_AFTER_DOT,
+  SQLSCRIPT_ANNOTATIONS,
+} from './keyword-sets';
 
 export interface SqlLexicalOptions {
   /** All tokens of the section, comments included (`collapseFormatOff: false`). */
@@ -21,29 +26,6 @@ export interface SqlLexicalOptions {
   readonly lineOf: (offset: number) => number;
   readonly diagnostics: AnalyzerDiagnostic[];
 }
-
-/**
- * SQLScript compiler pragmas and `SQLSCRIPT_TEST` annotations that may follow `@` `[XSA]` `[HDI]` `[CLOUD]`.
- * Source: `docs/specs/grammars/sql-sqlscript.md` §2 (SQLScript Pragma / Annotation).
- */
-const SQLSCRIPT_PRAGMAS = new Set<string>([
-  'ANALYZERSUPPRESS',
-  'PUSHSCOPE',
-  'POPSCOPE',
-  'TEST',
-  'TESTSETUP',
-  'TESTTEARDOWN',
-  'TESTSETUPTEST',
-  'TESTTEARDOWNTEST',
-  'TESTSETUPCONFIG',
-  'TESTTEARDOWNCONFIG',
-  'TESTSETUPLIBRARY',
-  'TESTTEARDOWNLIBRARY',
-  'TESTCLASSIFICATION',
-]);
-
-/** SQLScript cursor attributes (`c_cursor::ISCLOSED`, `::NOTFOUND`, `::ROWCOUNT`) `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`. */
-const CURSOR_ATTRIBUTES = new Set<string>(['ISCLOSED', 'NOTFOUND', 'ROWCOUNT']);
 
 function isComment(t: Token | undefined): boolean {
   return t !== undefined && (t.type === 'lineComment' || t.type === 'blockComment');
@@ -76,9 +58,6 @@ function isDotOperandLeft(t: Token | undefined): boolean {
   if (t.type === 'word' || t.type === 'qident' || t.type === 'var' || t.type === 'sysvar') return true;
   return t.text === ')' || t.text === ']';
 }
-
-/** Reserved words that are valid after `.` (sequence pseudo-columns and `ROWID`). */
-const RESERVED_AFTER_DOT = new Set<string>(['NEXTVAL', 'CURRVAL', 'ROWID']);
 
 /** Returns `true` for tokens that may legally appear on the right of a member-access `.`. */
 function isDotOperandRight(t: Token | undefined): boolean {
@@ -158,7 +137,7 @@ export function checkSqlLexicalIntegrity(opts: SqlLexicalOptions): void {
     if (tok.type === 'other') {
       const ch = tok.text;
       if (ch === '@' && next?.type === 'word' && !next.wsBefore) {
-        if (SQLSCRIPT_PRAGMAS.has(next.text.toUpperCase())) {
+        if (SQLSCRIPT_ANNOTATIONS.has(next.text.toUpperCase())) {
           i++;
           continue;
         }

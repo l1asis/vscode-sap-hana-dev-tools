@@ -1,7 +1,9 @@
 'use strict';
 /**
- * Generates the TextMate grammars for the SAP HANA XS Classic design-time artifacts.
- *   node scripts/build-grammars.js
+ * Generates every TextMate grammar in syntaxes/: `source.hanasql` (word lists from the SQL catalog in
+ * docs/specs/catalogs/, see scripts/lib/hanasql-grammar.js) and the SAP HANA design-time artifact grammars.
+ *   node scripts/build-grammars.js           write syntaxes/*.tmLanguage.json
+ *   node scripts/build-grammars.js --check   exit 1 if any grammar is stale
  *
  * Regexes are written as JS literals (re.source) to avoid double-escaping in JSON.
  * Sources: SAP HANA HDBTable Syntax Reference, SAP HANA XS JavaScript Reference.
@@ -9,12 +11,19 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { buildHanasqlGrammar } = require('./lib/hanasql-grammar');
 
 const OUT = path.join(__dirname, '..', 'syntaxes');
 const R = (re) => re.source;
 // case-insensitive: TextMate wants an inline (?i) prefix, regex flags are lost by .source
 const RI = (re) => '(?i)' + re.source;
-const write = (file, grammar) => fs.writeFileSync(path.join(OUT, file + '.tmLanguage.json'), JSON.stringify(grammar, null, 2) + '\n');
+/** Repo-relative path -> grammar JSON text; written (or checked) at the end. */
+const outputs = {};
+const write = (file, grammar) => {
+  outputs[`syntaxes/${file}.tmLanguage.json`] = JSON.stringify(grammar, null, 2) + '\n';
+};
+
+write('hanasql', buildHanasqlGrammar());
 const alt = (words) => words.join('|');
 
 // ---------------------------------------------------------------------------
@@ -964,4 +973,15 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
   write('hdbtextlexicon', { name: 'SAP HANA Text Analysis Lexicon', scopeName: 'source.hdbtextlexicon', patterns: [{ include: 'source.hdbtextrule' }] });
 }
 
-console.log('grammars written to', OUT);
+if (require.main === module) {
+  const { syncOutputs } = require('./build-keywords');
+  const check = process.argv.includes('--check');
+  const stale = syncOutputs(outputs, check);
+  if (check && stale.length) {
+    console.error(`Stale grammars (run npm run build:grammars):\n  ${stale.join('\n  ')}`);
+    process.exit(1);
+  }
+  console.log(`${Object.keys(outputs).length} grammars in ${OUT}${stale.length ? `; wrote ${stale.length}` : '; up to date'}`);
+}
+
+module.exports = { grammarOutputs: outputs };

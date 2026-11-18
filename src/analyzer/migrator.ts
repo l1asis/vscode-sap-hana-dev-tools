@@ -17,6 +17,7 @@ import {
   type CodeFixSuggestion,
   type TextEditSpan,
 } from './types';
+import { SQL_UNQUOTED_DEFAULTS } from './keyword-sets';
 
 function unquoteKvString(raw: string): string {
   if (raw.length < 2) return raw;
@@ -145,20 +146,6 @@ function getStructFieldsMap(st: KvStructValue): Map<string, KvValueNode> {
   }
   return fields;
 }
-
-const SQL_UNQUOTED_DEFAULTS = new Set([
-  'CURRENT_TIMESTAMP',
-  'CURRENT_UTCTIMESTAMP',
-  'CURRENT_DATE',
-  'CURRENT_UTCDATE',
-  'CURRENT_TIME',
-  'CURRENT_UTCTIME',
-  'CURRENT_USER',
-  'SESSION_USER',
-  'NULL',
-  'TRUE',
-  'FALSE',
-]);
 
 function renderKvDefaultValue(defNode: KvValueNode, sqlType: string): string {
   if (defNode.kind === 'number') return defNode.raw;

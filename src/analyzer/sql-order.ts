@@ -1,5 +1,11 @@
 import { type Token } from '../formatter/tokenizer';
 import { type AnalyzerDiagnostic } from './types';
+import {
+  SELECT_PRIVILEGE_PREV,
+  SET_OPERATORS,
+  STMT_CONTINUATION_PREV,
+  STMT_EXIT_WORDS,
+} from './keyword-sets';
 
 export interface SqlSelectOrderOptions {
   readonly codeTokens: readonly Token[];
@@ -47,45 +53,6 @@ interface SelectQueryFrame {
   highestStage: SelectStage;
   highestStageName: string;
 }
-
-const SELECT_PRIVILEGE_PREV = new Set<string>([
-  'GRANT',
-  'REVOKE',
-  'ALLOW',
-  'DENY',
-  'PRIVILEGE',
-  'COMMENT',
-  'ON',
-]);
-
-const SET_OPERATORS = new Set<string>(['UNION', 'INTERSECT', 'EXCEPT', 'MINUS']);
-
-const STMT_EXIT_WORDS = new Set<string>([
-  'RETURN',
-  'DECLARE',
-  'IF',
-  'ELSEIF',
-  'ELSE',
-  'WHILE',
-  'LOOP',
-  'INSERT',
-  'UPDATE',
-  'DELETE',
-  'UPSERT',
-  'MERGE',
-  'CALL',
-  'EXEC',
-  'EXECUTE',
-  'SIGNAL',
-  'RESIGNAL',
-  'BREAK',
-  'CONTINUE',
-  'COMMIT',
-  'ROLLBACK',
-  'OPEN',
-  'FETCH',
-  'CLOSE',
-]);
 
 export function findLineNumber(lineStarts: readonly number[], offset: number): number {
   let lo = 0;
@@ -324,7 +291,7 @@ export function checkSqlSelectClauseOrder(opts: SqlSelectOrderOptions): void {
         prev &&
         prev.text !== ',' &&
         prev.type !== 'op' &&
-        !['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ON', 'BY', 'AS'].includes(prevUp) &&
+        !STMT_CONTINUATION_PREV.has(prevUp) &&
         ((up !== 'FOR' && up !== 'IF' && up !== 'WHILE' && STMT_EXIT_WORDS.has(up)) ||
           (up === 'FOR' && prevUp === ';'))
       ) {
