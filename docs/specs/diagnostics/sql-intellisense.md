@@ -85,3 +85,65 @@ Applies to `xsjs` / `xsjslib` completions, hover, and signature help driven by `
   2. `**@deprecated**` notes: when every overload shares the same deprecation message it is shown once; otherwise each note is prefixed with the deprecated overload's signature (e.g. `$.db.getConnection(sqlcc, isolationLevel)`).
   3. Description: shown once when all overloads share identical prose (`$.import`, `$.db.getConnection`); otherwise listed per overload as `` `name(p1, p2)` — description `` (`$.net.http.Client.request`).
   4. `**Parameters**`: the union of all overload parameters, deduplicated by name + type + description, rendered as `` - `name` (`type`): description ``.
+
+---
+
+## 6. Built-in SQL Function Documentation `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+
+> Source: `docs/specs/catalogs/builtin-functions.json`, distilled from the SQL References (Platform, Cloud, prebuilt `_en`), SQLScript References, Spatial References, Hierarchy, Property Graph, Search and Series Data guides by `scripts/extract-function-docs.js` (local corpus only), then curated. Catalog schema: `docs/specs/SPEC_RULES.md` §C.1.
+
+### 6.1 Function entry schema
+
+| Field | Required | Meaning |
+| :--- | :---: | :--- |
+| `name`, `library` | yes | Upper-case name; `SYS`, `GRAPHSCRIPT` or a `SQLSCRIPT_*` library. `library:name` is unique. |
+| `category` | yes | Key of `categories`. A category with a `scope` is highlighted (before `(`) and cased by `functionCase`. |
+| `kind` | yes | `function`, `aggregate`, `window`, `table-function`, `procedure`, `method` (`<geometry>.ST_Area()`), `constructor` (`NEW ST_Point(...)`, `ARRAY(...)`), `constant` (library constants), `niladic` (no parentheses: `CURRENT_DATE`). |
+| `receiverType` | methods | Type the method is called on (`ST_Geometry`, `ST_LineString`, ...). |
+| `platforms` | yes | Platforms whose reference documents the function: Platform references → `[XSC]` `[XSA]` `[HDI]`, Cloud references → `[CLOUD]`. |
+| `signatures` | yes | Every documented form, as in the reference, brackets balanced. Never a `NAME(...)` placeholder. |
+| `params` | no | `{ name, type?, optional?, keyword?, description }` per argument. `keyword` marks a clause argument (`SOURCE`, `START WHERE`, `AS`, `FROM`, `RETURNING`, `ON EMPTY`); its value is the clause text as written in the signature. |
+| `returnType` | yes | A data type (`BIGINT`, `ST_Point`, `TABLE`), a dependent type (`type of <string>`, `<data_type>`, `numeric (by input type)`), or a short rule (`CHAR(9), or INTEGER with a pattern`). Never a union guessed from the category. |
+| `returnDescription` | no | Result details: output columns of table functions, the input → result type mapping of aggregates. |
+| `description` | yes | First sentence of the reference definition, without platform badges. |
+| `source` | no | Chapter cited as `<guide>/<file>.md § <heading>`. |
+
+Functions not documented by any SAP HANA reference are not cataloged. Two GraphScript accessors, `SOURCE(<edge>)` and `TARGET(<edge>)`, are left out on purpose: `SOURCE (` also starts the clause of `HIERARCHY(SOURCE (SELECT ...))`. A global entry would mis-highlight that clause and give it the wrong hover.
+
+### 6.2 Hover card
+
+````text
+```sql
+<signature 1> -> <returnType>
+<signature 2> -> <returnType>
+```
+
+_<Category label>[, <kind label>]_[ of `<receiverType>`] · `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+
+<description>
+
+**Parameters**
+
+- `<name>` _(<type>, optional)_: <description>      (clause arguments: `START WHERE` instead of `<name>`)
+
+**Returns** `<returnType>`: <returnDescription>
+````
+
+- Niladic values render their name only (`CURRENT_DATE -> DATE`), never `NAME(...)`.
+- A built-in procedure returning `VOID` has no **Returns** line.
+- After `.`, a spatial method name gets its method card (`p1.ST_Distance(p2)`, `ST_Point.ST_GeomFromText(...)`). Any other identifier after `.` is a qualified column name and gets no hover, except `SYS.<member>`.
+- Call context: a word that is both a keyword and a function whose signatures all need `(` shows the keyword card unless `(` follows (`LEFT JOIN` vs `LEFT(`). A `NEW`-only constructor that is also a data type (`ST_POINT`) shows the type card unless `NEW` precedes it (`geom ST_POINT(4326)` vs `NEW ST_POINT(1, 2)`).
+- A catalog keyword whose kind is `function` is labelled "built-in function".
+
+### 6.3 Signature help
+
+- Parameters of a signature: the documented positional `params` whose `<name>` occurs in that signature, in signature order, so optional arguments are separate (`ROUND(<number> [, <position> [, <rounding_mode>]])` → three parameters). An undocumented signature is split on top-level commas. Clause `params` follow, labelled with their clause text.
+- A function whose `params` are all clauses (`HIERARCHY*`, `OPENCYPHER_TABLE`) has no positional part.
+- Active parameter: the clause whose keyword sequence was typed last at the call's top level (`ERROR ON EMPTY` activates `ON EMPTY`, not `ON ERROR`). Otherwise the top-level comma count. Variadic arguments keep counting, and a comma never reaches a clause parameter.
+- `ParameterInformation.documentation` is `(<type>, optional) <description>` from `params`.
+- Niladic values and library constants get no signature help.
+
+### 6.4 Completion
+
+- `detail`: `<first signature> -> <returnType>`. `documentation`: the hover card.
+- Insert text: the bare name for constants, niladic values and functions with optional parentheses (`CURRENT_TIMESTAMP`). Otherwise `NAME()` for zero-argument functions and the snippet `NAME($1)` for the rest.

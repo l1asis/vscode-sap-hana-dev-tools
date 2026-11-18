@@ -103,7 +103,7 @@ A word can mean different things in different places: `LEFT` starts a join, but 
 }
 ```
 
-Function-specific fields beyond these (parameters, return details, kinds, platforms) are specified in `docs/specs/diagnostics/sql-intellisense.md`.
+Function-specific fields beyond these (`kind`, `receiverType`, `platforms`, `params`, `returnDescription`) and the hover / signature help rules built on them are specified in `docs/specs/diagnostics/sql-intellisense.md` §6. Function entries are distilled with `scripts/extract-function-docs.js` (local corpus). It fills placeholder entries and never overwrites curated ones.
 
 **Lexical roles** (registry order): `control-flow`, `dml`, `ddl`, `word-operator`, `literal`, `system-value`, `type`, `pragma`, `annotation`, `system-variable`, `hint`, `sqlscript-keyword`, `reserved`, `alter-system-word`, `statement-noun`, `clause-word`, `keyword` (non-reserved, cased by the formatter everywhere), `quote-protected` (must keep its quotes under `identifierQuotes: "removeUnnecessary"`). Function roles are not repeated in `sql-keywords.json`: a function's category is its role.
 
