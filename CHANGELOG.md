@@ -2,6 +2,22 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.10.3] - 2026-11-18
+
+### Added
+
+- **SQL / SQLScript Conformance Harness (`test/conformance.test.ts`, `scripts/conformance.js`, `docs/specs/diagnostics/conformance-harness.md`):** A repeatable check of the analyzer, formatter, grammar, and function catalog against valid SQL. It reports false `HANA-SYN-*` diagnostics and formatter output that throws, is not idempotent, or changes the word or comment sequence. It also reports changed `-- hanasql-format off` regions, catalog keywords the grammar leaves unscoped, and unknown function calls. `npm test` runs 91 committed fixture cases in 7 statement families (`test/fixtures/conformance/*.sql`). Known failures carry a per-check `-- @todo` marker, and the suite fails once a marked check starts passing. `npm run conformance` sweeps the local reference corpus, which is not run in CI. The baseline and the corpus noise allowlist are recorded in `docs/research/CONFORMANCE.md` and `docs/research/conformance-allowlist.json` (#76).
+- **Broken Samples Suite (`samples/broken/`, `test/broken-samples.test.ts`):** 34 intentionally invalid artifacts covering 69 rule IDs across the `SYN`, `SEC`, `PERF`, `LINT`, and `MIG` rule families. `samples/broken/README.md` lists each file's expected rule IDs, severities, and QuickFix titles, and the test checks that the reported diagnostics match that table exactly. All other samples must stay free of syntax diagnostics (#34).
+
+### Changed
+
+- **VSIX Packaging (`.vscodeignore`):** The packaged extension no longer ships the compiled test suite (`out/test/**`, ~300 KB) (#90).
+
+### Fixed
+
+- **Hexadecimal Numeric Literals (`src/formatter/tokenizer.ts`, `src/analyzer/sql-lexical.ts`):** `0x0abc` / `0X1F` now lex as one number token. The formatter no longer splits `SELECT 0x0abc "hex_value"` into `SELECT 0 x0abc "hex_value"`, which changed the query's meaning, and the analyzer no longer reports a false `HANA-SYN-023` there. A word glued to a hex literal (`0x1Fzz`) is still reported as `HANA-SYN-006` (#88).
+- **Specs & Tests:** Added `docs/specs/diagnostics/conformance-harness.md` and positive and negative tests for the hex literal fix, bringing the test suite to `355` passing tests (`33` tracked `@todo` cases).
+
 ## [0.10.2] - 2026-11-18
 
 ### Fixed
