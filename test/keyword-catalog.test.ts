@@ -224,7 +224,7 @@ test('catalog: every highlighted built-in function has function hover, not keywo
   const scoped = new Set(Object.entries(raw.functions.categories).filter(([, c]) => c.scope).map(([id]) => id));
   const missing: string[] = [];
   for (const f of raw.functions.functions.filter((x) => scoped.has(x.category))) {
-    const code = `x = ${f.name}(1)`;
+    const code = f.signatures[0].startsWith('NEW ') ? `x = NEW ${f.name}(1)` : `x = ${f.name}(1)`;
     const hover = getSqlHover(code, code.indexOf(f.name) + 1);
     if (!hover || !hover.markdown.includes(f.signatures[0])) missing.push(f.name);
   }
