@@ -85,8 +85,23 @@ function buildSqlCatalogTs(model = lib.loadCatalog()) {
       name: f.name,
       library: f.library,
       category: f.category,
+      kind: f.kind || (isConstant ? 'constant' : 'function'),
+      ...(f.receiverType ? { receiverType: f.receiverType } : {}),
+      platforms: f.platforms || lib.PLATFORMS,
       signatures: sigs,
+      ...(f.params && f.params.length
+        ? {
+            params: f.params.map((p) => ({
+              name: p.name,
+              ...(p.type ? { type: p.type } : {}),
+              ...(p.optional ? { optional: true } : {}),
+              ...(p.keyword ? { keyword: p.keyword } : {}),
+              description: p.description || '',
+            })),
+          }
+        : {}),
       returnType: f.returnType || 'ANY',
+      ...(f.returnDescription ? { returnDescription: f.returnDescription } : {}),
       description: f.description || '',
       ...(isConstant ? { isConstant: true } : {}),
       ...(f.category === 'calculation-engine' ? { deprecatedInCloud: true } : {}),
@@ -109,13 +124,38 @@ function buildSqlCatalogTs(model = lib.loadCatalog()) {
     '  readonly scope: string;\n' +
     '  readonly platforms: readonly string[];\n' +
     '}\n\n' +
+    "export type SqlPlatform = 'XSC' | 'XSA' | 'HDI' | 'CLOUD';\n\n" +
+    'export type SqlFunctionKind =\n' +
+    "  | 'function'\n" +
+    "  | 'aggregate'\n" +
+    "  | 'window'\n" +
+    "  | 'table-function'\n" +
+    "  | 'procedure'\n" +
+    "  | 'method'\n" +
+    "  | 'constructor'\n" +
+    "  | 'constant'\n" +
+    "  | 'niladic';\n\n" +
+    'export interface SqlFunctionParamDoc {\n' +
+    '  readonly name: string;\n' +
+    '  readonly type?: string;\n' +
+    '  readonly optional?: boolean;\n' +
+    '  /** Clause keyword that introduces the argument (`SOURCE`, `AS`, `FROM`, `RETURNING`); absent for positional arguments. */\n' +
+    '  readonly keyword?: string;\n' +
+    '  readonly description: string;\n' +
+    '}\n\n' +
     'export interface SqlFunctionEntry {\n' +
     '  readonly name: string;\n' +
     '  readonly library: string;\n' +
     '  /** `builtin-functions.json` category (`aggregate`, `string`, `spatial`, `graphscript`, ...). */\n' +
     '  readonly category: string;\n' +
+    '  readonly kind: SqlFunctionKind;\n' +
+    '  /** Type a method is called on (`<geometry>.ST_Area()`). */\n' +
+    '  readonly receiverType?: string;\n' +
+    '  readonly platforms: readonly SqlPlatform[];\n' +
     '  readonly signatures: readonly string[];\n' +
+    '  readonly params?: readonly SqlFunctionParamDoc[];\n' +
     '  readonly returnType: string;\n' +
+    '  readonly returnDescription?: string;\n' +
     '  readonly description: string;\n' +
     '  readonly isConstant?: boolean;\n' +
     '  readonly deprecatedInCloud?: boolean;\n' +

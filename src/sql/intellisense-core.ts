@@ -6,6 +6,7 @@ import {
   SQL_LIBRARY_MEMBERS,
   SQL_SYSTEM_VARIABLES,
   type SqlFunctionEntry,
+  type SqlFunctionParamDoc,
   type SqlKeywordEntry,
 } from './sql-catalog';
 import { type CaseMode } from '../formatter/options';
@@ -245,11 +246,21 @@ function nextCharIsOpenParen(text: string, offset: number): boolean {
   return text[i] === '(';
 }
 
+/**
+ * True when every signature calls the function with parentheses (`LEFT(<s>, <n>)`), so the bare word is something
+ * else (`LEFT JOIN`). Niladic values (`CURRENT_DATE`), optional parentheses (`CURRENT_TIMESTAMP[(<p>)]`), methods
+ * (`<geometry>.ST_Area()`) and constructors (`NEW ST_Point(...)`) do not count.
+ */
+function requiresCallParens(fn: SqlFunctionEntry): boolean {
+  const call = new RegExp(`^${fn.name}\\s*\\(`, 'i');
+  return fn.signatures.length > 0 && fn.signatures.every((s) => call.test(s.trim()));
+}
+
 function buildFunctionInsertText(casedName: string, fn: SqlFunctionEntry, text: string, offset: number): {
   insertText: string;
   isSnippet: boolean;
 } {
-  if (fn.isConstant || nextCharIsOpenParen(text, offset)) {
+  if (fn.isConstant || fn.kind === 'niladic' || nextCharIsOpenParen(text, offset) || !requiresCallParens(fn)) {
     return { insertText: casedName, isSnippet: false };
   }
   const alwaysZeroArg =
@@ -260,14 +271,74 @@ function buildFunctionInsertText(casedName: string, fn: SqlFunctionEntry, text: 
   return { insertText: `${casedName}($1)`, isSnippet: true };
 }
 
+const CATEGORY_LABELS: Readonly<Record<string, string>> = {
+  aggregate: 'Aggregate function',
+  window: 'Window function',
+  string: 'String function',
+  numeric: 'Numeric function',
+  datetime: 'Datetime function',
+  conversion: 'Data type conversion function',
+  misc: 'Miscellaneous function',
+  array: 'Array function',
+  fulltext: 'Fulltext function',
+  hierarchy: 'Hierarchy function',
+  json: 'JSON function',
+  security: 'Security function',
+  series: 'Series data function',
+  'text-mining': 'Text mining function',
+  vector: 'Vector function',
+  ai: 'AI function',
+  graph: 'Graph function',
+  spatial: 'Spatial function',
+  'calculation-engine': 'Calculation Engine operator',
+  sqlscript: 'SQLScript built-in',
+  graphscript: 'GraphScript built-in',
+  'sqlscript-library': 'SQLScript library member',
+};
+
+const KIND_LABELS: Readonly<Partial<Record<SqlFunctionEntry['kind'], string>>> = {
+  'table-function': 'table function',
+  procedure: 'procedure',
+  method: 'method',
+  constructor: 'constructor',
+  constant: 'constant',
+  niladic: 'system value, called without parentheses',
+};
+
+const platformBadges = (platforms: readonly string[]): string => platforms.map((p) => `\`[${p}]\``).join(' ');
+
+/** `_String function_ · [XSC] [XSA] [HDI] [CLOUD]`, `_Spatial method_ of ST_Geometry`, ... */
+function functionHeadline(fn: SqlFunctionEntry): string {
+  let label = CATEGORY_LABELS[fn.category] ?? 'Function';
+  const kind = KIND_LABELS[fn.kind];
+  if (fn.category === 'spatial' && (fn.kind === 'method' || fn.kind === 'constructor' || fn.kind === 'aggregate')) {
+    label = `Spatial ${fn.kind === 'aggregate' ? 'aggregate method' : fn.kind}`;
+  } else if (kind && !label.toLowerCase().includes(kind)) {
+    label += `, ${kind}`;
+  }
+  const receiver = fn.receiverType && fn.kind === 'method' ? ` of \`${fn.receiverType}\`` : '';
+  return `_${label}_${receiver} · ${platformBadges(fn.platforms)}`;
+}
+
 function formatFunctionMarkdown(fn: SqlFunctionEntry, options?: SqlIntelliSenseOptions): string {
   const sigLines = fn.signatures.map((s) => `${s} -> ${fn.returnType}`).join('\n');
-  const lines = [`\`\`\`sql\n${sigLines}\n\`\`\``];
+  const lines = [`\`\`\`sql\n${sigLines}\n\`\`\``, functionHeadline(fn)];
   if (fn.deprecatedInCloud && options?.targetPlatform === 'cloud') {
     lines.push('**@deprecated** `CE_*` calculation engine operators are not supported in SAP HANA Cloud; rewrite using standard SQL.');
   }
   if (fn.description) {
     lines.push(fn.description);
+  }
+  if (fn.params && fn.params.length > 0) {
+    const items = fn.params.map((p) => {
+      const label = p.keyword ? `\`${p.name}\`` : `\`<${p.name}>\``;
+      const meta = [p.type, p.optional ? 'optional' : ''].filter(Boolean).join(', ');
+      return `- ${label}${meta ? ` _(${meta})_` : ''}${p.description ? `: ${p.description}` : ''}`;
+    });
+    lines.push(`**Parameters**\n\n${items.join('\n')}`);
+  }
+  if (fn.kind !== 'procedure' || fn.returnType !== 'VOID') {
+    lines.push(`**Returns** \`${fn.returnType}\`${fn.returnDescription ? `: ${fn.returnDescription}` : ''}`);
   }
   return lines.join('\n\n');
 }
@@ -283,7 +354,9 @@ function formatKeywordMarkdown(entry: SqlKeywordEntry): string {
           ? 'constant'
           : entry.kind === 'pragma'
             ? 'pragma'
-            : `${entry.category} keyword`;
+            : entry.kind === 'function'
+              ? 'built-in function'
+              : `${entry.category} keyword`;
   const displayName = entry.kind === 'sysvar' ? `::${entry.name}` : entry.name;
   return `\`\`\`sql\n${displayName}\n\`\`\`\n\nSAP HANA ${label} (${platforms}).`;
 }
@@ -543,8 +616,13 @@ export function getSqlHover(
     };
   }
 
-  // Suppress false keyword hits on qualified column names (`t.DATE`, `t.USER`), except `SYS.<member>`
+  // After `.`: spatial methods (`p1.ST_Distance(p2)`, `ST_Point.ST_GeomFromText(...)`) and `SYS.<member>`;
+  // anything else is a qualified column name (`t.DATE`, `t.USER`), not a keyword.
   if (start >= 1 && masked[start - 1] === '.') {
+    const method = FUNCTIONS_BY_NAME.get(identUpper);
+    if (method && (method.kind === 'method' || method.category === 'spatial')) {
+      return { markdown: formatFunctionMarkdown(method, options), start, end };
+    }
     const beforeDot = masked.slice(0, start - 1);
     if (!/(?:^|[^a-zA-Z0-9_$#])SYS\s*$/i.test(beforeDot)) {
       return null;
@@ -561,18 +639,29 @@ export function getSqlHover(
     };
   }
 
-  // 4. Built-in SQL/GraphScript/CE function
+  // 4. Built-in SQL/GraphScript/CE function, unless the context makes the word a keyword or type:
+  //    `LEFT JOIN` (no call parentheses), `geom ST_POINT(4326)` (a column type, not `NEW ST_POINT(...)`).
   const fn = FUNCTIONS_BY_NAME.get(identUpper);
+  const kw = SQL_KEYWORDS_MAP[identUpper];
   if (fn) {
-    return {
-      markdown: formatFunctionMarkdown(fn, options),
-      start,
-      end,
-    };
+    const isCall = nextCharIsOpenParen(masked, end);
+    const keywordContext =
+      kw !== undefined &&
+      ((!isCall && requiresCallParens(fn)) ||
+        (fn.kind === 'constructor' &&
+          kw.kind === 'type' &&
+          fn.signatures.every((sig) => /^NEW\s/i.test(sig)) &&
+          !/\bNEW\s*$/i.test(masked.slice(Math.max(0, start - 12), start))));
+    if (!keywordContext) {
+      return {
+        markdown: formatFunctionMarkdown(fn, options),
+        start,
+        end,
+      };
+    }
   }
 
   // 5. SQL keyword / type / constant
-  const kw = SQL_KEYWORDS_MAP[identUpper];
   if (kw) {
     return {
       markdown: formatKeywordMarkdown(kw),
@@ -609,6 +698,81 @@ function parseSignatureParams(signature: string): readonly SqlSignatureParamInfo
   if (cur.trim()) parts.push(cur.trim());
 
   return parts.map((p) => ({ label: p, documentation: '' }));
+}
+
+const paramDoc = (p: SqlFunctionParamDoc): string => {
+  const meta = [p.type, p.optional ? 'optional' : ''].filter(Boolean).join(', ');
+  return `${meta ? `(${meta}) ` : ''}${p.description}`.trim();
+};
+
+/**
+ * Parameters of one signature: comma-separated positional arguments (documented from `fn.params` by their `<name>`),
+ * followed by the clause arguments introduced by a keyword (`SOURCE`, `START WHERE`, `AS`, `RETURNING`, `ON EMPTY`).
+ * A function whose arguments are all clauses (`HIERARCHY(SOURCE ... START WHERE ...)`) has no positional part.
+ */
+function buildSignatureParams(fn: SqlFunctionEntry, signature: string): readonly SqlSignatureParamInfo[] {
+  const docs = fn.params ?? [];
+  const clauses = docs.filter((p) => p.keyword);
+  const sigUpper = signature.toUpperCase();
+  const inSignature = (label: string): boolean => sigUpper.includes(label.toUpperCase());
+  let out: SqlSignatureParamInfo[];
+  if (clauses.length > 0 && clauses.length === docs.length) {
+    out = [];
+  } else {
+    // Documented `<name>` arguments in signature order, so optional ones (`ROUND(<n> [, <pos> [, <mode>]])`) are
+    // separate parameters; undocumented signatures fall back to splitting on top-level commas.
+    const positional = docs
+      .filter((p) => !p.keyword && inSignature(`<${p.name}>`))
+      .sort((a, b) => sigUpper.indexOf(`<${a.name.toUpperCase()}>`) - sigUpper.indexOf(`<${b.name.toUpperCase()}>`));
+    out =
+      positional.length > 0
+        ? positional.map((p) => ({ label: `<${p.name}>`, documentation: paramDoc(p) }))
+        : parseSignatureParams(signature).map((seg) => ({ label: seg.label, documentation: '' }));
+  }
+  for (const p of clauses) {
+    const label = [`${p.keyword} <${p.name}>`, `<${p.name}>`, p.name].find(inSignature) ?? p.name;
+    out.push({ label, documentation: paramDoc(p) });
+  }
+  return out;
+}
+
+/** Upper-case words at call depth 0 between `(` and the cursor. */
+function topLevelWordsInCall(masked: string, openParen: number, offset: number): string[] {
+  const words: string[] = [];
+  let depth = 0;
+  for (let i = openParen + 1; i < offset; i++) {
+    const c = masked[i];
+    if (c === '(' || c === '[') depth++;
+    else if (c === ')' || c === ']') depth = Math.max(0, depth - 1);
+    else if (depth === 0 && /[A-Za-z_]/.test(c) && (i === 0 || !SQL_IDENT_RE.test(masked[i - 1]))) {
+      let j = i;
+      while (j < offset && SQL_IDENT_RE.test(masked[j])) j++;
+      if (j < offset || !SQL_IDENT_RE.test(masked[offset] ?? '')) words.push(masked.slice(i, j).toUpperCase());
+      i = j - 1;
+    }
+  }
+  return words;
+}
+
+/** Index (into `buildSignatureParams`) of the clause whose keyword was typed last, or -1. */
+function activeClauseParam(fn: SqlFunctionEntry, params: readonly SqlSignatureParamInfo[], words: readonly string[]): number {
+  const clauses = (fn.params ?? []).filter((p) => p.keyword);
+  const firstClause = params.length - clauses.length;
+  let best = -1;
+  let bestPos = -1;
+  clauses.forEach((p, k) => {
+    const kw = (p.keyword ?? '').toUpperCase().split(/\s+/);
+    for (let w = words.length - kw.length; w >= 0; w--) {
+      if (kw.every((x, d) => words[w + d] === x)) {
+        if (w > bestPos) {
+          bestPos = w;
+          best = firstClause + k;
+        }
+        break;
+      }
+    }
+  });
+  return best;
 }
 
 function selectActiveSignature(signatures: readonly SqlSignatureInfo[], paramIndex: number): number {
@@ -682,23 +846,33 @@ export function getSqlSignatureHelp(
     fnEntry = FUNCTIONS_BY_NAME.get(fnUpper);
   }
 
-  if (!fnEntry || fnEntry.isConstant) return null;
+  if (!fnEntry || fnEntry.isConstant || fnEntry.kind === 'niladic') return null;
+  const fn = fnEntry;
 
   const deprecated =
-    fnEntry.deprecatedInCloud && options.targetPlatform === 'cloud'
+    fn.deprecatedInCloud && options.targetPlatform === 'cloud'
       ? 'CE_* operators are deprecated in SAP HANA Cloud; rewrite using standard SQL.'
       : undefined;
 
-  const signatures: SqlSignatureInfo[] = fnEntry.signatures.map((sig) => ({
-    label: `${sig} -> ${fnEntry!.returnType}`,
-    documentation: fnEntry!.description,
+  const signatures: SqlSignatureInfo[] = fn.signatures.map((sig) => ({
+    label: `${sig} -> ${fn.returnType}`,
+    documentation: fn.description,
     ...(deprecated ? { deprecated } : {}),
-    parameters: parseSignatureParams(sig),
+    parameters: buildSignatureParams(fn, sig),
   }));
+
+  const activeSignature = selectActiveSignature(signatures, commaCount);
+  const clause = activeClauseParam(fn, signatures[activeSignature].parameters, topLevelWordsInCall(masked, openParen, offset));
+  const positionalCount = signatures[activeSignature].parameters.length - (fn.params ?? []).filter((p) => p.keyword).length;
+  // Variadic arguments (`COALESCE(<expression_list>)`) keep counting commas; only clause parameters are never
+  // reached by a comma.
+  const hasClauses = signatures[activeSignature].parameters.length > positionalCount;
+  const activeParameter =
+    clause >= 0 ? clause : hasClauses && commaCount >= positionalCount ? Math.max(0, positionalCount - 1) : commaCount;
 
   return {
     signatures,
-    activeSignature: selectActiveSignature(signatures, commaCount),
-    activeParameter: commaCount,
+    activeSignature,
+    activeParameter,
   };
 }

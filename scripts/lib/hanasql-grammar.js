@@ -26,10 +26,26 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
   const words = (id) => lib.wordsWithRole(model, id);
   const scope = (id) => role(id).scope;
   const roleRule = (id) => ({ name: scope(id), match: wordMatch(words(id)) });
-  const fnRule = (category) => ({
-    name: model.categories.get(category).scope,
-    match: wordMatch(lib.functionsInCategories(model, [category]), { call: true }),
-  });
+  // One call-context pattern per function scope (several categories can share `support.function.hanasql`), in
+  // registry order. SQLScript-scoped categories are matched in `sqlscript-builtins` below.
+  const sqlscriptScope = model.categories.get('sqlscript').scope;
+  const byScope = new Map();
+  for (const [id, c] of model.categories) {
+    if (!c.scope || c.scope === sqlscriptScope) continue;
+    if (!byScope.has(c.scope)) byScope.set(c.scope, []);
+    byScope.get(c.scope).push(id);
+  }
+  // Constructors that are also data types (`ST_POINT`) keep their type scope: `geom ST_POINT(4326)` is a column type,
+  // `NEW ST_POINT(1, 2)` a constructor call, and only the `NEW` context tells them apart.
+  const typeConstructors = new Set(
+    model.functions
+      .filter((f) => f.kind === 'constructor' && f.signatures.every((sig) => /^NEW\s/i.test(sig)) && model.words.get(f.name)?.roles.includes('type'))
+      .map((f) => f.name)
+  );
+  const functionRules = [...byScope].map(([name, cats]) => ({
+    name,
+    match: wordMatch(lib.functionsInCategories(model, cats).filter((n) => !typeConstructors.has(n)), { call: true }),
+  }));
   const libraryConstants = model.functions
     .filter((f) => f.category === 'sqlscript-library' && lib.isConstantFunction(f))
     .map((f) => f.name);
@@ -172,7 +188,7 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
         ]
       },
       functions: {
-        patterns: ['aggregate', 'window', 'string', 'numeric', 'datetime', 'conversion', 'misc', 'spatial'].map(fnRule),
+        patterns: functionRules,
       },
       types: roleRule('type'),
       constants: {
