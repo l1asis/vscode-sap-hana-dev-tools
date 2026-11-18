@@ -119,6 +119,13 @@ test('HANA-SYN-006: glued literals and quoted identifiers', () => {
   assert.equal(num.length, 1);
   assert.equal(num[0].severity, 'error');
 
+  // #88: a hex literal is one number token, so a word glued after it is still reported.
+  const hexGlued = 'SELECT 0x1Fzz FROM DUMMY;';
+  const hex = rule(syntaxDiags('hanasql', hexGlued), 'HANA-SYN-006');
+  assert.equal(hex.length, 1);
+  assert.equal(spanText(hexGlued, hex[0]), '0x1Fzz');
+  assert.deepEqual(syntaxDiags('hanasql', 'SELECT 0x0abc "hex_value" FROM DUMMY;'), []);
+
   assert.equal(rule(syntaxDiags('hanasql', "SELECT 'a''b' 'c'X FROM DUMMY;"), 'HANA-SYN-006').length, 1);
   assert.equal(rule(syntaxDiags('hanasql', 'SELECT "A""B"C FROM DUMMY;'), 'HANA-SYN-006').length, 1);
 

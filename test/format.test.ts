@@ -1,6 +1,7 @@
 import test from 'node:test';
 import * as assert from 'node:assert';
 import { format } from '../src/formatter/formatter';
+import { tokenize } from '../src/formatter/tokenizer';
 import { EditorOptions, PartialFormatterOptions } from '../src/formatter/options';
 import { isKeyValueArtifact } from '../src/formatter/detect';
 
@@ -132,4 +133,20 @@ test('headerless HDI collection indexes and fabric virtual tables format safely'
   // Negative check: non-HDI root statements still receive semicolons under trailingSemicolon: "add"
   const regularSql = f('select "source" from "MY_TABLE"', { trailingSemicolon: 'add' });
   assert.ok(regularSql.trimEnd().endsWith(';'));
+});
+
+test('hexadecimal numeric literal stays one token (#88)', () => {
+  assert.strictEqual(
+    f('SELECT 0x0abc "hex_value" FROM DUMMY;'),
+    ['SELECT 0x0abc "hex_value"', 'FROM DUMMY;', ''].join('\n')
+  );
+  assert.strictEqual(f('select 0X1F, 0xff from dummy'), ['SELECT', '    0X1F,', '    0xff', 'FROM dummy', ''].join('\n'));
+});
+
+test('tokenizer: 0x prefix without hex digits is not a hex literal (#88)', () => {
+  const pieces = (s: string): string[] => tokenize(s).map((t) => `${t.type}:${t.text}`);
+  assert.deepStrictEqual(pieces('0x1F'), ['number:0x1F']);
+  assert.deepStrictEqual(pieces('0xg'), ['number:0', 'word:xg']);
+  assert.deepStrictEqual(pieces('0x'), ['number:0', 'word:x']);
+  assert.deepStrictEqual(pieces('10x1'), ['number:10', 'word:x1']);
 });
