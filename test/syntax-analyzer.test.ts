@@ -1908,3 +1908,80 @@ test('HANA-SYN-023: OPENCYPHER_TABLE / JSON_* genuine missing commas still repor
   );
   assert.ok(jtInner.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'y'")));
 });
+
+test('HANA-SYN-020/024: IF [NOT] EXISTS and IF NOT <expr> conditions open an IF block (issue #72)', () => {
+  const body = (s: string) => `DO BEGIN\n  DECLARE x INT = 0;\n  DECLARE f BOOLEAN = TRUE;\n${s}\nEND;`;
+  for (const cond of [
+    'EXISTS (SELECT 1 FROM DUMMY)',
+    'EXISTS(SELECT 1 FROM DUMMY)',
+    'NOT EXISTS (SELECT 1 FROM DUMMY)',
+    'EXISTS (SELECT 1 FROM DUMMY) AND x > 0',
+    'NOT x > 0',
+    'NOT (x > 0)',
+    'NOT :f',
+    'NOT x IN (SELECT 1 FROM DUMMY)',
+  ]) {
+    assert.deepEqual(syntaxDiags('hanasql', body(`  IF ${cond} THEN\n    x = 1;\n  ELSE\n    x = 2;\n  END IF;`)), [], cond);
+  }
+  assert.deepEqual(syntaxDiags('hanasql', body('  IF EXISTS (SELECT 1 FROM DUMMY) THEN x = 1; END IF;')), []);
+  assert.deepEqual(
+    syntaxDiags('hanasql', body('  FOR i IN 1..2 DO\n    IF EXISTS (SELECT 1 FROM DUMMY) THEN\n      x = 1;\n    END IF;\n  END FOR;')),
+    []
+  );
+  assert.deepEqual(
+    syntaxDiags('hdbprocedure', 'PROCEDURE P() AS\nBEGIN\n  DECLARE x INT = 0;\n  IF EXISTS (SELECT 1 FROM DUMMY) THEN\n    x = 1;\n  END IF;\nEND'),
+    []
+  );
+
+  // Errors inside the condition / body are reported instead of a misleading SYN-020
+  const dangling = syntaxDiags('hanasql', body('  IF EXISTS (SELECT 1 FROM DUMMY) AND AND x > 0 THEN\n    x = 1;\n  END IF;'));
+  assert.deepEqual(dangling.map((d) => d.ruleId), ['HANA-SYN-024']);
+  const missingSemi = syntaxDiags('hanasql', body('  IF EXISTS (SELECT 1 FROM DUMMY) THEN\n    SELECT 1 INTO x FROM DUMMY\n    x = 2;\n  END IF;'));
+  assert.deepEqual(missingSemi.map((d) => d.ruleId), ['HANA-SYN-042']);
+
+  // DDL `IF EXISTS` is not an IF block
+  assert.deepEqual(syntaxDiags('hanasql', 'DROP TABLE T IF EXISTS;'), []);
+  assert.deepEqual(syntaxDiags('hanasql', "DO BEGIN\n  EXEC 'DROP TABLE T IF EXISTS';\n  DROP TABLE T2 IF EXISTS;\nEND;"), []);
+});
+
+test('HANA-SYN-024: LEFT( / RIGHT( string functions do not end a condition (issue #73)', () => {
+  for (const sql of [
+    'SELECT * FROM T WHERE CURRENT_DATE BETWEEN A AND B AND LEFT("COL", 6) = :VAR;',
+    'SELECT A FROM T WHERE X = 1 AND LEFT("COL", 6) = 1;',
+    "SELECT A FROM T WHERE X = 1 OR LEFT(\"COL\", 6) = 'a';",
+    'SELECT A FROM T WHERE X = LEFT("COL", 6);',
+    "SELECT A FROM T WHERE X = 1 AND RIGHT (\"COL\", 6) = 'a';",
+    'SELECT A FROM T JOIN U ON T.X = U.X AND LEFT(T.C, 2) = U.P;',
+    "SELECT A FROM T GROUP BY A HAVING COUNT(*) > 1 AND RIGHT(MAX(A), 1) = 'x';",
+    'SELECT A FROM T WHERE X = 1 LEFT JOIN U ON T.A = U.A;',
+    'SELECT A FROM T WHERE X = 1 RIGHT OUTER JOIN U ON T.A = U.A;',
+  ]) {
+    assert.deepEqual(syntaxDiags('hanasql', sql), [], sql);
+  }
+  const join = syntaxDiags('hanasql', 'SELECT A FROM T WHERE X = 1 AND LEFT JOIN U ON T.A = U.A;');
+  assert.ok(join.some((d) => d.ruleId === 'HANA-SYN-024' && /Dangling operator 'AND' before 'LEFT'/.test(d.message)));
+});
+
+test('HANA-SYN-023/024: LIKE_REGEXPR FLAG, MERGE branches, WITH RECONFIGURE and cursor parameters (issue #60)', () => {
+  for (const sql of [
+    "SELECT * FROM t WHERE d NOT LIKE_REGEXPR 'x' FLAG 'i';",
+    "SELECT * FROM t WHERE d LIKE_REGEXPR 'x' AND flag = 1;",
+    'MERGE INTO t USING s ON t.a = s.a\n  WHEN MATCHED THEN UPDATE SET t.b = s.b\n  WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b);',
+    "ALTER SYSTEM ALTER CONFIGURATION ('indexserver.ini', 'SYSTEM') SET ('a', 'b') = 'c' WITH RECONFIGURE;",
+    'DO BEGIN\n  DECLARE CURSOR cur (p INT) FOR SELECT a FROM t WHERE a = :p;\nEND;',
+    'DO BEGIN\n  DECLARE CURSOR c_x (lv_var NVARCHAR(10), d DECIMAL(3, 2)) FOR SELECT * FROM T WHERE C = :lv_var;\nEND;',
+  ]) {
+    assert.deepEqual(syntaxDiags('hanasql', sql), [], sql);
+  }
+
+  // Genuine errors in the same constructs are still reported
+  const noFlag = syntaxDiags('hanasql', "SELECT * FROM t WHERE d LIKE_REGEXPR 'x' 'i';");
+  assert.deepEqual(noFlag.map((d) => d.ruleId), ['HANA-SYN-024']);
+  const mergeDangling = syntaxDiags(
+    'hanasql',
+    'MERGE INTO t USING s ON t.a = s.a\n  WHEN MATCHED THEN UPDATE SET t.b = s.b +\n  WHEN NOT MATCHED THEN INSERT VALUES (s.a, s.b);'
+  );
+  assert.ok(mergeDangling.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes("'+'")));
+  const cursor = syntaxDiags('hanasql', 'DO BEGIN\n  DECLARE CURSOR cur (p INT q INT) FOR SELECT a FROM t WHERE a = :p;\nEND;');
+  assert.deepEqual(cursor.map((d) => d.ruleId), ['HANA-SYN-023']);
+});

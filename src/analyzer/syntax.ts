@@ -1341,8 +1341,9 @@ function checkSqlScriptBlocks(
     }
 
     if (up === 'IF' && parenDepth === 0 && prevUp !== 'END' && isBoundaryPrev) {
-      const nextUp = codeTokens[i + 1]?.type === 'word' ? codeTokens[i + 1].text.toUpperCase() : '';
-      if (nextUp !== 'EXISTS' && nextUp !== 'NOT' && hasKeywordBeforeBoundary(codeTokens, i + 1, 'THEN')) {
+      // `IF [NOT] EXISTS (...) THEN` / `IF NOT <expr> THEN` are valid conditions (#72). DDL `DROP ... IF EXISTS` /
+      // `CREATE ... IF NOT EXISTS` never follows a statement boundary nor reaches a `THEN`, so no next-token guard is needed.
+      if (hasKeywordBeforeBoundary(codeTokens, i + 1, 'THEN')) {
         stack.push({ kind: 'IF', start: tok.start, end: tok.end });
       }
       continue;
@@ -1874,7 +1875,8 @@ function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'param
     // Handle `FUNCTION "pkg::name"` when tokenized as one qident: headerIdx is keyword
     while (headerIdx >= 0 && codeTokens[headerIdx].text === '.') headerIdx -= 2;
     const hdr = headerIdx >= 0 && codeTokens[headerIdx].type === 'word' ? codeTokens[headerIdx].text.toUpperCase() : '';
-    if (hdr === 'PROCEDURE' || hdr === 'FUNCTION') return 'params';
+    // `DECLARE CURSOR <name> (<param> <type>, ...)` is a typed parameter list too (#60)
+    if (hdr === 'PROCEDURE' || hdr === 'FUNCTION' || hdr === 'CURSOR') return 'params';
     if (hdr === 'TABLE') return 'columns';
     // Handle `DO (IN ...)`
     if (beforeUp === 'DO') return 'params';
@@ -2706,6 +2708,7 @@ const EXPR_INFIX_COMPOUND_AFTER_NOT = new Set<string>([
   'MEMBER',
   'SUBMULTISET',
   'REGEXP_LIKE',
+  'LIKE_REGEXPR',
   'EXISTS',
 ]);
 
@@ -2717,6 +2720,9 @@ const EXPR_INFIX_DIRECT = new Set<string>([
   'ILIKE',
   'BETWEEN',
   'ESCAPE',
+  // `<expr> [NOT] LIKE_REGEXPR <pattern> [FLAG <flags>]` (#60)
+  'LIKE_REGEXPR',
+  'FLAG',
 ]);
 
 const TYPED_LITERAL_WORDS = new Set<string>(['DATE', 'TIME', 'TIMESTAMP', 'SECONDDATE']);
@@ -3071,7 +3077,7 @@ function checkSqlExpressionsAndClauses(
       }
       const prevIsStmtBoundary = !prev || COMPOUND_BOUNDARY_PREV.has(prevUp);
       if (prevIsStmtBoundary) {
-        if (up === 'IF' && nextUp !== 'EXISTS' && !(nextUp === 'NOT' && codeTokens[i + 2]?.text.toUpperCase() === 'EXISTS') && hasKeywordBeforeBoundary(codeTokens, i + 1, 'THEN')) {
+        if (up === 'IF' && hasKeywordBeforeBoundary(codeTokens, i + 1, 'THEN')) {
           blockStack.push({ kind: 'IF', isLibraryRoot: false, hasStmtToken: false });
           pushExprAtDepth('if_cond', 0);
           continue;
@@ -3373,10 +3379,14 @@ function checkSqlExpressionsAndClauses(
       (activeExpr.kind === 'select' && SELECT_STOP_CLAUSES.has(up) && !(up === 'GROUP' && prevUp === 'WITHIN')) ||
       ((activeExpr.kind === 'where' || activeExpr.kind === 'on' || activeExpr.kind === 'having') &&
         EXPR_CLAUSE_TERMINATORS.has(up) &&
-        !(up === 'GROUP' && prevUp === 'WITHIN')) ||
+        !(up === 'GROUP' && prevUp === 'WITHIN') &&
+        // `LEFT(` / `RIGHT(` are string functions; only `LEFT [OUTER] JOIN` / `RIGHT [OUTER] JOIN` end the condition (#73)
+        !((up === 'LEFT' || up === 'RIGHT') && next?.text === '(')) ||
       (activeExpr.kind === 'if_cond' && up === 'THEN') ||
       (activeExpr.kind === 'while_cond' && up === 'DO') ||
-      (activeExpr.kind === 'set_rhs' && (up === 'WHERE' || up === 'FROM' || up === 'RETURNING' || up === 'END'));
+      (activeExpr.kind === 'set_rhs' &&
+        // `WHEN`: next `MERGE` branch; `WITH`: `ALTER SYSTEM ... SET (...) = <v> WITH RECONFIGURE` (#60)
+        (up === 'WHERE' || up === 'FROM' || up === 'RETURNING' || up === 'END' || up === 'WHEN' || up === 'WITH'));
 
     if (shouldTerminateExpr) {
       checkDanglingBeforeBoundary(activeExpr, tok.text);

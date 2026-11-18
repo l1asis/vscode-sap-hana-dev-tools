@@ -156,6 +156,20 @@ test('SQL IntelliSense: hover and signature help', () => {
   assert.match(sigCoalesce.signatures[0].label, /COALESCE/);
 });
 
+test('SQL IntelliSense: hover for TO_CHAR, RECORD_COUNT and IS_EMPTY (issue #74)', () => {
+  const code = "DO BEGIN\n  n = RECORD_COUNT(:t);\n  IF IS_EMPTY(:t) THEN s = TO_CHAR(CURRENT_DATE, 'YYYY'); END IF;\nEND;";
+  const cases: ReadonlyArray<readonly [string, RegExp]> = [
+    ['RECORD_COUNT', /RECORD_COUNT\(<table_variable>\)/],
+    ['IS_EMPTY', /IS_EMPTY\(<table_variable>\)/],
+    ['TO_CHAR', /TO_CHAR\(<value> \[, <format>\]\)/],
+  ];
+  for (const [name, sig] of cases) {
+    const hover = getSqlHover(code, code.indexOf(name) + 2);
+    assert.ok(hover, `hover for ${name}`);
+    assert.match(hover.markdown, sig);
+  }
+});
+
 test('SQL IntelliSense: negative check suppresses strings, comments, and unknown table alias dots', () => {
   assert.deepEqual(getSqlCompletions("SELECT '::ROW", "SELECT '::ROW".length), []);
   assert.deepEqual(getSqlCompletions('SELECT "pkg::', 'SELECT "pkg::'.length), []);

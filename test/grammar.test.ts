@@ -651,6 +651,33 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   assert.ok(xsjsInj?.injectTo?.includes('source.xsjs'), 'xsjs.injection must inject into source.xsjs');
 });
 
+test('hanasql: TO_CHAR, TO_NCHAR, CHR, GET_NUM_SERVERS, RECORD_COUNT and IS_EMPTY are built-in functions (issue #74)', () => {
+  const t = tokenize(
+    'source.hanasql',
+    'SELECT TO_CHAR(a), to_nchar(a), CHR(65), GET_NUM_SERVERS() FROM DUMMY;\nn = RECORD_COUNT(:t);\nIF IS_EMPTY(:t) THEN n = 0; END IF;'
+  );
+  check(t, 'TO_CHAR', 'support.function.conversion');
+  check(t, 'to_nchar', 'support.function.conversion');
+  check(t, 'CHR', 'support.function.string');
+  check(t, 'GET_NUM_SERVERS', 'support.function');
+  check(t, 'RECORD_COUNT', 'support.function.sqlscript');
+  check(t, 'IS_EMPTY', 'support.function.sqlscript');
+
+  // Without `(` the same names are plain columns
+  const cols = tokenize('source.hanasql', 'SELECT chr, is_empty FROM T;');
+  for (const name of ['chr', 'is_empty']) {
+    assert.ok(
+      !cols.some((tok) => tok.text === name && tok.scopes.some((s) => s.includes('support.function'))),
+      `${name} must stay unscoped`
+    );
+  }
+
+  // Regression guard: the SQL Reference's explicit conversion function list
+  const conv = ['TO_CHAR', 'TO_NCHAR', 'TO_VARCHAR', 'TO_NVARCHAR', 'TO_CLOB', 'TO_NCLOB', 'TO_BINARY', 'TO_VARBINARY'];
+  const ct = tokenize('source.hanasql', `SELECT ${conv.map((f) => `${f}(a)`).join(', ')} FROM DUMMY;`);
+  for (const f of conv) check(ct, f, 'support.function');
+});
+
 if (process.env.DUMP && process.env.FILE) {
   const dumpScope = process.env.DUMP;
   const dumpFile = process.env.FILE;

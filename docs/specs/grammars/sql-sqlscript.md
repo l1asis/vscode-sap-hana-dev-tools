@@ -90,6 +90,13 @@ TRUE, UNION, UNKNOWN, USING, UTCTIMESTAMP, VALUES, WHEN, WHERE, WHILE, WITH
 
 *(Complete keyword catalog with categories, scopes, and platform tags is maintained in `docs/specs/catalogs/sql-keywords.json`. Complete built-in function and library catalog with signatures and return types is maintained in `docs/specs/catalogs/builtin-functions.json`.)*
 
+**Functions without a reference chapter `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`:** The function groups also include functions that the references use or list without a chapter of their own. All are scoped only when followed by `(`:
+
+- `support.function.conversion`: `TO_CHAR`, `TO_NCHAR` (SQL Reference, *Spatial Data Type Conversion*, explicit conversion list `TO_CHAR, TO_NCHAR, TO_VARCHAR, TO_NVARCHAR, TO_CLOB, TO_NCLOB, TO_BINARY, TO_VARBINARY`).
+- `support.function.string`: `CHR` (`M_TOPOLOGY_TREE` example `'/index/' || CHR(1) || ...`).
+- `support.function` (misc): `GET_NUM_SERVERS` (`PARTITION BY HASH (...) PARTITIONS { <num_partitions> | GET_NUM_SERVERS() }`).
+- `support.function.sqlscript`: `RECORD_COUNT(<table_variable>)`, `IS_EMPTY(<table_variable>)` (SQLScript Reference, table variable operations).
+
 ### 3.2 Data Types Across Engines
 
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/002_pages_31_60.md (Pages 31–60)

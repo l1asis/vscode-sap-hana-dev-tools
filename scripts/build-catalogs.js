@@ -159,6 +159,31 @@ fs.writeFileSync(path.join(CATALOG_DIR, 'sql-keywords.json'), JSON.stringify({ k
 // 2. Build builtin-functions.json
 // ---------------------------------------------------------------------------
 const DETAILED_FUNCTIONS = {
+  // Functions the SQL Reference uses or lists without a chapter of their own (#74)
+  TO_CHAR: {
+    library: 'SYS',
+    signatures: ['TO_CHAR(<value> [, <format>])'],
+    returnType: 'VARCHAR',
+    description: 'Converts <value> (e.g. a datetime or spatial value) to a VARCHAR string ([XSC]/[XSA]/[HDI]/[CLOUD]).',
+  },
+  TO_NCHAR: {
+    library: 'SYS',
+    signatures: ['TO_NCHAR(<value> [, <format>])'],
+    returnType: 'NVARCHAR',
+    description: 'Converts <value> to an NVARCHAR Unicode string ([XSC]/[XSA]/[HDI]/[CLOUD]).',
+  },
+  CHR: {
+    library: 'SYS',
+    signatures: ['CHR(<code>)'],
+    returnType: 'VARCHAR',
+    description: 'Returns the character with ASCII code <code>, e.g. CHR(1) as a separator ([XSC]/[XSA]/[HDI]/[CLOUD]).',
+  },
+  GET_NUM_SERVERS: {
+    library: 'SYS',
+    signatures: ['GET_NUM_SERVERS()'],
+    returnType: 'INTEGER',
+    description: 'Returns the number of index servers, e.g. PARTITION BY HASH (<cols>) PARTITIONS GET_NUM_SERVERS() ([XSC]/[XSA]/[HDI]/[CLOUD]).',
+  },
   // Vector Engine [CLOUD]
   CARDINALITY: {
     library: 'SYS',
@@ -509,6 +534,10 @@ const SQLSCRIPT_LIBRARY_MEMBERS = [
   ['EXPECT_NULL', 'SQLSCRIPT_TEST', ['EXPECT_NULL(IN actual <any>)'], 'VOID', 'Asserts that actual IS NULL in a SQLScript unit test ([XSA]/[HDI]/[CLOUD]).'],
   ['EXPECT_TABLE_EQ', 'SQLSCRIPT_TEST', ['EXPECT_TABLE_EQ(IN actual TABLE(...), IN expected TABLE(...), IN ignore_order BOOLEAN DEFAULT FALSE)'], 'VOID', 'Asserts that two table variables contain identical rows in a SQLScript unit test ([XSA]/[HDI]/[CLOUD]).'],
   ['FAIL', 'SQLSCRIPT_TEST', ["FAIL(IN message NVARCHAR(5000) DEFAULT '')"], 'VOID', 'Unconditionally fails the current SQLScript unit test with <message> ([XSA]/[HDI]/[CLOUD]).'],
+
+  // SQLScript table variable built-ins (#74)
+  ['RECORD_COUNT', 'SYS', ['RECORD_COUNT(<table_variable>)'], 'BIGINT', 'Returns the number of rows in a SQLScript table variable, e.g. RECORD_COUNT(:it) ([XSC]/[XSA]/[HDI]/[CLOUD]).'],
+  ['IS_EMPTY', 'SYS', ['IS_EMPTY(<table_variable>)'], 'BOOLEAN', 'Returns TRUE if a SQLScript table variable (or GraphScript multiset / sequence) is empty, e.g. IF IS_EMPTY(:it) THEN ([XSC]/[XSA]/[HDI]/[CLOUD]).'],
 
   // GraphScript Built-in Algorithms & Functions
   ['IS_REACHABLE', 'GRAPHSCRIPT', ['IS_REACHABLE(<graph>, <start_vertex>, <end_vertex> [, <direction>])'], 'BOOLEAN', 'Returns true if <end_vertex> is reachable from <start_vertex> in <graph> ([XSC]/[XSA]/[HDI]/[CLOUD]).'],

@@ -2356,6 +2356,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     ]
   },
   {
+    "name": "IS_EMPTY",
+    "kind": "function",
+    "category": "non-reserved",
+    "scope": "support.function.sqlscript.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
     "name": "IS_REACHABLE",
     "kind": "function",
     "category": "non-reserved",
@@ -3720,6 +3732,18 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  {
+    "name": "RECORD_COUNT",
+    "kind": "function",
+    "category": "non-reserved",
+    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7959,6 +7983,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
       "CLOUD"
     ]
   },
+  "IS_EMPTY": {
+    "name": "IS_EMPTY",
+    "kind": "function",
+    "category": "non-reserved",
+    "scope": "support.function.sqlscript.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
   "IS_REACHABLE": {
     "name": "IS_REACHABLE",
     "kind": "function",
@@ -9324,6 +9360,18 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "kind": "keyword",
     "category": "non-reserved",
     "scope": "keyword.other.statement.hanasql",
+    "platforms": [
+      "XSC",
+      "XSA",
+      "HDI",
+      "CLOUD"
+    ]
+  },
+  "RECORD_COUNT": {
+    "name": "RECORD_COUNT",
+    "kind": "function",
+    "category": "non-reserved",
+    "scope": "support.function.sqlscript.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -11884,6 +11932,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL string function CHAR ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "CHR",
+    "library": "SYS",
+    "signatures": [
+      "CHR(<code>)"
+    ],
+    "returnType": "VARCHAR",
+    "description": "Returns the character with ASCII code <code>, e.g. CHR(1) as a separator ([XSC]/[XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "COALESCE",
     "library": "SYS",
     "signatures": [
@@ -12379,6 +12436,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "GET_NUM_SERVERS",
+    "library": "SYS",
+    "signatures": [
+      "GET_NUM_SERVERS()"
+    ],
+    "returnType": "INTEGER",
+    "description": "Returns the number of index servers, e.g. PARTITION BY HASH (<cols>) PARTITIONS GET_NUM_SERVERS() ([XSC]/[XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "GET_REMOTE_SOURCE_AI_MODELS",
     "library": "SYS",
     "signatures": [
@@ -12638,6 +12704,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     ],
     "returnType": "GRAPH",
     "description": "Constructs a graph with all edge directions reversed ([XSC]/[XSA]/[HDI]/[CLOUD])."
+  },
+  {
+    "name": "IS_EMPTY",
+    "library": "SYS",
+    "signatures": [
+      "IS_EMPTY(<table_variable>)"
+    ],
+    "returnType": "BOOLEAN",
+    "description": "Returns TRUE if a SQLScript table variable (or GraphScript multiset / sequence) is empty, e.g. IF IS_EMPTY(:it) THEN ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
     "name": "IS_REACHABLE",
@@ -13286,6 +13361,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     ],
     "returnType": "ANY",
     "description": "Built-in SAP HANA SQL function ([XSC]/[XSA]/[HDI]/[CLOUD])."
+  },
+  {
+    "name": "RECORD_COUNT",
+    "library": "SYS",
+    "signatures": [
+      "RECORD_COUNT(<table_variable>)"
+    ],
+    "returnType": "BIGINT",
+    "description": "Returns the number of rows in a SQLScript table variable, e.g. RECORD_COUNT(:it) ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
     "name": "RECORD_ID",
@@ -15430,6 +15514,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     "description": "Built-in SAP HANA SQL data type conversion function TO_BOOLEAN ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
+    "name": "TO_CHAR",
+    "library": "SYS",
+    "signatures": [
+      "TO_CHAR(<value> [, <format>])"
+    ],
+    "returnType": "VARCHAR",
+    "description": "Converts <value> (e.g. a datetime or spatial value) to a VARCHAR string ([XSC]/[XSA]/[HDI]/[CLOUD])."
+  },
+  {
     "name": "TO_CLOB",
     "library": "SYS",
     "signatures": [
@@ -15518,6 +15611,15 @@ export const SQL_FUNCTIONS: readonly SqlFunctionEntry[] = [
     ],
     "returnType": "JSON",
     "description": "Converts a SQL boolean, numeric, or string value to a JSON boolean value ([XSA]/[HDI]/[CLOUD])."
+  },
+  {
+    "name": "TO_NCHAR",
+    "library": "SYS",
+    "signatures": [
+      "TO_NCHAR(<value> [, <format>])"
+    ],
+    "returnType": "NVARCHAR",
+    "description": "Converts <value> to an NVARCHAR Unicode string ([XSC]/[XSA]/[HDI]/[CLOUD])."
   },
   {
     "name": "TO_NCLOB",
