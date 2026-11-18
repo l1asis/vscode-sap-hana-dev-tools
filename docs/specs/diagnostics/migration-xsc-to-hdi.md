@@ -157,19 +157,23 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 
 | Classic `.hdbrole` Statement | HDI JSON `.hdbrole` Property | Notes |
 | :--- | :--- | :--- |
-| `role pkg::RoleName` | `"role": { "name": "pkg::RoleName", ... }` | If `WITH GRANT OPTION` was used, append `#` or drop grant option per least privilege. |
-| `extends role pkg::Other` | `"schema_roles": [{ "names": ["pkg::Other"] }]` | Container-local schema role reference. |
-| `extends catalog role "R"` | `"global_roles": ["R"]` | External catalog role; flag comment/warning if migrating from XSC. |
-| `system privilege: P1, P2;` | `"system_privileges": ["P1", "P2"]` | Direct array. |
+| `role pkg::RoleName [extends ...]` | `"role": { "name": "pkg::RoleName", ... }` | The header is split at each `extends`: only the tokens before the first one form the name. Append `#` only when an object or schema privilege carries `WITH GRANT OPTION`. |
+| `extends role pkg::A, pkg::B` | `"schema_roles": [{ "names": ["pkg::A", "pkg::B"] }]` | Container-local schema role reference. Allowed in the header or as a body statement, and may list several roles. |
+| `extends catalog role "R1", "R2"` | `"global_roles": ["R1", "R2"]` | External catalog role. |
+| `system privilege: P1, P2;` | `"system_privileges": ["P1", "P2"]` | Direct array. HDI has no grant-option form, so `WITH GRANT OPTION` is dropped and reported. |
 | `schema x.hdbschema: P;` | `"schema_privileges": [{ "privileges": ["P"] }]` | Local container schema omits `"reference"`. |
 | `catalog schema "S": P;` | `"schema_privileges": [{ "reference": "S_REF", "privileges": ["P"] }]` | Requires `.hdbroleconfig` / `.hdbgrants` mapping external schema `"S"`. |
-| `sql object pkg:OBJ.tbl: P;` | `"object_privileges": [{ "name": "pkg::OBJ", "type": "<INFERRABLE>", "privileges": ["P"] }]` | Infers `"TABLE"`/`.hdbview` `"VIEW"`/`.hdbprocedure` `"PROCEDURE"` from suffix or leaves `"TABLE"` placeholder for user confirmation. |
-| `catalog sql object "S"."O": P;` | `"object_privileges": [{ "name": "O", "type": "TABLE", "privileges": ["P"] }]` | Add `.hdbsynonym` reminder for external schema `"S"`. |
+| `sql object pkg:A.hdbtable, pkg:B.hdbprocedure: P;` | `"object_privileges": [{ "name": "pkg::A", "type": "TABLE", ... }, { "name": "pkg::B", "type": "PROCEDURE", ... }]` | One entry per comma-separated object, each sharing the privilege list. The name converts `pkg:OBJ.suffix` to `pkg::OBJ`, and the type comes from the object's own suffix (see the suffix table below). An unknown suffix is kept in the name, gets the `"TABLE"` placeholder, and is reported. |
+| `catalog sql object "S"."O": P;` | `"object_privileges": [{ "name": "O", "type": "TABLE", "privileges": ["P"] }]` | Reports a `.hdbsynonym` reminder for the external object `S.O` and asks the user to confirm the assumed type. |
 | `analytic privilege: ...;` | `"schema_analytic_privileges": [{ "privileges": [...] }]` | Must migrate classic XML analytic privilege to SQL analytic privilege. |
 | `catalog analytic privilege: ...;` | `"schema_analytic_privileges": [...]` | Same. |
 | `... WITH GRANT OPTION;` | `"privileges_with_grant_option": [...]` | Moves grantable privileges into `privileges_with_grant_option` (requires `#` on role name). |
-| `package <pkg>: ...;` | *(Dropped — deprecated in HDI)* | Repository packages do not exist in HDI. |
-| `application privilege: <p>;` | *(Dropped from `.hdbrole` — move to `xs-security.json`)* | Emits diagnostic / header comment note for XSUAA scope migration. |
+| `package <pkg>: ...;` | *(Dropped — deprecated in HDI)* | Repository packages do not exist in HDI. Reported. |
+| `application privilege: <p>;` | *(Dropped from `.hdbrole` — move to `xs-security.json`)* | Reported, with a pointer to XSUAA scope migration. |
+
+**Object suffix -> `type`:** `hdbtable`, `table` -> `TABLE`; `hdbview`, `view`, `attributeview`, `analyticview`, `calculationview`, `hdbcalculationview` -> `VIEW`; `hdbprocedure`, `procedure` -> `PROCEDURE`; `hdbfunction`, `hdbtablefunction`, `hdbscalarfunction` -> `FUNCTION`; `hdbsequence`, `sequence` -> `SEQUENCE`; `hdbsynonym` -> `SYNONYM`.
+
+**Reporting dropped content:** JSON cannot hold comments or notes. Everything the QuickFix cannot carry over is listed in the `HANA-MIG-004` diagnostic message under `Not carried over by the QuickFix:`, one `<statement> — <reason>` line per item. That covers `package` and `application privilege` statements, the `catalog sql object` synonym reminder, unknown object types, and a system-privilege grant option.
 
 ---
 
