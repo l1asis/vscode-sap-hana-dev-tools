@@ -2107,6 +2107,17 @@
       ]
     },
     {
+      "name": "IS_EMPTY",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
       "name": "IS_REACHABLE",
       "category": "non-reserved",
       "scope": "support.function.sqlscript.hanasql",
@@ -3355,6 +3366,17 @@
       "name": "RECONFIGURE",
       "category": "non-reserved",
       "scope": "keyword.other.statement.hanasql",
+      "platforms": [
+        "XSC",
+        "XSA",
+        "HDI",
+        "CLOUD"
+      ]
+    },
+    {
+      "name": "RECORD_COUNT",
+      "category": "non-reserved",
+      "scope": "support.function.sqlscript.hanasql",
       "platforms": [
         "XSC",
         "XSA",
