@@ -83,7 +83,7 @@ reset_by = "SELECT IFNULL(MAX(\\"ORDER_ID\\"), 0) + 1 FROM \\"ORDERS\\"";`;
   assert.match(hdiSeq, /SEQUENCE "app\.data::SEQ_ID"/);
   assert.match(hdiSeq, /INCREMENT BY 1/);
   assert.match(hdiSeq, /START WITH 1000/);
-  assert.match(hdiSeq, /NOMAXVALUE/);
+  assert.match(hdiSeq, /^  NO MAXVALUE$/m);
   assert.match(hdiSeq, /NO CYCLE/);
   assert.match(hdiSeq, /RESET BY SELECT IFNULL\(MAX\("ORDER_ID"\), 0\) \+ 1 FROM "ORDERS"/);
 
@@ -344,4 +344,30 @@ test('#71: forward -> reverse -> forward round trip is stable for every bidirect
     assert.ok(again, `${c.rel}: reverse output should be classic again`);
     assert.equal(applyTextEdits(back, again.fixes[0].edits), c.output, `${c.rel}: round trip must be stable`);
   }
+});
+
+test('#70 HANA-MIG-003: NO MAXVALUE / NO MINVALUE two-word form and RESET BY schema stripping', () => {
+  const classic = `schema = "MYSCHEMA";
+start_with = 10;
+nomaxvalue = true;
+nominvalue = true;
+reset_by = "SELECT MAX(\\"ID\\") + 1 FROM \\"MYSCHEMA\\".\\"pkg::T\\" JOIN \\"OTHER\\".\\"X\\" ON 1 = 1";`;
+  const hdi = convertHdbsequenceKvToHdi(classic, 'pkg::SEQ');
+  assert.match(hdi, /^  NO MAXVALUE$/m);
+  assert.match(hdi, /^  NO MINVALUE$/m);
+  // Negative: the invalid single-word form must never be produced.
+  assert.equal(/NOMAXVALUE|NOMINVALUE/.test(hdi), false);
+  // The schema prefix matching `schema=` is stripped; other schemas are kept.
+  assert.match(hdi, /RESET BY SELECT MAX\("ID"\) \+ 1 FROM "pkg::T" JOIN "OTHER"\."X" ON 1 = 1$/m);
+  assert.equal(/"MYSCHEMA"/.test(hdi), false);
+
+  const back = convertHdbsequenceHdiToKv(hdi, 'MYSCHEMA');
+  assert.match(back, /^nomaxvalue = true;$/m);
+  assert.match(back, /^nominvalue = true;$/m);
+  assert.equal(/^(?:max|min)value = /m.test(back), false, 'NO MAXVALUE must not be read as MAXVALUE <n>');
+
+  // Legacy single-word input (written by <= 0.10.1) still converts back.
+  const legacy = convertHdbsequenceHdiToKv('SEQUENCE "S"\n  NOMAXVALUE\n  NOMINVALUE\n');
+  assert.match(legacy, /^nomaxvalue = true;$/m);
+  assert.match(legacy, /^nominvalue = true;$/m);
 });
