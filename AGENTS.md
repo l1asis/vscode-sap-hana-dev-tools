@@ -31,6 +31,8 @@ VS Code language support, formatters, static analyzers, and tooling for **SAP HA
   - After updating SQL keyword/function lists, run `npm run build:keywords`.
 - **Formatting Safety:** Formatters must never corrupt valid code, strip comments, append semicolons to headerless HDI root statements, or break `-- hanasql-format off` pragmas.
 - **Testing:** Every new grammar rule, formatter feature, or diagnostic rule must include positive and negative test cases in `test/` and pass `npm test`.
+- **Conformance Harness:** Before opening a grammar, formatter, or analyzer PR, run `npm run conformance` when the local corpus is available and compare the summary with the latest baseline in `docs/research/CONFORMANCE.md`. Valid SQL that the change fixes or breaks goes into `test/fixtures/conformance/*.sql`. Remove a `-- @todo` marker in the PR that makes it pass, otherwise `npm test` fails. Spec: `docs/specs/diagnostics/conformance-harness.md`.
+- **Broken Samples:** Intentionally invalid artifacts live only in `samples/broken/`, with their expected rule IDs, severities, and QuickFixes listed in `samples/broken/README.md`. Everything else under `samples/` must stay free of syntax diagnostics.
 
 ## 5. Git & Branching Workflow
 

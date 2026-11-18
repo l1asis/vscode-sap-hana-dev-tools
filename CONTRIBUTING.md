@@ -36,7 +36,20 @@ Thank you for helping improve SAP HANA language support in VS Code! This documen
    npm test
    ```
 
-4. **Launch the Extension Development Host:**
+4. **Run the conformance harness before grammar, formatter, or analyzer PRs:**
+   * `npm test` already runs the committed fixture suite in `test/fixtures/conformance/`. Each case is valid SQL / SQLScript and must produce no syntax diagnostics, survive formatting unchanged in meaning, and leave no keyword unscoped. Known gaps are marked `-- @todo <syntax|formatter|grammar> #<issue> <reason>`. A marked case that starts passing fails the suite, so remove the marker in the PR that fixes it.
+   * With the local SAP reference corpus in `research/refs/extracted/` (git-ignored, never in CI), sweep every runnable reference example:
+
+     ```bash
+     npm run conformance
+     ```
+
+     The report goes to `research/conformance/report.md` and `report.json`. Compare the printed summary with the latest baseline in `docs/research/CONFORMANCE.md`, and mention any change in the PR. The format and invariants are specified in `docs/specs/diagnostics/conformance-harness.md`.
+
+5. **Use the broken samples for diagnostics and QuickFixes:**
+   * `samples/broken/` holds intentionally invalid artifacts, one per rule family. `samples/broken/README.md` lists the expected rule IDs, severities, and QuickFixes for each file, and `npm test` checks that table. Open a file in the Extension Development Host to try the Problems panel and the QuickFix menu (`Ctrl+.`).
+
+6. **Launch the Extension Development Host:**
    * Open this repository in VS Code and press `F5` to launch a new Extension Development Host window with the extension loaded.
 
 ## Packaging & `.vscodeignore` Gotchas
