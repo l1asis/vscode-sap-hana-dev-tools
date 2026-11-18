@@ -155,6 +155,14 @@ export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
 
     // numbers
     if (DIGIT.test(ch) || (ch === '.' && DIGIT.test(text[i + 1] || '') && !isValueEnd(tokens))) {
+      // [XSC] [XSA] [HDI] [CLOUD] hexadecimal numeric literal: 0x1F / 0X1f
+      if (ch === '0' && (text[i + 1] === 'x' || text[i + 1] === 'X') && /[0-9A-Fa-f]/.test(text[i + 2] || '')) {
+        let j = i + 2;
+        while (j < n && /[0-9A-Fa-f]/.test(text[j])) j++;
+        push('number', i, j);
+        i = j;
+        continue;
+      }
       let j = i;
       while (j < n && DIGIT.test(text[j])) j++;
       if (text[j] === '.' && DIGIT.test(text[j + 1] || '')) {
