@@ -1,7 +1,9 @@
 import { isKeyValueArtifact } from '../formatter/detect';
 import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } from '../formatter/dispatch';
 import { tokenize, type Token } from '../formatter/tokenizer';
+import { KEYWORDS as FMT_KEYWORDS, RESERVED as FMT_RESERVED } from '../formatter/keywords';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
+import { type EmbeddedSql, mapEmbeddedDiagnostics, unescapeKvString } from './kv-embedded-sql';
 import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
@@ -123,7 +125,8 @@ const CDS_TOP_KEYWORDS = new Set<string>([
   'service',
 ]);
 
-const VALID_KV_KEYS_RE = /\b(?:table\.(?:schemaName|tableType|columns|primaryKey|indexes|temporary|loggingType)|schema|query|public|depends_on|import|host|port|sql|default_schema|increment_by|start_with|maxvalue|minvalue|cycles|reset_by)\b/;
+// A known Classic KV key followed by `=` (a bare `public` in broken HDI DDL is not a key)
+const VALID_KV_KEYS_RE = /\b(?:table\.(?:schemaName|tableType|columns|primaryKey|indexes|temporary|loggingType)|schema|query|public|depends_on|import|host|port|sql|default_schema|increment_by|start_with|maxvalue|minvalue|cycles|reset_by)\b\s*=/;
 
 function makeReplaceFix(title: string, start: number, end: number, replacement: string): CodeFixSuggestion {
   return {
@@ -132,6 +135,22 @@ function makeReplaceFix(title: string, start: number, end: number, replacement: 
     isPreferred: true,
     edits: [{ start, end, newText: replacement }],
   };
+}
+
+/** `'it\'s "x"'` -> `"it's \"x\""`: a Classic KV single-quoted string rewritten with double quotes (QuickFix). */
+function toDoubleQuotedKvString(raw: string): string {
+  const body = raw.slice(1, -1);
+  let out = '';
+  for (let k = 0; k < body.length; k++) {
+    const c = body[k];
+    if (c === '\\' && k + 1 < body.length) {
+      out += body[k + 1] === "'" ? "'" : c + body[k + 1];
+      k++;
+    } else {
+      out += c === '"' ? '\\"' : c;
+    }
+  }
+  return `"${out}"`;
 }
 
 function makeRemoveFix(title: string, start: number, end: number): CodeFixSuggestion {
@@ -530,17 +549,21 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         (issue) => {
           const tok = codeTokens[issue.tokIdx];
           if (!tok || isBlocked(tok)) return;
+          const fixes: CodeFixSuggestion[] = [];
+          if (issue.replaceWith !== undefined) {
+            fixes.push(makeReplaceFix(`Replace '${tok.text}' with '${issue.replaceWith}'`, baseOffset + tok.start, baseOffset + tok.end, issue.replaceWith));
+          } else if (issue.insertCommaAfter !== undefined && codeTokens[issue.insertCommaAfter]) {
+            fixes.push(makeInsertCommaFix(baseOffset + codeTokens[issue.insertCommaAfter].end));
+            if (issue.likelyAlias) fixes.push({ ...makeReplaceFix("Insert 'AS'", baseOffset + tok.start, baseOffset + tok.start, 'AS '), isPreferred: false });
+          }
           diagnostics.push({
             ruleId: issue.ruleId,
             category: 'syntax',
-            severity: 'error',
+            severity: issue.likelyAlias ? 'warning' : 'error',
             message: issue.message,
             start: baseOffset + tok.start,
             end: baseOffset + tok.end,
-            fixes:
-              issue.replaceWith !== undefined
-                ? [makeReplaceFix(`Replace '${tok.text}' with '${issue.replaceWith}'`, baseOffset + tok.start, baseOffset + tok.end, issue.replaceWith)]
-                : [],
+            fixes,
           });
         },
         (start, end) => {
@@ -560,6 +583,13 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         hooks,
       });
     }
+  }
+
+  // `IN (1 2)`: one missing comma is reported once (HANA-SYN-023), not also as a missing operator (HANA-SYN-024).
+  const commaStarts = new Set(diagnostics.filter((d) => d.ruleId === 'HANA-SYN-023').map((d) => d.start));
+  for (let k = diagnostics.length - 1; k >= 0 && commaStarts.size > 0; k--) {
+    const d = diagnostics[k];
+    if (d.ruleId === 'HANA-SYN-024' && commaStarts.has(d.start) && /^Missing (?:logical or comparison )?operator\b/.test(d.message)) diagnostics.splice(k, 1);
   }
 
   if (afterLexicalIdx > lexicalStartIdx) dedupeLexicalCascade(diagnostics, afterLexicalIdx, slice, baseOffset);
@@ -1360,6 +1390,10 @@ function isValueOperandStart(tok: Token, inCall = false): boolean {
 }
 
 function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'params' | 'columns' | null {
+  // Parameterized view `VIEW <name> [(<cols>)] (IN <p> <type> [DEFAULT <v>], ...)`: a typed parameter list
+  if (codeTokens[openIdx + 1]?.type === 'word' && codeTokens[openIdx + 1].text.toUpperCase() === 'IN' && isInViewHeader(codeTokens, openIdx)) {
+    return 'params';
+  }
   let k = openIdx - 1;
   // Walk back over optional qualified object name `("ns"."fn")` or `name`
   while (k >= 0 && (codeTokens[k].type === 'word' || codeTokens[k].type === 'qident')) {
@@ -1404,6 +1438,25 @@ function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'param
     if (beforeUp === 'DO') return 'params';
   }
   return null;
+}
+
+/** `openIdx` is a top-level `(` between `[CREATE [OR REPLACE]] [PROJECTION] VIEW <name>` and its `AS`. */
+function isInViewHeader(codeTokens: readonly Token[], openIdx: number): boolean {
+  let depth = 0;
+  for (let b = openIdx - 1; b >= 0; b--) {
+    const t = codeTokens[b];
+    if (t.text === ')') depth++;
+    else if (t.text === '(') {
+      if (depth === 0) return false;
+      depth--;
+    } else if (t.text === ';') return false;
+    else if (depth === 0 && t.type === 'word') {
+      const w = t.text.toUpperCase();
+      if (w === 'VIEW') return true;
+      if (w === 'AS' || w === 'SELECT') return false;
+    }
+  }
+  return false;
 }
 
 function classifyParenFrame(
@@ -2130,8 +2183,8 @@ interface ExprClauseState {
 interface ExprParenFrame {
   readonly kind: 'params' | 'columns' | 'skip' | 'call' | 'paren_expr';
   readonly depth: number;
-  // Clause-syntax `HIERARCHY*( ... )` call: its top-level tokens belong to the consuming parser (sql-clauses.ts)
-  readonly hierarchy: boolean;
+  // `HIERARCHY*( ... )` call or `WITH ASSOCIATIONS ( ... )` list: its top-level tokens belong to the consuming parser (sql-clauses.ts)
+  readonly parserOwned: boolean;
   callPendingOpTok: Token | null;
   callUnaryOpTok: Token | null;
 }
@@ -2450,7 +2503,7 @@ function checkSqlExpressionsAndClauses(
       parenFrames.push({
         kind: frameKind,
         depth: parenDepth,
-        hierarchy: frameKind === 'skip' && HIERARCHY_CLAUSE_FUNCTIONS.has(prevUp) && prev?.type === 'word',
+        parserOwned: frameKind === 'skip' && prev?.type === 'word' && (HIERARCHY_CLAUSE_FUNCTIONS.has(prevUp) || prevUp === 'ASSOCIATIONS'),
         callPendingOpTok: null,
         callUnaryOpTok: null,
       });
@@ -2503,7 +2556,7 @@ function checkSqlExpressionsAndClauses(
       curFrame &&
       curFrame.depth === parenDepth &&
       (curFrame.kind === 'params' || curFrame.kind === 'columns' || curFrame.kind === 'skip');
-    if (inDeclOrSkipFrame && (curFrame.kind !== 'skip' || curFrame.hierarchy)) {
+    if (inDeclOrSkipFrame && (curFrame.kind !== 'skip' || curFrame.parserOwned)) {
       continue;
     }
 
@@ -2964,10 +3017,26 @@ function hasPreviousWordBeforeSemi(codeTokens: readonly Token[], idx: number, ta
 }
 
 interface NonSqlToken {
-  readonly kind: 'word' | 'string' | 'punct' | 'expr';
+  readonly kind: 'word' | 'string' | 'number' | 'punct' | 'expr';
   readonly text: string;
   readonly start: number;
   readonly end: number;
+}
+
+/** Classic KV scanning (`hdb-classic-kv.md` §4.3). */
+interface KvScanOptions {
+  /** Keys whose `"..."` value is embedded SQL and may span lines (`query`, `reset_by`). */
+  readonly sqlKeys: ReadonlySet<string>;
+}
+
+/** Classic KV keys whose string value is embedded SQL, per language (`hdb-classic-kv.md` §4.1). */
+const KV_EMBEDDED_SQL_KEYS: Readonly<Record<string, string>> = { hdbview: 'query', hdbsequence: 'reset_by' };
+
+/** The key of a `<key> = <value>` assignment whose value starts after `tokens`' last `=`, or `''`. */
+function kvKeyBeforeValue(tokens: readonly NonSqlToken[]): string {
+  const n = tokens.length;
+  if (n < 2 || tokens[n - 1].text !== '=' || tokens[n - 2].kind !== 'word') return '';
+  return tokens[n - 2].text;
 }
 
 /**
@@ -2976,13 +3045,17 @@ interface NonSqlToken {
  */
 function scanNonSqlArtifacts(
   text: string,
-  options: { readonly allowCdsExpr?: boolean; readonly singleLineDoubleQuote?: boolean }
+  options: { readonly allowCdsExpr?: boolean; readonly singleLineDoubleQuote?: boolean; readonly kv?: KvScanOptions }
 ): { tokens: NonSqlToken[]; diagnostics: AnalyzerDiagnostic[] } {
   const diagnostics: AnalyzerDiagnostic[] = [];
   const tokens: NonSqlToken[] = [];
   const delimInputs: DelimTokenInput[] = [];
+  const openStack: string[] = [];
   const n = text.length;
   let i = 0;
+  // Start of an unterminated string that runs to the end of the file on its own line: the closers it swallowed
+  // are gone, so unclosed brackets opened before it are not reported again.
+  let swallowedAt = -1;
 
   while (i < n) {
     const ch = text[i];
@@ -3030,6 +3103,7 @@ function scanNonSqlArtifacts(
     if (ch === '"' || ch === "'") {
       const quote = ch;
       const start = i;
+      const key = options.kv ? kvKeyBeforeValue(tokens) : '';
       i++;
       let closed = false;
       while (i < n) {
@@ -3047,20 +3121,48 @@ function scanNonSqlArtifacts(
         }
         i++;
       }
-      if (!closed) {
-        const tailNl = text.slice(start, i).search(/[\r\n]/);
-        const spanEnd = tailNl >= 0 ? start + Math.max(2, tailNl) : Math.min(n, Math.max(i, start + 2));
+      const lineEnd = text.slice(start, i).search(/[\r\n]/);
+      // A string that reaches the end of the file unclosed is cut at the end of its first line, so the braces and
+      // keys after it are still scanned (no cascading `HANA-SYN-003` on the enclosing `{`).
+      let cutAtLine = !closed && lineEnd >= 0;
+      // Classic KV: only embedded SQL may span lines. Another value that runs into a following `<key> =` line has
+      // lost its closing quote (`schema = "S;` + newline + `query = "..."`).
+      let kvRunaway = false;
+      if (closed && options.kv && lineEnd >= 0 && quote === '"' && !options.kv.sqlKeys.has(key)) {
+        kvRunaway = /[\r\n][ \t]*[A-Za-z_][\w.]*[ \t]*=/.test(text.slice(start + lineEnd, i));
+        cutAtLine = kvRunaway;
+      }
+      if (cutAtLine) i = start + lineEnd;
+      else if (!closed && swallowedAt < 0) swallowedAt = start;
+      if (!closed || kvRunaway) {
+        const spanEnd = lineEnd >= 0 ? start + Math.max(2, lineEnd) : Math.min(n, Math.max(i, start + 2));
         diagnostics.push({
           ruleId: 'HANA-SYN-001',
           category: 'syntax',
           severity: 'error',
-          message: quote === '"' ? 'Unterminated string or quoted identifier.' : 'Unterminated string literal.',
+          message: kvRunaway
+            ? `Unterminated string: the value of '${key}' runs into the next line.`
+            : quote === '"'
+              ? 'Unterminated string or quoted identifier.'
+              : 'Unterminated string literal.',
           start,
           end: Math.min(spanEnd, start + 24),
           fixes: [],
         });
       }
       tokens.push({ kind: 'string', text: text.slice(start, i), start, end: i });
+      continue;
+    }
+
+    // Classic KV numbers (`increment_by = 1`, `[1, 2]`, `-1.5`)
+    if (options.kv && /[0-9]/.test(ch)) {
+      const start = i;
+      while (i < n && /[0-9]/.test(text[i])) i++;
+      if (text[i] === '.' && /[0-9]/.test(text[i + 1] ?? '')) {
+        i++;
+        while (i < n && /[0-9]/.test(text[i])) i++;
+      }
+      tokens.push({ kind: 'number', text: text.slice(start, i), start, end: i });
       continue;
     }
 
@@ -3117,17 +3219,30 @@ function scanNonSqlArtifacts(
     // Delimiters
     if (ch === '(' || ch === '[' || ch === '{' || ch === ')' || ch === ']' || ch === '}') {
       delimInputs.push({ ch, start: i, end: i + 1 });
+      if (ch === '(' || ch === '[' || ch === '{') openStack.push(ch);
+      else openStack.pop();
       tokens.push({ kind: 'punct', text: ch, start: i, end: i + 1 });
       i++;
       continue;
+    }
+
+    // Classic KV: `;` never sits directly inside `[...]` / `(...)`, so it fences an unclosed one
+    // (`depends_on = ["T1";`). Inside `{...}` column objects it is the normal entry terminator.
+    if (ch === ';' && options.kv) {
+      const inner = openStack[openStack.length - 1];
+      if (inner === '[' || inner === '(') {
+        delimInputs.push({ ch, start: i, end: i + 1 });
+        openStack.length = 0;
+      }
     }
 
     tokens.push({ kind: 'punct', text: ch, start: i, end: i + 1 });
     i++;
   }
 
-  const delimResult = analyzeDelimiters(text, delimInputs, { fenceSemicolon: 'none' });
+  const delimResult = analyzeDelimiters(text, delimInputs, { fenceSemicolon: options.kv ? 'all' : 'none' });
   for (const d of delimResult.diagnostics) {
+    if (swallowedAt >= 0 && d.start < swallowedAt && delimResult.unclosedStarts.has(d.start)) continue;
     diagnostics.push({
       ruleId: 'HANA-SYN-003',
       category: 'syntax',
@@ -3545,6 +3660,133 @@ function checkCdsStructuralSyntax(
  * Validates Classic Key-Value syntax (`key = value;`, `{ k = v; }`) for `HANA-SYN-022`
  * while preserving documented tolerances (optional trailing semicolon in `.hdbview`, comma lists).
  */
+/**
+ * Missing `,` in CDS lists (`HANA-SYN-023`, `cds.md` §4 views and technical configuration): view select lists
+ * `{ ... }`, `group by` / `order by` lists, `with parameters` declarations, and the `on ( ... )` element lists of
+ * `technical configuration` indexes. CDS has no implicit aliases (`as` is required), so two adjacent items always
+ * miss a `,`. SQL keywords (`as`, `key`, `desc`, `case ... end`, ...) and annotations never count as items.
+ */
+function checkCdsListCommas(tokens: readonly NonSqlToken[], text: string, diagnostics: AnalyzerDiagnostic[]): void {
+  const low = (k: number): string => (tokens[k]?.kind === 'word' ? tokens[k].text.toLowerCase() : '');
+  const isKeyword = (k: number): boolean => FMT_KEYWORDS.has(tokens[k].text.toUpperCase()) || FMT_RESERVED.has(tokens[k].text.toUpperCase());
+  const isName = (k: number): boolean => tokens[k]?.kind === 'word' && !tokens[k].text.startsWith('@') && !isKeyword(k);
+  /** `date'2024-01-01'`, `x'0F'`: a word glued to a string is one typed literal. */
+  const gluedToString = (k: number): boolean => tokens[k + 1]?.kind === 'string' && tokens[k + 1].start === tokens[k].end;
+  const endsItem = (k: number): boolean =>
+    tokens[k].kind === 'string' || tokens[k].kind === 'expr' || tokens[k].text === ')' || tokens[k].text === ']' || (isName(k) && !gluedToString(k));
+  const startsItem = (k: number): boolean => tokens[k].kind === 'string' || tokens[k].kind === 'expr' || isName(k);
+
+  /** Checks the tokens of `[from, to)` at their own nesting level. */
+  const checkList = (from: number, to: number, what: string): void => {
+    let depth = 0;
+    let prev = -1;
+    for (let k = from; k < to; k++) {
+      const t = tokens[k];
+      if (t.text === '(' || t.text === '[' || t.text === '{') {
+        if (depth === 0) prev = -1;
+        depth++;
+        continue;
+      }
+      if (t.text === ')' || t.text === ']' || t.text === '}') {
+        depth = Math.max(0, depth - 1);
+        if (depth === 0) prev = k;
+        continue;
+      }
+      if (depth > 0) continue;
+      if (t.kind === 'word' && t.text.startsWith('@')) {
+        k = skipCdsAnnotation(tokens, k);
+        prev = -1;
+        continue;
+      }
+      if (prev >= 0 && endsItem(prev) && startsItem(k) && tokens[k - 1] === tokens[prev]) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-023',
+          category: 'syntax',
+          severity: 'error',
+          message: `Expected ',' before '${t.text}' in ${what}.`,
+          start: t.start,
+          end: t.end,
+          fixes: [makeInsertCommaFix(tokens[prev].end)],
+        });
+      }
+      prev = k;
+    }
+  };
+  /** Index of the `)` / `]` / `}` that closes the group opened at `open`, or `-1`. */
+  const closeOf = (open: number): number => {
+    let depth = 0;
+    for (let k = open; k < tokens.length; k++) {
+      const x = tokens[k].text;
+      if (x === '(' || x === '[' || x === '{') depth++;
+      else if (x === ')' || x === ']' || x === '}') {
+        depth--;
+        if (depth === 0) return k;
+      }
+    }
+    return -1;
+  };
+  /** First index in `[from, tokens.length)` at nesting level 0 where `stop(k)` holds, or where the level is left. */
+  const scanTo = (from: number, stop: (k: number) => boolean): number => {
+    let depth = 0;
+    for (let k = from; k < tokens.length; k++) {
+      const x = tokens[k].text;
+      if (depth === 0 && stop(k)) return k;
+      if (x === '(' || x === '[' || x === '{') depth++;
+      else if (x === ')' || x === ']' || x === '}') {
+        if (depth === 0) return k;
+        depth--;
+      }
+    }
+    return tokens.length;
+  };
+
+  for (let k = 0; k < tokens.length; k++) {
+    if (low(k) === 'technical' && low(k + 1) === 'configuration' && tokens[k + 2]?.text === '{') {
+      const close = closeOf(k + 2);
+      for (let j = k + 3; j < (close < 0 ? tokens.length : close); j++) {
+        if (low(j) === 'on' && tokens[j + 1]?.text === '(') {
+          const c = closeOf(j + 1);
+          if (c > 0) checkList(j + 2, c, "an index's element list");
+        }
+      }
+      continue;
+    }
+    if (low(k) !== 'view' || tokens[k + 1]?.kind !== 'word') continue;
+    // view <name> [with parameters <decls>] as select from <source> [mixin { ... } into] { <list> } <clauses>
+    const asIdx = scanTo(k + 2, (j) => low(j) === 'as' || tokens[j].text === ';');
+    if (low(asIdx) !== 'as') continue;
+    const params = scanTo(k + 2, (j) => low(j) === 'parameters' || j >= asIdx);
+    if (low(params) === 'parameters' && params < asIdx) checkList(params + 1, asIdx, 'view parameters');
+    let j = asIdx + 1;
+    while (low(j) === 'select' && low(j + 1) === 'from') {
+      let open = scanTo(j + 2, (x) => tokens[x].text === '{' || low(x) === 'mixin' || tokens[x].text === ';');
+      if (low(open) === 'mixin') {
+        const mixinClose = closeOf(open + 1);
+        if (mixinClose < 0 || low(mixinClose + 1) !== 'into') break;
+        open = mixinClose + 2;
+      }
+      if (tokens[open]?.text !== '{') break;
+      const close = closeOf(open);
+      if (close < 0) break;
+      checkList(open + 1, close, 'the select list');
+      // Trailing clauses up to `;`, the next `union`, or the end of the enclosing block
+      j = close + 1;
+      const end = scanTo(j, (x) => tokens[x].text === ';' || low(x) === 'union');
+      for (let c = j; c < end; c++) {
+        if ((low(c) === 'group' || low(c) === 'order') && low(c + 1) === 'by') {
+          const stop = scanTo(c + 2, (x) => x >= end || ['having', 'order', 'limit', 'where'].includes(low(x)));
+          checkList(c + 2, Math.min(stop, end), `the ${low(c)} by list`);
+          c = stop - 1;
+        }
+      }
+      j = end;
+      if (low(j) !== 'union') break;
+      j++;
+      if (low(j) === 'all') j++;
+    }
+  }
+}
+
 function checkClassicKvStructure(
   tokens: readonly NonSqlToken[],
   languageId: string,
@@ -3556,15 +3798,50 @@ function checkClassicKvStructure(
   let state: 'expectKey' | 'expectEq' | 'expectVal' | 'inVal' = 'expectKey';
   let currentKey = '';
   let valDepth = 0;
+  // Last item of an unbracketed value list (`depends_on = "a", "b";`), to find a missing `,`
+  let lastValue: NonSqlToken | null = null;
+  const sqlKey = KV_EMBEDDED_SQL_KEYS[languageId] ?? '';
 
   const isKeyMode = (): boolean => {
     const mode = stack[stack.length - 1].mode;
     return mode === 'top' || mode === 'object';
   };
+  /** `tokens[k]` starts `<key>[.<sub>]* =`. */
+  const isKeyStart = (k: number): boolean => {
+    if (tokens[k]?.kind !== 'word') return false;
+    let look = k + 1;
+    while (tokens[look]?.text === '.' && tokens[look + 1]?.kind === 'word') look += 2;
+    return tokens[look]?.text === '=';
+  };
 
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     const topFrame = stack[stack.length - 1];
+
+    // Classic KV strings are double-quoted (`hdb-classic-kv.md` §5 StringLiteral)
+    if (t.kind === 'string' && t.text.startsWith("'")) {
+      const closed = t.text.length >= 2 && t.text.endsWith("'") && !t.text.endsWith("\\'");
+      diagnostics.push({
+        ruleId: 'HANA-SYN-022',
+        category: 'syntax',
+        severity: 'error',
+        message: 'Classic key-value strings use double quotes.',
+        start: t.start,
+        end: t.end,
+        fixes: closed ? [makeReplaceFix('Use double quotes', t.start, t.end, toDoubleQuotedKvString(t.text))] : [],
+      });
+    }
+    if (t.text === '(' && state === 'expectVal' && isKeyMode()) {
+      diagnostics.push({
+        ruleId: 'HANA-SYN-022',
+        category: 'syntax',
+        severity: 'error',
+        message: `Unexpected '(' after '=' for key '${currentKey}': Classic key-value values are not parenthesized.`,
+        start: t.start,
+        end: t.end,
+        fixes: [],
+      });
+    }
 
     if (t.text === '(' || t.text === '[' || t.text === '{') {
       if (topFrame.mode === 'array' && (t.text === '{' || t.text === '[') && topFrame.arrayExpectSep) {
@@ -3643,6 +3920,12 @@ function checkClassicKvStructure(
     }
 
     if (topFrame.mode === 'array') {
+      // `depends_on = ["T1";`: the `;` ends the statement; the unclosed `[` is reported as HANA-SYN-003
+      if (t.text === ';') {
+        stack.pop();
+        state = isKeyMode() ? 'expectKey' : 'inVal';
+        continue;
+      }
       if (t.text === ',' || (languageId === 'hdbti' && t.text === ':')) {
         topFrame.arrayExpectSep = false;
         topFrame.lastArrayItemEnd = t.end;
@@ -3653,7 +3936,7 @@ function checkClassicKvStructure(
         topFrame.lastArrayItemEnd = t.end;
         continue;
       }
-      if (t.kind === 'word' || t.kind === 'string') {
+      if (t.kind === 'word' || t.kind === 'string' || t.kind === 'number') {
         if (topFrame.arrayExpectSep) {
           diagnostics.push({
             ruleId: 'HANA-SYN-023',
@@ -3748,11 +4031,40 @@ function checkClassicKvStructure(
         }
       }
       state = 'inVal';
+      lastValue = t.kind === 'string' || t.kind === 'word' || t.kind === 'number' ? t : null;
       continue;
     }
 
-    if (state === 'inVal' && valDepth === 0 && t.text === ';') {
-      state = 'expectKey';
+    if (state === 'inVal' && valDepth === 0) {
+      if (t.text === ';') {
+        state = 'expectKey';
+        lastValue = null;
+        continue;
+      }
+      if (t.text === ',') {
+        lastValue = null;
+        continue;
+      }
+      // A following `<key> =` after a value without `;` starts the next entry (the `;` itself is not required)
+      if (isKeyStart(i)) {
+        state = 'expectKey';
+        lastValue = null;
+        i--;
+        continue;
+      }
+      // `depends_on = "a" "b"`: two values of one list without `,` (embedded SQL keys: see the unescaped-quote check)
+      if ((t.kind === 'string' || t.kind === 'number') && lastValue && currentKey !== sqlKey) {
+        diagnostics.push({
+          ruleId: 'HANA-SYN-023',
+          category: 'syntax',
+          severity: 'error',
+          message: `Expected ',' before '${t.text}' in the value list of '${currentKey}'.`,
+          start: t.start,
+          end: t.end,
+          fixes: [makeInsertCommaFix(lastValue.end)],
+        });
+      }
+      if (t.kind === 'string' || t.kind === 'word' || t.kind === 'number') lastValue = t;
     }
   }
 
@@ -3842,6 +4154,61 @@ function isHdiJsonHdbrole(text: string): boolean {
   return false;
 }
 
+/**
+ * Embedded SQL values of a scanned Classic KV document: `query = "..."` (`.hdbview`), `reset_by = "..."`
+ * (`.hdbsequence`). A value whose closing quote is followed by more tokens on the same line contains an unescaped
+ * `"` (`query = "SELECT "ID" FROM T";`): it is reported (`HANA-SYN-001`, with a QuickFix that escapes the inner
+ * quotes when the value ends in `";`) and not analyzed as SQL.
+ */
+function findKvEmbeddedSql(
+  text: string,
+  tokens: readonly NonSqlToken[],
+  languageId: string,
+  diagnostics: AnalyzerDiagnostic[] | null
+): EmbeddedSql[] {
+  const key = KV_EMBEDDED_SQL_KEYS[languageId];
+  if (!key) return [];
+  const out: EmbeddedSql[] = [];
+  for (let k = 2; k < tokens.length; k++) {
+    const t = tokens[k];
+    if (t.kind !== 'string' || !t.text.startsWith('"') || tokens[k - 1].text !== '=' || tokens[k - 2].text !== key) continue;
+    if (t.text.length < 2 || !t.text.endsWith('"')) continue; // unterminated: HANA-SYN-001 already
+    const next = tokens[k + 1];
+    const sameLine = !!next && !/[\r\n]/.test(text.slice(t.end, next.start));
+    if (next && sameLine && next.text !== ';' && !(next.kind === 'word' && tokens[k + 2]?.text === '=')) {
+      if (diagnostics) {
+        // The value most likely runs to the last `"` before the `;` that ends its line
+        let last = k + 1;
+        while (tokens[last + 1] && tokens[last + 1].text !== ';' && !/[\r\n]/.test(text.slice(tokens[last].end, tokens[last + 1].start))) last++;
+        const tail = tokens[last];
+        const endsValue = tail.kind === 'string' && tail.text.endsWith('"') && tokens[last + 1]?.text === ';';
+        const inner = text.slice(t.start + 1, tail.end - 1);
+        diagnostics.push({
+          ruleId: 'HANA-SYN-001',
+          category: 'syntax',
+          severity: 'error',
+          message: `Unescaped '"' ends the value of '${key}' early. Write '\\"' for a double quote inside the SQL.`,
+          start: t.end - 1,
+          end: t.end,
+          fixes: endsValue
+            ? [makeReplaceFix("Escape the inner '\"' quotes", t.start + 1, tail.end - 1, inner.replace(/\\?"/g, '\\"'))]
+            : [],
+        });
+      }
+      continue;
+    }
+    out.push(unescapeKvString(text, t.start, t.end, key));
+  }
+  return out;
+}
+
+/** The embedded SQL values of a Classic KV `.hdbview` / `.hdbsequence` (empty for HDI DDL or other languages). */
+export function classicKvEmbeddedSql(languageId: string, text: string): EmbeddedSql[] {
+  if (!KV_EMBEDDED_SQL_KEYS[languageId] || !looksLikeKeyValueMode(languageId, text)) return [];
+  const { tokens } = scanNonSqlArtifacts(text, { kv: { sqlKeys: new Set([KV_EMBEDDED_SQL_KEYS[languageId]]) } });
+  return findKvEmbeddedSql(text, tokens, languageId, null);
+}
+
 function looksLikeKeyValueMode(languageId: string, text: string): boolean {
   if (CLASSIC_KV_ALWAYS_SET.has(languageId)) return true;
   if (!DUAL_SQL_KV_SET.has(languageId)) return false;
@@ -3914,8 +4281,10 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       singleLineDoubleQuote: true,
     });
     if (!diagnostics.some((d) => d.ruleId === 'HANA-SYN-002')) {
+      const lexicallyBroken = diagnostics.some((d) => d.ruleId === 'HANA-SYN-001' || d.ruleId === 'HANA-SYN-003');
       checkCdsDeclarationTypos(tokens, diagnostics);
       checkCdsStructuralSyntax(tokens, text, diagnostics);
+      if (!lexicallyBroken) checkCdsListCommas(tokens, text, diagnostics);
     }
     return filterSuppressedDiagnostics(text, diagnostics);
   }
@@ -3940,9 +4309,16 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   }
 
   if (looksLikeKeyValueMode(languageId, text)) {
-    const { tokens, diagnostics } = scanNonSqlArtifacts(text, {});
+    const sqlKey = KV_EMBEDDED_SQL_KEYS[languageId];
+    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { kv: { sqlKeys: new Set(sqlKey ? [sqlKey] : []) } });
     if (!diagnostics.some((d) => d.ruleId === 'HANA-SYN-001' || d.ruleId === 'HANA-SYN-002')) {
       checkClassicKvStructure(tokens, languageId, diagnostics);
+    }
+    // Embedded SQL (`hdb-classic-kv.md` §4.3): every SQL rule, mapped back to the KV document
+    for (const emb of findKvEmbeddedSql(text, tokens, languageId, diagnostics)) {
+      if (!emb.sql.trim()) continue;
+      const sqlDiags = analyzeSqlSection(emb.sql, { baseOffset: 0, languageId: 'hanasql', checkBlocks: false, checkHeaderRoots: false });
+      diagnostics.push(...mapEmbeddedDiagnostics(sqlDiags, emb));
     }
     return filterSuppressedDiagnostics(text, diagnostics);
   }

@@ -8,7 +8,8 @@ import { analyzeCalculationView } from './calculationview';
 import { analyzeMigration } from './migrator';
 import { analyzeRolesAndGrants, analyzeXsodata } from './roles-grants';
 import { analyzeSqlScript } from './sqlscript';
-import { analyzeSyntax } from './syntax';
+import { mapEmbeddedDiagnostics } from './kv-embedded-sql';
+import { analyzeSyntax, classicKvEmbeddedSql } from './syntax';
 import { type AnalyzerContext, type AnalyzerDiagnostic } from './types';
 import { analyzeXsaccess } from './xsaccess';
 import { analyzeXsjs } from './xsjs';
@@ -34,6 +35,16 @@ export const ANALYZER_LANGUAGES: readonly string[] = Array.from(
   ])
 );
 
+/** Security and performance rules on the embedded SQL of a Classic `.hdbview` / `.hdbsequence` `[XSC]`. */
+function analyzeKvEmbeddedSql(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
+  const out: AnalyzerDiagnostic[] = [];
+  for (const emb of classicKvEmbeddedSql(ctx.languageId, ctx.text)) {
+    if (!emb.sql.trim()) continue;
+    out.push(...mapEmbeddedDiagnostics(analyzeSqlScript({ ...ctx, languageId: 'hanasql', text: emb.sql }), emb));
+  }
+  return out;
+}
+
 function analyzeSemantics(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   const { languageId, text } = ctx;
 
@@ -43,14 +54,17 @@ function analyzeSemantics(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
 
   if (languageId === 'hdbview') {
     if (isKeyValueArtifact(text)) {
-      return analyzeMigration(ctx);
+      return [...analyzeMigration(ctx), ...analyzeKvEmbeddedSql(ctx)];
     }
     return analyzeSqlScript(ctx);
   }
 
+  if (languageId === 'hdbsequence') {
+    return [...analyzeMigration(ctx), ...analyzeKvEmbeddedSql(ctx)];
+  }
+
   if (
     languageId === 'hdbtable' ||
-    languageId === 'hdbsequence' ||
     languageId === 'hdbstructure' ||
     languageId === 'hdbschema' ||
     languageId === 'hdbti' ||

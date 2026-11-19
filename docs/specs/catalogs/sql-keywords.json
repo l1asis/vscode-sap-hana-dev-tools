@@ -1048,6 +1048,7 @@
     {"name": "ARRAY", "roles": ["type", "column-end-modifier", "json-column-trailing"]},
     {"name": "AS", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "subselect-context", "routine-clause-starter", "table-columns-prev", "column-clause-modifier", "non-alias", "special-call", "call-infix-or-clause", "paren-expression-prev", "fmt-header-word", "fmt-non-value"]},
     {"name": "ASC", "roles": ["dml", "column-end-modifier", "non-alias", "window-order-modifier", "call-infix-or-clause"]},
+    {"name": "ASSOCIATIONS", "roles": ["special-call"], "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/027_pages_781_810.md § CREATE VIEW Statement (with_association_clause)"},
     {"name": "ASYNCHRONOUS", "roles": ["alter-system-word"]},
     {"name": "AT", "roles": ["preposition", "keyword", "routine-clause-starter", "call-infix-or-clause"]},
     {"name": "ATOMIC", "roles": ["clause-word", "keyword", "fmt-begin-modifier"]},

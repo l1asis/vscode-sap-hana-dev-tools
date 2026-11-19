@@ -61,7 +61,6 @@ CREATE VIEW active_emps AS SELECT emp_id, last_name FROM employees WHERE active 
 DROP VIEW active_emps;
 
 -- @case view with parameters
--- @todo syntax #78 false HANA-SYN-023 at "INTEGER"
 CREATE VIEW emps_by_dept (IN p_dept INTEGER) AS SELECT emp_id FROM employees WHERE dept_id = :p_dept;
 
 -- @case indexes
