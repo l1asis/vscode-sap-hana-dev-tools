@@ -128,6 +128,43 @@ TRUE, UNION, UNKNOWN, USING, UTCTIMESTAMP, VALUES, WHEN, WHERE, WHILE, WITH
 | `SQLSCRIPT_LOGGING` | Constants: `LEVEL_FATAL`, `LEVEL_ERROR`, `LEVEL_WARNING`, `LEVEL_INFO`, `LEVEL_DEBUG`; Procedures: `CREATE_CONFIGURATION`, `DROP_CONFIGURATION`, `SET_OUTPUT_TABLE`, `SET_LEVEL`, `START_LOGGING`, `STOP_LOGGING`, `ADD_SQLSCRIPT_OBJECT`, `REMOVE_SQLSCRIPT_OBJECT`, `SET_FILTER`, `ADD_FILTER`, `REMOVE_FILTER`, `UNSET_FILTER`, `LOG` | `[XSA]` `[HDI]` `[CLOUD]` |
 | `SQLSCRIPT_TEST` | `LIST_TESTS`, `LIST_CONFIGURATIONS`, `EXPECT_EQ`, `EXPECT_NE`, `EXPECT_GE`, `EXPECT_GT`, `EXPECT_LE`, `EXPECT_LT`, `EXPECT_NULL`, `EXPECT_TABLE_EQ`, `FAIL` (plus runner `SYS.SQLSCRIPT_RUN_TESTS_ON_ORIGINAL_DATA`) | `[XSA]` `[HDI]` `[CLOUD]` |
 
+### 3.4 Context-Aware Keyword Scopes `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md (Reserved Words)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md (Pages 8–57)
+
+Only the 88 reserved words (§3.1) are keywords in every position. Non-reserved words such as `RANGE`, `DATA`, `FIRST`, `SOURCE` or `MATCHED` are valid unquoted column and table names, so `source.hanasql` scopes them only where they act as keywords. The word lists come from the catalog (`docs/specs/catalogs/sql-keywords.json`, `SPEC_RULES.md` §C.1). The phrases are in `scripts/lib/hanasql-grammar.js` (`CLAUSE_PHRASES`).
+
+| Mechanism | Repository item | Scope | Applies to |
+| :--- | :--- | :--- | :--- |
+| Everywhere | `#logical-operators` | `keyword.other.logical.hanasql` | Role `word-operator` (`AND`, `OR`, `NOT`, `IN`, `IS`, `LIKE`, `BETWEEN`, `EXISTS`, `CONTAINS`, ...) |
+| Everywhere | `#keywords` | `keyword.other.preposition.hanasql` | Role `preposition`: `TO`, `AT`, `OF` (`GRANT ... TO`, `RENAME ... TO`, `FROM 1 TO 2`, `AT LOCATION`, `INSTEAD OF`, `WHERE CURRENT OF`) |
+| Region | `#hierarchy-call` | `keyword.other.clause.hanasql` | Roles `hierarchy-clause` and `hierarchy-option` inside `HIERARCHY*( ... )` (names: role `hierarchy-clause-function`). `#parens` balances nested `(...)`, so the region ends at the call's own `)`. Words may sit on different lines (`SIBLING` / `ORDER BY`) |
+| Phrase | `#clause-phrases` | `keyword.other.clause.hanasql` | A word next to a fixed neighbour, one regex on one line (table below) |
+
+**Word operators** use `keyword.other.logical.hanasql`, not `keyword.operator.logical.hanasql`. The default VS Code themes give `keyword.operator.*` the plain operator colour (the same as `=`), so stacked `WHERE ... AND ... AND ...` conditions looked unhighlighted. `keyword.operator.wordlike` is coloured by Dark+ and Light+ but not by High Contrast Dark. `keyword.other.*` gets the keyword colour in all ten default themes (Dark / Light Modern, Dark+ / Light+, Dark / Light VS, High Contrast Dark / Light, 2026 Dark / Light).
+
+**Clause phrases** (`(?i)`; the whole match is scoped unless noted):
+
+| Context | Phrases |
+| :--- | :--- |
+| Partitioning | `[SUB]PARTITION BY RANGE\|HASH\|ROUNDROBIN`, `RANGE\|HASH\|ROUNDROBIN` before `(` |
+| Window frame | `ROWS\|RANGE` before `BETWEEN\|UNBOUNDED\|CURRENT\|<digit>`, `UNBOUNDED PRECEDING\|FOLLOWING`, `<n> PRECEDING\|FOLLOWING` (`<n>` keeps `constant.numeric`), `CURRENT ROW` |
+| Null ordering | `NULLS FIRST\|LAST`, `IGNORE\|RESPECT NULLS` |
+| Hints | `WITH HINT`, `STATEMENT HINT`, `HINT` before `(`, `STATEMENT` before `HINT\|HASH` |
+| `MERGE` | `WHEN [NOT] MATCHED` |
+| Triggers | `BEFORE\|AFTER INSERT\|UPDATE\|DELETE`, `INSTEAD OF`, `FOR EACH ROW\|STATEMENT`, `REFERENCING NEW\|OLD ROW\|TABLE` |
+| Dynamic SQL | `EXEC[UTE] IMMEDIATE`, `IMMEDIATE` before `;` |
+| Transactions, routines | `ISOLATION LEVEL`, `READ ONLY\|WRITE\|COMMITTED\|UNCOMMITTED`, `READS\|MODIFIES SQL DATA`, `HEADER\|DDL ONLY` |
+| Table data | `WITH [NO] DATA` (not before `(` or `AS`: a CTE named `data`), `IMPORT\|EXPORT DATA`, `[VALID] FOR DATA DEPENDENCY`, `DELETE\|PRESERVE ROWS` |
+| Predicates | `ESCAPE` before `'` |
+| Import | `SKIP FIRST`, `FIRST ROW` |
+| Sequences | `INCREMENT BY`, `RESET BY`, `NO CYCLE\|MINVALUE\|MAXVALUE`, `MINVALUE\|MAXVALUE` before a number |
+| `NO` option | `NO` before a word that is not a `non-alias` or `word-operator` word (`NO PRIMARY KEY`, `NO FORCE_FIRST_PASSWORD_CHANGE`, but not `no FROM`, `no IS NULL`) |
+| Administration | `WITH RECONFIGURE`, `EXPLAIN PLAN`, `SERIES TABLE`, `ENABLE\|DISABLE PARAMETER SET`, `IP\|APPLICATION` before `(` (`CONNECT RESTRICTION`) |
+
+**Limits:** a phrase does not match across a line break (`NULLS` at the end of one line, `LAST` on the next). Anywhere else, a bare `range`, `data`, `first`, `source` or `no` stays unscoped. Other non-reserved words that are keywords only in specific statements (`CACHE`, `CREDENTIAL`, `LOCATION`, ...) are not covered yet. The conformance sweep lists them (`docs/research/CONFORMANCE.md`).
+
 ---
 
 ## 4. Formal EBNF Grammar
@@ -393,6 +430,8 @@ hierarchy_navigation_call ::=
         { "WITH" ( "SUBTOTAL" | "BALANCE" | "NOT" "MATCHED" | "TOTAL" ) [ expression ] }
     ")" ;
 ```
+
+Highlighting: `SOURCE`, `DEPTH`, `CACHE`, `DISTANCE`, `ORPHAN ROOT`, ... are keywords only between the call's parentheses (`#hierarchy-call`, §3.4). The same words used as columns elsewhere stay unscoped.
 
 ### 4.6 JSON Document Store DDL, DML & Functions `[XSA]` `[HDI]` `[CLOUD]`
 

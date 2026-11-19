@@ -117,10 +117,20 @@
 | `source.hdbview` | `\b(query)\b\s*(=)\s*(")` | `(")` | `meta.embedded.block.sql.hdbview` | `\"...\"` $\rightarrow$ `variable.other.quoted-identifier.hanasql` |
 | `source.hdbsequence` | `\b(reset_by)\b\s*(=)\s*(")` | `(")` | `meta.embedded.block.sql.hdbsequence` | `\"...\"` $\rightarrow$ `variable.other.quoted-identifier.hanasql` |
 
-- Inside `meta.embedded.block.sql.<lang>`, the grammar injects:
-  1. `\\\"(?:(?!\\\").)*\\\"` $\rightarrow$ `variable.other.quoted-identifier.hanasql`
-  2. `\\.` $\rightarrow$ `constant.character.escape.<lang>`
-  3. `source.hanasql#strings`, `#numbers`, `#sqlscript-variables`, `#functions`, `#sqlscript-builtins`, `#types`, `#constants`, `#logical-operators`, `#keywords`, `#operators`
+- The KV string ends at the first unescaped `"`. That quote also ends every multi-line SQL region opened inside it (escaped identifier, block comment, `HIERARCHY*( ... )` call, parentheses). Each such region has `(?="|...)` in its `end`, so an unclosed `(` or `/*` cannot run past the string into the next `key = value;` line.
+- Inside `meta.embedded.block.sql.<lang>` (repository item `#embedded-sql`), in this order:
+
+| # | Pattern | Scope / Include | Notes |
+| :--- | :--- | :--- | :--- |
+| 1 | `--(?:[^"\\]\|\\.)*` | `comment.line.double-dash.hanasql` | SQL line comment. Ends at the end of the line or before the closing `"` |
+| 2 | begin `/\*`, end `\*/` or `(?=")` | `comment.block.hanasql` | SQL block comment, may span lines |
+| 3 | begin `\\"`, end `\\"` or `(?=")` | `variable.other.quoted-identifier.hanasql` | Escaped delimited identifier (`\"MY_TABLE\"`), may span lines |
+| 4 | `\\.` | `constant.character.escape.<lang>` | KV escapes `\n`, `\t`, `\r`, `\\` |
+| 5 | `source.hanasql#strings`, `#statements`, `#clause-phrases` | (included) | Statement heads, hierarchy clause phrases (`SIBLING ORDER BY`, `START WHERE`), and the context phrases of `sql-sqlscript.md` §3.4 |
+| 6 | begin `HIERARCHY*\s*(`, end `\)` or `(?=")` | function scope on the name | Same words as `source.hanasql#hierarchy-call` (`sql-sqlscript.md` §3.4), with balanced `(...)` inside |
+| 7 | `source.hanasql#numbers`, `#sqlscript-variables`, `#functions`, `#sqlscript-builtins`, `#types`, `#constants`, `#logical-operators`, `#keywords`, `#operators` | (included) | |
+
+- **KV escapes before keywords:** every `source.hanasql` word rule starts with `(?:\b|(?<=\\[nrt]))` instead of `\b`, so `SELECT \"A\"\nFROM T` still highlights `FROM` after the `\n` escape. Outside strings a backslash is never valid SQL, so this boundary does not change `.sql` highlighting.
 
 ### 4.2 Full-File Fallback Injection (`source.hanasql`) for Dual-Mode Extensions `[XSA]` `[HDI]` `[CLOUD]`
 
@@ -213,7 +223,7 @@ ViewStatement      ::= ( "schema" "=" StringLiteral [ ";" ] )
                      | ( "public" "=" BooleanLiteral [ ";" ] )
                      | ( ( "depends_on" | "depends_on_table" | "depends_on_view" ) "=" ( StringList | StringLiteral ) [ ";" ] ) ;
 
-EmbeddedSqlString  ::= '"' (* Injected source.hanasql with \" escaped identifiers *) '"' ;
+EmbeddedSqlString  ::= '"' (* Injected source.hanasql (§4.1) with \" escaped identifiers and \n \t \r escapes *) '"' ;
 
 (* ====================================================================== *)
 (* 4. .hdbsequence [XSC]                                                  *)
