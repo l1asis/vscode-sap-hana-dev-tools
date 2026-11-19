@@ -23,7 +23,8 @@ const write = (file, grammar) => {
   outputs[`syntaxes/${file}.tmLanguage.json`] = JSON.stringify(grammar, null, 2) + '\n';
 };
 
-write('hanasql', buildHanasqlGrammar());
+const hanasqlGrammar = buildHanasqlGrammar();
+write('hanasql', hanasqlGrammar);
 const alt = (words) => words.join('|');
 
 // ---------------------------------------------------------------------------
@@ -90,7 +91,9 @@ const baseRepo = (ns, valueExtra) => ({
   values: values(ns, valueExtra),
 });
 
-// SQL embedded in a string (query = "SELECT \"A\" FROM ..."; reset_by = "...")
+// SQL embedded in a string (query = "SELECT \"A\" FROM ..."; reset_by = "..."). Spec: hdb-classic-kv.md §4.
+// The string ends at the first unescaped `"`, so every multi-line SQL region in here (escaped identifiers, block
+// comments, HIERARCHY*( ... ) calls, parentheses) also stops in front of it instead of running past the string.
 function embeddedSqlString(ns, keys) {
   return {
     begin: `\\b(${alt(keys)})\\b\\s*(=)\\s*(")`,
@@ -102,20 +105,66 @@ function embeddedSqlString(ns, keys) {
     end: '(")',
     endCaptures: { 1: { name: `punctuation.definition.string.end.${ns}` } },
     contentName: `meta.embedded.block.sql.${ns}`,
-    patterns: [
-      { name: 'variable.other.quoted-identifier.hanasql', match: R(/\\"(?:(?!\\").)*\\"/) },
-      { name: `constant.character.escape.${ns}`, match: R(/\\./) },
-      { include: 'source.hanasql#strings' },
-      { include: 'source.hanasql#numbers' },
-      { include: 'source.hanasql#sqlscript-variables' },
-      { include: 'source.hanasql#functions' },
-      { include: 'source.hanasql#sqlscript-builtins' },
-      { include: 'source.hanasql#types' },
-      { include: 'source.hanasql#constants' },
-      { include: 'source.hanasql#logical-operators' },
-      { include: 'source.hanasql#keywords' },
-      { include: 'source.hanasql#operators' },
-    ],
+    patterns: [{ include: '#embedded-sql' }],
+  };
+}
+
+const STRING_END = '(?=")';
+/** Repository entries behind `#embedded-sql` (used by embeddedSqlString). */
+function embeddedSqlRepo(ns) {
+  const sql = (name) => ({ include: `source.hanasql#${name}` });
+  return {
+    'embedded-sql': {
+      patterns: [
+        { include: '#embedded-sql-comments' },
+        { include: '#embedded-sql-quoted-identifier' },
+        { name: `constant.character.escape.${ns}`, match: R(/\\./) },
+        sql('strings'),
+        sql('statements'),
+        sql('clause-phrases'),
+        { include: '#embedded-sql-hierarchy-call' },
+        sql('numbers'),
+        sql('sqlscript-variables'),
+        sql('functions'),
+        sql('sqlscript-builtins'),
+        sql('types'),
+        sql('constants'),
+        sql('logical-operators'),
+        sql('keywords'),
+        sql('operators'),
+      ],
+    },
+    // `--` runs to the end of the line or the closing quote; `\"` inside the comment is part of it
+    'embedded-sql-comments': {
+      patterns: [
+        { name: 'comment.line.double-dash.hanasql', match: R(/--(?:[^"\\]|\\.)*/) },
+        { name: 'comment.block.hanasql', begin: R(/\/\*/), end: `\\*/|${STRING_END}` },
+      ],
+    },
+    // \"MY_TABLE\", also across lines
+    'embedded-sql-quoted-identifier': {
+      name: 'variable.other.quoted-identifier.hanasql',
+      begin: R(/\\"/),
+      end: `\\\\"|${STRING_END}`,
+    },
+    'embedded-sql-hierarchy-call': {
+      ...hanasqlGrammar.repository['hierarchy-call'],
+      end: `\\)|${STRING_END}`,
+      patterns: [
+        { include: '#embedded-sql-parens' },
+        { include: '#embedded-sql-comments' },
+        { include: '#embedded-sql-quoted-identifier' },
+        sql('statements'),
+        sql('clause-phrases'),
+        sql('hierarchy-keywords'),
+        { include: '#embedded-sql' },
+      ],
+    },
+    'embedded-sql-parens': {
+      begin: R(/\(/),
+      end: `\\)|${STRING_END}`,
+      patterns: [{ include: '#embedded-sql-parens' }, { include: '#embedded-sql' }],
+    },
   };
 }
 
@@ -207,6 +256,7 @@ function embeddedSqlString(ns, keys) {
     patterns: [{ include: '#comments' }, { include: '#query' }, { include: '#assignment' }, { include: 'source.hanasql' }],
     repository: {
       ...baseRepo(ns),
+      ...embeddedSqlRepo(ns),
       query: embeddedSqlString(ns, ['query']),
       // `public=false` may lack its semicolon in real files: also stop before the next `key =` line
       assignment: assign(ns, keys, null, R(/(?=^\s*[A-Za-z_]\w*\s*=)/)),
@@ -226,6 +276,7 @@ function embeddedSqlString(ns, keys) {
     patterns: [{ include: '#comments' }, { include: '#reset-by' }, { include: '#assignment' }, { include: 'source.hanasql' }],
     repository: {
       ...baseRepo(ns),
+      ...embeddedSqlRepo(ns),
       'reset-by': embeddedSqlString(ns, ['reset_by']),
       assignment: assign(ns, keys, null, R(/(?=^\s*[A-Za-z_]\w*\s*=)/)),
     },

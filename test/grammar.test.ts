@@ -56,7 +56,8 @@ test('hdbview: embedded SQL in query string, missing semicolon tolerated', () =>
   check(t, 'SELECT', 'keyword.other.dml.hanasql');
   check(t, 'LEFT', 'keyword.other.dml.hanasql');
   check(t, 'WITH', 'meta.embedded.block.sql');
-  check(t, '\\"Column2\\"', 'variable.other.quoted-identifier');
+  check(t, '\\"', 'variable.other.quoted-identifier');
+  check(t, 'Column2', 'variable.other.quoted-identifier');
   check(t, '12', 'string.quoted.single');
 });
 
@@ -517,7 +518,7 @@ test('Phase 1 SQL, SQLScript, Vector, Spatial, Graph, Hierarchy, JSON & Catalogs
   check(t, 'OPENCYPHER_TABLE', 'support.function.hanasql');
   check(t, 'SPARQL_TABLE', 'support.function.hanasql');
   check(t, 'MEMBER OF', 'keyword.other.clause.hanasql');
-  check(t, 'CONTAINS', 'keyword.operator.logical.hanasql');
+  check(t, 'CONTAINS', 'keyword.other.logical.hanasql');
   check(t, 'WITH SQL STATISTICS INTO', 'keyword.other.clause.hanasql');
   check(t, 'HIERARCHY_DESCENDANTS_AGGREGATE', 'support.function.hanasql');
   check(t, 'WITH SUBTOTAL', 'keyword.other.clause.hanasql');
@@ -678,6 +679,155 @@ test('hanasql: TO_CHAR, TO_NCHAR, CHR, GET_NUM_SERVERS, RECORD_COUNT and IS_EMPT
   const conv = ['TO_CHAR', 'TO_NCHAR', 'TO_VARCHAR', 'TO_NVARCHAR', 'TO_CLOB', 'TO_NCLOB', 'TO_BINARY', 'TO_VARBINARY'];
   const ct = tokenize('source.hanasql', `SELECT ${conv.map((f) => `${f}(a)`).join(', ')} FROM DUMMY;`);
   for (const f of conv) check(ct, f, 'support.function');
+});
+
+// ---------------------------------------------------------------------------
+// Context-aware keyword scopes (#79) and embedded SQL in XS Classic strings (#41)
+// ---------------------------------------------------------------------------
+
+/** Significant scopes (no root, no meta.*) of the token holding the `nth` whole-word, case-sensitive `word`. */
+const scopesOf = (tokens: readonly TmToken[], word: string, nth = 0): string[] => {
+  const re = new RegExp(`(?<![\\w$#])${word.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')}(?![\\w$#])`, 'g');
+  let seen = 0;
+  for (const t of tokens) {
+    for (const _ of t.text.matchAll(re)) {
+      if (seen++ === nth) return t.scopes.slice(1).filter((s) => !s.startsWith('meta.'));
+    }
+  }
+  throw new Error(`word ${word} #${nth} not found`);
+};
+const CLAUSE = 'keyword.other.clause.hanasql';
+const keywordIn = (scope: string, src: string, words: readonly string[]): void => {
+  const t = tokenize(scope, src);
+  for (const w of words) {
+    assert.ok(scopesOf(t, w).includes(CLAUSE), `${w} in ${JSON.stringify(src)}: ${scopesOf(t, w).join(' ') || '(none)'}`);
+  }
+};
+const bareIn = (scope: string, src: string, words: readonly string[]): void => {
+  const t = tokenize(scope, src);
+  for (const w of words) assert.deepEqual(scopesOf(t, w), [], `${w} must stay an identifier in ${JSON.stringify(src)}`);
+};
+
+test('hanasql: clause phrases scope context-only keywords (#79)', () => {
+  const cases: Array<[string, string[]]> = [
+    ['SELECT SUM(x) OVER (ORDER BY b ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) FROM t;', ['ROWS', 'UNBOUNDED PRECEDING', 'CURRENT ROW']],
+    ['SELECT SUM(x) OVER (ORDER BY b RANGE BETWEEN 2 PRECEDING AND 3 FOLLOWING) FROM t;', ['RANGE', 'PRECEDING', 'FOLLOWING']],
+    ['SELECT a FROM t ORDER BY b DESC NULLS LAST, c NULLS FIRST;', ['NULLS LAST', 'NULLS FIRST']],
+    ['SELECT a FROM t WITH HINT (NO_INLINE);', ['WITH HINT']],
+    ["ALTER SYSTEM ADD STATEMENT HINT (NO_CS_JOIN) FOR STATEMENT HASH 'x';", ['STATEMENT HINT', 'STATEMENT']],
+    ['MERGE INTO t USING s ON t.a = s.a WHEN MATCHED THEN DELETE WHEN NOT MATCHED THEN INSERT VALUES (s.a);', ['WHEN MATCHED', 'WHEN NOT MATCHED']],
+    ['CREATE TRIGGER tr AFTER UPDATE ON t REFERENCING NEW ROW nr FOR EACH ROW BEGIN END;', ['AFTER UPDATE', 'REFERENCING NEW ROW', 'FOR EACH ROW']],
+    ['CREATE TRIGGER tr INSTEAD OF DELETE ON v FOR EACH STATEMENT BEGIN END;', ['INSTEAD OF', 'FOR EACH STATEMENT']],
+    ["DO BEGIN EXECUTE IMMEDIATE 'TRUNCATE TABLE t'; END;", ['EXECUTE IMMEDIATE']],
+    ['SET TRANSACTION ISOLATION LEVEL READ COMMITTED; SET TRANSACTION READ ONLY;', ['READ COMMITTED', 'READ ONLY']],
+    ['CREATE PROCEDURE p () READS SQL DATA AS BEGIN END;', ['READS SQL DATA']],
+    ['CREATE COLUMN TABLE c AS (SELECT * FROM d) WITH NO DATA; CREATE COLUMN TABLE e LIKE d WITH DATA;', ['WITH NO DATA', 'WITH DATA']],
+    ['CREATE COLUMN TABLE r (a INT) PARTITION BY RANGE (a) (PARTITION 1 <= VALUES < 5, PARTITION OTHERS);', ['PARTITION BY RANGE']],
+    ['CREATE COLUMN TABLE h (a INT, b INT) PARTITION BY HASH (a) PARTITIONS 4, RANGE (b) (PARTITION OTHERS);', ['PARTITION BY HASH', 'RANGE']],
+    ['CREATE SEQUENCE s INCREMENT BY 1 MAXVALUE 100 NO CYCLE;', ['INCREMENT BY', 'MAXVALUE', 'NO CYCLE']],
+    ['CREATE USER u PASSWORD Initial1 NO FORCE_FIRST_PASSWORD_CHANGE;', ['NO']],
+    ["SELECT a FROM t WHERE b LIKE 'x!%' ESCAPE '!';", ['ESCAPE']],
+    ['CREATE GLOBAL TEMPORARY TABLE g (a INT) ON COMMIT PRESERVE ROWS;', ['PRESERVE ROWS']],
+  ];
+  for (const [src, words] of cases) keywordIn('source.hanasql', src, words);
+});
+
+test('hanasql: context-only keywords stay identifiers outside their clause (#79)', () => {
+  bareIn('source.hanasql', 'SELECT range, data, first, last, source, matched, hint, rows, depth FROM t;', [
+    'range', 'data', 'first', 'last', 'source', 'matched', 'hint', 'rows', 'depth',
+  ]);
+  bareIn('source.hanasql', 'SELECT no FROM t WHERE no IS NULL AND no IN (1, 2);', ['no']);
+  bareIn('source.hanasql', 'SELECT a FROM t WHERE no = 1;', ['no']);
+  // a CTE named `data` is not `WITH DATA`
+  bareIn('source.hanasql', 'WITH data AS (SELECT 1 AS a FROM DUMMY) SELECT a FROM data;', ['data']);
+  bareIn('source.hanasql', 'WITH data (a) AS (SELECT 1 FROM DUMMY) SELECT a FROM data;', ['data']);
+  bareIn('source.hanasql', 'SELECT FIRST_VALUE(a ORDER BY b) AS first FROM t;', ['first']);
+});
+
+test('hanasql: prepositions TO, AT and OF are keywords everywhere (#79)', () => {
+  const t = tokenize('source.hanasql', 'GRANT SELECT ON t TO u; RENAME TABLE a TO b; SELECT * FROM c FOR UPDATE OF c.x;');
+  for (const [w, n] of [['TO', 0], ['TO', 1], ['OF', 0]] as const) {
+    assert.ok(scopesOf(t, w, n).includes('keyword.other.preposition.hanasql'), `${w} #${n}`);
+  }
+});
+
+test('hanasql: hierarchy clause words are keywords only inside HIERARCHY*() calls (#79, #75)', () => {
+  const src = [
+    'SELECT node_id FROM HIERARCHY_DESCENDANTS (',
+    '  SOURCE HIERARCHY (SOURCE (SELECT node_id, parent_id FROM t WHERE x IN (1, 2)) SIBLING',
+    '    ORDER BY ord ORPHAN ROOT CYCLE BREAKUP DEPTH 3 CACHE FORCE)',
+    "  START WHERE node_id = 'R' DISTANCE FROM 1 TO 2",
+    ') WHERE depth = 1 AND source = 2;',
+  ].join('\n');
+  const t = tokenize('source.hanasql', src);
+  const inside = [['SOURCE', 0], ['SOURCE', 1], ['SIBLING', 0], ['ORPHAN', 0], ['ROOT', 0], ['CYCLE', 0], ['BREAKUP', 0], ['DEPTH', 0], ['CACHE', 0], ['FORCE', 0], ['DISTANCE', 0]] as const;
+  for (const [w, n] of inside) assert.ok(scopesOf(t, w, n).includes(CLAUSE), `${w} #${n}: ${scopesOf(t, w, n).join(' ')}`);
+  check(t, 'HIERARCHY_DESCENDANTS', 'support.function.hanasql');
+  check(t, 'HIERARCHY', 'support.function.hanasql');
+  // the region ends at the call's own `)`: the nested `IN (1, 2)` and the inner call do not close it early
+  assert.deepEqual(scopesOf(t, 'depth'), [], 'depth after the call is a column');
+  assert.deepEqual(scopesOf(t, 'source'), [], 'source after the call is a column');
+  keywordIn('source.hanasql', 'SELECT * FROM HIERARCHY_LEVELED (SOURCE t LEVELS (l1, l2) ORDER BY l1 NULLS LAST RETAIN NULLS);', [
+    'LEVELS', 'NULLS LAST', 'RETAIN NULLS',
+  ]);
+  keywordIn('source.hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS_AGGREGATE (SOURCE h MEASURES (SUM(v) AS s) WITH SUBTOTAL);', ['MEASURES']);
+});
+
+test('hanasql: word operators use a keyword scope that default themes colour (#79)', () => {
+  const t = tokenize('source.hanasql', "SELECT a FROM t WHERE b = 1 AND c IN (1) OR NOT EXISTS (SELECT 1 FROM DUMMY) AND d LIKE 'x' AND e IS NULL;");
+  for (const w of ['AND', 'OR', 'NOT', 'IN', 'EXISTS', 'LIKE', 'IS']) {
+    assert.deepEqual(scopesOf(t, w), ['keyword.other.logical.hanasql'], w);
+  }
+});
+
+test('hdbview / hdbsequence: embedded SQL keeps comments, clauses and hierarchy keywords with \\" escapes (#41)', () => {
+  const view = [
+    'schema = "MYSCHEMA";',
+    'query = "',
+    '  SELECT node_id FROM HIERARCHY ( -- generator',
+    '    SOURCE \\"MYSCHEMA\\".\\"MY_TABLE\\"',
+    '    START WHERE parent_id IS NULL',
+    '    SIBLING',
+    '    ORDER BY \\"ORD\\" /* order */',
+    '    ORPHAN ROOT',
+    '    CYCLE BREAKUP',
+    '  ) WHERE \\"MULTI',
+    'LINE\\" = 1\\nAND source = 2',
+    '";',
+    'public = false;',
+  ].join('\n');
+  const t = tokenize('source.hdbview', view);
+  for (const w of ['SOURCE', 'START', 'SIBLING', 'ORPHAN', 'ROOT', 'CYCLE', 'BREAKUP']) {
+    assert.ok(scopesOf(t, w).includes(CLAUSE), `${w}: ${scopesOf(t, w).join(' ')}`);
+  }
+  check(t, '-- generator', 'comment.line.double-dash.hanasql');
+  check(t, ' order ', 'comment.block.hanasql');
+  check(t, 'MY_TABLE', 'variable.other.quoted-identifier.hanasql');
+  check(t, 'LINE', 'variable.other.quoted-identifier.hanasql'); // an escaped identifier spanning two lines
+  check(t, '\\n', 'constant.character.escape.hdbview');
+  check(t, 'AND', 'keyword.other.logical.hanasql'); // right after the `\n` escape
+  assert.deepEqual(scopesOf(t, 'source'), [], 'source outside the hierarchy call');
+  check(t, 'public', 'property-name.hdbview'); // the string closed where it should
+
+  // `--` ends at the closing quote, `/*` does not run past it
+  const comments = tokenize('source.hdbview', 'query = "SELECT a FROM t -- note";\npublic = false;\nquery = "SELECT /* x";\nschema = "S";');
+  check(comments, '-- note', 'comment.line.double-dash.hanasql');
+  check(comments, 'public', 'property-name.hdbview');
+  check(comments, 'schema', 'property-name.hdbview');
+
+  const seq = tokenize(
+    'source.hdbsequence',
+    'schema = "S";\nreset_by = "SELECT MAX(\\"ID\\") + 1 FROM \\"S\\".\\"T\\"\\nWHERE a IS NOT NULL -- max\n";\nstart_with = 1;'
+  );
+  check(seq, 'SELECT', 'keyword.other.dml.hanasql');
+  check(seq, 'WHERE', 'keyword.other.dml.hanasql'); // right after the `\n` escape
+  check(seq, 'ID', 'variable.other.quoted-identifier.hanasql');
+  check(seq, '-- max', 'comment.line.double-dash.hanasql');
+  check(seq, 'start_with', 'property-name.hdbsequence');
+
+  // negative: an unclosed HIERARCHY( stops at the closing quote instead of swallowing the next keys
+  const open = tokenize('source.hdbview', 'query = "SELECT * FROM HIERARCHY (SOURCE t";\npublic = false;');
+  check(open, 'public', 'property-name.hdbview');
 });
 
 if (process.env.DUMP && process.env.FILE) {

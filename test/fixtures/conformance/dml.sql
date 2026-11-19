@@ -23,7 +23,6 @@ UPSERT employees (emp_id, salary) VALUES (1, 5000) WITH PRIMARY KEY;
 REPLACE employees VALUES (2, 'Jones', 3900) WHERE emp_id = 2;
 
 -- @case merge into with both branches
--- @todo grammar #79 unscoped MATCHED
 MERGE INTO employees t USING staged_emps s ON t.emp_id = s.emp_id
 WHEN MATCHED THEN UPDATE SET t.salary = s.salary
 WHEN NOT MATCHED THEN INSERT VALUES (s.emp_id, s.last_name, s.salary);
@@ -32,7 +31,6 @@ WHEN NOT MATCHED THEN INSERT VALUES (s.emp_id, s.last_name, s.salary);
 TRUNCATE TABLE staging_area;
 
 -- @case transaction control
--- @todo grammar #79 unscoped READ
 SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
 COMMIT;
 ROLLBACK;

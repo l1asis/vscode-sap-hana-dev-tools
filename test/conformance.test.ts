@@ -163,8 +163,9 @@ test('harness: formatter invariants pass on clean input and detect format-off re
 
 test('harness: unscopedKeywords ignores strings, comments, quoted and dotted names', () => {
   assert.deepEqual(unscopedKeywords("SELECT 'RANGE' AS \"RANGE\", t.RANGE FROM t; -- RANGE"), []);
-  // Positive: a catalog keyword that the grammar does not scope today (tracked in #79).
-  assert.deepEqual(unscopedKeywords('SELECT a FROM t WITH HINT (NO_INLINE);').includes('HINT'), true);
+  // Positive: a context-only catalog keyword outside its clause (`SOURCE` is scoped only inside HIERARCHY*()).
+  assert.deepEqual(unscopedKeywords('SELECT a FROM t WHERE source = 1;'), ['SOURCE']);
+  assert.deepEqual(unscopedKeywords('SELECT a FROM HIERARCHY (SOURCE t) WITH HINT (NO_INLINE);'), []);
 });
 
 test('harness: unknownCalls skips catalog functions and declared object names', () => {

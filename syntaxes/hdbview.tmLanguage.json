@@ -80,30 +80,13 @@
         }
       ]
     },
-    "query": {
-      "begin": "\\b(query)\\b\\s*(=)\\s*(\")",
-      "beginCaptures": {
-        "1": {
-          "name": "support.type.property-name.hdbview"
-        },
-        "2": {
-          "name": "keyword.operator.assignment.hdbview"
-        },
-        "3": {
-          "name": "punctuation.definition.string.begin.hdbview"
-        }
-      },
-      "end": "(\")",
-      "endCaptures": {
-        "1": {
-          "name": "punctuation.definition.string.end.hdbview"
-        }
-      },
-      "contentName": "meta.embedded.block.sql.hdbview",
+    "embedded-sql": {
       "patterns": [
         {
-          "name": "variable.other.quoted-identifier.hanasql",
-          "match": "\\\\\"(?:(?!\\\\\").)*\\\\\""
+          "include": "#embedded-sql-comments"
+        },
+        {
+          "include": "#embedded-sql-quoted-identifier"
         },
         {
           "name": "constant.character.escape.hdbview",
@@ -111,6 +94,15 @@
         },
         {
           "include": "source.hanasql#strings"
+        },
+        {
+          "include": "source.hanasql#statements"
+        },
+        {
+          "include": "source.hanasql#clause-phrases"
+        },
+        {
+          "include": "#embedded-sql-hierarchy-call"
         },
         {
           "include": "source.hanasql#numbers"
@@ -138,6 +130,94 @@
         },
         {
           "include": "source.hanasql#operators"
+        }
+      ]
+    },
+    "embedded-sql-comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-dash.hanasql",
+          "match": "--(?:[^\"\\\\]|\\\\.)*"
+        },
+        {
+          "name": "comment.block.hanasql",
+          "begin": "\\/\\*",
+          "end": "\\*/|(?=\")"
+        }
+      ]
+    },
+    "embedded-sql-quoted-identifier": {
+      "name": "variable.other.quoted-identifier.hanasql",
+      "begin": "\\\\\"",
+      "end": "\\\\\"|(?=\")"
+    },
+    "embedded-sql-hierarchy-call": {
+      "begin": "(?i)(?:\\b|(?<=\\\\[nrt]))(HIERARCHY_ANCESTORS_AGGREGATE|HIERARCHY_ANCESTORS|HIERARCHY_DESCENDANTS_AGGREGATE|HIERARCHY_DESCENDANTS|HIERARCHY_LEVELED|HIERARCHY_SIBLINGS|HIERARCHY_SPANTREE|HIERARCHY_TEMPORAL|HIERARCHY)\\s*(\\()",
+      "beginCaptures": {
+        "1": {
+          "name": "support.function.hanasql"
+        }
+      },
+      "end": "\\)|(?=\")",
+      "patterns": [
+        {
+          "include": "#embedded-sql-parens"
+        },
+        {
+          "include": "#embedded-sql-comments"
+        },
+        {
+          "include": "#embedded-sql-quoted-identifier"
+        },
+        {
+          "include": "source.hanasql#statements"
+        },
+        {
+          "include": "source.hanasql#clause-phrases"
+        },
+        {
+          "include": "source.hanasql#hierarchy-keywords"
+        },
+        {
+          "include": "#embedded-sql"
+        }
+      ]
+    },
+    "embedded-sql-parens": {
+      "begin": "\\(",
+      "end": "\\)|(?=\")",
+      "patterns": [
+        {
+          "include": "#embedded-sql-parens"
+        },
+        {
+          "include": "#embedded-sql"
+        }
+      ]
+    },
+    "query": {
+      "begin": "\\b(query)\\b\\s*(=)\\s*(\")",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbview"
+        },
+        "2": {
+          "name": "keyword.operator.assignment.hdbview"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.hdbview"
+        }
+      },
+      "end": "(\")",
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.string.end.hdbview"
+        }
+      },
+      "contentName": "meta.embedded.block.sql.hdbview",
+      "patterns": [
+        {
+          "include": "#embedded-sql"
         }
       ]
     },

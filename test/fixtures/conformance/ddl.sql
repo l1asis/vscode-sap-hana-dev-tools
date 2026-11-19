@@ -34,20 +34,16 @@ CREATE COLUMN TABLE codes (code_id INT PRIMARY KEY, code_key INT UNIQUE BTREE);
 CREATE COLUMN TABLE documents (doc_id INT, body TEXT FAST PREPROCESS OFF);
 
 -- @case hash partitioning
--- @todo grammar #79 unscoped HASH
 CREATE COLUMN TABLE events (event_id INT, region_id INT) PARTITION BY HASH (region_id) PARTITIONS 4;
 
 -- @case range partitioning
--- @todo grammar #79 unscoped RANGE
 CREATE COLUMN TABLE readings (reading_id INT, taken_year INT)
 PARTITION BY RANGE (taken_year) (PARTITION 2020 <= VALUES < 2025, PARTITION OTHERS);
 
 -- @case create table as select
--- @todo grammar #79 unscoped DATA, NO
 CREATE COLUMN TABLE dept_copy AS (SELECT * FROM departments) WITH NO DATA;
 
 -- @case create table like
--- @todo grammar #79 unscoped DATA
 CREATE COLUMN TABLE dept_shadow LIKE departments WITH DATA;
 
 -- @case alter table add, alter and drop columns
@@ -74,7 +70,6 @@ CREATE UNIQUE INDEX emp_mail_idx ON employees (email);
 DROP INDEX emp_name_idx;
 
 -- @case sequence
--- @todo grammar #79 unscoped CYCLE, INCREMENT, NO
 CREATE SEQUENCE ticket_seq START WITH 100 INCREMENT BY 1 NO CYCLE;
 SELECT ticket_seq.NEXTVAL FROM DUMMY;
 
@@ -91,12 +86,10 @@ COMMENT ON TABLE departments IS 'Organisational units';
 COMMENT ON COLUMN departments.budget IS 'Yearly budget';
 
 -- @case rename and drop table
--- @todo grammar #79 unscoped TO
 RENAME TABLE dept_copy TO dept_backup;
 DROP TABLE dept_backup CASCADE;
 
 -- @case trigger
--- @todo grammar #79 unscoped AFTER, EACH
 CREATE TRIGGER emp_audit AFTER UPDATE ON employees REFERENCING NEW ROW new_row FOR EACH ROW
 BEGIN
   INSERT INTO emp_log VALUES (:new_row.emp_id, CURRENT_TIMESTAMP);

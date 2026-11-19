@@ -64,15 +64,12 @@ SELECT dept_id, COUNT(DISTINCT grade), STRING_AGG(last_name, ', ' ORDER BY last_
 SELECT emp_id, RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk FROM employees;
 
 -- @case window frame clause
--- @todo grammar #79 unscoped PRECEDING, ROWS, UNBOUNDED
 SELECT emp_id, SUM(salary) OVER (ORDER BY hired ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running FROM employees;
 
 -- @case statement hint
--- @todo grammar #79 unscoped HINT
 SELECT emp_id FROM employees WITH HINT (NO_INLINE);
 
 -- @case ORDER BY NULLS LAST
--- @todo grammar #79 unscoped LAST, NULLS
 SELECT emp_id FROM employees ORDER BY bonus DESC NULLS LAST;
 
 -- @case parameter markers and session functions
@@ -83,7 +80,6 @@ SELECT emp_id FROM employees WHERE dept_id = 10 FOR UPDATE;
 
 -- @case series generate table function
 -- @todo syntax #78 false HANA-SYN-023 at "TABLE", "sales_series"
--- @todo grammar #79 unscoped SERIES
 SELECT * FROM SERIES_GENERATE(SERIES TABLE sales_series);
 
 -- @case comments are preserved around clauses
