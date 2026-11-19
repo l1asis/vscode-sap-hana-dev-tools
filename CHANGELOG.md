@@ -2,6 +2,43 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.12.0] - 2026-11-19
+
+### Added
+
+- **Embedded SQL in Classic `.hdbview` / `.hdbsequence` `[XSC]`:** The SQL inside `query = "..."` and `reset_by = "..."` is now checked by every SQL syntax rule, plus the security and performance rules. Problems and QuickFixes point at the exact spot in the KV file, outside the `\"` escapes. An unescaped `"` that ends the SQL early is reported, with a QuickFix that escapes the inner quotes (#42, #47).
+- **Hierarchy Function Clauses:** Inside the nine clause-syntax `HIERARCHY*( ... )` functions, every misspelled clause or option keyword gets its own diagnostic with a typo QuickFix (`SORCE` -> `SOURCE`, `CYCLE BRKUP` -> `BREAKUP`, `DISTNCE FRM 1 TOO 3`), even several in one call. `DEPTH` without an integer (`DEPTH FIRST`) and `LOAD` without `BULK`, `INCREMENTAL` or a string (`LOAD BY ...`) are reported too, since neither form is documented syntax (#75).
+- **Hierarchy Formatting:** The formatter puts each clause of a `HIERARCHY*( ... )` call on its own indented line and cases clause keywords only where they act as keywords, so `START WHERE depth = 1` keeps `depth` as an identifier (#75).
+- **Dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`):**
+  - Clause errors: `EXECUTE` without `IMMEDIATE` (QuickFix `Insert 'IMMEDIATE'`), a missing SQL string, `INTO` after `USING`, duplicate clauses, `DEFAULT` without `INTO` or with a different number of values, empty lists, and `READS SQL DATA` typos.
+  - New rule `HANA-SYN-043` for binding errors from the SQLScript Reference: mixed `?` and `:<variable>` parameters, a `?` count that differs from the `USING` values, unbound `:<variable>` parameters, and a table variable in both `INTO` and `USING`.
+  - A single static SQL literal is checked like any other SQL, with positions mapped through the `''` escapes (`EXEC 'SELCT ...'` -> `SELECT`). Concatenated and variable SQL is never inspected (#45).
+- **CDS Lists:** Missing commas are reported, with an `Insert ','` QuickFix, in view select lists, `group by` / `order by` lists, `with parameters` declarations and `technical configuration` index element lists (#42).
+
+### Changed
+
+- **Column on Its Own Line:** `SELECT\n  "ID"\n  "NAME"` is valid SQL, but `"NAME"` most likely needs a comma before it. When a bare column reference is followed by a name on the next line, a warning offers `Insert ','` and `Insert 'AS'`. Wrapped long expressions are not affected (#42).
+- **Dynamic SQL in Read-Only Routines (`HANA-SYN-029`):** `EXEC` / `EXECUTE IMMEDIATE` is now allowed in table functions and `READS SQL DATA` procedures, where SAP HANA runs it read-only. It is reported there only when a static SQL string changes data or the catalog (`EXEC 'DELETE FROM t'`), and scalar functions still reject it (#45).
+- **Classic KV Values `[XSC]`:** Single-quoted strings (QuickFix `Use double quotes`), parenthesized values, missing commas in value lists (`depends_on = "a" "b"`) and numeric arrays (`[1 2]`) are reported. A value that loses its closing quote no longer swallows the next `key =` line, and an unclosed `[` stops at its `;` instead of misreporting the following entries (#47).
+- **Word Operators:** `AND`, `OR`, `NOT`, `IN`, `IS`, `LIKE`, `BETWEEN`, `EXISTS` and the other word operators now use `keyword.other.logical.hanasql`, which gets the keyword colour in all ten default VS Code themes (#79).
+- **Context-Aware Keyword Highlighting:** Non-reserved words are highlighted only where they act as keywords:
+  - `TO`, `AT` and `OF` everywhere;
+  - hierarchy clause and option words only inside `HIERARCHY*( ... )`;
+  - fixed phrases such as window frames, `NULLS FIRST`, `WITH HINT`, `WHEN [NOT] MATCHED`, `EXECUTE IMMEDIATE`, `READS SQL DATA` and `WITH [NO] DATA`.
+
+  The same words used as column names (`source`, `depth`, `data`, `no`) stay plain (#79).
+
+### Fixed
+
+- **`WITH ASSOCIATIONS` False Positives:** Views, projection views and tables with `WITH ASSOCIATIONS (...)` no longer report bogus missing commas or operators. A missing comma between two associations and an `ONN` typo are reported instead (#42).
+- **Parameterized Views:** `VIEW v (IN p INT, IN q NVARCHAR(10) DEFAULT 'x') AS ...` no longer reports missing commas between parameter names and types (#42).
+- **`IN (1 2)`:** One missing comma is reported once, not also as a missing operator (#42).
+- **Misleading Hierarchy Errors:** Misspelled hierarchy keywords no longer show up as `Missing operator between 'CACHEE' and 'FORCEE'` (#75).
+- **Unclosed Strings in CDS and `.xsodata`:** An unclosed `'` no longer adds a cascading unclosed-`{` error for the enclosing braces (#47).
+- **Classic KV Detection:** A broken HDI `.hdbview` that merely mentions a KV key name (`SELECT public FROM ...`) is no longer treated as a Classic KV file (#47).
+- **Embedded SQL Highlighting in `.hdbview` / `.hdbsequence`:** SQL comments, clause keywords and escaped identifiers spanning lines are highlighted inside `query` / `reset_by`, keywords after `\n` escapes are recognized, and an unclosed `(` or `HIERARCHY(` no longer swallows the following `key = value;` lines (#41).
+- **Specs & Tests:** Spec updates in `docs/specs/diagnostics/syntax-rules.md` (including a table of parser-backed statement families, #78), `sql-sqlscript.md` §4.5, `hdb-classic-kv.md` §4.3 and `cds.md`, plus new broken samples and conformance fixtures, bringing the suite to `429` passing tests (`8` tracked `@todo` cases). Known `@todo` failures in the conformance suite no longer print stack traces (#99). The conformance sweep dropped from 474 to 460 blocks with syntax errors (`docs/research/CONFORMANCE.md`).
+
 ## [0.11.0] - 2026-11-19
 
 ### Added
