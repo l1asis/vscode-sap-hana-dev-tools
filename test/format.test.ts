@@ -150,3 +150,93 @@ test('tokenizer: 0x prefix without hex digits is not a hex literal (#88)', () =>
   assert.deepStrictEqual(pieces('0x'), ['number:0', 'word:x']);
   assert.deepStrictEqual(pieces('10x1'), ['number:10', 'word:x1']);
 });
+
+test('HIERARCHY* calls put one clause per line and case clause keywords only in clause position (#75)', () => {
+  const src =
+    'select * from hierarchy (source (select "ID" as node_id, "PARENT" as parent_id from "T" order by "ID") ' +
+    'sibling order by "ID" depth 3 start where "PARENT" is null and depth = 1 cache force multiparent load bulk orphan root cycle breakup) ' +
+    'order by hierarchy_rank;';
+  const out = f(src);
+  assert.strictEqual(
+    out,
+    [
+      'SELECT *',
+      'FROM HIERARCHY(',
+      '    SOURCE (',
+      '        SELECT',
+      '            "ID" AS node_id,',
+      '            "PARENT" AS parent_id',
+      '        FROM "T"',
+      '        ORDER BY "ID"',
+      '    )',
+      '    SIBLING ORDER BY "ID"',
+      '    DEPTH 3',
+      '    START WHERE "PARENT" IS NULL AND depth = 1',
+      '    CACHE FORCE',
+      '    MULTIPARENT',
+      '    LOAD BULK',
+      '    ORPHAN ROOT',
+      '    CYCLE BREAKUP',
+      ')',
+      'ORDER BY hierarchy_rank;',
+      '',
+    ].join('\n')
+  );
+  assert.strictEqual(f(out), out, 'idempotent');
+
+  // nested generator, navigation and aggregate clauses, two-word clause keywords
+  assert.strictEqual(
+    f("select n from hierarchy_descendants(source hierarchy(source t) start where n = 'R' distance from 1 to 2) h"),
+    ['SELECT n', 'FROM HIERARCHY_DESCENDANTS(', '    SOURCE HIERARCHY(', '        SOURCE t', '    )', "    START WHERE n = 'R'", '    DISTANCE FROM 1 TO 2', ') h', ''].join('\n')
+  );
+  assert.strictEqual(
+    f("select * from hierarchy_descendants_aggregate(source h join f on f.n = h.n measures (sum(f.v) as total) with subtotal 'x' with not matched)"),
+    [
+      'SELECT *',
+      'FROM HIERARCHY_DESCENDANTS_AGGREGATE(',
+      '    SOURCE h',
+      '    JOIN f ON f.n = h.n',
+      '    MEASURES (SUM(f.v) AS total)',
+      "    WITH SUBTOTAL 'x'",
+      '    WITH NOT MATCHED',
+      ')',
+      '',
+    ].join('\n')
+  );
+  assert.strictEqual(
+    f('select * from hierarchy_temporal(source t sibling order by a valid from :d1 excluded until :d2 excluded no cache)'),
+    ['SELECT *', 'FROM HIERARCHY_TEMPORAL(', '    SOURCE t', '    SIBLING ORDER BY a', '    VALID FROM :d1 EXCLUDED UNTIL :d2 EXCLUDED', '    NO CACHE', ')', ''].join('\n')
+  );
+
+  // negative: outside a hierarchy call the same words are identifiers, and an ordinary call stays on one line
+  assert.strictEqual(f('select source, depth from t where cache = 1'), ['SELECT', '    source,', '    depth', 'FROM t', 'WHERE cache = 1', ''].join('\n'));
+  assert.strictEqual(f('select hierarchy_composite_id(a, b) from t'), ['SELECT HIERARCHY_COMPOSITE_ID(a, b)', 'FROM t', ''].join('\n'));
+});
+
+test('HIERARCHY* layout keeps comments and -- hanasql-format off regions (#75)', () => {
+  const src = [
+    'select * from hierarchy ( -- generator',
+    '  source t /* src */ sibling order by a',
+    '  -- hanasql-format off',
+    '  ORPHAN   root',
+    '  -- hanasql-format on',
+    '  cycle breakup);',
+  ].join('\n');
+  const out = f(src);
+  assert.strictEqual(
+    out,
+    [
+      'SELECT *',
+      'FROM HIERARCHY( -- generator',
+      '    SOURCE t /* src */',
+      '    SIBLING ORDER BY a',
+      '-- hanasql-format off',
+      '  ORPHAN   root',
+      '  -- hanasql-format on',
+      '    CYCLE BREAKUP',
+      ');',
+      '',
+    ].join('\n')
+  );
+  assert.strictEqual(f(out), out, 'idempotent');
+});

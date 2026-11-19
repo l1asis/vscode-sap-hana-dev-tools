@@ -396,42 +396,89 @@ sparql_table_call ::=
     "SPARQL_TABLE" "(" string_literal [ "," string_literal ] ")" ;
 ```
 
-### 4.5 Hierarchy Generator & Navigation Functions
+### 4.5 Hierarchy Generator & Navigation Functions `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
 
-> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md (Pages 8–57)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/011_HIERARCHY_SPANTREE_Generator_Function.md
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/012_HIERARCHY_TEMPORAL_Generator_Function.md
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/013_HIERARCHY_LEVELED_Generator_Function.md
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/020_HIERARCHY_DESCENDANTS_Navigation_Function.md … 024_HIERARCHY_ANCESTORS_AGGREGATE_Navigation_Function.md
+
+The nine clause-syntax functions are table functions: they appear where a `FROM` / `JOIN` table reference can, and as the `SOURCE` of another hierarchy function. Their clauses are separated by spaces, not commas. `HIERARCHY_COMPOSITE_ID(a, b, ...)` is an ordinary scalar function and is not covered here.
 
 ```ebnf
-hierarchy_generator_call ::=
-    ( "HIERARCHY" | "HIERARCHY_SPANTREE" | "HIERARCHY_TEMPORAL" | "HIERARCHY_LEVELED" ) "("
-        "SOURCE" ( table_ref | "(" select_stmt ")" )
-        [ "START" "WHERE" condition ]
-        [ "LEVELS" "(" column_list ")" ]
-        [ "SIBLING" "ORDER" "BY" order_by_list ]
-        [ "VALID" ( "FROM" expression [ "EXCLUDED" ] "UNTIL" expression [ "EXCLUDED" ]
-                  | "AT" expression [ "FROM" "EXCLUDED" ] [ "UNTIL" "EXCLUDED" ] ) ]
-        [ "DEPTH" signed_integer ]
-        [ "MULTIPARENT" [ "ERROR" | "LEAVES" ] ]
-        [ "ORPHAN" ( "IGNORE" | "ERROR" | "ADOPT" | "ROOT" ) ]
-        [ "CYCLE" ( "BREAKUP" | "ERROR" ) ]
-        [ "CACHE" [ "FORCE" | string_literal ] | "NO" "CACHE" ]
-        [ "LOAD" ( "BULK" | "INCREMENTAL" | string_literal ) ]
-        [ "RETAIN" "NULLS" string_literal ]
-    ")" ;
+hierarchy_call     ::= hierarchy_function "(" source_spec { hierarchy_clause } ")" ;
+hierarchy_function ::= "HIERARCHY" | "HIERARCHY_SPANTREE" | "HIERARCHY_TEMPORAL" | "HIERARCHY_LEVELED"
+                     | "HIERARCHY_DESCENDANTS" | "HIERARCHY_ANCESTORS" | "HIERARCHY_SIBLINGS"
+                     | "HIERARCHY_DESCENDANTS_AGGREGATE" | "HIERARCHY_ANCESTORS_AGGREGATE" ;
 
-hierarchy_navigation_call ::=
-    ( "HIERARCHY_DESCENDANTS" | "HIERARCHY_ANCESTORS" | "HIERARCHY_SIBLINGS"
-    | "HIERARCHY_DESCENDANTS_AGGREGATE" | "HIERARCHY_ANCESTORS_AGGREGATE" ) "("
-        "SOURCE" ( table_ref | "(" select_stmt ")" )
-        [ "START" ( table_ref | "(" select_stmt ")" | "WHERE" condition ) ]
-        [ "JOIN" table_ref "ON" condition ]
-        [ "MEASURES" "(" measure_expr "AS" identifier { "," measure_expr "AS" identifier } ")" ]
-        [ "DISTANCE" ( [ "FROM" expression ] [ "TO" expression ] | expression ) ]
-        [ "WHERE" condition ]
-        { "WITH" ( "SUBTOTAL" | "BALANCE" | "NOT" "MATCHED" | "TOTAL" ) [ expression ] }
-    ")" ;
+source_spec        ::= "SOURCE" table_valued_expr ;
+table_valued_expr  ::= table_ref [ [ "AS" ] alias ]        (* name, "V"(params), :table_variable *)
+                     | "(" query ")"
+                     | hierarchy_call ;
+
+hierarchy_clause   ::= "START" ( "WHERE" condition | table_valued_expr )
+                     | "SIBLING" "ORDER" "BY" order_item { "," order_item }
+                     | "LEVELS" "(" column_name { "," column_name } ")"
+                     | "VALID" ( "FROM" expression [ "EXCLUDED" ] "UNTIL" expression [ "EXCLUDED" ]
+                               | "AT" expression [ "FROM" "EXCLUDED" ] [ "UNTIL" "EXCLUDED" ] )
+                     | "DEPTH" integer
+                     | "MULTIPARENT" [ "ERROR" | "LEAVES" ]
+                     | "ORPHAN" ( "IGNORE" | "ERROR" | "ADOPT" | "ROOT" )
+                     | "CYCLE" ( "BREAKUP" | "ERROR" )
+                     | "CACHE" [ "FORCE" | string_literal ]     (* 'on' | 'off' | 'force' *)
+                     | "NO" "CACHE"
+                     | "LOAD" ( "BULK" | "INCREMENTAL" | string_literal )   (* 'bulk' | 'incremental' *)
+                     | "RETAIN" "NULLS" string_literal         (* 'none' | 'not trailing' | 'all' *)
+                     | "DISTANCE" ( [ "FROM" expression ] [ "TO" expression ] | expression )
+                     | "JOIN" table_valued_expr "ON" condition
+                     | "MEASURES" "(" measure_item { "," measure_item } ")"
+                     | "WHERE" condition
+                     | "WITH" ( "SUBTOTAL" | "BALANCE" | "NOT" "MATCHED" | "TOTAL" ) [ expression ] ;
+order_item         ::= expression [ "ASC" | "DESC" ] [ "NULLS" ( "FIRST" | "LAST" ) ] ;
+measure_item       ::= aggregate_name "(" [ "DISTINCT" | "ALL" ] ( expression | "*" ) [ "," expression ] ")" [ "AS" alias ] ;
+integer            ::= [ "+" | "-" ] unsigned_integer | "?" | ":" variable ;
 ```
 
-Highlighting: `SOURCE`, `DEPTH`, `CACHE`, `DISTANCE`, `ORPHAN ROOT`, ... are keywords only between the call's parentheses (`#hierarchy-call`, §3.4). The same words used as columns elsewhere stay unscoped.
+Clauses per function (documented order; `*` = required by the reference):
+
+| Function | Clauses after `SOURCE` |
+| :--- | :--- |
+| `HIERARCHY` | `START WHERE`, `SIBLING ORDER BY`\*, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `CACHE`, `LOAD` |
+| `HIERARCHY_SPANTREE` | `START WHERE`, `SIBLING ORDER BY`\*, `DEPTH`, `CACHE`, `LOAD` |
+| `HIERARCHY_TEMPORAL` | `START WHERE`, `SIBLING ORDER BY`\*, `VALID`\*, `DEPTH`, `MULTIPARENT`, `CYCLE`, `CACHE`, `LOAD` |
+| `HIERARCHY_LEVELED` | `LEVELS`, `SIBLING ORDER BY`\*, `CACHE`, `RETAIN NULLS` |
+| `HIERARCHY_DESCENDANTS`, `HIERARCHY_ANCESTORS` | `START`, `DISTANCE` |
+| `HIERARCHY_SIBLINGS` | `START` |
+| `HIERARCHY_DESCENDANTS_AGGREGATE` | `JOIN ... ON`, `MEASURES`\* `[WHERE]`, `WITH SUBTOTAL`, `WITH BALANCE`, `WITH NOT MATCHED`, `WITH TOTAL` |
+| `HIERARCHY_ANCESTORS_AGGREGATE` | `START`, `MEASURES`\* `[WHERE]` |
+
+Not syntax, despite appearing in older examples: `DEPTH FIRST` (`DEPTH` takes an integer; traversal is always depth-first) and `LOAD BY <column>` (`LOAD` takes `BULK`, `INCREMENTAL` or a string).
+
+**Analyzer** (`src/analyzer/sql-clauses.ts`, `HANA-SYN-021` / `HANA-SYN-042`): the consuming parser accepts the clauses above in any order and in any of the nine functions. SAP HANA itself rejects a clause the function does not take, or a missing required clause, with a precise run-time message, so the parser does not repeat the table check. It validates:
+
+- every word in a clause-keyword slot (after `(`, after each complete clause, after an option word) against the clause keywords, and every option slot (`ORPHAN`, `CYCLE`, `MULTIPARENT`, `CACHE`, `LOAD`, `WITH`) against its options;
+- the conditions after `START WHERE`, `WHERE` and `JOIN ... ON`, and the expressions of `DISTANCE`, `VALID` and `WITH ...`, with the Pratt expression parser. A condition ends at the next clause keyword, but only after a complete operand, so `START WHERE depth = 1` keeps `depth` as a column;
+- `SOURCE` / `START` / `JOIN` subqueries with the query parser.
+
+**Formatter** (`src/formatter/formatter.ts`): the call's `(` ends the line, each clause starts its own line one level deeper, and `)` returns to the call's level. Clause keywords and option words are cased as keywords only in clause / option position, so `START WHERE depth = 1` keeps `depth` as an identifier:
+
+```sql
+SELECT *
+FROM HIERARCHY(
+    SOURCE (
+        SELECT node_id, parent_id
+        FROM t
+    )
+    START WHERE parent_id IS NULL
+    SIBLING ORDER BY node_id
+    ORPHAN ROOT
+    CYCLE BREAKUP
+)
+ORDER BY hierarchy_rank;
+```
+
+**Highlighting:** `SOURCE`, `DEPTH`, `CACHE`, `DISTANCE`, `ORPHAN ROOT`, ... are keywords only between the call's parentheses (`#hierarchy-call`, §3.4). The same words used as columns elsewhere stay unscoped.
 
 ### 4.6 JSON Document Store DDL, DML & Functions `[XSA]` `[HDI]` `[CLOUD]`
 
@@ -517,6 +564,7 @@ fabric_virtual_table_artifact ::=
 - **Keyword Casing:** Upper-case SQL and SQLScript keywords, built-in types, and built-in function names (`upper` default) while preserving exact casing inside single-quoted strings `'...'`, double-quoted delimited identifiers `"..."`, and comments.
 - **Block Indentation:** Indent statements inside `BEGIN ... END`, `IF ... THEN ... ELSEIF ... ELSE ... END IF`, `CASE ... WHEN ... THEN ... ELSE ... END`, `WHILE ... DO ... END WHILE`, `LOOP ... END LOOP`, `FOR ... DO ... END FOR`, and `DO BEGIN ... END`.
 - **Clause Alignment:** Place major query clauses (`SELECT`, `FROM`, `INNER/LEFT/RIGHT/FULL/CROSS JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `UNION [ALL]`, `INTERSECT`, `EXCEPT`) on their own lines with indented projection lists and predicates.
+- **Hierarchy Calls:** a `HIERARCHY*( ... )` call puts each clause on its own line, one level deeper than the call (§4.5).
 - **HDI Headerless Root Semicolon Safety (`trailingSemicolon: 'add'`):**
   - HDI design-time DDL artifacts omit the leading `CREATE` command and do **not** carry a root trailing `;` (`com.sap.hana.di.*` build plug-ins treat the entire file as a single headerless object definition):
     - **`.hdbprocedure` (`PROCEDURE ... AS { USING ...; } BEGIN ... END`):** Inner statements inside `BEGIN ... END` (and optional `USING [SYS.]<lib> AS <alias>;` declarations between `AS` and `BEGIN`) are semicolon-terminated, while the root `END` must **not** receive an appended `;` under `trailingSemicolon: 'add'`.

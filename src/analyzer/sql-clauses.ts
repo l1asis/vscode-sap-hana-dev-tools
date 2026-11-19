@@ -8,7 +8,8 @@
  * Covered statements: queries (`SELECT`, `WITH ... SELECT`, `( query )`, set operations), `INSERT`, `UPDATE`,
  * `UPSERT` / `REPLACE`, `DELETE`, SQLScript `DECLARE` (variables / cursors), `RETURN`, assignments, `CALL`,
  * `SIGNAL` / `RESIGNAL`, `IF` / `ELSEIF` / `WHILE` conditions, and HDI / catalog `VIEW`, `COLUMN | ROW TABLE`,
- * and `SEQUENCE` DDL. Every other statement is left to the lexical (#25), header (#26) and starter (#27) checks.
+ * and `SEQUENCE` DDL, plus the clause lists of the `HIERARCHY*( ... )` table functions (`sql-sqlscript.md` §4.5).
+ * Every other statement is left to the lexical (#25), header (#26) and starter (#27) checks.
  *
  * Error policy (zero false positives on valid long-tail SQL):
  * - Diagnostics are only raised at a **clause boundary**: once a clause (select item, `FROM` item, condition,
@@ -19,14 +20,19 @@
  * - Anything the parsers do not understand (unknown operand syntax, special-syntax function arguments such as
  *   `CAST(x AS INT)` or `EXTRACT(YEAR FROM d)`, JSON object literals, ...) silently ends validation.
  * - Nothing is reported for a statement that already carries any diagnostic.
+ * - Exception: a hierarchy call's clause list **recovers** after an error (repairs the typo, or skips to the next
+ *   clause keyword), so all of its errors are reported, even in a statement with other diagnostics, except at a
+ *   token that already carries one.
  */
 import { KEYWORDS, RESERVED } from '../formatter/keywords';
 import { type Token } from '../formatter/tokenizer';
 import { type StatementScope, type StatementWalkerHooks } from './sql-statements';
-import { matchKeywordTypo, suggestSlotKeyword } from './typo';
+import { matchKeywordTypo, suggestOptionKeyword, suggestSlotKeyword } from './typo';
 import {
   BLOCK_STOPS,
   FOLLOW_HIDDEN,
+  HIERARCHY_CLAUSE_FUNCTIONS,
+  HIERARCHY_CLAUSE_STARTERS,
   INTERVAL_UNITS,
   JOIN_STARTERS,
   NON_ALIAS,
@@ -68,6 +74,8 @@ export function createClauseHooks(
 ): StatementWalkerHooks {
   let lim = 0;
   let i = 0;
+  /** Recovered hierarchy-call issues of the current statement (reported even when parsing stops later). */
+  let soft: ClauseIssue[] = [];
 
   // ---- token helpers ----------------------------------------------------------------------------------------
   const tok = (k: number): Token | undefined => (k < lim ? T[k] : undefined);
@@ -418,6 +426,341 @@ export function createClauseHooks(
     }
   };
 
+  // ---- hierarchy functions (sql-sqlscript.md §4.5) ----------------------------------------------------------
+  /** The token at `k` ends a hierarchy clause: a clause keyword, `)`, or the end of the statement. */
+  const hierBoundaryAt = (k: number): boolean =>
+    !tok(k) || tx(k) === ')' || (tok(k)?.type === 'word' && HIERARCHY_CLAUSE_STARTERS.has(up(k)));
+
+  const typo = (k: number, fix: string, where: string): void => {
+    soft.push({ ruleId: 'HANA-SYN-021', tokIdx: k, message: `Unknown keyword '${tx(k)}' ${where}. Did you mean '${fix}'?`, replaceWith: fix });
+  };
+
+  /**
+   * Reports that `expected` is missing after the clause keyword at `kwIdx`: at the offending token, or at the
+   * keyword when the clause just ends. Returns `false`, so the caller skips to the next clause keyword.
+   */
+  const hierExpected = (kwIdx: number, expected: string, where: string): boolean => {
+    const kw = tx(kwIdx).toUpperCase();
+    soft.push(
+      hierBoundaryAt(i)
+        ? { ruleId: 'HANA-SYN-042', tokIdx: kwIdx, message: `Missing ${expected} after '${kw}' ${where}.` }
+        : { ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${tx(i)}' after '${kw}' ${where}; expected ${expected}.` }
+    );
+    return false;
+  };
+
+  /** Option word from `options`, exact or a repaired typo. A `required` slot holds nothing but `options`. */
+  const hierOption = (options: readonly string[], required: boolean, where: string): string | null => {
+    const t = tok(i);
+    if (!t || t.type !== 'word') return null;
+    const w = up(i);
+    if (options.includes(w)) {
+      i++;
+      return w;
+    }
+    if (HIERARCHY_CLAUSE_STARTERS.has(w)) return null;
+    // An optional slot may also be followed by the next clause, so the closest of both wins (`CACHE FORCEE`).
+    const fix = suggestOptionKeyword(t.text, required ? options : [...options, ...HIERARCHY_CLAUSE_STARTERS]);
+    if (!fix || !options.includes(fix)) return null;
+    typo(i, fix, where);
+    i++;
+    return fix;
+  };
+
+  /**
+   * `word`, or an operand in the same slot (`START WHERE <cond>` vs. `START <table>`, `DISTANCE FROM 1` vs.
+   * `DISTANCE <expr>`). A typo of `word` counts only when the operand reading fails: `START WHEER x = 1` is a
+   * typo, `START wheer` is a table.
+   */
+  const hierKeywordOrOperand = (word: string, operand: () => void, operandEnds: (k: number) => boolean, where: string): boolean => {
+    if (isWord(i, word)) {
+      i++;
+      return true;
+    }
+    const t = tok(i);
+    if (!t || t.type !== 'word' || HIERARCHY_CLAUSE_STARTERS.has(up(i))) return false;
+    const fix = suggestSlotKeyword(t.text, [word]);
+    if (!fix) return false;
+    const save = i;
+    const saveSoft = soft.length;
+    let operandOk = false;
+    try {
+      operand();
+      operandOk = operandEnds(i);
+    } catch (e) {
+      if (!(e instanceof Bail) && !(e instanceof Stop)) throw e;
+    }
+    i = save;
+    soft.length = saveSoft;
+    if (operandOk) return false;
+    typo(i, fix, where);
+    i++;
+    return true;
+  };
+
+  /**
+   * `[AS] alias` after a `SOURCE` / `START` / `JOIN` table. An implicit alias must be followed by a clause boundary
+   * (or by `ON` after a `JOIN` table).
+   */
+  const hierAlias = (join: boolean): void => {
+    if (eat('AS')) {
+      if (!isNameTok(i)) throw BAIL;
+      i++;
+      return;
+    }
+    const t = tok(i);
+    if (!t || !isNameTok(i) || !(hierBoundaryAt(i + 1) || (join && isWord(i + 1, 'ON')))) return;
+    if (t.type === 'word' && (HIERARCHY_CLAUSE_STARTERS.has(up(i)) || suggestSlotKeyword(t.text, [...HIERARCHY_CLAUSE_STARTERS]))) return;
+    i++;
+  };
+
+  /** `( <query> )` inside a hierarchy call. An error is recorded and the parentheses are skipped. */
+  const hierSubquery = (): void => {
+    const open = i;
+    if (isWord(i + 1, 'SELECT') || isWord(i + 1, 'WITH') || tx(i + 1) === '(') {
+      try {
+        i++;
+        query(true);
+        expect(')');
+        return;
+      } catch (e) {
+        if (e instanceof Stop) soft.push(e.issue);
+        else if (!(e instanceof Bail)) throw e;
+      }
+      i = open;
+    }
+    skipGroup();
+  };
+
+  /** `<table_ref> | ( <query> ) | :var | <hierarchy_call>`, with an optional alias. */
+  const hierTableExpr = (join = false): void => {
+    const t = tok(i);
+    if (!t) throw BAIL;
+    if (t.text === '(') hierSubquery();
+    else if (t.type === 'var') i++;
+    else if (t.type === 'word' && HIERARCHY_CLAUSE_FUNCTIONS.has(up(i)) && tx(i + 1) === '(') hierarchyCall();
+    else if (isNameTok(i)) {
+      i++;
+      while (tx(i) === '.' && (tok(i + 1)?.type === 'word' || tok(i + 1)?.type === 'qident')) i += 2;
+      if (tx(i) === '(') callArgs();
+    } else throw BAIL;
+    hierAlias(join);
+  };
+
+  /** `( <name> {, <name>} )` of `LEVELS`. */
+  const hierNameList = (kwIdx: number, where: string): boolean => {
+    if (tx(i) !== '(') return hierExpected(kwIdx, "'('", where);
+    const open = i;
+    i++;
+    for (;;) {
+      if (isNameTok(i)) {
+        i++;
+        if (eat(',')) continue;
+        if (eat(')')) return true;
+      }
+      soft.push({ ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${tx(i)}' in LEVELS list ${where}; expected a column name, ',' or ')'.` });
+      i = open;
+      skipGroup();
+      return true;
+    }
+  };
+
+  /** `( <aggregate>(...) [AS <alias>] {, ...} )` of `MEASURES`. */
+  const hierMeasures = (kwIdx: number, where: string): boolean => {
+    if (tx(i) !== '(') return hierExpected(kwIdx, "'('", where);
+    const open = i;
+    try {
+      i++;
+      for (;;) {
+        expr(0);
+        if (eat('AS')) {
+          if (!isNameTok(i)) throw BAIL;
+          i++;
+        }
+        if (eat(',')) continue;
+        expect(')');
+        return true;
+      }
+    } catch (e) {
+      if (e instanceof Stop) soft.push(e.issue);
+      else if (!(e instanceof Bail)) throw e;
+    }
+    i = open;
+    skipGroup();
+    return true;
+  };
+
+  /**
+   * One clause after its keyword `w` (at `kwIdx`). Returns `false` after reporting a problem, so the caller skips
+   * to the next clause keyword.
+   */
+  const hierClause = (w: string, kwIdx: number, where: string): boolean => {
+    switch (w) {
+      case 'SOURCE':
+        hierTableExpr();
+        return true;
+      case 'START':
+        if (hierKeywordOrOperand('WHERE', hierTableExpr, hierBoundaryAt, where)) expr(0);
+        else hierTableExpr();
+        return true;
+      case 'WHERE':
+        expr(0);
+        return true;
+      case 'JOIN':
+        hierTableExpr(true);
+        if (!hierOption(['ON'], true, where)) return hierExpected(kwIdx, "'ON'", where);
+        expr(0);
+        return true;
+      case 'SIBLING':
+        if (!hierOption(['ORDER'], true, where)) return hierExpected(kwIdx, "'ORDER BY'", where);
+        if (!hierOption(['BY'], true, where)) return hierExpected(i - 1, "'BY'", where);
+        for (;;) {
+          expr(0);
+          eat('ASC') || eat('DESC');
+          if (eat('NULLS') && !eat('FIRST') && !eat('LAST')) throw BAIL;
+          if (!eat(',')) return true;
+        }
+      case 'LEVELS':
+        return hierNameList(kwIdx, where);
+      case 'MEASURES':
+        return hierMeasures(kwIdx, where);
+      case 'VALID':
+        if (eat('FROM')) {
+          expr(5);
+          eat('EXCLUDED');
+          if (!hierOption(['UNTIL'], true, where)) return hierExpected(kwIdx, "'UNTIL'", where);
+          expr(5);
+          eat('EXCLUDED');
+          return true;
+        }
+        if (eat('AT')) {
+          expr(5);
+          if (eat('FROM')) expect('EXCLUDED');
+          if (eat('UNTIL')) expect('EXCLUDED');
+          return true;
+        }
+        return hierExpected(kwIdx, "'FROM' or 'AT'", where);
+      case 'DEPTH': {
+        // `DEPTH <integer>`: a bare word (`DEPTH FIRST`) is never an integer.
+        const t = tok(i);
+        if (hierBoundaryAt(i) || (t?.type === 'word' && tx(i + 1) !== '(')) return hierExpected(kwIdx, 'an integer', where);
+        expr(5);
+        return true;
+      }
+      case 'MULTIPARENT':
+        hierOption(['ERROR', 'LEAVES'], false, where);
+        return true;
+      case 'ORPHAN':
+        return hierOption(['IGNORE', 'ERROR', 'ADOPT', 'ROOT'], true, where) ? true : hierExpected(kwIdx, "'IGNORE', 'ERROR', 'ADOPT' or 'ROOT'", where);
+      case 'CYCLE':
+        return hierOption(['BREAKUP', 'ERROR'], true, where) ? true : hierExpected(kwIdx, "'BREAKUP' or 'ERROR'", where);
+      case 'CACHE':
+        if (tok(i)?.type === 'string') i++;
+        else hierOption(['FORCE'], false, where);
+        return true;
+      case 'NO':
+        return hierOption(['CACHE'], true, where) ? true : hierExpected(kwIdx, "'CACHE'", where);
+      case 'LOAD':
+        if (tok(i)?.type === 'string') {
+          i++;
+          return true;
+        }
+        return hierOption(['BULK', 'INCREMENTAL'], true, where) ? true : hierExpected(kwIdx, "'BULK', 'INCREMENTAL' or a string", where);
+      case 'RETAIN':
+        if (!hierOption(['NULLS'], true, where)) return hierExpected(kwIdx, "'NULLS'", where);
+        if (tok(i)?.type !== 'string') return hierExpected(i - 1, "a string ('none', 'not trailing' or 'all')", where);
+        i++;
+        return true;
+      case 'DISTANCE': {
+        let bound = false;
+        if (hierKeywordOrOperand('FROM', () => expr(5), (k) => hierBoundaryAt(k) || isWord(k, 'TO'), where)) {
+          expr(5);
+          bound = true;
+        }
+        if (bound ? hierOption(['TO'], false, where) : hierKeywordOrOperand('TO', () => expr(5), hierBoundaryAt, where)) {
+          expr(5);
+          bound = true;
+        }
+        if (bound) return true;
+        if (hierBoundaryAt(i)) return hierExpected(kwIdx, "'FROM', 'TO' or a distance", where);
+        expr(5);
+        return true;
+      }
+      case 'WITH': {
+        const opt = hierOption(['SUBTOTAL', 'BALANCE', 'NOT', 'TOTAL'], true, where);
+        if (!opt) return hierExpected(kwIdx, "'SUBTOTAL', 'BALANCE', 'NOT MATCHED' or 'TOTAL'", where);
+        if (opt === 'NOT' && !hierOption(['MATCHED'], true, where)) return hierExpected(i - 1, "'MATCHED'", where);
+        if (!hierBoundaryAt(i)) expr(0);
+        return true;
+      }
+      default:
+        throw BAIL;
+    }
+  };
+
+  /**
+   * `HIERARCHY*( <clause> { <clause> } )` (§4.5). Clauses are accepted in any order. After each clause the next
+   * token must be a clause keyword or `)`. A typo is repaired; anything else is reported once and skipped up to the
+   * next clause keyword.
+   */
+  const hierarchyCall = (): void => {
+    const where = `in ${up(i)} call`;
+    i += 2; // name (
+    let recovering = false;
+    let afterCond = false;
+    for (;;) {
+      if (atEnd()) throw BAIL;
+      if (tx(i) === ')') {
+        i++;
+        return;
+      }
+      const kwIdx = i;
+      const t = tok(i)!;
+      let w: string | null = null;
+      if (t.type === 'word') {
+        const u = up(i);
+        if (HIERARCHY_CLAUSE_STARTERS.has(u)) w = u;
+        else {
+          // After a condition, `ANDD` is more likely a typo of `AND` than of a clause keyword.
+          const fix = suggestSlotKeyword(t.text, afterCond ? [...HIERARCHY_CLAUSE_STARTERS, 'AND', 'OR'] : [...HIERARCHY_CLAUSE_STARTERS]);
+          if (fix) {
+            typo(i, fix, where);
+            w = fix;
+          }
+        }
+      }
+      if (!w) {
+        if (!recovering) {
+          if (t.type === 'word' && (KEYWORDS.has(up(i)) || RESERVED.has(up(i)))) throw BAIL; // a clause that is not modelled
+          // `START WHERE a + DEPTH 2`: `DEPTH` was read as a column, but the operator is what is missing its operand.
+          const kw = i - 1;
+          if (tok(kw)?.type === 'word' && HIERARCHY_CLAUSE_STARTERS.has(up(kw)) && tok(kw - 1)?.type === 'op') {
+            soft.push({ ruleId: 'HANA-SYN-042', tokIdx: kw - 1, message: `Missing operand after '${tx(kw - 1)}' before '${up(kw)}' ${where}.` });
+            i = kw;
+            continue;
+          }
+          soft.push({
+            ruleId: 'HANA-SYN-042',
+            tokIdx: i,
+            message: `Unexpected '${t.text}' ${where}; expected a hierarchy clause ('SOURCE', 'START', 'SIBLING', ...) or ')'.`,
+          });
+          recovering = true;
+        }
+        if (t.text === '(' || t.text === '[') skipGroup();
+        else i++;
+        continue;
+      }
+      i++;
+      recovering = false;
+      if (w === 'AND' || w === 'OR') {
+        expr(0);
+        continue;
+      }
+      recovering = !hierClause(w, kwIdx, where);
+      afterCond = !recovering && (w === 'START' || w === 'WHERE' || w === 'JOIN');
+    }
+  };
+
   // ---- queries ---------------------------------------------------------------------------------------------
   /** Follow-set at the end of a (sub)query term. */
   const queryFollow = (inParens: boolean): string[] => [
@@ -463,6 +806,8 @@ export function createClauseHooks(
       } else {
         throw BAIL; // parenthesized join tree
       }
+    } else if (t.type === 'word' && HIERARCHY_CLAUSE_FUNCTIONS.has(up(i)) && tx(i + 1) === '(') {
+      hierarchyCall();
     } else if (t.type === 'var') {
       i++;
     } else if (isNameTok(i) || (t.type === 'word' && tx(i + 1) === '(')) {
@@ -934,15 +1279,21 @@ export function createClauseHooks(
   };
 
   const run = (start: number, end: number, body: () => void): void => {
-    if (end <= start || hasDiagnosticIn(start, end)) return;
+    if (end <= start) return;
+    // A statement with a diagnostic is still parsed for its recovered hierarchy-call issues, but its boundary
+    // error is dropped: it is likely a cascade of the existing diagnostic.
+    const prior = hasDiagnosticIn(start, end);
     lim = end;
     i = start;
+    soft = [];
     try {
       body();
     } catch (e) {
-      if (e instanceof Stop) report(e.issue);
-      else if (!(e instanceof Bail)) throw e;
+      if (e instanceof Stop) {
+        if (!prior) report(e.issue);
+      } else if (!(e instanceof Bail)) throw e;
     }
+    for (const issue of soft) if (!hasDiagnosticIn(issue.tokIdx, issue.tokIdx + 1)) report(issue);
   };
 
   return {

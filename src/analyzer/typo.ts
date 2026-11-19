@@ -122,3 +122,31 @@ export function suggestSlotKeyword(rawWord: string, expected: readonly string[])
   }
   return best && !tied ? best : null;
 }
+
+/**
+ * Like {@link suggestSlotKeyword}, for a **closed** option slot: the slot holds only the few words in `options`
+ * (`CYCLE BREAKUP | ERROR`), so a 2-edit typo of an option of 5+ letters with the same leading character is
+ * matched too (`BRKUP` -> `BREAKUP`). Returns `null` when nothing matches unambiguously.
+ */
+export function suggestOptionKeyword(rawWord: string, options: readonly string[]): string | null {
+  const slot = suggestSlotKeyword(rawWord, options);
+  if (slot) return slot;
+  const upper = rawWord.toUpperCase();
+  if (!/^[A-Z_][A-Z0-9_]*$/.test(upper) || upper.length < 3) return null;
+  let best: string | null = null;
+  let bestDist = Infinity;
+  let tied = false;
+  for (const cand of options) {
+    if (cand.length < 5 || upper[0] !== cand[0] || Math.abs(upper.length - cand.length) > 2) continue;
+    const d = damerauLevenshtein(upper, cand);
+    if (d > 2) continue;
+    if (d < bestDist) {
+      best = cand;
+      bestDist = d;
+      tied = false;
+    } else if (d === bestDist) {
+      tied = true;
+    }
+  }
+  return best && !tied ? best : null;
+}

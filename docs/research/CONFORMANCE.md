@@ -2,6 +2,20 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-19: hierarchy functions in the consuming parser (#75, #78), against `main` @ `9146f52`
+
+| Metric | `main` | #75 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 474 | 474 |
+| Analyzer: `HANA-SYN-023` / `024` / `025` (blocks) | 109 / 81 / 49 | 109 / 81 / 49 |
+| Formatter: blocks with violations | 1 | 1 |
+| Grammar: unscoped catalog keywords | 91 (642 blocks) | 91 (642 blocks) |
+| Hierarchy blocks (`HIERARCHY*(` in a `sql` fence, 4 guides, templates included) with a new diagnostic | n/a | 0 of 69 |
+| Mutation check: one hierarchy clause keyword misspelled per clean block, reported as `HANA-SYN-021` | 0 | 144 of 153 |
+| `npm test`: tests / pass / todo | 396 / 387 / 9 | 408 / 399 / 9 |
+
+No corpus block changes its analyzer or formatter result. The hierarchy family had a single `HANA-SYN-023` false-positive block, a parameterized `CREATE VIEW` already tracked as a `@todo`. The problem was blind spots: misspelled clause keywords went unreported. The 9 missed mutations are all inside `CREATE [LOCAL TEMPORARY] COLUMN TABLE ... AS (SELECT ...)`, where the table parser stops before it reaches the call.
+
 ## 2026-11-19: context-aware keyword scopes (#79, #41), against `main` @ `281ffc0` (0.11.0)
 
 | Metric | `main` | #79 |

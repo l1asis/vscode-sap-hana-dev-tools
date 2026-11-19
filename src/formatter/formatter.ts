@@ -44,6 +44,8 @@ interface BaseLayoutToken {
   comment?: boolean;
   multi?: boolean;
   noBreak?: boolean;
+  /** Clause keyword or option word of a `HIERARCHY*( ... )` call. */
+  hier?: boolean;
 }
 
 export interface LayoutWordToken extends BaseLayoutToken {
@@ -74,7 +76,7 @@ export type LayoutToken =
   | LayoutSimpleToken;
 
 export type LineKind = 'code' | 'comment' | 'raw';
-export type FrameType = 'stmt' | 'sub' | 'list' | 'plain';
+export type FrameType = 'stmt' | 'sub' | 'list' | 'plain' | 'hier';
 export type ClauseKind =
   | 'select'
   | 'from'
@@ -179,6 +181,7 @@ class Frame {
   cont: ListContainer | null;
   between: number;
   afterSetOp: boolean;
+  hierClause: string;
 
   constructor(type: FrameType, level: number, closeLevel?: number) {
     this.type = type; // stmt | sub | list | plain
@@ -190,6 +193,7 @@ class Frame {
     this.cont = null; // active "one item per line" list container
     this.between = 0;
     this.afterSetOp = false;
+    this.hierClause = ''; // current clause keyword of a `hier` frame
   }
 }
 
@@ -614,6 +618,17 @@ class Layout {
     const nup = this.upOf(nx);
     const tk: LayoutSimpleToken = { t: '(', k: 'punct', srcSp: tok.wsBefore };
 
+    // `HIERARCHY*(`: one clause per line, one level deeper than the call (sql-sqlscript.md §4.5)
+    const p = this.prevCode;
+    if (p && p.k === 'word' && p.cls === 'function' && K.HIERARCHY_CLAUSE_FUNCTIONS.has(p.up)) {
+      this.push(tk);
+      const base = this.cur!.level;
+      const hf = new Frame('hier', base + 1, base);
+      this.frames.push(hf);
+      this.breakLine(hf.level);
+      return;
+    }
+
     if (nup === 'SELECT' || nup === 'WITH') {
       this.push(tk);
       const base = this.cur!.level;
@@ -645,7 +660,7 @@ class Layout {
     const tk: LayoutSimpleToken = { t: ')', k: 'punct', srcSp: false };
     if (this.frames.length > 1) {
       const f = this.frames.pop()!;
-      if (f.type === 'sub' || (f.type === 'list' && f.cont && f.cont.broken)) this.breakLine(f.closeLevel);
+      if (f.type === 'sub' || f.type === 'hier' || (f.type === 'list' && f.cont && f.cont.broken)) this.breakLine(f.closeLevel);
     }
     this.push(tk);
   }
@@ -933,6 +948,8 @@ class Layout {
         break;
     }
 
+    if (f.type === 'hier') return this.hierarchyWord(tok, i, up, pup, f);
+
     // ---- statement header of CREATE / HDI PROCEDURE / FUNCTION / LIBRARY ---
     if (stmtLevel && this.blocks.length === 0 && this.afterHeaderAs && up === 'USING') {
       const keepHdiRoot = st.hdiRoot;
@@ -1006,6 +1023,37 @@ class Layout {
 
   plain(tok: Token, i: number): number {
     this.emit(tok, i);
+    return 0;
+  }
+
+  /**
+   * A word at the top level of a `HIERARCHY*( ... )` call (sql-sqlscript.md §4.5). A clause keyword after the
+   * call's `(` or after a complete operand starts a line; clause keywords and option words in their own position
+   * are cased as keywords, so `START WHERE depth = 1` keeps `depth` as an identifier.
+   */
+  hierarchyWord(tok: Token, i: number, up: string, pup: string, f: Frame): number {
+    const p = this.prevCode;
+    const tk = this.mkWord(tok, i);
+    // `START WHERE` and `NO CACHE` are two-word clause keywords
+    const phrase = (pup === 'START' && up === 'WHERE') || (pup === 'NO' && up === 'CACHE');
+    let keyword = false;
+    if (K.HIERARCHY_CLAUSE_STARTERS.has(up) && p && (phrase || p.t === '(' || this.valueLike(p))) {
+      keyword = true;
+      if (!phrase) {
+        this.breakLine(f.level);
+        f.hierClause = up;
+      }
+    } else if (K.HIERARCHY_OPTION_WORDS.has(up) && p && p.hier && pup !== 'SOURCE' && pup !== 'START' && pup !== 'JOIN') {
+      keyword = true; // ORPHAN ROOT, CYCLE BREAKUP, LOAD BULK, WITH SUBTOTAL, ...
+    } else if ((up === 'UNTIL' || up === 'EXCLUDED') && f.hierClause === 'VALID') {
+      keyword = true;
+    }
+    if (keyword) {
+      tk.cls = 'keyword';
+      tk.t = this.caseOf(tok.text, this.o.keywordCase);
+      tk.hier = true;
+    }
+    this.push(tk);
     return 0;
   }
 

@@ -1805,7 +1805,7 @@ test('HANA-SYN-023/024: clause-syntax HIERARCHY* functions emit no false positiv
   for (const lang of ['hanasql', 'hdbprocedure', 'hdbfunction', 'hdbview']) {
     for (const [label, query] of HIERARCHY_CLAUSE_QUERIES) {
       const text = wrapForLanguage(lang, query);
-      assert.deepEqual(clauseSyntaxDiags(lang, text), [], `${label} in ${lang}:\n${text}`);
+      assert.deepEqual(syntaxDiags(lang, text), [], `${label} in ${lang}:\n${text}`);
     }
   }
 
@@ -1829,13 +1829,16 @@ test('HANA-SYN-023/024: HIERARCHY* nested lists, conditions and plain SQL still 
   const sub = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY(SOURCE (SELECT id AS node_id pid AS parent_id FROM "H"));');
   assert.ok(sub.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'pid'")));
 
-  // Missing operator inside START WHERE condition is still reported
-  const cond = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id :iv_id DEPTH 2);');
-  assert.ok(cond.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes(':iv_id')));
+  // Missing operator inside START WHERE condition is still reported (consuming parser since #75)
+  const cond = syntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id :iv_id DEPTH 2);');
+  assert.ok(cond.some((d) => d.ruleId === 'HANA-SYN-042' && d.message.includes(':iv_id')), JSON.stringify(cond));
 
-  // Dangling operator before a hierarchy clause keyword is reported
-  const dangling = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id + DEPTH 2);');
-  assert.ok(dangling.some((d) => d.ruleId === 'HANA-SYN-024'));
+  // Dangling operator before a hierarchy clause keyword is reported at the operator
+  const dangling = syntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id + DEPTH 2);');
+  assert.deepEqual(
+    dangling.map((d) => [d.ruleId, d.message]),
+    [['HANA-SYN-042', "Missing operand after '+' before 'DEPTH' in HIERARCHY_DESCENDANTS call."]]
+  );
 
   // Hierarchy keywords used as column names inside hierarchy conditions keep working
   assert.deepEqual(
@@ -1980,4 +1983,101 @@ test('HANA-SYN-023/024: LIKE_REGEXPR FLAG, MERGE branches, WITH RECONFIGURE and 
   assert.ok(mergeDangling.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes("'+'")));
   const cursor = syntaxDiags('hanasql', 'DO BEGIN\n  DECLARE CURSOR cur (p INT q INT) FOR SELECT a FROM t WHERE a = :p;\nEND;');
   assert.deepEqual(cursor.map((d) => d.ruleId), ['HANA-SYN-023']);
+});
+
+const HIERARCHY_TYPOS_GENERATOR = [
+  'SELECT * FROM HIERARCHY (SORCE (SELECT "ID" AS node_id, "PARENT" AS parent_id FROM "T" ORDR BY "ID")',
+  '  SIBLNG ORDER BY "ID" DEPTH FIRSTT STRT WHERE "PARENT" IS NULL',
+  '  CACHEE FORCEE MULTIPARNT LOAD BI NODE_ID ORPHN ROOT CYCLE BRKUP) ORDER BY hierarchy_rank;',
+].join('\n');
+const HIERARCHY_TYPOS_NAVIGATION = 'SELECT * FROM HIERARCHY_DESCENDANTS (SORCE "H" STRT WHEER hierarchy_level = 1 DISTNCE FRM 1 TOO 3);';
+
+const hierSummary = (text: string) =>
+  syntaxDiags('hanasql', text).map((d) => [d.ruleId, text.slice(d.start, d.end), d.fixes[0]?.edits[0]?.newText ?? null]);
+
+test('HANA-SYN-021 / 042: every misspelled HIERARCHY* clause keyword is reported with a typo QuickFix (#75)', () => {
+  assert.deepEqual(hierSummary(HIERARCHY_TYPOS_GENERATOR), [
+    ['HANA-SYN-021', 'ORDR', 'ORDER'], // inside the SOURCE subquery: reported once
+    ['HANA-SYN-021', 'SORCE', 'SOURCE'],
+    ['HANA-SYN-021', 'SIBLNG', 'SIBLING'],
+    ['HANA-SYN-042', 'FIRSTT', null], // DEPTH takes an integer
+    ['HANA-SYN-021', 'STRT', 'START'],
+    ['HANA-SYN-021', 'CACHEE', 'CACHE'],
+    ['HANA-SYN-021', 'FORCEE', 'FORCE'],
+    ['HANA-SYN-021', 'MULTIPARNT', 'MULTIPARENT'],
+    ['HANA-SYN-042', 'BI', null], // LOAD takes BULK | INCREMENTAL | '<string>'; NODE_ID is skipped
+    ['HANA-SYN-021', 'ORPHN', 'ORPHAN'],
+    ['HANA-SYN-021', 'BRKUP', 'BREAKUP'],
+  ]);
+  assert.deepEqual(hierSummary(HIERARCHY_TYPOS_NAVIGATION), [
+    ['HANA-SYN-021', 'SORCE', 'SOURCE'],
+    ['HANA-SYN-021', 'STRT', 'START'],
+    ['HANA-SYN-021', 'WHEER', 'WHERE'],
+    ['HANA-SYN-021', 'DISTNCE', 'DISTANCE'],
+    ['HANA-SYN-021', 'FRM', 'FROM'],
+    ['HANA-SYN-021', 'TOO', 'TO'],
+  ]);
+  const msg = syntaxDiags('hanasql', HIERARCHY_TYPOS_NAVIGATION)[0].message;
+  assert.equal(msg, "Unknown keyword 'SORCE' in HIERARCHY_DESCENDANTS call. Did you mean 'SOURCE'?");
+
+  // QuickFix round trip: applying every fix leaves a valid call
+  let text = HIERARCHY_TYPOS_NAVIGATION;
+  for (const d of [...syntaxDiags('hanasql', text)].reverse()) text = applyTextEdits(text, d.fixes[0].edits);
+  assert.equal(text, 'SELECT * FROM HIERARCHY_DESCENDANTS (SOURCE "H" START WHERE hierarchy_level = 1 DISTANCE FROM 1 TO 3);');
+  assert.deepEqual(syntaxDiags('hanasql', text), []);
+});
+
+test('HANA-SYN-042: HIERARCHY* clause arguments, recovery and operand readings (#75)', () => {
+  const rules = (sql: string) => syntaxDiags('hanasql', sql).map((d) => `${d.ruleId} ${d.message}`);
+  // Not syntax, despite older examples: DEPTH FIRST, LOAD BY <column>
+  assert.deepEqual(rules('SELECT * FROM HIERARCHY (SOURCE t DEPTH FIRST);'), [
+    "HANA-SYN-042 Unexpected 'FIRST' after 'DEPTH' in HIERARCHY call; expected an integer.",
+  ]);
+  assert.deepEqual(rules('SELECT * FROM HIERARCHY (SOURCE t LOAD BY node_id ORPHAN ROOT);'), [
+    "HANA-SYN-042 Unexpected 'BY' after 'LOAD' in HIERARCHY call; expected 'BULK', 'INCREMENTAL' or a string.",
+  ]);
+  assert.deepEqual(rules('SELECT * FROM HIERARCHY (SOURCE t ORPHAN);'), ["HANA-SYN-042 Missing 'IGNORE', 'ERROR', 'ADOPT' or 'ROOT' after 'ORPHAN' in HIERARCHY call."]);
+  assert.deepEqual(rules('SELECT * FROM HIERARCHY (SOURCE t, START WHERE p IS NULL);'), [
+    "HANA-SYN-042 Unexpected ',' in HIERARCHY call; expected a hierarchy clause ('SOURCE', 'START', 'SIBLING', ...) or ')'.",
+  ]);
+  assert.deepEqual(rules('SELECT * FROM HIERARCHY_DESCENDANTS (SOURCE h START WHERE n = 1 ANDD m = 2);'), [
+    "HANA-SYN-021 Unknown keyword 'ANDD' in HIERARCHY_DESCENDANTS call. Did you mean 'AND'?",
+  ]);
+  // An error inside a SOURCE subquery does not stop the clause list (`c` is reported once, by HANA-SYN-023)
+  const sub = 'SELECT * FROM HIERARCHY (SOURCE (SELECT a b c FROM t) SIBLNG ORDER BY a);';
+  assert.deepEqual(
+    syntaxDiags('hanasql', sub).map((d) => [d.ruleId, sub.slice(d.start, d.end)]),
+    [['HANA-SYN-023', 'c'], ['HANA-SYN-021', 'SIBLNG']]
+  );
+  // Typos are reported in a statement that already has another diagnostic
+  assert.deepEqual(
+    syntaxDiags('hanasql', 'SELECT * FROM HIERARCHY (SORCE t) h WHERE x = 1 2;').map((d) => d.ruleId),
+    ['HANA-SYN-024', 'HANA-SYN-021']
+  );
+
+  // Operand readings win over typos: a table named `wheer`, a column named `tol`, implicit aliases
+  for (const valid of [
+    'SELECT * FROM HIERARCHY_DESCENDANTS (SOURCE h START wheer DISTANCE 1);',
+    'SELECT * FROM HIERARCHY_DESCENDANTS (SOURCE h START WHERE n = 1 DISTANCE tol - 1);',
+    'SELECT * FROM HIERARCHY (SOURCE t_demo src SIBLING ORDER BY a NULLS LAST, b DESC);',
+    'SELECT * FROM HIERARCHY (SOURCE (SELECT a FROM t) AS s START WHERE depth = 1 AND source = 2);',
+    'SELECT * FROM HIERARCHY_SIBLINGS (SOURCE :lt_h START :lt_start);',
+    "SELECT * FROM HIERARCHY (SOURCE \"S\".\"V\"(p => 1) CACHE 'on' LOAD 'bulk');",
+  ]) {
+    assert.deepEqual(syntaxDiags('hanasql', valid), [], valid);
+  }
+
+  // Covered wherever the parser reaches a FROM clause: views, routines, cursors
+  const inContext: Array<[string, string]> = [
+    ['hdbview', 'VIEW "V" AS SELECT * FROM HIERARCHY (SORCE "T")'],
+    ['hdbprocedure', 'PROCEDURE "P" AS BEGIN lt = SELECT * FROM HIERARCHY (SORCE "T"); END'],
+    ['hanasql', 'DO BEGIN DECLARE CURSOR c FOR SELECT * FROM HIERARCHY (SORCE "T"); END;'],
+  ];
+  for (const [lang, text] of inContext) {
+    assert.deepEqual(
+      syntaxDiags(lang, text).map((d) => [d.ruleId, text.slice(d.start, d.end)]),
+      [['HANA-SYN-021', 'SORCE']],
+      `${lang}: ${text}`
+    );
+  }
 });

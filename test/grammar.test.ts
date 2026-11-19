@@ -773,6 +773,34 @@ test('hanasql: hierarchy clause words are keywords only inside HIERARCHY*() call
   keywordIn('source.hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS_AGGREGATE (SOURCE h MEASURES (SUM(v) AS s) WITH SUBTOTAL);', ['MEASURES']);
 });
 
+test('hanasql: every hierarchy clause and option word of the nine HIERARCHY* functions is scoped inside the call (#75)', () => {
+  const calls: Array<[string, string[]]> = [
+    [
+      "HIERARCHY (SOURCE t START WHERE p IS NULL SIBLING ORDER BY n DEPTH 3 MULTIPARENT LEAVES ORPHAN ADOPT CYCLE ERROR CACHE FORCE LOAD BULK)",
+      ['SOURCE', 'START', 'SIBLING', 'DEPTH', 'MULTIPARENT', 'LEAVES', 'ORPHAN', 'ADOPT', 'CYCLE', 'ERROR', 'CACHE', 'FORCE', 'LOAD', 'BULK'],
+    ],
+    ['HIERARCHY_SPANTREE (SOURCE t SIBLING ORDER BY n NO CACHE LOAD INCREMENTAL)', ['SOURCE', 'SIBLING', 'NO', 'CACHE', 'LOAD', 'INCREMENTAL']],
+    [
+      'HIERARCHY_TEMPORAL (SOURCE t SIBLING ORDER BY n VALID FROM :a EXCLUDED UNTIL :b EXCLUDED ORPHAN IGNORE CYCLE BREAKUP)',
+      ['VALID', 'EXCLUDED', 'UNTIL', 'ORPHAN', 'IGNORE', 'BREAKUP'],
+    ],
+    ["HIERARCHY_LEVELED (SOURCE t LEVELS (a, b) SIBLING ORDER BY a RETAIN NULLS 'all')", ['LEVELS', 'RETAIN', 'NULLS']],
+    ['HIERARCHY_DESCENDANTS (SOURCE h START WHERE n = 1 DISTANCE FROM 1 TO 2)', ['SOURCE', 'START', 'DISTANCE']],
+    ['HIERARCHY_ANCESTORS (SOURCE h START (SELECT 1 AS start_rank FROM DUMMY) DISTANCE 2)', ['SOURCE', 'START', 'DISTANCE']],
+    ["HIERARCHY_SIBLINGS (SOURCE h START WHERE n = 'A')", ['SOURCE', 'START']],
+    [
+      "HIERARCHY_DESCENDANTS_AGGREGATE (SOURCE h JOIN f ON f.n = h.n MEASURES (SUM(f.v) AS s) WITH SUBTOTAL 'x' WITH BALANCE WITH NOT MATCHED WITH TOTAL)",
+      ['SOURCE', 'MEASURES', 'SUBTOTAL', 'BALANCE', 'MATCHED', 'TOTAL'],
+    ],
+    ['HIERARCHY_ANCESTORS_AGGREGATE (SOURCE h START WHERE n = 1 MEASURES (MAX(v) AS m) WHERE hierarchy_level > 1)', ['SOURCE', 'START', 'MEASURES']],
+  ];
+  for (const [call, words] of calls) keywordIn('source.hanasql', `SELECT * FROM ${call};`, words);
+  // negative: the same words as plain columns outside a hierarchy call
+  bareIn('source.hanasql', 'SELECT source, depth, leaves, adopt, breakup, bulk, levels, excluded, measures, subtotal, balance FROM t WHERE cache = 1;', [
+    'source', 'depth', 'leaves', 'adopt', 'breakup', 'bulk', 'levels', 'excluded', 'measures', 'subtotal', 'balance', 'cache',
+  ]);
+});
+
 test('hanasql: word operators use a keyword scope that default themes colour (#79)', () => {
   const t = tokenize('source.hanasql', "SELECT a FROM t WHERE b = 1 AND c IN (1) OR NOT EXISTS (SELECT 1 FROM DUMMY) AND d LIKE 'x' AND e IS NULL;");
   for (const w of ['AND', 'OR', 'NOT', 'IN', 'EXISTS', 'LIKE', 'IS']) {
