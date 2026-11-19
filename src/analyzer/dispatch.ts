@@ -8,7 +8,7 @@ import { analyzeCalculationView } from './calculationview';
 import { analyzeMigration } from './migrator';
 import { analyzeRolesAndGrants, analyzeXsodata } from './roles-grants';
 import { analyzeSqlScript } from './sqlscript';
-import { mapEmbeddedDiagnostics } from './kv-embedded-sql';
+import { mapEmbeddedDiagnostics } from './embedded-sql';
 import { analyzeSyntax, classicKvEmbeddedSql } from './syntax';
 import { type AnalyzerContext, type AnalyzerDiagnostic } from './types';
 import { analyzeXsaccess } from './xsaccess';

@@ -51,6 +51,23 @@ export interface ClauseIssue {
   readonly insertCommaAfter?: number;
   /** Valid SQL that most likely hides a mistake; a second QuickFix inserts `AS ` before `tokIdx`. */
   readonly likelyAlias?: boolean;
+  /** QuickFix: insert `text` right after token `afterTok` (`Insert 'IMMEDIATE'`). */
+  readonly insert?: { readonly afterTok: number; readonly text: string };
+}
+
+/**
+ * A consumed `EXEC` / `EXECUTE IMMEDIATE` statement, for the binding and static-literal checks that need the
+ * document text (`HANA-SYN-043`, `syntax.ts`). Token indices refer to the hooks' token array.
+ */
+export interface ExecStatement {
+  readonly kwIdx: number;
+  /** The SQL expression when it is a single string literal (`EXEC 'SELECT ...'`), else `-1`. */
+  readonly literalIdx: number;
+  /** First token of each `INTO` target. */
+  readonly into: readonly number[];
+  /** `[start, end)` token ranges of the `USING` expressions, or `null` without `USING`. */
+  readonly using: ReadonlyArray<readonly [number, number]> | null;
+  readonly usingIdx: number;
 }
 
 /** Silent abort: the statement uses syntax that is not modelled. */
@@ -74,7 +91,8 @@ const COMPARISON_OPS = new Set<string>(['=', '<>', '!=', '<', '>', '<=', '>=']);
 export function createClauseHooks(
   T: readonly Token[],
   report: (issue: ClauseIssue) => void,
-  hasDiagnosticIn: (start: number, end: number) => boolean
+  hasDiagnosticIn: (start: number, end: number) => boolean,
+  onExec?: (stmt: ExecStatement) => void
 ): StatementWalkerHooks {
   let lim = 0;
   let i = 0;
@@ -1024,10 +1042,26 @@ export function createClauseHooks(
   const statement = (scope: StatementScope): void => {
     const w = up(i);
     switch (w) {
-      case 'SELECT':
       case 'WITH':
+        // `WITH SQL STATISTICS INTO <row_var> DO <statement>` (collect_statistics_clause)
+        if (isWord(i + 1, 'SQL') && isWord(i + 2, 'STATISTICS')) {
+          i += 3;
+          expect('INTO');
+          targetName();
+          expect('DO');
+          statement(scope);
+          return;
+        }
         query(false);
         finish('query');
+        return;
+      case 'SELECT':
+        query(false);
+        finish('query');
+        return;
+      case 'EXEC':
+      case 'EXECUTE':
+        execStmt();
         return;
       case 'INSERT':
       case 'UPSERT':
@@ -1183,6 +1217,129 @@ export function createClauseHooks(
       return;
     }
     throw BAIL;
+  };
+
+  /** Requires keyword `w` at `i` (a typo is `HANA-SYN-021`, anything else `HANA-SYN-042`). */
+  const expectKeyword = (w: string, context: string): void => {
+    if (eat(w)) return;
+    const t = tok(i);
+    const fix = t?.type === 'word' ? suggestSlotKeyword(t.text, [w]) : null;
+    if (fix) throw new Stop({ ruleId: 'HANA-SYN-021', tokIdx: i, message: `Unknown keyword '${t!.text}' after ${context}. Did you mean '${fix}'?`, replaceWith: fix });
+    throw new Stop(
+      t
+        ? { ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${t.text}' after ${context}; expected '${w}'.` }
+        : { ruleId: 'HANA-SYN-042', tokIdx: i - 1, message: `Missing '${w}' after ${context}.` }
+    );
+  };
+
+  /**
+   * `(EXEC | EXECUTE IMMEDIATE) <expr> [INTO <var> {, <var>} [DEFAULT <expr> {, <expr>}]] [USING <expr> {, <expr>}]
+   * [READS SQL DATA]` (SQLScript Reference, 8.10 Dynamic SQL). The clause order is fixed.
+   */
+  const execStmt = (): void => {
+    const kwIdx = i;
+    let label = 'EXEC';
+    if (isWord(i, 'EXECUTE')) {
+      i++;
+      label = 'EXECUTE IMMEDIATE';
+      if (!eat('IMMEDIATE')) {
+        const t = tok(i);
+        const fix = t?.type === 'word' ? suggestSlotKeyword(t.text, ['IMMEDIATE']) : null;
+        if (fix) throw new Stop({ ruleId: 'HANA-SYN-021', tokIdx: i, message: `Unknown keyword '${t!.text}' after 'EXECUTE'. Did you mean '${fix}'?`, replaceWith: fix });
+        if (!t || t.type === 'string' || t.type === 'var' || t.text === '(') {
+          throw new Stop({
+            ruleId: 'HANA-SYN-042',
+            tokIdx: kwIdx,
+            message: "Dynamic SQL needs 'EXECUTE IMMEDIATE' (or 'EXEC'); 'EXECUTE' alone is not a SQLScript statement.",
+            insert: { afterTok: kwIdx, text: ' IMMEDIATE' },
+          });
+        }
+        throw BAIL;
+      }
+    } else {
+      i++;
+    }
+    if (atEnd()) throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i - 1, message: `Missing the SQL string after '${label}'.` });
+    const exprStart = i;
+    expr(0);
+    const literalIdx = i === exprStart + 1 && tok(exprStart)?.type === 'string' ? exprStart : -1;
+
+    const into: number[] = [];
+    let using: Array<readonly [number, number]> | null = null;
+    let usingIdx = -1;
+    let reads = false;
+    const clauseStop = (message: string): never => {
+      throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i, message });
+    };
+    for (;;) {
+      const w = up(i);
+      if (w === 'INTO') {
+        if (into.length) clauseStop(`Duplicate 'INTO' clause in ${label} statement.`);
+        if (using || reads) clauseStop(`'INTO' must come before ${using ? "'USING'" : "'READS SQL DATA'"} in ${label} statement.`);
+        i++;
+        for (;;) {
+          const t = tok(i);
+          if (!t || !(t.type === 'qident' || t.type === 'var' || isNameTok(i))) {
+            throw new Stop(
+              t ? { ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${t.text}' after 'INTO'; expected a variable.` } : { ruleId: 'HANA-SYN-042', tokIdx: i - 1, message: "Missing variable after 'INTO'." }
+            );
+          }
+          into.push(i);
+          i++;
+          if (tx(i) === '[') skipGroup();
+          if (!eat(',')) break;
+        }
+        if (isWord(i, 'DEFAULT')) {
+          const defIdx = i;
+          i++;
+          let n = 0;
+          for (;;) {
+            if (atEnd() || tx(i) === ';') throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i - 1, message: "Missing value after 'DEFAULT'." });
+            expr(0);
+            n++;
+            if (!eat(',')) break;
+          }
+          if (n !== into.length) {
+            throw new Stop({
+              ruleId: 'HANA-SYN-042',
+              tokIdx: defIdx,
+              message: `'DEFAULT' lists ${n} value${n === 1 ? '' : 's'} for ${into.length} 'INTO' variable${into.length === 1 ? '' : 's'}.`,
+            });
+          }
+        }
+        continue;
+      }
+      if (w === 'DEFAULT') clauseStop(`'DEFAULT' needs a preceding 'INTO' variable list in ${label} statement.`);
+      if (w === 'USING') {
+        if (using) clauseStop(`Duplicate 'USING' clause in ${label} statement.`);
+        if (reads) clauseStop(`'USING' must come before 'READS SQL DATA' in ${label} statement.`);
+        usingIdx = i;
+        i++;
+        using = [];
+        for (;;) {
+          if (atEnd() || tx(i) === ';') throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i - 1, message: "Missing expression after 'USING'." });
+          const s = i;
+          expr(0);
+          using.push([s, i]);
+          if (!eat(',')) break;
+        }
+        continue;
+      }
+      if (w === 'READS') {
+        if (reads) clauseStop(`Duplicate 'READS SQL DATA' in ${label} statement.`);
+        i++;
+        expectKeyword('SQL', "'READS'");
+        expectKeyword('DATA', "'READS SQL'");
+        reads = true;
+        continue;
+      }
+      break;
+    }
+    const t = tok(i);
+    const fix = t?.type === 'word' ? suggestSlotKeyword(t.text, ['INTO', 'USING', 'READS']) : null;
+    if (fix) throw new Stop({ ruleId: 'HANA-SYN-021', tokIdx: i, message: `Unknown keyword '${t!.text}' in ${label} statement. Did you mean '${fix}'?`, replaceWith: fix });
+    boundary(['INTO', 'USING', 'READS', ';', ...BLOCK_STOPS], `${label} statement`, false);
+    onExec?.({ kwIdx, literalIdx, into, using, usingIdx });
   };
 
   /** `DECLARE <names> [CONSTANT] <type> [NOT NULL] [(DEFAULT | = | :=) <expr | query>]` and cursors. */
