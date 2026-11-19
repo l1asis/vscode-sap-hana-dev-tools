@@ -1,0 +1,5 @@
+// Classic .hdbview with broken embedded SQL and value lists (#42, #47)
+schema = 'APP_SALES';
+query = "SELECT \"ORDER_ID\", \"CUSTOMER_ID\" FROM \"APP_SALES\".\"app.sales::ORDERS\" WHERE \"STATUS\" 'OPEN'";
+depends_on = "app.sales::ORDERS" "app.sales::CUSTOMERS";
+public = false;

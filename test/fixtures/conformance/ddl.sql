@@ -61,8 +61,21 @@ CREATE VIEW active_emps AS SELECT emp_id, last_name FROM employees WHERE active 
 DROP VIEW active_emps;
 
 -- @case view with parameters
--- @todo syntax #78 false HANA-SYN-023 at "INTEGER"
 CREATE VIEW emps_by_dept (IN p_dept INTEGER) AS SELECT emp_id FROM employees WHERE dept_id = :p_dept;
+
+-- @case view with column list, parameter defaults and comment
+CREATE VIEW emp_names COMMENT 'employee names' (emp, name) (IN p_dept INTEGER, IN p_status NVARCHAR(10) DEFAULT 'ACTIVE')
+AS SELECT emp_id, last_name FROM employees WHERE dept_id = :p_dept AND status = :p_status;
+
+-- @case view and table with associations
+CREATE VIEW emp_with_dept AS SELECT emp_id, dept_id FROM employees
+WITH ASSOCIATIONS (JOIN departments AS dept ON dept.dept_id = dept_id, MANY TO ONE JOIN locations loc ON loc.loc_id = dept_id);
+CREATE COLUMN TABLE assignments_assoc (emp_id INT, dept_id INT)
+WITH ASSOCIATIONS (MANY TO ONE JOIN departments AS d ON d.dept_id = dept_id);
+
+-- @case projection view with association
+CREATE PROJECTION VIEW emp_projection AS SELECT emp_id, dept_id FROM employees
+WITH ASSOCIATIONS (JOIN departments AS dept ON dept.dept_id = dept_id);
 
 -- @case indexes
 CREATE INDEX emp_name_idx ON employees (last_name, first_name);

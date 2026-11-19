@@ -2,6 +2,19 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-19: views, Classic KV and CDS (#42, #47, #78), against #75 @ `c7375c4`
+
+| Metric | #75 | #42 + #47 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 474 | 464 |
+| Analyzer: `HANA-SYN-023` / `024` / `025` (blocks) | 109 / 81 / 49 | 99 / 72 / 49 |
+| Formatter: blocks with violations | 1 | 1 |
+| Grammar: unscoped catalog keywords | 91 (642 blocks) | 91 (642 blocks) |
+| Column-on-its-own-line warning, all 27,456 `sql` fences of every local guide | n/a | 0 |
+| `npm test`: tests / pass / todo | 408 / 399 / 9 | 426 / 418 / 8 |
+
+Per block: 10 blocks are clean now (parameterized `CREATE VIEW`, `WITH ASSOCIATIONS` on views and tables), 12 keep their real errors but lose a duplicate `HANA-SYN-024` at the token of a `HANA-SYN-023`, and none is newly flagged. The `@todo syntax #78` marker for parameterized views is gone. The corpus has no Classic KV or CDS fences, so those checks are covered by unit tests and `samples/broken/` only.
+
 ## 2026-11-19: hierarchy functions in the consuming parser (#75, #78), against `main` @ `9146f52`
 
 | Metric | `main` | #75 |

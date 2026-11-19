@@ -1,0 +1,9 @@
+VIEW "app.sales::open_orders" AS SELECT
+    "ORDER_ID"
+    "CUSTOMER_ID",
+    "AMOUNT"
+FROM "app.sales::orders"
+WITH ASSOCIATIONS (
+    JOIN "app.sales::customers" AS "toCustomer" ON "toCustomer"."ID" = "CUSTOMER_ID"
+    JOIN "app.sales::regions" AS "toRegion" ON "toRegion"."ID" = "REGION_ID"
+)

@@ -43,10 +43,14 @@ import {
 } from './keyword-sets';
 
 export interface ClauseIssue {
-  readonly ruleId: 'HANA-SYN-021' | 'HANA-SYN-042';
+  readonly ruleId: 'HANA-SYN-021' | 'HANA-SYN-023' | 'HANA-SYN-042';
   readonly tokIdx: number;
   readonly message: string;
   readonly replaceWith?: string;
+  /** `HANA-SYN-023`: QuickFix inserts `,` after this token. */
+  readonly insertCommaAfter?: number;
+  /** Valid SQL that most likely hides a mistake; a second QuickFix inserts `AS ` before `tokIdx`. */
+  readonly likelyAlias?: boolean;
 }
 
 /** Silent abort: the statement uses syntax that is not modelled. */
@@ -781,6 +785,31 @@ export function createClauseHooks(
   const fromFollow = (inParens: boolean): string[] => [',', ...JOIN_STARTERS, 'ON', 'USING', 'WHERE', 'GROUP', 'HAVING', 'WINDOW', ...queryFollow(inParens)];
   const condFollow = (extra: readonly string[], inParens: boolean): string[] => ['AND', 'OR', ...extra, ...queryFollow(inParens)];
 
+  /**
+   * `SELECT\n  "ID"\n  "NAME"`: a bare column reference whose implicit alias starts a new line is valid SQL, but far
+   * more likely a missing comma. Reported as a warning with both fixes; the alias reading is kept for parsing.
+   * Wrapped long items (`WIDTH_BUCKET(...)\n "Wages"`) are not bare column references and stay silent.
+   */
+  const newLineAlias = (itemStart: number): void => {
+    const a = tok(i);
+    if (!a || a.nlBefore === 0 || (a.type !== 'qident' && !(a.type === 'word' && isNameTok(i) && !NON_ALIAS.has(up(i))))) return;
+    for (let k = itemStart; k < i; k++) {
+      const t = tok(k)!;
+      const nameAt = (k - itemStart) % 2 === 0;
+      if (nameAt ? !(t.type === 'qident' || (t.type === 'word' && isNameTok(k))) : t.text !== '.') return;
+    }
+    if ((i - itemStart) % 2 === 0) return; // ends with `.`
+    let column = '';
+    for (let k = itemStart; k < i; k++) column += tx(k);
+    soft.push({
+      ruleId: 'HANA-SYN-023',
+      tokIdx: i,
+      message: `'${a.text}' on its own line reads as an alias of '${column}'. Add ',' if it is the next column, or 'AS' if it is an alias.`,
+      insertCommaAfter: i - 1,
+      likelyAlias: true,
+    });
+  };
+
   const intoTargets = (): void => {
     for (;;) {
       const t = tok(i);
@@ -864,7 +893,9 @@ export function createClauseHooks(
     for (;;) {
       if (tx(i) === '*') i++;
       else {
+        const itemStart = i;
         expr(0);
+        newLineAlias(itemStart);
         alias(selectListFollow(inParens), 'select item', false);
       }
       boundary(selectListFollow(inParens), 'select item', inParens);
@@ -1103,6 +1134,11 @@ export function createClauseHooks(
       case 'VIEW':
         view();
         return;
+      case 'PROJECTION':
+        i++;
+        if (!isWord(i, 'VIEW')) throw BAIL;
+        view();
+        return;
       case 'COLUMN':
       case 'ROW':
         i++;
@@ -1117,7 +1153,10 @@ export function createClauseHooks(
         if (eat('OR')) expect('REPLACE');
         const k = up(i);
         if (k === 'VIEW') view();
-        else if (k === 'SEQUENCE') sequence();
+        else if (k === 'PROJECTION' && isWord(i + 1, 'VIEW')) {
+          i++;
+          view();
+        } else if (k === 'SEQUENCE') sequence();
         else if ((k === 'COLUMN' || k === 'ROW') && isWord(i + 1, 'TABLE')) {
           i++;
           table();
@@ -1191,19 +1230,91 @@ export function createClauseHooks(
     finish('cursor query');
   };
 
-  /** `VIEW <name> [(cols)] [COMMENT '...'] [(params)] AS <query> [WITH ... options]` */
+  /**
+   * `VIEW <name> [COMMENT '...'] [(cols)] [(IN <p> <type> [DEFAULT <expr>], ...)] AS <query>
+   *  [WITH ASSOCIATIONS (...)] [WITH ... options]`. The parameter list is validated; the rest of the header is skipped.
+   */
   const view = (): void => {
     i++;
     let depth = 0;
     while (!atEnd() && !(depth === 0 && isWord(i, 'AS'))) {
+      if (depth === 0 && tx(i) === '(' && isWord(i + 1, 'IN')) {
+        viewParams();
+        continue;
+      }
       if (tx(i) === '(') depth++;
       else if (tx(i) === ')') depth--;
       i++;
     }
     if (!eat('AS')) throw BAIL;
     query(false);
+    if (isWord(i, 'WITH') && isWord(i + 1, 'ASSOCIATIONS') && tx(i + 2) === '(') {
+      i += 2;
+      associations();
+    }
     if (isWord(i, 'WITH')) throw BAIL; // WITH READ ONLY, WITH STRUCTURED PRIVILEGE CHECK, WITH ANONYMIZATION, ...
     finish('view query');
+  };
+
+  /** `( IN <name> <type> [DEFAULT <expr>] {, ...} )` of a parameterized view. */
+  const viewParams = (): void => {
+    i++;
+    for (;;) {
+      expect('IN');
+      if (!isNameTok(i)) throw BAIL;
+      i++;
+      const typeTok = tok(i);
+      if (!typeTok || (typeTok.type !== 'word' && typeTok.type !== 'qident')) throw BAIL;
+      i++;
+      while (tx(i) === '.' && (tok(i + 1)?.type === 'word' || tok(i + 1)?.type === 'qident')) i += 2;
+      if (tx(i) === '(') skipGroup();
+      if (eat('DEFAULT')) expr(0);
+      boundary([',', ')'], 'view parameter', true);
+      if (eat(',')) continue;
+      expect(')');
+      return;
+    }
+  };
+
+  /**
+   * `( <association_def> {, <association_def>} )` after `WITH ASSOCIATIONS` (views and tables):
+   * `[MANY | ONE TO MANY | ONE] JOIN <target> [[AS] <alias>] ON <cond> [WITH DEFAULT FILTER <cond>]`
+   * or a reused association `[<schema>.][<table>.]<association> [AS <alias>]`.
+   */
+  const associations = (): void => {
+    i++;
+    for (;;) {
+      if (eat('MANY') || eat('ONE')) {
+        expect('TO');
+        if (!eat('MANY') && !eat('ONE')) throw BAIL;
+      }
+      if (eat('JOIN')) {
+        targetName();
+        alias(['ON'], 'association target', false);
+        boundary(['ON'], 'association target', false);
+        expect('ON');
+        expr(0);
+        if (isWord(i, 'WITH')) {
+          i++;
+          expect('DEFAULT');
+          expect('FILTER');
+          expr(0);
+        }
+      } else {
+        targetName();
+        if (eat('AS')) {
+          if (!isNameTok(i)) throw BAIL;
+          i++;
+        }
+      }
+      if (isWord(i, 'JOIN') || ((isWord(i, 'MANY') || isWord(i, 'ONE')) && isWord(i + 1, 'TO'))) {
+        throw new Stop({ ruleId: 'HANA-SYN-023', tokIdx: i, message: `Expected ',' before association '${tx(i)}'.`, insertCommaAfter: i - 1 });
+      }
+      boundary([',', 'AND', 'OR', 'WITH'], 'association', true);
+      if (eat(',')) continue;
+      expect(')');
+      return;
+    }
   };
 
   /** `[COLUMN | ROW] TABLE <name> ( <element> {, <element>} ) [table options]` */
@@ -1247,7 +1358,11 @@ export function createClauseHooks(
       expect(')');
       break;
     }
-    // Table options (PARTITION BY, UNLOAD PRIORITY, WITH ..., ...) are long tail.
+    if (isWord(i, 'WITH') && isWord(i + 1, 'ASSOCIATIONS') && tx(i + 2) === '(') {
+      i += 2;
+      associations();
+    }
+    // Other table options (PARTITION BY, UNLOAD PRIORITY, WITH ..., ...) are long tail.
   };
 
   /** `SEQUENCE <name> { <sequence_option> }` */

@@ -1,0 +1,18 @@
+namespace app.sales;
+
+context Orders {
+    entity Order {
+        key id     : Integer;
+        customerId : Integer;
+        amount     : Decimal(15, 2);
+    } technical configuration {
+        column store;
+        index idx_customer on (customerId amount);
+    };
+
+    view OpenOrders as select from Order {
+        id
+        customerId,
+        amount
+    } group by id customerId, amount order by id;
+};
