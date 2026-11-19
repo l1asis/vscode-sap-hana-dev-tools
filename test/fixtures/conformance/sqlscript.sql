@@ -124,6 +124,26 @@ DO BEGIN
   EXECUTE IMMEDIATE 'TRUNCATE TABLE staging_area';
 END;
 
+-- @case dynamic SQL with defaults, named parameters, statistics and read-only suffix
+DO (IN p_dept INTEGER => 10) BEGIN
+  DECLARE v_cnt INTEGER;
+  DECLARE v_max INTEGER;
+  DECLARE lt_emps TABLE (emp_id INTEGER);
+  DECLARE lt_ids TABLE (emp_id INTEGER);
+  DECLARE rv_stat ROW LIKE SQLSCRIPT_STATEMENT_STATISTICS_TYPE;
+  EXEC 'SELECT COUNT(*), MAX(emp_id) FROM employees WHERE dept_id = ?' INTO v_cnt, v_max DEFAULT 0, -1 USING :p_dept READS SQL DATA;
+  EXEC 'SELECT emp_id FROM :lt_emps WHERE emp_id > :v_cnt' INTO lt_ids USING :lt_emps, :v_cnt;
+  EXEC 'SELECT emp_id FROM employees WHERE last_name = ''O''''Brien''' INTO lt_ids;
+  WITH SQL STATISTICS INTO rv_stat DO EXEC 'SELECT emp_id FROM employees' INTO lt_ids READS SQL DATA;
+  EXECUTE IMMEDIATE 'SELECT emp_id FROM employees WHERE dept_id = ' || :p_dept INTO lt_ids;
+END;
+
+-- @case dynamic SQL in a read-only procedure
+CREATE PROCEDURE count_by_column (IN p_column NVARCHAR(30), OUT p_count INTEGER) READS SQL DATA AS
+BEGIN
+  EXEC 'SELECT COUNT(DISTINCT ' || :p_column || ') FROM employees' INTO p_count;
+END;
+
 -- @case call procedure with named parameters
 CALL get_dept_emps(p_dept => 10, et_emps => ?);
 

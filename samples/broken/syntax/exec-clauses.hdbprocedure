@@ -1,0 +1,13 @@
+PROCEDURE "app.sales::refresh_orders" (IN iv_status NVARCHAR(10), IN iv_limit INT)
+LANGUAGE SQLSCRIPT AS
+BEGIN
+    DECLARE lv_count INT;
+    -- EXECUTE without IMMEDIATE
+    EXECUTE 'DELETE FROM "app.sales::orders_tmp"';
+    -- USING before INTO
+    EXEC 'SELECT COUNT(*) FROM "app.sales::orders" WHERE "STATUS" = ?' USING :iv_status INTO lv_count;
+    -- two parameters, one value
+    EXEC 'SELECT COUNT(*) FROM "app.sales::orders" WHERE "STATUS" = ? AND "QTY" > ?' INTO lv_count USING :iv_status;
+    -- a typo inside the static SQL
+    EXEC 'SELCT COUNT(*) FROM "app.sales::orders"' INTO lv_count;
+END

@@ -95,6 +95,11 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-SYN-023` | error | `Insert ','` |
 | [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-SYN-024` | error | — |
 | [`clause-order.sql`](syntax/clause-order.sql) | `HANA-SYN-027` | error | — |
+| [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-PERF-006` | information | — |
+| [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-SEC-003` | warning | `Switch to SQL SECURITY INVOKER` |
+| [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-SYN-021` | error | `Replace 'SELCT' with 'SELECT'` |
+| [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-SYN-042` | error | `Insert 'IMMEDIATE'` |
+| [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-SYN-043` | error | — |
 | [`incomplete-clauses.sql`](syntax/incomplete-clauses.sql) | `HANA-SYN-025` | error | — |
 | [`invalid-characters.sql`](syntax/invalid-characters.sql) | `HANA-SYN-005` | error | `Replace '//' with '--'` |
 | [`json-errors.hdiconfig`](syntax/json-errors.hdiconfig) | `HANA-SYN-010` | error | — |
