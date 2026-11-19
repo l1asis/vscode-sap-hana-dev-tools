@@ -36,7 +36,6 @@ import {
   GENERAL_SQL_VALID_ROOTS,
   HDI_ROOT_TARGETS,
   HIERARCHY_CLAUSE_FUNCTIONS,
-  HIERARCHY_CLAUSE_TERMINATORS,
   INCOMPLETE_FROM_FOLLOW,
   INCOMPLETE_HAVING_FOLLOW,
   INCOMPLETE_WHERE_FOLLOW,
@@ -2131,7 +2130,7 @@ interface ExprClauseState {
 interface ExprParenFrame {
   readonly kind: 'params' | 'columns' | 'skip' | 'call' | 'paren_expr';
   readonly depth: number;
-  // Clause-syntax `HIERARCHY*` generator / navigation call frame (scopes hierarchy clause terminators)
+  // Clause-syntax `HIERARCHY*( ... )` call: its top-level tokens belong to the consuming parser (sql-clauses.ts)
   readonly hierarchy: boolean;
   callPendingOpTok: Token | null;
   callUnaryOpTok: Token | null;
@@ -2504,7 +2503,7 @@ function checkSqlExpressionsAndClauses(
       curFrame &&
       curFrame.depth === parenDepth &&
       (curFrame.kind === 'params' || curFrame.kind === 'columns' || curFrame.kind === 'skip');
-    if (inDeclOrSkipFrame && curFrame.kind !== 'skip') {
+    if (inDeclOrSkipFrame && (curFrame.kind !== 'skip' || curFrame.hierarchy)) {
       continue;
     }
 
@@ -2562,8 +2561,6 @@ function checkSqlExpressionsAndClauses(
         }
       }
       if (up === 'UNTIL') {
-        // `VALID FROM <expr> [EXCLUDED] UNTIL <expr> [EXCLUDED]` inside `HIERARCHY_TEMPORAL(...)` is not a loop condition
-        if (curFrame?.hierarchy && curFrame.depth === parenDepth) continue;
         pushExprAtDepth('until_cond', parenDepth);
         continue;
       }
@@ -2657,14 +2654,7 @@ function checkSqlExpressionsAndClauses(
     }
 
     // Check clause terminators
-    const inHierarchyFrame = !!curFrame && curFrame.hierarchy && curFrame.depth === parenDepth;
     const shouldTerminateExpr =
-      // `START WHERE <cond> DEPTH 1` / `JOIN t ON <cond> MEASURES (...)`: non-reserved hierarchy clause keywords
-      // end the condition only after a complete operand, so `WHERE depth = 1` keeps `depth` as a column.
-      (inHierarchyFrame &&
-        (activeExpr.kind === 'where' || activeExpr.kind === 'on') &&
-        activeExpr.state === 'expectOp' &&
-        HIERARCHY_CLAUSE_TERMINATORS.has(up)) ||
       (activeExpr.kind === 'select' && SELECT_STOP_CLAUSES.has(up) && !(up === 'GROUP' && prevUp === 'WITHIN')) ||
       ((activeExpr.kind === 'where' || activeExpr.kind === 'on' || activeExpr.kind === 'having') &&
         EXPR_CLAUSE_TERMINATORS.has(up) &&

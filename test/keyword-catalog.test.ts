@@ -17,7 +17,7 @@ import { findWordCollections, type WordCollection } from './helpers/word-collect
 import { tokenize, has } from './helpers/tm';
 import { format } from '../src/formatter/formatter';
 import { FUNCTIONS, KEYWORDS, RESERVED, SYSTEM_WORDS } from '../src/formatter/keywords';
-import { CE_FUNCTIONS, EXPR_CLAUSE_TERMINATORS, HDI_ROOT_TARGETS, HIERARCHY_CLAUSE_TERMINATORS, JOIN_STARTERS, QUERY_CLAUSES } from '../src/analyzer/keyword-sets';
+import { CE_FUNCTIONS, EXPR_CLAUSE_TERMINATORS, HDI_ROOT_TARGETS, HIERARCHY_CLAUSE_STARTERS, JOIN_STARTERS, QUERY_CLAUSES } from '../src/analyzer/keyword-sets';
 import { getSqlHover } from '../src/sql/intellisense-core';
 import { analyzeDocument } from '../src/analyzer/dispatch';
 
@@ -204,7 +204,7 @@ test('catalog: hierarchy clause words are keywords only inside hierarchy calls',
   for (const w of ['SOURCE', 'DISTANCE', 'CACHE']) {
     assert.ok(roles(w).includes('hierarchy-clause'), `${w} is a hierarchy clause word`);
     assert.ok(!roles(w).includes('reserved'), `${w} is not reserved`);
-    assert.ok(HIERARCHY_CLAUSE_TERMINATORS.has(w));
+    assert.ok(HIERARCHY_CLAUSE_STARTERS.has(w));
     assert.ok(!KEYWORDS.has(w), `${w} keeps identifier case outside its clause`);
   }
   const out = format('select source, distance from t');

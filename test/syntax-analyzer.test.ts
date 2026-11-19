@@ -1805,7 +1805,7 @@ test('HANA-SYN-023/024: clause-syntax HIERARCHY* functions emit no false positiv
   for (const lang of ['hanasql', 'hdbprocedure', 'hdbfunction', 'hdbview']) {
     for (const [label, query] of HIERARCHY_CLAUSE_QUERIES) {
       const text = wrapForLanguage(lang, query);
-      assert.deepEqual(clauseSyntaxDiags(lang, text), [], `${label} in ${lang}:\n${text}`);
+      assert.deepEqual(syntaxDiags(lang, text), [], `${label} in ${lang}:\n${text}`);
     }
   }
 
@@ -1829,13 +1829,16 @@ test('HANA-SYN-023/024: HIERARCHY* nested lists, conditions and plain SQL still 
   const sub = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY(SOURCE (SELECT id AS node_id pid AS parent_id FROM "H"));');
   assert.ok(sub.some((d) => d.ruleId === 'HANA-SYN-023' && d.message.includes("'pid'")));
 
-  // Missing operator inside START WHERE condition is still reported
-  const cond = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id :iv_id DEPTH 2);');
-  assert.ok(cond.some((d) => d.ruleId === 'HANA-SYN-024' && d.message.includes(':iv_id')));
+  // Missing operator inside START WHERE condition is still reported (consuming parser since #75)
+  const cond = syntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id :iv_id DEPTH 2);');
+  assert.ok(cond.some((d) => d.ruleId === 'HANA-SYN-042' && d.message.includes(':iv_id')), JSON.stringify(cond));
 
-  // Dangling operator before a hierarchy clause keyword is reported
-  const dangling = clauseSyntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id + DEPTH 2);');
-  assert.ok(dangling.some((d) => d.ruleId === 'HANA-SYN-024'));
+  // Dangling operator before a hierarchy clause keyword is reported at the operator
+  const dangling = syntaxDiags('hanasql', 'SELECT * FROM HIERARCHY_DESCENDANTS(SOURCE "H" START WHERE node_id + DEPTH 2);');
+  assert.deepEqual(
+    dangling.map((d) => [d.ruleId, d.message]),
+    [['HANA-SYN-042', "Missing operand after '+' before 'DEPTH' in HIERARCHY_DESCENDANTS call."]]
+  );
 
   // Hierarchy keywords used as column names inside hierarchy conditions keep working
   assert.deepEqual(

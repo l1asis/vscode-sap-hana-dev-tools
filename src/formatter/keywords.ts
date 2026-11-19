@@ -298,6 +298,25 @@ export const DATETIME_FIELDS: ReadonlySet<string> = new Set<string>([
   'DAY', 'HOUR', 'MINUTE', 'MONTH', 'SECOND', 'YEAR',
 ]);
 
+/** Hierarchy generator or navigation function with clause syntax (`SOURCE ... START WHERE ... DEPTH ...`). Context: Name before `(`. Catalog role `hierarchy-clause-function`. */
+export const HIERARCHY_CLAUSE_FUNCTIONS: ReadonlySet<string> = new Set<string>([
+  'HIERARCHY', 'HIERARCHY_ANCESTORS', 'HIERARCHY_ANCESTORS_AGGREGATE', 'HIERARCHY_DESCENDANTS',
+  'HIERARCHY_DESCENDANTS_AGGREGATE', 'HIERARCHY_LEVELED', 'HIERARCHY_SIBLINGS', 'HIERARCHY_SPANTREE',
+  'HIERARCHY_TEMPORAL',
+]);
+
+/** Word that starts a clause of a hierarchy function (`SOURCE`, `START`, `SIBLING`, `DEPTH`, `NO CACHE`, ...). The consuming parser ends a condition there and suggests these words for typos; the formatter starts a line there. Context: Only inside `HIERARCHY*( ... )` argument lists: the words are non-reserved elsewhere. Catalog role `hierarchy-clause`. */
+export const HIERARCHY_CLAUSE_STARTERS: ReadonlySet<string> = new Set<string>([
+  'CACHE', 'CYCLE', 'DEPTH', 'DISTANCE', 'JOIN', 'LEVELS', 'LOAD', 'MEASURES', 'MULTIPARENT', 'NO', 'ORPHAN',
+  'RETAIN', 'SIBLING', 'SOURCE', 'START', 'VALID', 'WHERE', 'WITH',
+]);
+
+/** Option word of a hierarchy function clause (`ORPHAN ADOPT`, `CYCLE BREAKUP`, `MULTIPARENT LEAVES`, `LOAD BULK`, `VALID FROM ... EXCLUDED UNTIL`, `WITH SUBTOTAL`, `WITH NOT MATCHED`, `RETAIN NULLS`). Context: Only inside `HIERARCHY*( ... )` argument lists, where the grammar highlights it together with `hierarchy-clause` words. Catalog role `hierarchy-option`. */
+export const HIERARCHY_OPTION_WORDS: ReadonlySet<string> = new Set<string>([
+  'ADOPT', 'BALANCE', 'BREAKUP', 'BULK', 'ERROR', 'EXCLUDED', 'FORCE', 'IGNORE', 'INCREMENTAL', 'LEAVES',
+  'MATCHED', 'NULLS', 'ROOT', 'SUBTOTAL', 'TOTAL', 'UNTIL',
+]);
+
 /** Word that starts a join phrase on a new line. Context: FROM clause layout. Catalog role `fmt-join-starter`. */
 export const JOIN_STARTERS: ReadonlySet<string> = new Set<string>([
   'CROSS', 'FULL', 'INNER', 'JOIN', 'LEFT', 'NATURAL', 'RIGHT',

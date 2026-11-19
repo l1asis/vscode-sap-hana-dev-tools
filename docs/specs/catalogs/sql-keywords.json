@@ -826,7 +826,8 @@
       "group": "context",
       "const": "HIERARCHY_CLAUSE_FUNCTIONS",
       "emit": [
-        "analyzer"
+        "analyzer",
+        "formatter"
       ],
       "description": "Hierarchy generator or navigation function with clause syntax (`SOURCE ... START WHERE ... DEPTH ...`).",
       "context": "Name before `(`.",
@@ -834,16 +835,21 @@
     },
     "hierarchy-clause": {
       "group": "context",
-      "const": "HIERARCHY_CLAUSE_TERMINATORS",
+      "const": "HIERARCHY_CLAUSE_STARTERS",
       "emit": [
-        "analyzer"
+        "analyzer",
+        "formatter"
       ],
-      "description": "Top-level clause keyword of a hierarchy function; ends a preceding `START WHERE` / `WHERE` / `JOIN ... ON` condition.",
+      "description": "Word that starts a clause of a hierarchy function (`SOURCE`, `START`, `SIBLING`, `DEPTH`, `NO CACHE`, ...). The consuming parser ends a condition there and suggests these words for typos; the formatter starts a line there.",
       "context": "Only inside `HIERARCHY*( ... )` argument lists: the words are non-reserved elsewhere.",
       "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide"
     },
     "hierarchy-option": {
       "group": "context",
+      "const": "HIERARCHY_OPTION_WORDS",
+      "emit": [
+        "formatter"
+      ],
       "description": "Option word of a hierarchy function clause (`ORPHAN ADOPT`, `CYCLE BREAKUP`, `MULTIPARENT LEAVES`, `LOAD BULK`, `VALID FROM ... EXCLUDED UNTIL`, `WITH SUBTOTAL`, `WITH NOT MATCHED`, `RETAIN NULLS`).",
       "context": "Only inside `HIERARCHY*( ... )` argument lists, where the grammar highlights it together with `hierarchy-clause` words.",
       "source": "hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Hierarchy_Developer_Guide/010_HIERARCHY_Generator_Function.md"
@@ -1581,10 +1587,10 @@
     {"name": "VISIT", "roles": ["sqlscript-keyword"]},
     {"name": "WAITGRAPH", "roles": ["alter-system-word"]},
     {"name": "WHEN", "roles": ["control-flow", "reserved", "block-end-stop-prev", "block-stop", "case-body-stop", "non-alias", "follow-hidden", "select-stop-clause", "select-prefix-op", "expr-clause-terminator", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
-    {"name": "WHERE", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "WHERE", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "expr-clause-terminator", "hierarchy-clause", "paren-expression-prev", "fmt-non-value"]},
     {"name": "WHILE", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "top-level-imperative", "end-compound-suffix", "end-suffix", "body-statement-word", "body-typo-target", "paren-expression-prev", "fmt-non-value"]},
     {"name": "WINDOW", "roles": ["dml", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator"]},
-    {"name": "WITH", "roles": ["dml", "reserved", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "subselect-context", "routine-clause-starter", "column-end-modifier", "column-clause-modifier", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator", "json-call-clause", "json-column-trailing", "paren-expression-prev"]},
+    {"name": "WITH", "roles": ["dml", "reserved", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "subselect-context", "routine-clause-starter", "column-end-modifier", "column-clause-modifier", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator", "hierarchy-clause", "json-call-clause", "json-column-trailing", "paren-expression-prev"]},
     {"name": "WITHIN", "roles": ["quote-protected", "select-prefix-op", "special-call", "call-infix-or-clause", "paren-expression-prev"]},
     {"name": "WITHOUT", "roles": ["quote-protected", "column-end-modifier", "json-call-clause", "json-column-trailing"]},
     {"name": "WORKLOAD", "roles": ["statement-noun", "ddl-noun"]},
