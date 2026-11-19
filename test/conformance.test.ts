@@ -121,9 +121,9 @@ for (const c of allCases) {
         assert.fail(`known ${check} failure (${reason}) now passes: remove its "-- @todo ${check}" marker from ${c.file}:${c.line}`);
       });
     } else {
-      test(`${name} [${check} todo]`, { todo: `${reason} | ${found.join(' | ')}` }, () => {
-        assert.deepEqual(found, []);
-      });
+      // The problems are in the todo message. The body must not throw: node's reporter would list the case under
+      // "failing tests" with a stack trace, so a green run (exit 0, fail 0) would read as a failing one.
+      test(`${name} [${check} todo]`, { todo: `${reason} | ${found.join(' | ')}` }, () => {});
     }
   }
 }
