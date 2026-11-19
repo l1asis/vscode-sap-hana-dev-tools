@@ -2,6 +2,19 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-19: EXEC / EXECUTE IMMEDIATE (#45, #78), against #42 + #47 @ `c6e564e`
+
+| Metric | #42 + #47 | #45 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 464 | 460 |
+| Analyzer: `HANA-SYN-029` (blocks) | 31 | 27 |
+| Analyzer: `HANA-SYN-023` / `024` / `025` (blocks) | 99 / 72 / 49 | 99 / 72 / 49 |
+| Allowlisted as corpus noise | 310 | 311 |
+| `EXEC` / `EXECUTE` fences in all local guides (wrapped in `DO BEGIN ... END` when needed) with a changed result | n/a | 27 of 424 |
+| `npm test`: tests / pass / todo | 426 / 418 / 8 | 437 / 429 / 8 |
+
+The 4 blocks that are clean now ran dynamic SQL in `READS SQL DATA` procedures and table UDFs, which the SQLScript Reference allows (8.10). Across all guides, 9 such false positives are gone. The other changes are fences that hold only the word `EXECUTE` (privilege lists, which the sweep wraps as a statement) and one block cut at the PDF margin after `READS SQL` (`DATA;` lost). The clipped block is allowlisted, since it is not valid SQL as extracted. No valid `EXEC` statement gets a new diagnostic.
+
 ## 2026-11-19: views, Classic KV and CDS (#42, #47, #78), against #75 @ `c7375c4`
 
 | Metric | #75 | #42 + #47 |
