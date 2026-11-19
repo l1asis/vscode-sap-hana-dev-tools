@@ -132,6 +132,16 @@
 
 - **KV escapes before keywords:** every `source.hanasql` word rule starts with `(?:\b|(?<=\\[nrt]))` instead of `\b`, so `SELECT \"A\"\nFROM T` still highlights `FROM` after the `\n` escape. Outside strings a backslash is never valid SQL, so this boundary does not change `.sql` highlighting.
 
+### 4.3 Embedded SQL & Value Diagnostics `[XSC]`
+
+> Source: `docs/specs/diagnostics/syntax-rules.md` (`HANA-SYN-001`, `HANA-SYN-003`, `HANA-SYN-022`, `HANA-SYN-023`)
+
+- **Unescaping:** the value of `query = "..."` (`.hdbview`) and `reset_by = "..."` (`.hdbsequence`) is unescaped with the `EscapedChar` rules of §5 (`\"` -> `"`, `\\` -> `\`, `\/` -> `/`, `\n` / `\r` / `\t` / `\b` / `\f`). An unknown escape (`\x`) is kept as written. Every SQL character keeps the document offset it came from (`src/analyzer/kv-embedded-sql.ts`).
+- **Checks:** the SQL is analyzed like a `.sql` document (lexical, delimiter, clause and consuming-parser rules; security and performance rules in `analyzeDocument`). Spans and QuickFix edits map back to the KV document; replacement text is re-escaped (`"` -> `\"`, `\` -> `\\`).
+- **Line rule:** only these SQL values may span lines. Any other `"..."` value that runs into a following `<key> =` line has lost its closing quote and is cut at its line.
+- **Unescaped quote:** a SQL value whose closing quote is followed on the same line by anything but `;` or a `<key> =` contains an unescaped `"` (`query = "SELECT "ID" FROM T";`). It is reported and not analyzed as SQL.
+- **Values:** strings are double-quoted (`'...'` is an error with a QuickFix); values are never parenthesized; adjacent strings or numbers of one value list need a `,` (`depends_on = "a", "b";`); numbers are single tokens (`[1, 2]`, `-1.5`); a `;` directly inside `[ ... ]` ends the entry, so an unclosed `[` does not swallow the next keys.
+
 ### 4.2 Full-File Fallback Injection (`source.hanasql`) for Dual-Mode Extensions `[XSA]` `[HDI]` `[CLOUD]`
 
 - `.hdbtable`, `.hdbview`, and `.hdbsequence` include `{ "include": "source.hanasql" }` as the final top-level pattern so HDI headerless DDL (`COLUMN TABLE "..."`, `ROW TABLE "..."`, `VIEW "..." AS SELECT ...`, `SEQUENCE "..."`) is highlighted with full SAP HANA SQL grammar rules.

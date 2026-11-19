@@ -30,7 +30,7 @@
 | Time Literal | `(?i)\btime'[0-9]{2}:[0-9]{2}(?::[0-9]{2})?'` | `constant.other.time.<ext>` | `[XSC]` `[XSA]` `[HDI]` | Typed time literal (`time'17:04:03'`) |
 | Timestamp Literal | `(?i)\btimestamp'[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]{1,7})?'` | `constant.other.timestamp.<ext>` | `[XSC]` `[XSA]` `[HDI]` | Typed UTC timestamp literal |
 | Double-Quoted Identifier | `"(?:[^"]\|"")*"` | `string.quoted.double.identifier.<ext>` | `[XSC]` `[XSA]` `[HDI]` | Delimited identifier (`"Pack1"."pack2"`, `"Entity"`). Cannot contain `.` or `::` in namespace/artifact paths |
-| Bracket-Delimited Identifier | `!\[[^\]]*\]` | `string.other.identifier.<ext>` | `[CLOUD]` | CAP CDS delimited identifier (`![PurchaseOrderId]`) |
+| Bracket-Delimited Identifier | `!\[[^\]]*\]` | `string.other.identifier.<ext>` | `[CLOUD]` | CAP CDS delimited identifier (`![PurchaseOrderId]`). An identifier, not SQL: the analyzer checks only that it is closed (`HANA-SYN-001`), never the quotes or parentheses inside it |
 | Unquoted Identifier | `[A-Za-z_][A-Za-z0-9_]*` | `variable.other.<ext>` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Case-preserving; cannot start with digit or consist only of digits. Max catalog name length: 127 chars (entity/view), 60 chars (structured table type) |
 | Numeric Literal | `[+-]?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b` | `constant.numeric.<ext>` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Integer, Decimal, BinaryFloat, DecimalFloat |
 | Boolean / Null Literal | `(?i)\b(true\|false\|null)\b` | `constant.language.<ext>` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Boolean and null constants |
@@ -387,7 +387,8 @@ series_interval ::=
     number_literal
     | "interval" number_literal ( "year" | "month" | "day" | "hour" | "minute" | "second" ) ;
 
-(* 8. Views *)
+(* 8. Views. Lists are comma-separated and there are no implicit aliases: two adjacent items in a select list,
+      group by / order by list, parameter list or index element list miss a ',' (HANA-SYN-023, syntax-rules.md). *)
 view_def ::=
     [ "define" ] "view" identifier
     [ "with" "parameters" parameter_decl { "," parameter_decl } ]
