@@ -2,6 +2,20 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-19: context-aware keyword scopes (#79, #41), against `main` @ `281ffc0` (0.11.0)
+
+| Metric | `main` | #79 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 474 | 474 |
+| Formatter: blocks with violations | 1 | 1 |
+| Grammar: unscoped catalog keywords | 111 (1046 blocks) | 91 (642 blocks) |
+| Grammar: the 24 keywords of the #76 sweep (sum of blocks) | 535 | 32 |
+| Grammar: hierarchy words `SOURCE` `DEPTH` `DISTANCE` `LEVELS` `MEASURES` `EXCLUDED` (sum of blocks) | 74 | 10 |
+| Catalog: unknown called names | 75 | 74 |
+| `npm test`: tests / pass / todo | 414 / 381 / 33 | 396 / 387 / 9 |
+
+All 24 `@todo grammar` fixture markers are gone (#79 ×22, #75 ×2). The 9 todos left are analyzer false positives (#78, #88). The 32 remaining blocks for the #76 keywords are not keyword positions. They are tables named `data` / `source`, aliases (`AS first`, `AS last`), parameter names (`IN first ST_GEOMETRY`), prose lines in the extracted examples (`the following statement`), and statement words not covered yet (`DYNAMIC RANGE CHECK`, `AUDIT READ`). The test count drops because a `@todo` check is reported as its own test.
+
 ## 2026-11-18: unified word catalog (#77), against `main` @ `9c0a9e2` (0.10.3)
 
 | Metric | `main` | #77 |

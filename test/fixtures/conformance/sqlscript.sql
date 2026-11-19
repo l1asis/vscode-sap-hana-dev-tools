@@ -10,7 +10,6 @@ DO BEGIN
 END;
 
 -- @case procedure with parameters and table output
--- @todo grammar #79 unscoped DATA
 CREATE PROCEDURE get_dept_emps (IN p_dept INTEGER, OUT et_emps TABLE (emp_id INTEGER, last_name NVARCHAR(40)))
 LANGUAGE SQLSCRIPT
 SQL SECURITY INVOKER
@@ -30,7 +29,6 @@ BEGIN
 END;
 
 -- @case table function
--- @todo grammar #79 unscoped DATA
 CREATE FUNCTION top_earners (p_limit INTEGER)
 RETURNS TABLE (emp_id INTEGER, salary DECIMAL(15, 2))
 LANGUAGE SQLSCRIPT
@@ -120,7 +118,6 @@ DO BEGIN
 END;
 
 -- @case dynamic SQL with into and using
--- @todo grammar #79 unscoped IMMEDIATE
 DO BEGIN
   DECLARE v_cnt INTEGER;
   EXEC 'SELECT COUNT(*) FROM employees WHERE dept_id = ?' INTO v_cnt USING 10;
