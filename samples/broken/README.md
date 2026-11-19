@@ -86,9 +86,14 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 
 | File | Rule | Severity | QuickFixes |
 | :--- | :--- | :--- | :--- |
+| [`cds-lists.hdbcds`](syntax/cds-lists.hdbcds) | `HANA-SYN-023` | error | `Insert ','` |
 | [`cds-members.hdbcds`](syntax/cds-members.hdbcds) | `HANA-SYN-026` | error | `Insert ':'`<br>`Insert ';'` |
 | [`classic-kv.hdbtable`](syntax/classic-kv.hdbtable) | `HANA-MIG-001` | information | `Convert Classic .hdbtable to HDI DDL syntax` |
 | [`classic-kv.hdbtable`](syntax/classic-kv.hdbtable) | `HANA-SYN-022` | error | — |
+| [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-MIG-002` | information | `Convert Classic .hdbview to HDI DDL syntax` |
+| [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-SYN-022` | error | `Use double quotes` |
+| [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-SYN-023` | error | `Insert ','` |
+| [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-SYN-024` | error | — |
 | [`clause-order.sql`](syntax/clause-order.sql) | `HANA-SYN-027` | error | — |
 | [`incomplete-clauses.sql`](syntax/incomplete-clauses.sql) | `HANA-SYN-025` | error | — |
 | [`invalid-characters.sql`](syntax/invalid-characters.sql) | `HANA-SYN-005` | error | `Replace '//' with '--'` |
@@ -110,6 +115,8 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`unconsumed-tokens.sql`](syntax/unconsumed-tokens.sql) | `HANA-SYN-042` | error | — |
 | [`unterminated-comment.sql`](syntax/unterminated-comment.sql) | `HANA-SYN-002` | error | — |
 | [`unterminated-string.sql`](syntax/unterminated-string.sql) | `HANA-SYN-001` | error | — |
+| [`view-lists.hdbview`](syntax/view-lists.hdbview) | `HANA-SYN-023` | error | `Insert ','` |
+| [`view-lists.hdbview`](syntax/view-lists.hdbview) | `HANA-SYN-023` | warning | `Insert ','`<br>`Insert 'AS'` |
 | [`wrong-root.hdbprocedure`](syntax/wrong-root.hdbprocedure) | `HANA-SYN-004` | error | — |
 
 ### `xsjs/`
