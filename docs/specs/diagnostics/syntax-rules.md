@@ -227,6 +227,7 @@
      - Statement starts at top level, inside SQLScript blocks, and in library member scope: every invalid statement starter is matched against the valid starters of its scope (`RETURN` -> `RETERN`, `DECLARE` -> `DECLRE`, `SIGNAL` -> `SIGNL`, `SELECT` -> `SELECTT`, `PUBLIC` -> `PUBLC`) ONLY when it is structurally invalid (not an assignment such as `retern = 1;` or `col := ...`); see `HANA-SYN-041`.
      - Query clause typos at structural boundaries (`SELECT` -> `SELCT`/`SELET`/`SLECT` at statement start or after `RETURN`/`UNION`/`(`; `WHERE` -> `WHRE`/`WHER` at line start or after `FROM <table_ref>`; `GROUP` -> `GROP` before `BY`; `ORDER` -> `ORDR` before `BY`; `HAVING` -> `HAVNG`; `LIMIT` -> `LIMT`).
   5. Top-level CDS declarations (`.hdbdd`, `.hdbcds`): anchored after optional `@Annotations` / `namespace ...;` / `using ...;` / statement start (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `aspect`, `service`) — e.g. `entiy Customer {` -> QuickFix `entity`.
+  6. Hierarchy function clauses (`HIERARCHY*( ... )`, `docs/specs/grammars/sql-sqlscript.md` §4.5), by the consuming parser (see `HANA-SYN-042`): clause-keyword slots (`SORCE` -> `SOURCE`, `STRT` -> `START`, `SIBLNG` -> `SIBLING`, `CACHEE` -> `CACHE`, `MULTIPARNT` -> `MULTIPARENT`, `ORPHN` -> `ORPHAN`, `DISTNCE` -> `DISTANCE`), keywords inside a clause (`START WHEER` -> `WHERE`, `DISTANCE FRM 1 TOO 3` -> `FROM` / `TO`), and option slots (`CACHE FORCEE` -> `FORCE`, `CYCLE BRKUP` -> `BREAKUP`). Option slots hold a closed list of two to four words, so a 2-edit typo of a word of 5+ letters is matched there too.
 - **QuickFix (`Replace with '<KEYWORD>'`):** Single text replacement preserving capitalization convention (`UPPERCASE` for SQL/HDI DDL, `lowercase` for CDS keywords).
   - **Before:** `CREATE FUNC "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`
   - **After:** `CREATE FUNCTION "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`
@@ -253,7 +254,7 @@
   4. **Classic KV Array Lists:** Adjacent elements inside `[ ... ]` (`.hdbtable`, `.hdbti`, etc.) lacking `,` (respecting `.hdbti` `["K":"V"]` colon pairs).
   5. **`JSON_TABLE` Column Lists `[XSA]` `[HDI]` `[CLOUD]`:** Inside `JSON_TABLE(<ctx>, <path> COLUMNS ( ... ))` (and nested `NESTED [PATH] '<path>' COLUMNS ( ... )`), a new column entry following a complete entry without `,`. An entry is complete after `<col> FOR ORDINALITY`, after its `PATH '<path>'` literal, or after a nested `COLUMNS ( ... )`; only behavior/wrapper clauses may follow it (`ERROR | NULL | DEFAULT <value> | EMPTY ARRAY | EMPTY OBJECT` `ON EMPTY` / `ON ERROR`, `WITH [CONDITIONAL | UNCONDITIONAL] [ARRAY] WRAPPER`, `WITHOUT [ARRAY] WRAPPER`). Space-separated parts within an entry (`<type>`, `FORMAT JSON [ENCODING ...]`, `PATH`, path literals) are never flagged.
 - **Clause-Syntax Function Exclusions (no top-level comma checking):**
-  - **Hierarchy generators & navigators `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`** (`docs/specs/grammars/sql-sqlscript.md` §4.5): `HIERARCHY`, `HIERARCHY_LEVELED`, `HIERARCHY_SPANTREE`, `HIERARCHY_TEMPORAL`, `HIERARCHY_ANCESTORS`, `HIERARCHY_ANCESTORS_AGGREGATE`, `HIERARCHY_DESCENDANTS`, `HIERARCHY_DESCENDANTS_AGGREGATE`, `HIERARCHY_SIBLINGS`. Their clauses (`SOURCE`, `START [WHERE]`, `JOIN ... ON`, `MEASURES`, `DISTANCE`, `LEVELS`, `SIBLING ORDER BY`, `VALID`, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `[NO] CACHE`, `LOAD`, `RETAIN NULLS`, `WITH SUBTOTAL | BALANCE | NOT MATCHED | TOTAL`) are space-separated. Nested `LEVELS ( ... )`, `MEASURES ( ... )`, `IN ( ... )`, function calls, and `SOURCE` / `START ( SELECT ... )` subqueries are still checked. `HIERARCHY_COMPOSITE_ID(a, b, ...)` is a plain comma-separated scalar call and stays checked.
+  - **Hierarchy generators & navigators `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`** (`docs/specs/grammars/sql-sqlscript.md` §4.5): `HIERARCHY`, `HIERARCHY_LEVELED`, `HIERARCHY_SPANTREE`, `HIERARCHY_TEMPORAL`, `HIERARCHY_ANCESTORS`, `HIERARCHY_ANCESTORS_AGGREGATE`, `HIERARCHY_DESCENDANTS`, `HIERARCHY_DESCENDANTS_AGGREGATE`, `HIERARCHY_SIBLINGS`. Their clauses (`SOURCE`, `START [WHERE]`, `JOIN ... ON`, `MEASURES`, `DISTANCE`, `LEVELS`, `SIBLING ORDER BY`, `VALID`, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `[NO] CACHE`, `LOAD`, `RETAIN NULLS`, `WITH SUBTOTAL | BALANCE | NOT MATCHED | TOTAL`) are space-separated. Nested `LEVELS ( ... )`, `MEASURES ( ... )`, `IN ( ... )`, function calls, and `SOURCE` / `START ( SELECT ... )` subqueries are still checked. The clause list itself is validated by the consuming parser (`HANA-SYN-042`). `HIERARCHY_COMPOSITE_ID(a, b, ...)` is a plain comma-separated scalar call and stays checked.
   - **`OPENCYPHER_TABLE` `[HDI]` `[CLOUD]`** (§4.4): `GRAPH WORKSPACE <ws> QUERY '<cypher>' [PARAMETERS ( ... )]`; the nested `PARAMETERS ( ... )` list is still checked.
   - **`JSON_VALUE` / `JSON_QUERY` `[XSA]` `[HDI]` `[CLOUD]`:** `<ctx>, <path>` is checked as a normal argument list; checking stops at the first trailing clause keyword (`RETURNING`, `WITH`, `WITHOUT`, `ERROR`, `NULL`, `DEFAULT`, `EMPTY`, `ON`). Nested type arguments (`RETURNING DECIMAL(10, 2)`) are still checked.
 - **QuickFix (`Insert ','`):** Inserts `,` immediately after the preceding element token.
@@ -275,7 +276,7 @@
 - **Clause Terminator Exceptions `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`:**
   - `LEFT` / `RIGHT` end a `WHERE` / `ON` / `HAVING` condition only as a join keyword (`LEFT [OUTER] JOIN`). Immediately followed by `(` they are the `LEFT(<str>, <n>)` / `RIGHT(<str>, <n>)` string functions and are operands (`WHERE x = 1 AND LEFT(c, 6) = :v` is valid; `WHERE x = 1 AND LEFT JOIN u ...` still reports the dangling `AND`).
   - A `SET <col> = <expr>` assignment also ends at `WHEN` (the next `MERGE INTO ... WHEN [NOT] MATCHED THEN ...` branch) and at `WITH` (`ALTER SYSTEM ALTER CONFIGURATION (...) SET (...) = <value> WITH RECONFIGURE`).
-- **Hierarchy Function Clause Scoping `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`:** Inside the top level of a clause-syntax `HIERARCHY*` call (the 9 functions listed under `HANA-SYN-023`), a `START WHERE` / `WHERE` / `JOIN ... ON` condition ends at a hierarchy clause keyword (`SOURCE`, `START`, `JOIN`, `MEASURES`, `DISTANCE`, `LEVELS`, `SIBLING`, `VALID`, `DEPTH`, `MULTIPARENT`, `ORPHAN`, `CYCLE`, `CACHE`, `NO`, `LOAD`, `RETAIN`). This applies only after a complete operand, so the condition is still checked (`START WHERE node_id :id` → missing operator; `START WHERE node_id + DEPTH 2` → dangling operator). `UNTIL` in `VALID FROM <expr> [EXCLUDED] UNTIL <expr> [EXCLUDED]` does not open a loop condition. These keywords are non-reserved, so they are **not** global clause terminators: outside hierarchy calls, `WHERE depth = 1 AND valid = 'Y'` treats them as columns, and `WHERE a = 1 DEPTH 2` is still flagged.
+- **Hierarchy Function Clauses `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`:** tokens at the top level of a clause-syntax `HIERARCHY*` call (the 9 functions listed under `HANA-SYN-023`) are not checked by this rule. The consuming parser validates the clause list and its `START WHERE` / `WHERE` / `JOIN ... ON` conditions (`HANA-SYN-042`, §4.5). Nested parentheses (`SOURCE (SELECT ...)`, `MEASURES (...)`, function calls) are still checked here. The hierarchy clause words are non-reserved, so outside hierarchy calls `WHERE depth = 1 AND valid = 'Y'` treats them as columns, and `WHERE a = 1 DEPTH 2` is still flagged.
 
 ### `HANA-SYN-025` — Incomplete SQL Clause or Missing Statement Semicolon
 - **Severity:** `error`
@@ -580,22 +581,30 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
                      [ ( "MANY" | "ONE" | "EXACT" "ONE" ) "TO" ( "MANY" | "ONE" | "EXACT" "ONE" ) ]
                      "JOIN" table_ref [ alias ] [ "ON" expr | "USING" "(" cols ")" ] } ;
     table_ref  ::= ( name | ":" var | "(" query ")" ) { "(" args ")" | "[" filter "]" | ":" assoc | "." name }
-                   [ "WITH" "ORDINALITY" ] ;       (* "V"(5):"ASSOC"('EN'), t2:a[y1 > 1] *)
+                   [ "WITH" "ORDINALITY" ]         (* "V"(5):"ASSOC"('EN'), t2:a[y1 > 1] *)
+                 | hierarchy_call ;                (* sql-sqlscript.md §4.5 *)
     ```
 
   - **Statements:** `INSERT INTO <t> [(cols)] (VALUES (...) | <query>)`, `UPSERT | REPLACE <t> [(cols)] (VALUES (...) [WHERE <expr> | WITH PRIMARY KEY] | <query>)`, `UPDATE <t> [<alias>] SET <col> = <expr>, ... [FROM ...] [WHERE <expr>]`, `DELETE [FROM] <t> [<alias>] [WHERE <expr>]`, `DECLARE <names> [CONSTANT] <type> [NOT NULL] [(DEFAULT | = | :=) <expr | query>]`, `DECLARE [CURSOR] <c> [CURSOR] [(params)] FOR <query>`, `RETURN [<expr | query>]`, `<target> (= | :=) <expr | query>`, `CALL <proc>(...)`, `SIGNAL | RESIGNAL [<cond> | SQL_ERROR_CODE <n>] [SET MESSAGE_TEXT = <expr>]`, `IF` / `ELSEIF` / `WHILE` conditions, `[CREATE [OR REPLACE]] VIEW <name> ... AS <query>`, `[CREATE] (COLUMN | ROW) TABLE <name> (<columns / constraints>)` (column attributes are long tail; only `DEFAULT` expressions are validated), and `[CREATE] SEQUENCE <name> { START | RESTART WITH <n> | INCREMENT BY <n> | [NO] MAXVALUE | [NO] MINVALUE | [NO] CYCLE | [NO] CACHE }`.
+  - **Hierarchy functions** (`hierarchy_call`, §4.5): the clause list of the nine `HIERARCHY*` table functions, in any order, with their conditions, expressions and subqueries. Unlike the rest of the parser, a hierarchy call **recovers** after an error, so every misspelled clause keyword of one call is reported:
+    - A typo in a clause-keyword or option slot is reported as `HANA-SYN-021` (with QuickFix) and parsing continues as if the suggested keyword had been written.
+    - A token that fits no slot (`DEPTH FIRST`, `LOAD BI`) is reported as `HANA-SYN-042`. The tokens after it are skipped up to the next clause keyword (or typo of one), and parsing continues there.
+    - An error inside a `SOURCE` / `START` / `JOIN` subquery is reported, the subquery's parentheses are skipped, and the clause list continues after them. A subquery the parser does not model is skipped silently.
 - **AST / Token Trigger (boundary rule):** once a clause has been consumed (select item and its alias, `FROM` item and its alias, `JOIN ... ON` / `WHERE` / `HAVING` / statement condition, `GROUP BY` / `ORDER BY` item, `LIMIT`, `INTO` list, `SET` assignment, initializer, `RETURN` value, assignment, sequence option), the next token must belong to the clause's follow-set (`,`, the following clause keywords, `)` inside subqueries, or the statement end):
   1. A word that is a typo of a follow-set keyword is reported as `HANA-SYN-021` with a QuickFix (`WHEREE` -> `WHERE`, `GROUPP BY` -> `GROUP BY`, `ORDR BY` -> `ORDER BY`, `ANDD` -> `AND`, `DSC` -> `DESC`). For an implicit-alias candidate (`FROM t WHEREE x = 1`, `FROM t GROUPP BY a`) the typo is reported only when the word is not itself followed by a valid boundary, so `SELECT a whre, b FROM t` keeps `whre` as an alias.
   2. A plain identifier, quoted identifier, literal, or punctuation token is reported as `HANA-SYN-042`: double aliases (`FROM t a b`, `SELECT a b c`), adjacent operands (`WHERE a = 1 foo`, `ORDER BY x y`), and trailing garbage after an initializer / assignment / `RETURN` value (`DECLARE v INT = 1 junk;`, `v = :v + 1 extra;`).
   3. Any other keyword (`KEYWORDS` / `RESERVED` catalogs in `src/formatter/keywords.ts`) silently ends validation of the statement, because it may start a clause that is not modelled (`TABLESAMPLE`, `FOR SYSTEM_TIME`, `WITH READ ONLY`, `FOR UPDATE`, `WINDOW`, ...).
 - **Long-Tail Safety:** statements without a dedicated consumer (`ALTER SYSTEM`, `MERGE INTO`, `CREATE` of other object kinds, engine-specific DDL, ...) and constructs that are not understood (JSON object literals `{...}`, `GROUPING SETS <options> (...)`, anonymous `SQL FUNCTION` blocks in queries, parenthesized join trees, `RESET BY` sequences) are protected only by `HANA-SYN-005`, `HANA-SYN-006`, `HANA-SYN-040`, and `HANA-SYN-041`. A section containing `##IF` / `##ifdef` ... `##endif` conditional compilation is skipped by `HANA-SYN-041` and `HANA-SYN-042`.
-- **De-duplication:** one diagnostic per statement; nothing is reported for a statement that already carries any diagnostic (the existing `HANA-SYN-021` / `023` / `024` / `025` / `027` rules take precedence), and sections with `HANA-SYN-003` / `HANA-SYN-020` errors are skipped.
+- **De-duplication:** one diagnostic per statement; nothing is reported for a statement that already carries any diagnostic (the existing `HANA-SYN-021` / `023` / `024` / `025` / `027` rules take precedence), and sections with `HANA-SYN-003` / `HANA-SYN-020` errors are skipped. Exception: diagnostics from a hierarchy call's clause list are reported even when the statement has other diagnostics, except at a token that already carries one (`ORDR BY` inside a `SOURCE` subquery is reported once).
 - **Case Sensitivity:** SQL keywords are case-insensitive, so mixed-case spellings such as `FROm` are a valid `FROM` and are never reported.
 - **Diagnostic Examples:**
   - `Unexpected 'eeeeee' after FROM item; expected ',', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'ON', 'USING', 'WHERE', ....`
   - `Unexpected 'y' after ORDER BY item; expected ',', 'ASC', 'DESC', 'NULLS', 'LIMIT', 'OFFSET', 'FOR', 'WITH', 'INTO', ';'.`
   - `Unknown keyword 'WHEREE' after table reference 't'. Did you mean 'WHERE'?` (`HANA-SYN-021`)
   - `Unexpected 'junk' after variable initializer; expected ';'.`
+  - `Unknown keyword 'SORCE' in HIERARCHY call. Did you mean 'SOURCE'?` (`HANA-SYN-021`)
+  - `Unexpected 'FIRST' after 'DEPTH' in HIERARCHY call; expected an integer.`
+  - `Unexpected 'BI' after 'LOAD' in HIERARCHY call; expected 'BULK', 'INCREMENTAL' or a string.`
 - **QuickFix (`HANA-SYN-021` only):**
   - **Before:**
 
@@ -608,6 +617,16 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
     ```sql
     SELECT a, COUNT(*) FROM t GROUP BY a;
     ```
+
+
+#### Parser-backed statement families (#78)
+
+The comma and operator heuristics (`HANA-SYN-023` / `024` / `025`) infer structure from neighbouring tokens. Each statement family moves to the consuming parser in its own change, and the heuristic code for that family is deleted in the same change.
+
+| Family | Parser (`sql-clauses.ts`) | Heuristic removed | Spec |
+| :--- | :--- | :--- | :--- |
+| Queries, `INSERT` / `UPDATE` / `UPSERT` / `DELETE`, `DECLARE`, assignments, `RETURN`, `CALL`, `SIGNAL`, conditions, `VIEW`, `TABLE`, `SEQUENCE` | #59 | not yet (both run) | this rule |
+| Hierarchy functions (`HIERARCHY*( ... )`) | #75 | `HANA-SYN-024` condition checks at the top level of the call | §4.5 |
 
 ---
 
