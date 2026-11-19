@@ -21,6 +21,89 @@ function wordMatch(words, { call = false } = {}) {
   return `(?i)\\b(?:${alternation(words)})\\b${call ? '(?=\\s*\\()' : ''}`;
 }
 
+/**
+ * Leading word boundary that also holds right after a key-value string escape (`\n`, `\t`, `\r`). XS Classic
+ * `.hdbview` / `.hdbsequence` embed SQL in `"..."` strings, where `SELECT \"A\"\nFROM T` must still highlight `FROM`:
+ * a plain `\b` fails there because `n` and `F` are both word characters. Outside strings a backslash is never valid
+ * SQL, so the extra alternative changes nothing for `.sql` files.
+ */
+const WORD_START = '(?:\\b|(?<=\\\\[nrt]))';
+
+/** Rewrites every leading `(?i)\b` of `match` / `begin` into WORD_START (see above), in place. */
+function allowAfterKvEscape(node) {
+  if (Array.isArray(node)) node.forEach(allowAfterKvEscape);
+  else if (node && typeof node === 'object') {
+    for (const key of ['match', 'begin']) {
+      if (typeof node[key] === 'string') node[key] = node[key].replace(/^\(\?i\)\\b/, `(?i)${WORD_START}`);
+    }
+    Object.values(node).forEach(allowAfterKvEscape);
+  }
+  return node;
+}
+
+/**
+ * Clause phrases: non-reserved words that are keywords only next to a fixed neighbour (spec: sql-sqlscript.md §3.4).
+ * A bare `range`, `data`, `first` or `matched` stays an identifier. Each entry is one `(?i)` regex; the whole match
+ * gets the `clause-word` scope unless the entry gives `captures`. `NOT_AN_OPERAND` is filled in from the catalog.
+ */
+const CLAUSE_PHRASES = [
+  // partitioning `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`: PARTITION BY RANGE (a), SUBPARTITION BY HASH (b), ALTER PARTITION RANGE (c)
+  String.raw`\b(?:SUB)?PARTITION\s+BY\s+(?:RANGE|HASH|ROUNDROBIN)\b`,
+  String.raw`\b(?:RANGE|HASH|ROUNDROBIN)\b(?=\s*\()`,
+  // window frames: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW, RANGE 2 PRECEDING
+  String.raw`\b(?:ROWS|RANGE)\b(?=\s+(?:BETWEEN|UNBOUNDED|CURRENT|\d))`,
+  String.raw`\bUNBOUNDED\s+(?:PRECEDING|FOLLOWING)\b`,
+  { match: String.raw`\b(\d+)\s+(PRECEDING|FOLLOWING)\b`, captures: { 1: 'constant.numeric.hanasql', 2: 'clause' } },
+  String.raw`\bCURRENT\s+ROW\b`,
+  // ORDER BY ... NULLS FIRST, FIRST_VALUE(x IGNORE NULLS)
+  String.raw`\bNULLS\s+(?:FIRST|LAST)\b`,
+  String.raw`\b(?:IGNORE|RESPECT)\s+NULLS\b`,
+  // hints: WITH HINT (...), ALTER SYSTEM ADD STATEMENT HINT (...) FOR STATEMENT HASH '...'
+  String.raw`\b(?:WITH|STATEMENT)\s+HINT\b`,
+  String.raw`\bHINT\b(?=\s*\()`,
+  String.raw`\bSTATEMENT\b(?=\s+(?:HINT|HASH)\b)`,
+  // MERGE INTO ... WHEN [NOT] MATCHED
+  String.raw`\bWHEN\s+(?:NOT\s+)?MATCHED\b`,
+  // triggers: AFTER UPDATE OF c ON t, INSTEAD OF DELETE, FOR EACH ROW, REFERENCING NEW ROW AS n
+  String.raw`\b(?:BEFORE|AFTER)\s+(?:INSERT|UPDATE|DELETE)\b`,
+  String.raw`\bINSTEAD\s+OF\b`,
+  String.raw`\bFOR\s+EACH\s+(?:ROW|STATEMENT)\b`,
+  String.raw`\bREFERENCING\s+(?:NEW|OLD)\s+(?:ROW|TABLE)\b`,
+  // dynamic SQL and ALTER ... IMMEDIATE
+  String.raw`\bEXEC(?:UTE)?\s+IMMEDIATE\b`,
+  String.raw`\bIMMEDIATE\b(?=\s*;)`,
+  // transactions and routine characteristics: READ ONLY, READ COMMITTED, READS SQL DATA, HEADER ONLY, WITH DDL ONLY
+  String.raw`\bISOLATION\s+LEVEL\b`,
+  String.raw`\bREAD\s+(?:ONLY|WRITE|COMMITTED|UNCOMMITTED)\b`,
+  String.raw`\b(?:READS|MODIFIES)\s+SQL\s+DATA\b`,
+  String.raw`\b(?:HEADER|DDL)\s+ONLY\b`,
+  // CREATE TABLE ... AS (...) WITH [NO] DATA, IMPORT DATA; never the CTE `WITH data AS (...)` / `WITH data (a) AS`
+  String.raw`\bWITH\s+(?:NO\s+)?DATA\b(?!\s*\(|\s+AS\b)`,
+  String.raw`\b(?:IMPORT|EXPORT)\s+DATA\b`,
+  String.raw`\b(?:VALID\s+)?FOR\s+DATA\s+DEPENDENCY\b`,
+  // temporary tables: ON COMMIT DELETE ROWS / PRESERVE ROWS
+  String.raw`\b(?:DELETE|PRESERVE)\s+ROWS\b`,
+  // LIKE ... ESCAPE '\'
+  String.raw`\bESCAPE\b(?=\s*')`,
+  // IMPORT FROM CSV FILE ... SKIP FIRST 1 ROW, COLUMN LIST IN FIRST ROW
+  String.raw`\bSKIP\s+FIRST\b`,
+  String.raw`\bFIRST\s+ROW\b`,
+  // sequences: INCREMENT BY 1 NO CYCLE, MAXVALUE 100, RESET BY SELECT ...
+  String.raw`\bINCREMENT\s+BY\b`,
+  String.raw`\bRESET\s+BY\b`,
+  String.raw`\bNO\s+(?:CYCLE|MINVALUE|MAXVALUE)\b`,
+  String.raw`\b(?:MINVALUE|MAXVALUE)\b(?=\s*-?\d)`,
+  // NO <option>: NO PRIMARY KEY, NO FORCE_FIRST_PASSWORD_CHANGE, NO DDL ONLY, but not a column `no` before FROM / AS / AND
+  'NO_OPTION',
+  // ALTER SYSTEM ALTER CONFIGURATION ... WITH RECONFIGURE, EXPLAIN PLAN, SERIES_GENERATE(SERIES TABLE t)
+  String.raw`\bWITH\s+RECONFIGURE\b`,
+  String.raw`\bEXPLAIN\s+PLAN\b`,
+  String.raw`\bSERIES\s+TABLE\b`,
+  // user groups: SET PARAMETER ... ENABLE PARAMETER SET, CONNECT RESTRICTION (r IP ('...') APPLICATION ('...'))
+  String.raw`\b(?:ENABLE|DISABLE)\s+PARAMETER\s+SET\b`,
+  String.raw`\b(?:IP|APPLICATION)\b(?=\s*\()`,
+];
+
 function buildHanasqlGrammar(model = lib.loadCatalog()) {
   const role = (id) => model.roles.get(id);
   const words = (id) => lib.wordsWithRole(model, id);
@@ -50,8 +133,20 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
     .filter((f) => f.category === 'sqlscript-library' && lib.isConstantFunction(f))
     .map((f) => f.name);
   const sqlscriptCalls = lib.functionsInCategories(model, ['sqlscript', 'graphscript']);
+  const clauseScope = scope('clause-word');
+  // `NO` is an option prefix unless an operand-ending word follows it (`SELECT no FROM t`, `no AS n`, `no IS NULL`)
+  const notAnOperand = alternation([...words('non-alias'), ...words('word-operator')]);
+  const clausePhrases = CLAUSE_PHRASES.map((p) => {
+    if (p === 'NO_OPTION') return { name: clauseScope, match: `(?i)\\bNO\\b(?=[ \\t]+[A-Za-z_])(?![ \\t]+(?:${notAnOperand})\\b)` };
+    if (typeof p === 'string') return { name: clauseScope, match: `(?i)${p}` };
+    const captures = {};
+    for (const [i, s] of Object.entries(p.captures)) captures[i] = { name: s === 'clause' ? clauseScope : s };
+    return { match: `(?i)${p.match}`, captures };
+  });
+  const hierarchyFunctions = words('hierarchy-clause-function');
+  const hierarchyScope = byScopeOf(model, hierarchyFunctions);
 
-  return {
+  return allowAfterKvEscape({
     $schema: 'https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json',
     name: 'SAP HANA SQL',
     scopeName: 'source.hanasql',
@@ -70,6 +165,12 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
       },
       {
         "include": "#statements"
+      },
+      {
+        "include": "#clause-phrases"
+      },
+      {
+        "include": "#hierarchy-call"
       },
       {
         "include": "#numbers"
@@ -196,7 +297,32 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
       },
       'logical-operators': roleRule('word-operator'),
       keywords: {
-        patterns: [roleRule('control-flow'), roleRule('dml'), roleRule('ddl')],
+        patterns: [roleRule('control-flow'), roleRule('dml'), roleRule('ddl'), roleRule('preposition')],
+      },
+      'clause-phrases': { patterns: clausePhrases },
+      // HIERARCHY*( SOURCE ... START WHERE ... SIBLING ORDER BY ... DEPTH n ... ): clause words only inside the call.
+      // Nested parentheses are balanced by #parens so the region ends at the call's own `)`.
+      'hierarchy-call': {
+        begin: `(?i)\\b(${alternation(hierarchyFunctions)})\\s*(\\()`,
+        beginCaptures: { 1: { name: hierarchyScope } },
+        end: '\\)',
+        // phrases first, so `NULLS LAST` and `RETAIN NULLS` stay one keyword rather than a lone hierarchy word
+        patterns: [
+          { include: '#parens' },
+          { include: '#statements' },
+          { include: '#clause-phrases' },
+          { include: '#hierarchy-keywords' },
+          { include: '$self' },
+        ],
+      },
+      'hierarchy-keywords': {
+        name: clauseScope,
+        match: wordMatch([...words('hierarchy-clause'), ...words('hierarchy-option')]),
+      },
+      parens: {
+        begin: '\\(',
+        end: '\\)',
+        patterns: [{ include: '#parens' }, { include: '$self' }],
       },
       operators: {
         "name": "keyword.operator.hanasql",
@@ -258,7 +384,20 @@ function buildHanasqlGrammar(model = lib.loadCatalog()) {
         ],
       },
     },
-  };
+  });
 }
 
-module.exports = { buildHanasqlGrammar, alternation, wordMatch };
+/** The one scope shared by the function categories of `names` (a build error if they differ). */
+function byScopeOf(model, names) {
+  const scopes = new Set(
+    names.map((n) => {
+      const f = model.functions.find((fn) => fn.name === n);
+      if (!f) throw new lib.CatalogError(`'${n}' is not a catalog function`);
+      return model.categories.get(f.category).scope;
+    })
+  );
+  if (scopes.size !== 1) throw new lib.CatalogError(`functions ${names.join(', ')} do not share one scope`);
+  return [...scopes][0];
+}
+
+module.exports = { buildHanasqlGrammar, alternation, wordMatch, WORD_START };

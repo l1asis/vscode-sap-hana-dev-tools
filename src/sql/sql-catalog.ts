@@ -242,7 +242,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "AND",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -266,7 +266,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "ANY",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -350,7 +350,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "AT",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -458,7 +458,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "BETWEEN",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -909,7 +909,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "CONTAINS",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -1664,7 +1664,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "EXISTS",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2269,7 +2269,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "IS",
     "kind": "keyword",
     "category": "reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2490,7 +2490,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "LIKE",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2502,7 +2502,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "LIKE_REGEXPR",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2891,7 +2891,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "NOT",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -2963,7 +2963,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "OF",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -3035,7 +3035,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "OR",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -4261,7 +4261,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "SOME",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -4943,7 +4943,7 @@ export const SQL_KEYWORD_ENTRIES: readonly SqlKeywordEntry[] = [
     "name": "TO",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -5654,7 +5654,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "AND",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -5678,7 +5678,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "ANY",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -5762,7 +5762,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "AT",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -5870,7 +5870,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "BETWEEN",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -6321,7 +6321,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "CONTAINS",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7076,7 +7076,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "EXISTS",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7681,7 +7681,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "IS",
     "kind": "keyword",
     "category": "reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7902,7 +7902,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "LIKE",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -7914,7 +7914,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "LIKE_REGEXPR",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8303,7 +8303,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "NOT",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8375,7 +8375,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "OF",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -8447,7 +8447,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "OR",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -9673,7 +9673,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "SOME",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.operator.logical.hanasql",
+    "scope": "keyword.other.logical.hanasql",
     "platforms": [
       "XSC",
       "XSA",
@@ -10355,7 +10355,7 @@ export const SQL_KEYWORDS_MAP: Readonly<Record<string, SqlKeywordEntry>> = {
     "name": "TO",
     "kind": "keyword",
     "category": "non-reserved",
-    "scope": "keyword.other.clause.hanasql",
+    "scope": "keyword.other.preposition.hanasql",
     "platforms": [
       "XSC",
       "XSA",
