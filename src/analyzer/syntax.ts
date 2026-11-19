@@ -3,12 +3,12 @@ import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } 
 import { tokenize, type Token } from '../formatter/tokenizer';
 import { KEYWORDS as FMT_KEYWORDS, RESERVED as FMT_RESERVED } from '../formatter/keywords';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
-import { type EmbeddedSql, mapEmbeddedDiagnostics, unescapeKvString } from './kv-embedded-sql';
+import { embeddedOffset, type EmbeddedSql, mapEmbeddedDiagnostics, unescapeKvString, unescapeSqlLiteral } from './embedded-sql';
 import { parseJsonAstWithErrors } from './json-parser';
 import { checkSqlSelectClauseOrder } from './sql-order';
 import { checkSqlScriptOrderAndContext } from './sql-context';
 import { checkSqlLexicalIntegrity, dedupeLexicalCascade } from './sql-lexical';
-import { createClauseHooks } from './sql-clauses';
+import { createClauseHooks, type ExecStatement } from './sql-clauses';
 import { checkSqlStatements } from './sql-statements';
 import { matchKeywordTypo } from './typo';
 import {
@@ -544,6 +544,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         delimResult.unclosedStarts.has(tok.start) ||
         delimResult.unmatchedCloseStarts.has(tok.start) ||
         brokenQidentLines.has(findLineNumber(lineStarts, tok.start));
+      const execStatements: ExecStatement[] = [];
       const hooks = createClauseHooks(
         codeTokens,
         (issue) => {
@@ -555,6 +556,9 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
           } else if (issue.insertCommaAfter !== undefined && codeTokens[issue.insertCommaAfter]) {
             fixes.push(makeInsertCommaFix(baseOffset + codeTokens[issue.insertCommaAfter].end));
             if (issue.likelyAlias) fixes.push({ ...makeReplaceFix("Insert 'AS'", baseOffset + tok.start, baseOffset + tok.start, 'AS '), isPreferred: false });
+          } else if (issue.insert && codeTokens[issue.insert.afterTok]) {
+            const at = baseOffset + codeTokens[issue.insert.afterTok].end;
+            fixes.push(makeReplaceFix(`Insert '${issue.insert.text.trim()}'`, at, at, issue.insert.text));
           }
           diagnostics.push({
             ruleId: issue.ruleId,
@@ -570,7 +574,8 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
           const from = baseOffset + codeTokens[start].start;
           const to = baseOffset + codeTokens[Math.min(end, codeTokens.length) - 1].end;
           return diagnostics.some((d) => d.start >= from && d.start <= to);
-        }
+        },
+        (stmt) => execStatements.push(stmt)
       );
       checkSqlStatements({
         languageId,
@@ -582,6 +587,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         diagnostics,
         hooks,
       });
+      for (const stmt of execStatements) checkDynamicSql(stmt, codeTokens, slice, baseOffset, diagnostics);
     }
   }
 
@@ -594,6 +600,104 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
 
   if (afterLexicalIdx > lexicalStartIdx) dedupeLexicalCascade(diagnostics, afterLexicalIdx, slice, baseOffset);
   return diagnostics;
+}
+
+/** Upper-case name of a variable reference or identifier token (`:lt` -> `LT`, `"Lt"` -> `Lt`). */
+function variableName(t: Token): string {
+  if (t.type === 'var') return t.text.slice(1).toUpperCase();
+  if (t.type === 'qident') return t.text.slice(1, -1);
+  return t.text.toUpperCase();
+}
+
+/**
+ * Names declared as table variables in a section: `DECLARE <v> TABLE ...`, `IN | OUT | INOUT <v> TABLE (...)`,
+ * and table variable assignments `<v> = SELECT ...`.
+ */
+function collectTableVariables(codeTokens: readonly Token[]): ReadonlySet<string> {
+  const out = new Set<string>();
+  const up = (k: number): string => (codeTokens[k]?.type === 'word' ? codeTokens[k].text.toUpperCase() : '');
+  for (let k = 0; k + 2 < codeTokens.length; k++) {
+    const w = up(k);
+    if ((w === 'DECLARE' || w === 'IN' || w === 'OUT' || w === 'INOUT') && up(k + 2) === 'TABLE') out.add(variableName(codeTokens[k + 1]));
+    else if ((codeTokens[k + 1].text === '=' || codeTokens[k + 1].text === ':=') && up(k + 2) === 'SELECT' && codeTokens[k].type !== 'punct') {
+      out.add(variableName(codeTokens[k]));
+    }
+  }
+  return out;
+}
+
+/**
+ * Binding rules and the static SQL of a consumed `EXEC` / `EXECUTE IMMEDIATE` statement (`HANA-SYN-043`,
+ * SQLScript Reference 8.10 Dynamic SQL):
+ * - a table variable cannot be used in both `INTO` and `USING`;
+ * - for a single string literal: `?` and `:<variable>` parameters cannot be mixed; the `?` count must match the
+ *   `USING` values; with `:<variable>` parameters, `USING` takes variable references only and must bind each name;
+ * - the literal's SQL is checked by every SQL rule, with spans mapped back into the literal (`''` escapes).
+ * A concatenated (`'...' || :v`) or variable-held SQL string is never inspected.
+ */
+function checkDynamicSql(
+  stmt: ExecStatement,
+  codeTokens: readonly Token[],
+  slice: string,
+  baseOffset: number,
+  diagnostics: AnalyzerDiagnostic[]
+): void {
+  const push = (start: number, end: number, message: string): void => {
+    diagnostics.push({ ruleId: 'HANA-SYN-043', category: 'syntax', severity: 'error', message, start: baseOffset + start, end: baseOffset + end, fixes: [] });
+  };
+  const usingVars = (stmt.using ?? []).filter(([s, e]) => e === s + 1 && codeTokens[s].type === 'var').map(([s]) => s);
+
+  const tableVars = collectTableVariables(codeTokens);
+  for (const u of usingVars) {
+    const name = variableName(codeTokens[u]);
+    if (tableVars.has(name) && stmt.into.some((k) => variableName(codeTokens[k]) === name)) {
+      push(codeTokens[u].start, codeTokens[u].end, `Table variable '${codeTokens[u].text}' cannot be used in both 'INTO' and 'USING'.`);
+    }
+  }
+
+  if (stmt.literalIdx < 0) return;
+  const lit = codeTokens[stmt.literalIdx];
+  const emb = unescapeSqlLiteral(slice, lit.start, lit.end, 'EXEC');
+  if (!emb || !emb.sql.trim()) return;
+  const inner = tokenize(emb.sql, { collapseFormatOff: false, slashComments: true, singleLineQident: true });
+  const params = inner.filter((t) => t.type === 'param');
+  const vars = inner.filter((t) => t.type === 'var');
+  const at = (t: Token): [number, number] => [embeddedOffset(emb, t.start), embeddedOffset(emb, t.end)];
+  const usingTok = stmt.usingIdx >= 0 ? codeTokens[stmt.usingIdx] : null;
+
+  if (params.length > 0 && vars.length > 0) {
+    push(...at(vars[0]), `'?' and ':<variable>' parameters cannot be mixed in one dynamic SQL statement.`);
+  } else if (params.length > 0) {
+    const n = stmt.using?.length ?? 0;
+    if (n !== params.length) {
+      const what = `The SQL has ${params.length} '?' parameter${params.length === 1 ? '' : 's'}`;
+      if (usingTok) push(usingTok.start, usingTok.end, `${what}, but 'USING' binds ${n} value${n === 1 ? '' : 's'}.`);
+      else push(lit.start, lit.end, `${what}, but there is no 'USING' clause.`);
+    }
+  } else if (vars.length > 0 && stmt.using) {
+    let onlyVariables = true;
+    for (const [s, e] of stmt.using) {
+      if (!(e === s + 1 && codeTokens[s].type === 'var')) {
+        onlyVariables = false;
+        push(codeTokens[s].start, codeTokens[e - 1].end, "With ':<variable>' parameters, 'USING' takes variable references only.");
+      }
+    }
+    const bound = new Set(usingVars.map((k) => variableName(codeTokens[k])));
+    for (const v of onlyVariables ? vars : []) {
+      if (!bound.has(variableName(v))) push(...at(v), `'${v.text}' is not bound: add '${v.text}' to 'USING'.`);
+    }
+  }
+
+  // The static SQL itself: every SQL rule, mapped back into the literal
+  const sqlDiags = analyzeSqlSection(emb.sql, { baseOffset: 0, languageId: 'hanasql', checkBlocks: false, checkHeaderRoots: false });
+  for (const d of mapEmbeddedDiagnostics(sqlDiags, emb)) {
+    diagnostics.push({
+      ...d,
+      start: d.start + baseOffset,
+      end: d.end + baseOffset,
+      fixes: d.fixes.map((f) => ({ ...f, edits: f.edits.map((e) => ({ ...e, start: e.start + baseOffset, end: e.end + baseOffset })) })),
+    });
+  }
 }
 
 const PROCEDURAL_HDI_LANGUAGES = new Set<string>([

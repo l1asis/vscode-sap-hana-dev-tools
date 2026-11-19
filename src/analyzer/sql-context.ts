@@ -99,6 +99,27 @@ interface BlockScope {
   firstMemberStart?: number;
 }
 
+/**
+ * The first keyword of a static dynamic SQL literal when it changes data or the catalog (`EXEC 'DROP TABLE t'`),
+ * or `''`. Only a single string literal is inspected: a concatenation (`'...' || :v`) or a variable is not.
+ */
+function staticDynamicSqlWrite(codeTokens: readonly Token[], k: number): string {
+  const lit = codeTokens[k];
+  if (!lit || lit.type !== 'string' || codeTokens[k + 1]?.text === '||') return '';
+  const body = lit.text.replace(/^[A-Za-z]*'/, '').replace(/'$/, '').replace(/''/g, "'");
+  const m = /^(?:\s+|--[^\n]*\n|\/\*[\s\S]*?\*\/|\()*([A-Za-z_]+)/.exec(body);
+  const w = m ? m[1].toUpperCase() : '';
+  return DML_WRITE_KEYWORDS.has(w) || DDL_KEYWORDS.has(w) || w === 'COMMIT' || w === 'ROLLBACK' ? w : '';
+}
+
+/** The `EXEC` / `EXECUTE IMMEDIATE` statement starting at `k` ends with `READS SQL DATA`. */
+function hasReadsSqlDataSuffix(codeTokens: readonly Token[], k: number): boolean {
+  for (let j = k + 1; j < codeTokens.length && codeTokens[j].text !== ';'; j++) {
+    if (wordUpper(codeTokens[j]) === 'READS' && wordUpper(codeTokens[j + 1]) === 'SQL' && wordUpper(codeTokens[j + 2]) === 'DATA') return true;
+  }
+  return false;
+}
+
 function wordUpper(tok: Token | undefined): string {
   return tok && tok.type === 'word' ? tok.text.toUpperCase() : '';
 }
@@ -1345,12 +1366,16 @@ export function checkSqlScriptOrderAndContext(opts: SqlContextOptions): void {
         }
       } else if ((up === 'EXEC' && nextTok && nextTok.text !== ';') || (up === 'EXECUTE' && nextUp === 'IMMEDIATE')) {
         const dynLabel = up === 'EXECUTE' ? 'EXECUTE IMMEDIATE' : 'EXEC';
-        if (isReadOnlyRoutine) {
-          emitDiag(
-            tok,
-            'HANA-SYN-029',
-            `Dynamic SQL ('${dynLabel}') is not allowed inside a FUNCTION or READS SQL DATA procedure.`
-          );
+        // Read-only procedures and table UDFs may run dynamic SQL: it is treated as read-only there, and a
+        // statement that is not read-only fails at run time (SQLScript Reference, 8.10 Dynamic SQL).
+        const write = staticDynamicSqlWrite(codeTokens, i + (up === 'EXECUTE' ? 2 : 1));
+        if (routine?.kind === 'scalar_function') {
+          emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside a scalar FUNCTION.`);
+        } else if (write && (isReadOnlyRoutine || hasReadsSqlDataSuffix(codeTokens, i))) {
+          const where = isReadOnlyRoutine ? (isFunctionRoutine ? 'a FUNCTION' : 'a READS SQL DATA procedure') : "a 'READS SQL DATA' statement";
+          emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL in ${where} runs read-only; '${write}' is not a read-only statement.`);
+        } else if (isReadOnlyRoutine) {
+          // allowed: read-only dynamic SQL
         } else if (topScope.inAutonomous) {
           emitDiag(tok, 'HANA-SYN-029', `Dynamic SQL ('${dynLabel}') is not allowed inside 'BEGIN AUTONOMOUS TRANSACTION'.`);
         } else if (topScope.inParallel) {

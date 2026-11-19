@@ -954,9 +954,10 @@ test('HANA-SYN-029: context-sensitive SQLScript statement legality & DETERMINIST
       /Transaction control statement 'COMMIT' is not allowed/i.test(d.message)
     )
   );
+  // Dynamic SQL runs read-only in a READS SQL DATA procedure (#45): a static write statement is an error there
   assert.ok(
     syn29('hdbprocedure', "PROCEDURE p() READS SQL DATA AS BEGIN EXECUTE IMMEDIATE 'DROP TABLE T'; END").some((d) =>
-      /Dynamic SQL \('EXECUTE IMMEDIATE'\) is not allowed/i.test(d.message)
+      /Dynamic SQL in a READS SQL DATA procedure runs read-only; 'DROP' is not a read-only statement/i.test(d.message)
     )
   );
   assert.ok(

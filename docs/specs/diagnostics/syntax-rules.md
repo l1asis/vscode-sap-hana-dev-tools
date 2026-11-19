@@ -40,6 +40,7 @@
 | `HANA-SYN-029` | `error` / `warning` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Context-sensitive SQL/SQLScript statement legality (`FUNCTION` / `READS SQL DATA` write/DDL/TCL restrictions, `DETERMINISTIC` builtins, `RETURN`, `BREAK`/`CONTINUE`, `RESIGNAL`, `SIGNAL` range, `AUTONOMOUS`/`PARALLEL`/`DO`, top-level imperatives) |
 | `HANA-SYN-040` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token, malformed clause argument, or missing `AS` in a routine / library / trigger / `DO` header (consuming header parser, with QuickFix) |
 | `HANA-SYN-041` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdblibrary`, `.hdbtrigger`, `.hdbvirtualprocedure`, `.hdbvirtualfunction`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Invalid top-level or block-level statement start (not a SQL / SQLScript starter, imperative assignment target, or library member), with scope-aware typo QuickFix |
+| `HANA-SYN-043` | `error` | `syntax` | SQL, SQLScript, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdblibrary`, `.hdbtrigger` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Dynamic SQL binding error (`EXEC` / `EXECUTE IMMEDIATE`): mixed `?` and `:<var>` parameters, `?` vs `USING` count, unbound `:<var>`, a table variable in both `INTO` and `USING` |
 | `HANA-SYN-042` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`.hdbview`, `.hdbtable`, `.hdbsequence`, ...), `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unconsumed token at a clause or expression boundary (double alias, adjacent operands, trailing garbage) found by the consuming clause and Pratt expression parsers; clause-keyword typos reported as `HANA-SYN-021` with QuickFix |
 | `HANA-SYN-030` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unterminated JS string literal (`'...'`, `"..."`), template literal (`` `...` ``), line regex literal, or block comment (`/* ... */`) |
 | `HANA-SYN-031` | `error` | `syntax` | `.xsjs`, `.xsjslib` | `[XSC]` `[XSA]` | Unmatched or unclosed JS delimiter (`( )`, `[ ]`, `{ }`, template `${ }`) |
@@ -430,7 +431,8 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
 - **Conditions:**
   1. **Read-Only Restrictions (`FUNCTION` & `READS SQL DATA` `PROCEDURE`) (`error`):**
      - Disallow DML modifying persistent catalog tables (`INSERT`, `UPDATE`, `DELETE`, `UPSERT`, `MERGE`, `REPLACE`) inside `FUNCTION` (scalar or table UDF) and `READS SQL DATA` `PROCEDURE` bodies. DML targeting local `:table_var` table variables (`:lt.INSERT(...)`, `INSERT INTO :lt ...`, `UPDATE :lt ...`, `DELETE FROM :lt ...`) IS permitted.
-     - Disallow DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`, `LOCK TABLE`), dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`), and `BEGIN AUTONOMOUS TRANSACTION`.
+     - Disallow DDL (`CREATE`, `ALTER`, `DROP`, `RENAME`, `TRUNCATE`), transaction control (`COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION`, `LOCK TABLE`), and `BEGIN AUTONOMOUS TRANSACTION`.
+     - **Dynamic SQL (`EXEC`, `EXECUTE IMMEDIATE`):** allowed in table UDFs and `READS SQL DATA` procedures, where it runs read-only ("DSQL can be used in a read-only context, for example read-only procedures and table user-defined functions"; a statement that is not read-only fails at run time). Reported there only when the SQL is a single static literal whose statement is not read-only (`EXEC 'DROP TABLE t'`: DML write, DDL, `COMMIT` / `ROLLBACK`). The same check applies to an `EXEC ... READS SQL DATA` statement anywhere. Concatenated or variable SQL is not inspected. Still rejected in **scalar** UDFs (`Dynamic SQL ('EXEC') is not allowed inside a scalar FUNCTION.`).
      - Inside `FUNCTION` bodies, additionally disallow `CALL <proc>` and `BEGIN PARALLEL EXECUTION`.
   2. **`DETERMINISTIC` Routine Side-Effect / Nondeterminism Check (`warning`):**
      - Inside `DETERMINISTIC` procedures or functions, warn on non-deterministic functions/values (`RAND`, `RAND_SECURE`, `SYSUUID`, `SESSION_CONTEXT`, `SESSION_USER`, `CURRENT_TIMESTAMP`, `CURRENT_UTCTIMESTAMP`, `CURRENT_DATE`, `CURRENT_TIME`, `CURRENT_UTCDATE`, `CURRENT_UTCTIME`, `CURRENT_MVCC_SNAPSHOT_TIMESTAMP`, `CURRENT_TRANSACTION_ISOLATION_LEVEL`, `NOW`) and sequence access (`.NEXTVAL`, `.CURRVAL`).
@@ -598,7 +600,7 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
                  | hierarchy_call ;                (* sql-sqlscript.md §4.5 *)
     ```
 
-  - **Statements:** `INSERT INTO <t> [(cols)] (VALUES (...) | <query>)`, `UPSERT | REPLACE <t> [(cols)] (VALUES (...) [WHERE <expr> | WITH PRIMARY KEY] | <query>)`, `UPDATE <t> [<alias>] SET <col> = <expr>, ... [FROM ...] [WHERE <expr>]`, `DELETE [FROM] <t> [<alias>] [WHERE <expr>]`, `DECLARE <names> [CONSTANT] <type> [NOT NULL] [(DEFAULT | = | :=) <expr | query>]`, `DECLARE [CURSOR] <c> [CURSOR] [(params)] FOR <query>`, `RETURN [<expr | query>]`, `<target> (= | :=) <expr | query>`, `CALL <proc>(...)`, `SIGNAL | RESIGNAL [<cond> | SQL_ERROR_CODE <n>] [SET MESSAGE_TEXT = <expr>]`, `IF` / `ELSEIF` / `WHILE` conditions, `[CREATE [OR REPLACE]] [PROJECTION] VIEW <name> ... AS <query> [WITH ASSOCIATIONS (...)]` (grammar below), `[CREATE] (COLUMN | ROW) TABLE <name> (<columns / constraints>)` (column attributes are long tail; only `DEFAULT` expressions are validated), and `[CREATE] SEQUENCE <name> { START | RESTART WITH <n> | INCREMENT BY <n> | [NO] MAXVALUE | [NO] MINVALUE | [NO] CYCLE | [NO] CACHE }`.
+  - **Statements:** `INSERT INTO <t> [(cols)] (VALUES (...) | <query>)`, `UPSERT | REPLACE <t> [(cols)] (VALUES (...) [WHERE <expr> | WITH PRIMARY KEY] | <query>)`, `UPDATE <t> [<alias>] SET <col> = <expr>, ... [FROM ...] [WHERE <expr>]`, `DELETE [FROM] <t> [<alias>] [WHERE <expr>]`, `DECLARE <names> [CONSTANT] <type> [NOT NULL] [(DEFAULT | = | :=) <expr | query>]`, `DECLARE [CURSOR] <c> [CURSOR] [(params)] FOR <query>`, `RETURN [<expr | query>]`, `<target> (= | :=) <expr | query>`, `CALL <proc>(...)`, `[WITH SQL STATISTICS INTO <v> DO] (EXEC | EXECUTE IMMEDIATE) ...` (grammar below), `SIGNAL | RESIGNAL [<cond> | SQL_ERROR_CODE <n>] [SET MESSAGE_TEXT = <expr>]`, `IF` / `ELSEIF` / `WHILE` conditions, `[CREATE [OR REPLACE]] [PROJECTION] VIEW <name> ... AS <query> [WITH ASSOCIATIONS (...)]` (grammar below), `[CREATE] (COLUMN | ROW) TABLE <name> (<columns / constraints>)` (column attributes are long tail; only `DEFAULT` expressions are validated), and `[CREATE] SEQUENCE <name> { START | RESTART WITH <n> | INCREMENT BY <n> | [NO] MAXVALUE | [NO] MINVALUE | [NO] CYCLE | [NO] CACHE }`.
   - **Hierarchy functions** (`hierarchy_call`, §4.5): the clause list of the nine `HIERARCHY*` table functions, in any order, with their conditions, expressions and subqueries. Unlike the rest of the parser, a hierarchy call **recovers** after an error, so every misspelled clause keyword of one call is reported:
     - A typo in a clause-keyword or option slot is reported as `HANA-SYN-021` (with QuickFix) and parsing continues as if the suggested keyword had been written.
     - A token that fits no slot (`DEPTH FIRST`, `LOAD BI`) is reported as `HANA-SYN-042`. The tokens after it are skipped up to the next clause keyword (or typo of one), and parsing continues there.
@@ -619,6 +621,20 @@ compound_scope   ::= [ "SEQUENTIAL" "EXECUTION" | "PARALLEL" "EXECUTION" | "AUTO
     ```
 
     The column list and `COMMENT` are skipped. Other view options (`WITH READ ONLY`, `WITH STRUCTURED PRIVILEGE CHECK`, `WITH ANONYMIZATION (...)`, ...) are long tail. `WITH ASSOCIATIONS (...)` after a table's column list (`COLUMN TABLE t (...) WITH ASSOCIATIONS (...)`) uses the same `association` production. A missing `,` before an association (`JOIN`, `MANY TO`, `ONE TO`) is reported as `HANA-SYN-023` with QuickFix `Insert ','`.
+  - **Dynamic SQL** (`EXEC` / `EXECUTE IMMEDIATE`, binding rules under `HANA-SYN-043`):
+
+    > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/010_8_Imperative_SQLScript_Logic.md (8.10 Dynamic SQL: EXEC, EXECUTE IMMEDIATE, DSQL with INTO and USING, Limitations; 8.1.1 SELECT INTO with DEFAULT Values)
+    > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/009_pages_241_270.md (proc_exec, collect_statistics_clause)
+
+    ```ebnf
+    proc_exec ::= [ "WITH" "SQL" "STATISTICS" "INTO" var "DO" ]
+                  ( "EXEC" | "EXECUTE" "IMMEDIATE" ) expr
+                  [ "INTO" var [ "[" index "]" ] { "," var [ "[" index "]" ] } [ "DEFAULT" expr { "," expr } ] ]
+                  [ "USING" expr { "," expr } ]
+                  [ "READS" "SQL" "DATA" ] ;
+    ```
+
+    The clauses come in this order, once each. Diagnostics: `EXECUTE` without `IMMEDIATE` (QuickFix `Insert 'IMMEDIATE'`; `IMMEDATE` -> `HANA-SYN-021`), a missing SQL expression (`EXEC;`), `INTO` after `USING` / `READS SQL DATA`, `USING` after `READS SQL DATA`, a duplicate clause, `DEFAULT` without `INTO`, an empty `INTO` / `DEFAULT` / `USING` list, a `DEFAULT` list whose length differs from the `INTO` list (`'DEFAULT' lists 1 value for 2 'INTO' variables.`), and `READS SQL DATA` typos (`READ SQL DATA`, `READS SQL DAT`).
 - **AST / Token Trigger (boundary rule):** once a clause has been consumed (select item and its alias, `FROM` item and its alias, `JOIN ... ON` / `WHERE` / `HAVING` / statement condition, `GROUP BY` / `ORDER BY` item, `LIMIT`, `INTO` list, `SET` assignment, initializer, `RETURN` value, assignment, sequence option), the next token must belong to the clause's follow-set (`,`, the following clause keywords, `)` inside subqueries, or the statement end):
   1. A word that is a typo of a follow-set keyword is reported as `HANA-SYN-021` with a QuickFix (`WHEREE` -> `WHERE`, `GROUPP BY` -> `GROUP BY`, `ORDR BY` -> `ORDER BY`, `ANDD` -> `AND`, `DSC` -> `DESC`). For an implicit-alias candidate (`FROM t WHEREE x = 1`, `FROM t GROUPP BY a`) the typo is reported only when the word is not itself followed by a valid boundary, so `SELECT a whre, b FROM t` keeps `whre` as an alias.
   2. A plain identifier, quoted identifier, literal, or punctuation token is reported as `HANA-SYN-042`: double aliases (`FROM t a b`, `SELECT a b c`), adjacent operands (`WHERE a = 1 foo`, `ORDER BY x y`), and trailing garbage after an initializer / assignment / `RETURN` value (`DECLARE v INT = 1 junk;`, `v = :v + 1 extra;`).
@@ -656,7 +672,26 @@ The comma and operator heuristics (`HANA-SYN-023` / `024` / `025`) infer structu
 | :--- | :--- | :--- | :--- |
 | Queries, `INSERT` / `UPDATE` / `UPSERT` / `DELETE`, `DECLARE`, assignments, `RETURN`, `CALL`, `SIGNAL`, conditions, `VIEW`, `TABLE`, `SEQUENCE` | #59 | not yet (both run) | this rule |
 | Hierarchy functions (`HIERARCHY*( ... )`) | #75 | `HANA-SYN-024` condition checks at the top level of the call | §4.5 |
+| Dynamic SQL (`EXEC` / `EXECUTE IMMEDIATE`) clauses, bindings and static literals | #45 | none (no heuristic covered it) | this rule, *Dynamic SQL*; `HANA-SYN-043` |
 | View headers and `WITH ASSOCIATIONS` (views, projection views, tables) | #42 | `HANA-SYN-023` / `024` checks inside `ASSOCIATIONS ( ... )` (now a `special-call` frame) | this rule, *Views* |
+
+
+### `HANA-SYN-043` — Dynamic SQL Binding Error (`EXEC` / `EXECUTE IMMEDIATE`)
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Script_Reference_en/010_8_Imperative_SQLScript_Logic.md (8.10 Dynamic SQL: EXEC, EXECUTE IMMEDIATE, DSQL with INTO and USING, Limitations; 8.1.1 SELECT INTO with DEFAULT Values)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_SQLScript_Reference/009_pages_241_270.md (proc_exec, collect_statistics_clause)
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Trigger:** a statement consumed by the dynamic SQL production of `HANA-SYN-042`:
+  1. **Table variable in `INTO` and `USING`:** `EXEC '...' INTO lt USING :lt` where `lt` is declared as a table variable in the same section (`DECLARE lt TABLE ...`, `IN | OUT | INOUT lt TABLE (...)`, `lt = SELECT ...`). Scalar variables are not reported.
+  2. **Single static string literal only** (`EXEC 'SELECT ...'`; a `||` concatenation or a variable is never inspected). The literal is unescaped (`''` -> `'`) with an offset map (`src/analyzer/embedded-sql.ts`). Placeholders are counted with the SQL tokenizer, so `'?'` inside an inner string literal or a comment is not a parameter.
+     - `?` and `:<var>` parameters in the same statement: `'?' and ':<variable>' parameters cannot be mixed in one dynamic SQL statement.`
+     - `?` parameters: their number must equal the number of `USING` expressions (`The SQL has 2 '?' parameters, but 'USING' binds 1 value.`, or `... but there is no 'USING' clause.`).
+     - `:<var>` parameters with a `USING` clause: `USING` takes variable references only (`With ':<variable>' parameters, 'USING' takes variable references only.`), and each `:<var>` must be bound by a `USING` variable of the same name (`':b' is not bound: add ':b' to 'USING'.`). Without `USING`, nothing is reported.
+  3. **The literal's SQL** is checked by every SQL rule of this document (`HANA-SYN-001` ... `HANA-SYN-042`, with their QuickFixes), mapped back into the literal (`EXEC 'SELCT 1 FROM DUMMY'` -> `HANA-SYN-021` at `SELCT`). Replacement text is re-escaped (`'` -> `''`).
+- **Diagnostic Span:** the offending parameter, `USING` expression or keyword, or the literal.
+- **Examples (valid):** `EXEC 'SELECT c FROM t WHERE c = ? AND d = ?' INTO x USING :a, :b + 1 READS SQL DATA;`, `EXEC 'select col1 + :a as col1 from :tv' INTO tv2 USING :a, :tv;`, `EXEC 'SELECT * FROM ' || :tbl;`.
 
 ---
 

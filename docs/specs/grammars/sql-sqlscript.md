@@ -551,7 +551,7 @@ fabric_virtual_table_artifact ::=
 
 - `OPENCYPHER_TABLE(GRAPH WORKSPACE <ws> QUERY '<cypher>')` embeds an OpenCypher query inside the single-quoted string literal after `QUERY`.
 - `SPARQL_TABLE('<sparql>')` and `CALL SPARQL_EXECUTE('<sparql>', ...)` embed a SPARQL 1.1 query/update inside the single-quoted string literal.
-- `EXECUTE IMMEDIATE '<sql>'` and `EXEC '<sql>'` embed dynamic SAP HANA SQL inside the string expression.
+- `EXECUTE IMMEDIATE '<sql>'` and `EXEC '<sql>'` embed dynamic SAP HANA SQL inside the string expression. Statement grammar (`proc_exec`) and checks: `docs/specs/diagnostics/syntax-rules.md` `HANA-SYN-042` (*Dynamic SQL*) and `HANA-SYN-043`. The grammar does not highlight SQL inside the string literal (outer and inner quotes are both `'`, see #45).
 
 ---
 

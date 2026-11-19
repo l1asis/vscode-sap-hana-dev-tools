@@ -136,7 +136,7 @@
 
 > Source: `docs/specs/diagnostics/syntax-rules.md` (`HANA-SYN-001`, `HANA-SYN-003`, `HANA-SYN-022`, `HANA-SYN-023`)
 
-- **Unescaping:** the value of `query = "..."` (`.hdbview`) and `reset_by = "..."` (`.hdbsequence`) is unescaped with the `EscapedChar` rules of §5 (`\"` -> `"`, `\\` -> `\`, `\/` -> `/`, `\n` / `\r` / `\t` / `\b` / `\f`). An unknown escape (`\x`) is kept as written. Every SQL character keeps the document offset it came from (`src/analyzer/kv-embedded-sql.ts`).
+- **Unescaping:** the value of `query = "..."` (`.hdbview`) and `reset_by = "..."` (`.hdbsequence`) is unescaped with the `EscapedChar` rules of §5 (`\"` -> `"`, `\\` -> `\`, `\/` -> `/`, `\n` / `\r` / `\t` / `\b` / `\f`). An unknown escape (`\x`) is kept as written. Every SQL character keeps the document offset it came from (`src/analyzer/embedded-sql.ts`).
 - **Checks:** the SQL is analyzed like a `.sql` document (lexical, delimiter, clause and consuming-parser rules; security and performance rules in `analyzeDocument`). Spans and QuickFix edits map back to the KV document; replacement text is re-escaped (`"` -> `\"`, `\` -> `\\`).
 - **Line rule:** only these SQL values may span lines. Any other `"..."` value that runs into a following `<key> =` line has lost its closing quote and is cut at its line.
 - **Unescaped quote:** a SQL value whose closing quote is followed on the same line by anything but `;` or a `<key> =` contains an unescaped `"` (`query = "SELECT "ID" FROM T";`). It is reported and not analyzed as SQL.

@@ -642,6 +642,11 @@
       "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/002_pages_31_60.md"
     },
     {
+      "hash": "6546011f26bccf1b",
+      "reason": "PDF right-margin clipping: a 96 character line ends in READS SQL, its DATA keyword is cut (SPEC_RULES.md rule 7)",
+      "source": "SAP_HANA_PLATFORM_SAP_HANA_SQLScript_Reference_for_SAP_HANA_Platform/005_pages_121_150.md"
+    },
+    {
       "hash": "655bfa53af29c301",
       "reason": "PDF right-margin clipping: a 95-103 character line is cut mid-token (SPEC_RULES.md rule 7)",
       "source": "SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/007_pages_181_210.md"

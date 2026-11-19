@@ -71,6 +71,7 @@ Rules enforced by SAP HANA SQLScript compiler:
 - `?` placeholders bind positional expressions from `USING <expr_list>`.
 - `?<n>` and `:<var_name>` bind-variable forms **cannot** be mixed in the same dynamic SQL string.
 - `?` placeholders are valid only for scalar value expressions (literals/column values), not SQL identifiers (schema/table/column names).
+- Clause order and binding mistakes are syntax errors, reported by `HANA-SYN-042` / `HANA-SYN-043` (`syntax-rules.md`), not by the security rules.
 
 ---
 
