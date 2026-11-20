@@ -3,6 +3,7 @@ import * as K from './keywords';
 import {
   CaseMode,
   EditorOptions,
+  EmbeddedQueryLayout,
   ListContext,
   PartialFormatterOptions,
   ResolvedFormatterOptions,
@@ -160,14 +161,27 @@ class Line {
   kind: LineKind;
   hang: boolean;
   raw: string | null;
+  /** Extra spaces after the level indent (`embeddedQueryLayout: aligned`). */
+  pad: number;
+  /** Nested content and wrapped continuations are relative to `level + baseShift` (`hanging` prefix line). */
+  baseShift: number;
+  /** Pad of wrapped continuation lines, when it differs from `pad` (`aligned` prefix line). */
+  contPad: number | null;
 
-  constructor(level: number) {
+  constructor(level: number, pad = 0) {
     this.level = level;
     this.toks = [];
     this.blank = 0;
     this.kind = 'code'; // code | comment | raw
     this.hang = false; // starts with a leading comma
     this.raw = null;
+    this.pad = pad;
+    this.baseShift = 0;
+    this.contPad = null;
+  }
+
+  get base(): number {
+    return this.level + this.baseShift;
   }
 }
 
@@ -182,8 +196,10 @@ class Frame {
   between: number;
   afterSetOp: boolean;
   hierClause: string;
+  /** Extra spaces for every line created in this frame (`embeddedQueryLayout: aligned`). */
+  pad: number;
 
-  constructor(type: FrameType, level: number, closeLevel?: number) {
+  constructor(type: FrameType, level: number, closeLevel?: number, pad = 0) {
     this.type = type; // stmt | sub | list | plain
     this.level = level; // indent of clause-start lines
     this.lineLevel = level; // indent of the next line created in this frame
@@ -194,6 +210,7 @@ class Frame {
     this.between = 0;
     this.afterSetOp = false;
     this.hierClause = ''; // current clause keyword of a `hier` frame
+    this.pad = pad;
   }
 }
 
@@ -405,7 +422,7 @@ class Layout {
     const f = this.top();
     if (!this.cur) {
       const level = this.nextLevel !== null ? this.nextLevel : f ? f.lineLevel : this.level;
-      this.cur = new Line(level);
+      this.cur = new Line(level, f ? f.pad : 0);
       this.cur.blank = this.nextBlank;
       this.nextBlank = 0;
       this.nextLevel = null;
@@ -539,15 +556,15 @@ class Layout {
       if (this.cur === line) { this.cur = null; this.nextLevel = c.itemLevel; }
       return;
     }
-    const nl = new Line(c.itemLevel);
+    const nl = new Line(c.itemLevel, f.pad);
     nl.toks = tail;
     const idx = this.lines.indexOf(line);
     this.lines.splice(idx + 1, 0, nl);
     if (this.cur === line) this.cur = nl;
     c.line = nl;
     c.idx = 0;
-    // everything created after the moved tokens hangs one level deeper now
-    const delta = c.itemLevel - line.level;
+    // everything created after the moved tokens was relative to the base of their old line
+    const delta = c.itemLevel - line.base;
     if (delta !== 0) {
       for (let k = idx + 2; k < this.lines.length; k++) this.lines[k].level += delta;
       if (this.nextLevel !== null) this.nextLevel += delta;
@@ -622,8 +639,8 @@ class Layout {
     const p = this.prevCode;
     if (p && p.k === 'word' && p.cls === 'function' && K.HIERARCHY_CLAUSE_FUNCTIONS.has(p.up)) {
       this.push(tk);
-      const base = this.cur!.level;
-      const hf = new Frame('hier', base + 1, base);
+      const base = this.cur!.base;
+      const hf = new Frame('hier', base + 1, base, f.pad);
       this.frames.push(hf);
       this.breakLine(hf.level);
       return;
@@ -631,8 +648,8 @@ class Layout {
 
     if (nup === 'SELECT' || nup === 'WITH') {
       this.push(tk);
-      const base = this.cur!.level;
-      const sf = new Frame('sub', base + 1, base);
+      const base = this.cur!.base;
+      const sf = new Frame('sub', base + 1, base, f.pad);
       this.frames.push(sf);
       this.breakLine(sf.level);
       return;
@@ -642,16 +659,16 @@ class Layout {
     if (ctx && this.o.listCtx.has(ctx)) {
       tk.forceSpace = this.o.spaceBeforeListParenthesis;
       this.push(tk);
-      const curLevel = this.cur!.level;
-      const lf = new Frame('list', f.level, curLevel);
-      lf.lineLevel = curLevel + 1;
+      const base = this.cur!.base;
+      const lf = new Frame('list', f.level, base, f.pad);
+      lf.lineLevel = base + 1;
       this.frames.push(lf);
-      this.openCont(lf, ctx, curLevel + 1);
+      this.openCont(lf, ctx, base + 1);
       return;
     }
     if (ctx) tk.forceSpace = this.o.spaceBeforeListParenthesis;
     this.push(tk);
-    this.frames.push(new Frame('plain', f.level, this.cur!.level));
+    this.frames.push(new Frame('plain', f.level, this.cur!.base, f.pad));
     const pf = this.top()!;
     pf.lineLevel = f.lineLevel;
   }
@@ -691,14 +708,16 @@ class Layout {
     if (standalone) {
       if (this.cur && this.cur.toks.length) this.breakLine();
       let level: number;
+      let pad = 0;
       if (this.atStmtStart) {
         this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
         level = this.level;
       } else {
         const f = this.top();
         level = this.nextLevel !== null ? this.nextLevel : f ? f.lineLevel : this.level;
+        pad = f ? f.pad : 0;
       }
-      const line = new Line(level);
+      const line = new Line(level, pad);
       line.kind = 'comment';
       line.blank = this.nextBlank;
       this.nextBlank = 0;
@@ -875,7 +894,7 @@ class Layout {
           this.blocks.push({ kind: 'casestmt', level: this.level, hdrOpen: true, frame: f });
           st.kind = 'casehdr';
         } else {
-          this.blocks.push({ kind: 'caseexpr', level: this.cur ? this.cur.level : f.lineLevel, frame: f });
+          this.blocks.push({ kind: 'caseexpr', level: this.cur ? this.cur.base : f.lineLevel, frame: f });
         }
         break;
 
@@ -891,6 +910,7 @@ class Layout {
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level + 1;
           nf.level = this.level;
+          nf.pad = 0;
           nf.lineLevel = this.level + 1;
           this.breakLine(this.level);
           topBlock.hdrOpen = true;
@@ -919,6 +939,7 @@ class Layout {
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level;
           nf.level = this.level;
+          nf.pad = 0;
           nf.lineLevel = this.level + 1;
           this.breakLine(this.level);
           topBlock.hdrOpen = true;
@@ -933,6 +954,7 @@ class Layout {
           this.nextBlank = this.blankFor(Math.max(0, tok.nlBefore - 1));
           this.level = topBlock.level + (topBlock.kind === 'if' ? 0 : 1);
           nf.level = this.level;
+          nf.pad = 0;
           this.breakLine(this.level);
           this.emit(tok, i);
           this.level += 1;
@@ -1099,6 +1121,7 @@ class Layout {
       const blk = this.blocks.pop();
       this.level = blk ? blk.level : Math.max(0, this.level - 1);
       nf.level = this.level;
+      nf.pad = 0;
       nf.lineLevel = this.level + 1;
       this.breakLine(this.level);
       this.stmt!.kind = 'end';
@@ -1114,6 +1137,57 @@ class Layout {
 
     this.emit(tok, i);
     return 0;
+  }
+
+  // ---- embedded queries (sql-formatting.md §5.1) -------------------------
+
+  /**
+   * Whether the `SELECT` / `WITH` at hand starts the query of `<target> =` / `<target> :=` (at most three code
+   * tokens so far) or `RETURN`, outside any parentheses.
+   */
+  isEmbeddedQueryStart(f: Frame, st: StatementState): boolean {
+    if (f.type !== 'stmt' || this.frames.length !== 1 || f.hasSelect || f.clause !== null) return false;
+    const p = this.prevCode;
+    if (!p) return false;
+    if (p.k === 'op' && (p.t === '=' || p.t === ':=')) return st.count <= 3;
+    return p.k === 'word' && p.up === 'RETURN' && st.count === 1;
+  }
+
+  /** The layout to use: `newLine` when a line comment already ended the prefix line, `hanging` for tabs. */
+  embeddedQueryMode(): EmbeddedQueryLayout {
+    const onPrefixLine = !!this.cur && this.cur.toks.some((t) => !t.comment);
+    if (!onPrefixLine) return 'newLine';
+    if (this.o.embeddedQueryLayout === 'aligned' && this.o.useTabs) return 'hanging';
+    return this.o.embeddedQueryLayout;
+  }
+
+  /** Before `SELECT` / `WITH` is pushed: move the query one level deeper (`hanging`, `newLine`). */
+  beforeEmbeddedQuery(f: Frame, mode: EmbeddedQueryLayout): void {
+    if (mode === 'aligned') return;
+    f.level += 1;
+    f.lineLevel = f.level;
+    if (mode === 'hanging') this.cur!.baseShift = 1;
+    else this.breakLine(f.level);
+  }
+
+  /**
+   * After `SELECT` / `WITH` is pushed (`aligned`): every later line of the query is padded to the keyword's column.
+   * Falls back to `hanging` when the column is past half of `maxLineLength`, or the prefix holds a multi-line comment.
+   */
+  alignEmbeddedQuery(f: Frame): void {
+    const line = this.cur!;
+    const toks = line.toks;
+    let col = line.level * this.o.indentWidth + line.pad;
+    for (let j = 0; j < toks.length - 1; j++) col += (j > 0 && toks[j].sp ? 1 : 0) + toks[j].t.length;
+    if (toks[toks.length - 1].sp) col += 1;
+    const max = this.o.maxLineLength;
+    if (toks.some((t) => t.multi) || (max > 0 && col > Math.floor(max / 2))) {
+      f.level += 1;
+      line.baseShift = 1;
+      return;
+    }
+    f.pad = col - f.level * this.o.indentWidth;
+    line.contPad = f.pad;
   }
 
   /** Clause keywords. Returns null when the word is not a clause start. */
@@ -1132,18 +1206,15 @@ class Layout {
 
     switch (up) {
       case 'SELECT': {
-        let inline = !this.cur || !this.cur.toks.length;
-        if (!inline && this.cur) {
-          const real = this.cur.toks.filter((t) => !t.comment);
-          const last = real[real.length - 1];
-          if (real.length <= 3 && last && (last.t === '=' || last.t === ':=')) inline = true;
-          if (last && last.k === 'word' && last.up === 'RETURN' && real.length === 1) inline = true;
-        }
+        const embed = this.isEmbeddedQueryStart(f, st) ? this.embeddedQueryMode() : null;
+        if (embed) this.beforeEmbeddedQuery(f, embed);
+        const inline = embed !== null || !this.cur || !this.cur.toks.length;
         f.hasSelect = true;
         f.clause = 'select';
         f.cont = null;
         if (!inline) this.breakLine(f.level);
         this.push(tk());
+        if (embed === 'aligned') this.alignEmbeddedQuery(f);
         f.lineLevel = f.level + 1;
         if (o.listCtx.has('select')) this.openCont(f, 'select', f.level + 1);
         return 0;
@@ -1254,6 +1325,15 @@ class Layout {
           f.lineLevel = f.level + 1;
           return 0;
         }
+        if (this.isEmbeddedQueryStart(f, st)) {
+          const embed = this.embeddedQueryMode();
+          this.beforeEmbeddedQuery(f, embed);
+          f.clause = 'with';
+          this.push(tk());
+          if (embed === 'aligned') this.alignEmbeddedQuery(f);
+          f.lineLevel = f.level + 1;
+          return 0;
+        }
         return null;
 
       case 'ON':
@@ -1337,7 +1417,7 @@ function render(lines: readonly Line[], o: ResolvedFormatterOptions): string[] {
 
     if (line.kind === 'comment') {
       const tk = line.toks[0];
-      const ind = indentOf(line.level);
+      const ind = indentOf(line.level) + ' '.repeat(line.pad);
       if (!tk.multi) { out.push(ind + tk.t); return; }
       const parts = tk.t.split('\n');
       const rest = parts.slice(1);
@@ -1353,11 +1433,16 @@ function render(lines: readonly Line[], o: ResolvedFormatterOptions): string[] {
   function renderCode(line: Line): void {
     const toks = line.toks;
     if (!toks.length) return;
-    let firstIndent = indentOf(line.level);
+    let firstIndent = indentOf(line.level) + ' '.repeat(line.pad);
+    let outdent = 0;
     if (line.hang) {
-      if (!o.useTabs && o.indentWidth >= 2 && line.level > 0) firstIndent = firstIndent.slice(0, -2);
+      if (!o.useTabs && ((o.indentWidth >= 2 && line.level > 0) || line.pad >= 2)) {
+        firstIndent = firstIndent.slice(0, -2);
+        outdent = 2;
+      }
     }
-    const contIndent = indentOf(line.level + 1);
+    const contPad = line.contPad ?? line.pad;
+    const contIndent = indentOf(line.base + 1) + ' '.repeat(contPad);
     const max = o.maxLineLength;
 
     // text pieces
@@ -1389,8 +1474,8 @@ function render(lines: readonly Line[], o: ResolvedFormatterOptions): string[] {
 
     const starts: number[] = [0];
     let segStart = 0;
-    let segW = widthOf(line.level) - (firstIndent.length < indentOf(line.level).length ? 2 : 0);
-    const contW = widthOf(line.level + 1);
+    let segW = widthOf(line.level) + line.pad - outdent;
+    const contW = widthOf(line.base + 1) + contPad;
     if (max > 0) {
       for (let j = 0; j < toks.length; j++) {
         for (;;) {
