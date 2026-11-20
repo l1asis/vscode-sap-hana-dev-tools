@@ -20,16 +20,17 @@
 
 | Rule ID | Severity | Category | Target Languages / Extensions | Platform Scope | Summary |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| `HANA-SYN-001` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated string literal, quoted identifier, or CDS expression bracket (`![...]`) |
-| `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`) |
-| `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`) |
+| `HANA-SYN-001` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable`, XML artifacts (`hana-xml.md` §1), CGUL (`.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon`), `.xsxmla` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated string literal, quoted identifier, or CDS expression bracket (`![...]`) |
+| `HANA-SYN-002` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable`, XML artifacts (`hana-xml.md` §1), CGUL (`.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon`), `.xsxmla` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unterminated block comment (`/* ... */`, XML `<!-- ... -->`) |
+| `HANA-SYN-003` | `error` | `syntax` | SQL, SQLScript, CDS, Classic KV, `.xsodata`, Classic `.hdbrole`, `.hdbmigrationtable`, XML artifacts (`hana-xml.md` §1), CGUL (`.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon`), `.xsxmla` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched or unclosed delimiter (`( )`, `[ ]`, `{ }`, CGUL `< >`), XML tag or element |
 | `HANA-SYN-004` | `error` / `warning` | `syntax` | Headerless HDI SQL DDL artifacts (`.hdbtable`, `.hdbview`, `.hdbprocedure`, `.hdbfunction`, `.hdblibrary`, `.hdbtrigger`, etc.) | `[XSA]` `[HDI]` `[CLOUD]` | Wrong root declaration keyword, redundant leading `CREATE`, invalid `CREATE` object kind, or extra trailing top-level statements in single-object artifact (with QuickFixes) |
 | `HANA-SYN-005` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Invalid SQL character, unsupported `//` comment, or unknown `@` pragma (with QuickFix) |
 | `HANA-SYN-006` | `error` / `warning` | `syntax` | SQL, SQLScript, headerless HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing whitespace between adjacent tokens (`123abc`, `"T"alias`, `'s'AS`) or undelimited object name containing `::` (with QuickFix) |
-| `HANA-SYN-010` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
-| `HANA-SYN-011` | `error` | `syntax` | All 28 JSON / JSONC artifact languages + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
+| `HANA-SYN-010` | `error` | `syntax` | All 33 JSON / JSONC artifact languages (`JSON_ARTIFACT_LANGUAGES`) + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | JSON / JSONC syntax error (missing colon, missing comma, unexpected token, unclosed string/comment/container) |
+| `HANA-SYN-011` | `error` | `syntax` | All 33 JSON / JSONC artifact languages (`JSON_ARTIFACT_LANGUAGES`) + HDI JSON `.hdbrole` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Trailing comma in JSON / JSONC object or array (with QuickFix) |
+| `HANA-SYN-012` | `error` | `syntax` | XML artifacts (`hana-xml.md` §1) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Malformed XML attribute: missing `=`, unquoted value, or a character that cannot start an attribute name |
 | `HANA-SYN-020` | `error` | `syntax` | SQL, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger`, `.hdbmigrationtable`, `.procedure`, `.sqlscript` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Unmatched, mismatched, or unclosed SQLScript compound block (`BEGIN..END`, `IF..END IF`, `FOR..END FOR`, `LOOP..END LOOP`, `WHILE..END WHILE`, `CASE..END`) |
-| `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`) | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header or SQL clause keyword (e.g., `CREATE FUNC`, `RETUNS`, `LANUAGE`, `INVOKR`, `SELCT`, `WHRE`, `ENTIY`) with QuickFix |
+| `HANA-SYN-021` | `error` | `syntax` | SQL, SQLScript, headerless HDI DDL (`hdbtable`, `hdbview`, `hdbfunction`, `hdbprocedure`, etc.), CDS (`hdbdd`, `hdbcds`), CGUL `#` directives | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Misspelled declaration header or SQL clause keyword (e.g., `CREATE FUNC`, `RETUNS`, `LANUAGE`, `INVOKR`, `SELCT`, `WHRE`, `ENTIY`) with QuickFix |
 | `HANA-SYN-022` | `error` | `syntax` | Classic KV (`.hdbtable`, `.hdbview`, `.hdbti`, `.hdbschema`, `.hdbsequence`, `.hdbstructure`, `.hdbprocedure` KV, etc.) | `[XSC]` | Malformed Classic Key-Value assignment (missing `=`, missing RHS value, or missing `,` in `[ ... ]` array) |
 | `HANA-SYN-023` | `error` (`warning` for a column on its own line) | `syntax` | SQL, SQLScript, HDI DDL, Classic KV (lists, embedded SQL), CDS, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing `,` separator between parameters, table columns, `SELECT` list items, function arguments, or array elements (with QuickFix) |
 | `HANA-SYN-024` | `error` | `syntax` | SQL, SQLScript, HDI DDL, `.hdbmigrationtable` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Missing, dangling, or consecutive operator in SQL expressions; consecutive / leading / trailing `,` (before `)`, `;`, or a clause keyword); stray `.` separators (with QuickFix) |
@@ -64,6 +65,10 @@
   - **Classic KV value strings `[XSC]`** (`hdb-classic-kv.md` §4.3): only embedded SQL (`query`, `reset_by`) may span lines. Any other `"..."` value whose text runs into a following `<key> =` line has lost its closing quote (`schema = "S;` + newline + `query = "..."`): it is reported (`Unterminated string: the value of 'schema' runs into the next line.`) and cut at its line, so the next entry is scanned normally.
   - **Unescaped `"` inside embedded SQL `[XSC]`:** `query = "SELECT "ID" FROM T";` closes the KV string early. When more tokens follow the closing quote on the same line (other than `;` or a `<key> =`), the quote is reported (`Unescaped '"' ends the value of 'query' early. ...`). QuickFix `Escape the inner '"' quotes` when the value ends in `";` on that line. The value is then not analyzed as SQL.
   - **Recovery after an unclosed string (non-SQL scanners: CDS, Classic KV, `.xsodata`, Classic `.hdbrole`):** a string that reaches EOF is cut at the end of its first line, so the braces after it are still matched. When it does not span lines, the brackets opened before it are not reported as unclosed (they were closed inside the swallowed text). No cascading `HANA-SYN-003` on the enclosing `{`.
+  - **Classic `.hdbrole` catalog names `[XSC]`:** `catalog sql object "SCHEMA"."NAME"` names are SQL delimited identifiers. Inside `"..."`, `""` is an escaped quote and a backslash is an ordinary character (`"C:\TEMP\"` is closed by its last `"`). A name still ends at the end of its line.
+  - **XML artifacts** (`hana-xml.md` §5): an attribute value whose closing quote is missing, and an unterminated `<![CDATA[`. A `<` ends an open attribute value (XML 1.0 never allows `<` in a value), so the value is reported from its opening quote to the end of its line and parsing resumes at the `<`. Messages: `Unterminated attribute value in '<tag>'.`, `Unterminated CDATA section.`
+  - **CGUL** (`cgul-text-analysis.md` §2): `"..."` and `'...'` strings with backslash escapes, ending at the end of the line. Inside a `<...>` token only `"` starts a string, so `<'s>` stays a token. Brackets opened earlier on the line of an unterminated string are not reported as unclosed.
+  - **`.xsxmla` `[XSC]`:** `"..."` names end at the end of their line (same scanner as `.xsodata`).
 - **Diagnostic Span & Message:** Spans the broken identifier / unclosed token head on the offending line; message: `"Unterminated string literal."`, `"Unterminated quoted identifier."`, or `"Unterminated CDS expression literal '![...]'."`
 - **Platform Notes:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` Apply identically; `.hdbmigrationtable` splits sections at `^\s*==\s*(?:version|dev-version|migration)\s*=` before scanning each SQL section independently.
 
@@ -72,6 +77,7 @@
 - **Target Extensions:** Same as `HANA-SYN-001`.
 - **Lexical Trigger:** An opening `/*` token not inside a string literal or line comment (`--` / `//`) reaches EOF before encountering `*/`.
 - **Diagnostic Span & Message:** Spans the opening `/*` (`2` chars); message: `"Unterminated block comment '/*'."`
+- **XML artifacts:** an unterminated `<!--` (span: the 4-character opener; message `Unterminated XML comment.`). It swallows the rest of the file, so the elements still open are not also reported (`HANA-SYN-003`).
 
 ### `HANA-SYN-003` — Unmatched or Unclosed Delimiter
 - **Severity:** `error`
@@ -86,6 +92,15 @@
 - **Diagnostic Span & Message:**
   - Stray/mismatched closer: `"Unexpected closing delimiter ')'. Expected ']'."` or `"Unmatched closing delimiter ')'."`
   - Unclosed opener: `"Unclosed delimiter '('."`
+- **CGUL** (`.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon`): `( )` and `{ }` use the delimiter analysis above. `<...>` tokens and `[...]` character classes / slot bindings are single-line atoms: an opener without a closer on its line is `Unclosed delimiter '<'.` / `'['.`, and a stray closer is `Unmatched closing delimiter '>'.` / `']'.`. `=>` and `->` are operators, not closers. Tokens do not nest: a second `<` inside a token leaves the first one unclosed. The content of `[...]` is literal (`[(<{]` is valid).
+- **`.xsxmla` `[XSC]`:** `( )`, `[ ]`, `{ }` of the service block (`service namespace "..." { ... }`).
+- **XML artifacts** (`hana-xml.md` §5), span in brackets:
+  - `Unterminated opening tag '<name'.` (`<name`): a start tag without `>`. A `<` outside quotes ends it, and parsing resumes there. The element is kept and closes silently at its own end tag or at its parent's end tag, because it may have been an empty element.
+  - `Unterminated closing tag '</name'.` (`</name`), `Unterminated XML processing instruction.` (`<?`), `Unterminated XML declaration.` (`<!`).
+  - `Mismatched closing tag '</b>' (expected '</a>').` (the end tag): the matching ancestor, if any, is closed with it.
+  - `Unexpected closing tag '</a>'.` (the end tag) with nothing open.
+  - `Unclosed XML element '<a>'.` (the start tag) at the end of the file, unless an unterminated comment, CDATA section, PI, declaration or attribute value swallowed the rest.
+  - Calculation views (`.calculationview`, `.hdbcalculationview`) report the same parser errors as `HANA-LINT-101` (`calculationview-schema.md` §5) instead.
 
 ---
 
@@ -175,7 +190,7 @@
 
 ### `HANA-SYN-010` — JSON / JSONC Syntax Error
 - **Severity:** `error`
-- **Target Extensions:** `.xsaccess`, `.xsapp`, `.xsprivileges`, `.xssqlcc`, `.xsjsjob`, `.hdbgrants`, `.hdbsynonym`, `.hdbsynonymconfig`, `.hdblogicalschema`, `.hdbanalyticprivilege`, `.hdbconfig`, `.hdbhadoopmrjob`, `.hdbflowgraph`, `.hdbreptask`, `.hdbtask`, `.hdbtaskplan`, `.hdbsysauth`, `.hdbroleconfig`, `.hdbsearchruleset`, `.hdbcollection`, `.hdbcollectionindex`, `.hdbstatistics`, `.hdbresultcache`, `.hdbgraphworkspace`, `.hdbremote`, `.hdbvirtualtableconfig`, `.hdbtabledata`, `.hdblogicalschema`, `.hdbmigrationconfig`, `.hdbapplicationtime`, `.hdbsystemversioning`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig`, `.hdbschedulerjob`, `.hdbprojectionviewconfig`, and HDI JSON `.hdbrole` (detected via leading `{`).
+- **Target Extensions:** every language of `JSON_ARTIFACT_LANGUAGES` (`src/formatter/dispatch.ts`; formatter `json` in `docs/specs/artifacts/artifact-registry.md` §2), including `.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig` and `.hdbafllangprocedure` (#102), and HDI JSON `.hdbrole` (detected via leading `{`). The aliases `.hdbsynonymgrantor`, `.hdbsynonymtemplate`, `.hdbrmjob` and `.hdbhadoopmrjob` are checked with their language.
 - **AST / Parser Trigger:** `parseJsonAstWithErrors(text, options)` records structured recovery errors without aborting the partial AST needed for `HANA-SEC-*`:
   - Empty / comment-only document (no root JSON value). Note: `.xsapp` marker files permit empty or whitespace-only content without emitting `HANA-SYN-010`.
   - Unterminated string `"..."` (reaches EOF or unescaped newline before closing `"`).
@@ -185,6 +200,28 @@
   - Unmatched or unclosed `{` / `}` / `[` / `]` (using indentation/nesting recovery when containers are unbalanced so a missing inner `}` or `]` inside nested JSON objects/arrays blames the inner unclosed container rather than the root `{`).
   - Single-quoted strings `'...'`, unquoted object keys, or invalid literal identifiers (`undefined`, `NaN`, etc.).
   - Trailing non-comment tokens after the root JSON value closes.
+
+### `HANA-SYN-012` — Malformed XML Attribute
+
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/008_pages_211_240.md (Pages 211–240)
+
+- **Severity:** `error`
+- **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+- **Target Extensions:** the XML artifacts of `docs/specs/grammars/hana-xml.md` §1 except calculation views (`HANA-LINT-101`): `.analyticprivilege`, `.analyticview`, `.attributeview`, `.hdbanalyticprivilege`, `.hdbflowgraph`, `.hdbreptask`, `.hdbsearchruleset` / `.searchruleset`, `.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig` / `.textminingconfig`, `.hdbdecisiontable` / `.hdbruldec` / `.decrule`, `.xswidget`, `.procedure`, and the `xscxmlmodel` suffixes.
+- **AST / Lexical Trigger:** inside a well-terminated start tag (`hana-xml.md` §5 `attribute`): an attribute name not followed by `=`, a value that is not quoted, or a character that cannot start an attribute name. Parsing of that tag's attributes stops at the first error.
+- **Diagnostic Span & Message:** the attribute name, or the offending character. `Expected '=' after attribute 'b'.`, `Expected quoted value for attribute 'b'.`, `Unexpected character '%' inside element attributes.`
+- **QuickFix:** none.
+  - **Invalid Code (`Before`):**
+
+    ```xml
+    <node id="target" type=DataTarget/>
+    ```
+
+  - **Fixed Code (`After`):**
+
+    ```xml
+    <node id="target" type="DataTarget"/>
+    ```
 
 ### `HANA-SYN-011` — Trailing Comma in JSON / JSONC
 - **Severity:** `error`
@@ -233,6 +270,7 @@
      - Query clause typos at structural boundaries (`SELECT` -> `SELCT`/`SELET`/`SLECT` at statement start or after `RETURN`/`UNION`/`(`; `WHERE` -> `WHRE`/`WHER` at line start or after `FROM <table_ref>`; `GROUP` -> `GROP` before `BY`; `ORDER` -> `ORDR` before `BY`; `HAVING` -> `HAVNG`; `LIMIT` -> `LIMT`).
   5. Top-level CDS declarations (`.hdbdd`, `.hdbcds`): anchored after optional `@Annotations` / `namespace ...;` / `using ...;` / statement start (`namespace`, `using`, `context`, `entity`, `type`, `view`, `annotate`, `extend`, `define`, `aspect`, `service`) — e.g. `entiy Customer {` -> QuickFix `entity`.
   6. Hierarchy function clauses (`HIERARCHY*( ... )`, `docs/specs/grammars/sql-sqlscript.md` §4.5), by the consuming parser (see `HANA-SYN-042`): clause-keyword slots (`SORCE` -> `SOURCE`, `STRT` -> `START`, `SIBLNG` -> `SIBLING`, `CACHEE` -> `CACHE`, `MULTIPARNT` -> `MULTIPARENT`, `ORPHN` -> `ORPHAN`, `DISTNCE` -> `DISTANCE`), keywords inside a clause (`START WHEER` -> `WHERE`, `DISTANCE FRM 1 TOO 3` -> `FROM` / `TO`), and option slots (`CACHE FORCEE` -> `FORCE`, `CYCLE BRKUP` -> `BREAKUP`). Option slots hold a closed list of two to four words, so a 2-edit typo of a word of 5+ letters is matched there too.
+  7. CGUL directives (`.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon`, `cgul-text-analysis.md` §3.1): a `#word` at the start of a line that is not one of `#include`, `#lexicon`, `#define`, `#group`, `#subgroup`, `#index`, `#feature`, `#category`, `#priority`, `#language`, `#encoding`, `#version` but is a typo of one (`#inclde`, `#grop`). Other unknown `#words` are not reported. Message `Unknown CGUL directive '#inclde'. Did you mean '#include'?`, QuickFix `Replace with '#include'` (lower case).
 - **QuickFix (`Replace with '<KEYWORD>'`):** Single text replacement preserving capitalization convention (`UPPERCASE` for SQL/HDI DDL, `lowercase` for CDS keywords).
   - **Before:** `CREATE FUNC "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`
   - **After:** `CREATE FUNCTION "MY_FN"() RETURNS INT AS BEGIN RETURN 1; END;`

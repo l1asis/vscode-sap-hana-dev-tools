@@ -100,20 +100,20 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbsynonymconfig` | `hdbsynonymconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.synonym.config` | `source.hdbsynonymconfig` | json | syntax | — | — | C1 |
 | `.hdbsynonymtemplate` | `hdbsynonymconfig` | `[XSA]` `[HDI]` | alias of .hdbsynonymconfig | HDI Deployer | `source.hdbsynonymconfig` | json | syntax | — | — | X1 |
 | `.hdbpublicsynonym` | `hdbpublicsynonym` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.publicsynonym` | `source.hdbpublicsynonym` | json | syntax | — | — | C1 |
-| `.hdbsysbicsynonym` | `hdbsysbicsynonym` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.sysbicsynonym` | `source.hdbsysbicsynonym` | — | — | — | — | H1 |
+| `.hdbsysbicsynonym` | `hdbsysbicsynonym` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.sysbicsynonym` | `source.hdbsysbicsynonym` | json | syntax | — | — | H1 |
 | `.hdbgrants` | `hdbgrants` | `[XSA]` `[HDI]` `[CLOUD]` | current | HDI Deployer | `source.hdbgrants` | json | syntax, security | — | artifact | X1 |
 | `.hdbsynonymgrantor` | `hdbgrants` | `[XSA]` `[HDI]` | renamed → .hdbgrants | HDI Deployer | `source.hdbgrants` | json | syntax, security | `HANA-MIG-013` | artifact | X1 |
 | `.hdbrevokes` | `hdbrevokes` | `[XSA]` `[HDI]` `[CLOUD]` | current | HDI Deployer | `source.hdbrevokes` | json | syntax, security | — | artifact | X1 |
 | `.hdbvirtualtableconfig` | `hdbvirtualtableconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.virtualtable.config` | `source.hdbvirtualtableconfig` | json | syntax | — | — | H2 |
-| `.hdbvirtualprocedureconfig` | `hdbvirtualprocedureconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.virtualprocedure.config` | `source.hdbvirtualprocedureconfig` | — | — | — | — | H1 |
-| `.hdbvirtualfunctionconfig` | `hdbvirtualfunctionconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.virtualfunction.config` | `source.hdbvirtualfunctionconfig` | — | — | — | — | H1 |
-| `.hdblogicalschema` | `hdblogicalschema` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.logicalschema` | `source.hdblogicalschema` | — | — | — | — | C1 |
+| `.hdbvirtualprocedureconfig` | `hdbvirtualprocedureconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.virtualprocedure.config` | `source.hdbvirtualprocedureconfig` | json | syntax | — | — | H1 |
+| `.hdbvirtualfunctionconfig` | `hdbvirtualfunctionconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.virtualfunction.config` | `source.hdbvirtualfunctionconfig` | json | syntax | — | — | H1 |
+| `.hdblogicalschema` | `hdblogicalschema` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.logicalschema` | `source.hdblogicalschema` | json | syntax | — | — | C1 |
 | `.hdblogicalschemaconfig` | `hdblogicalschemaconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.logicalschema.config` | `source.hdblogicalschemaconfig` | json | syntax | — | — | H1 |
 | `.hdbprojectionviewconfig` | `hdbprojectionviewconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.projectionview.config` | `source.hdbprojectionviewconfig` | json | syntax | — | — | C1 |
 | `.hdbfabricvirtualtableconfig` | `hdbfabricvirtualtableconfig` | `[CLOUD]` | current | — | `source.hdbfabricvirtualtableconfig` | json | syntax | — | — | A-FABRIC |
 | `.hdbtabledata` | `hdbtabledata` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.tabledata` | `source.hdbtabledata` | json | syntax | — | — | C1 |
 | `.hdbeshconfig` | `hdbeshconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.eshconfig` | `source.hdbeshconfig` | json | syntax | — | — | C1 |
-| `.hdbafllangprocedure` | `hdbafllangprocedure` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.afllangprocedure` | `source.hdbafllangprocedure` | — | — | — | — | H1, M1 |
+| `.hdbafllangprocedure` | `hdbafllangprocedure` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.afllangprocedure` | `source.hdbafllangprocedure` | json | syntax | — | — | H1, M1 |
 | `.hdbvirtualpackage` | `hdbvirtualpackage` | `[XSA]` `[HDI]` | current | — | `source.hdbvirtualpackage` | json | syntax | — | — | A-VPKG |
 | `.hdbvirtualpackagehadoop` | `hdbvirtualpackagehadoop` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.hadoop` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
 | `.hdbvirtualpackagesparksql` | `hdbvirtualpackagesparksql` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.sparksql` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
@@ -135,37 +135,37 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.xsodata` | `xsodata` | `[XSC]` `[XSA]` | current | Repository | `source.xsodata` | xsodata | syntax, security | `HANA-MIG-011` | — | S1, G-XSODATA |
 | `.xsjs` | `xsjs` | `[XSC]` `[XSA]` | current | Repository | `source.xsjs` | xsjs | xsjs | `HANA-MIG-011`, `HANA-MIG-020` | xsjs | S1 |
 | `.xsjslib` | `xsjslib` | `[XSC]` `[XSA]` | current | Repository | `source.xsjs` | xsjs | xsjs | `HANA-MIG-011`, `HANA-MIG-020` | xsjs | S1 |
-| `.xsxmla` | `xsxmla` | `[XSC]` | unsupported | Repository | `source.xsxmla` | — | — | — | — | M3, A-LEGACY |
-| `.hdbtextrule` | `hdbtextrule` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule` | `source.hdbtextrule` | — | — | — | — | H1, M1 |
-| `.hdbtextinclude` | `hdbtextinclude` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule.include` | `source.hdbtextinclude` | — | — | — | — | H1, M1 |
-| `.hdbtextlexicon` | `hdbtextlexicon` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule.lexicon` | `source.hdbtextlexicon` | — | — | — | — | H1, M1 |
+| `.xsxmla` | `xsxmla` | `[XSC]` | unsupported | Repository | `source.xsxmla` | — | syntax | — | — | M3, A-LEGACY |
+| `.hdbtextrule` | `hdbtextrule` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule` | `source.hdbtextrule` | — | syntax | — | — | H1, M1 |
+| `.hdbtextinclude` | `hdbtextinclude` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule.include` | `source.hdbtextinclude` | — | syntax | — | — | H1, M1 |
+| `.hdbtextlexicon` | `hdbtextlexicon` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textrule.lexicon` | `source.hdbtextlexicon` | — | syntax | — | — | H1, M1 |
 | `.calculationview` | `calculationview` | `[XSC]` | renamed → .hdbcalculationview | Repository | `text.xml.hana` | — | calcview | `HANA-MIG-013` | — | S1, M1 |
 | `.hdbcalculationview` | `hdbcalculationview` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.calculationview` | `text.xml.hana` | — | calcview | — | — | C1 |
-| `.attributeview` | `attributeview` | `[XSC]` | replaced → .hdbcalculationview | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S1, M1, A-VIEWS |
-| `.analyticview` | `analyticview` | `[XSC]` | replaced → .hdbcalculationview | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S1, M1, A-VIEWS |
-| `.analyticprivilege` | `analyticprivilege` | `[XSC]` | replaced → .hdbanalyticprivilege | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.hdbanalyticprivilege` | `hdbanalyticprivilege` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.analyticprivilege` | `text.xml.hana` | — | — | — | — | C1 |
-| `.hdbflowgraph` | `hdbflowgraph` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.flowgraph` | `text.xml.hana` | — | — | — | — | C1, M1 |
-| `.hdbreptask` | `hdbreptask` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.reptask` | `text.xml.hana` | — | — | — | — | C1, M1 |
-| `.hdbsearchruleset` | `hdbsearchruleset` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.searchruleset` | `text.xml.hana` | — | migration only | — | — | C1 |
-| `.searchruleset` | `hdbsearchruleset` | `[XSC]` | renamed → .hdbsearchruleset | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S1, M1 |
-| `.hdbtextconfig` | `hdbtextconfig` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textconfig` | `text.xml.hana` | — | — | — | — | H1, M1 |
-| `.hdbtextdict` | `hdbtextdict` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textdictionary` | `text.xml.hana` | — | — | — | — | H1, M1 |
-| `.hdbtextminingconfig` | `hdbtextminingconfig` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.textminingconfig` | `text.xml.hana` | — | migration only | — | — | H1 |
-| `.textminingconfig` | `hdbtextminingconfig` | `[XSC]` | renamed → .hdbtextminingconfig | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.hdbdecisiontable` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | A-LEGACY |
-| `.hdbruldec` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.decrule` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S3 |
-| `.xswidget` | `xswidget` | `[XSC]` | current | Repository | `text.xml.hana` | — | — | — | — | S1, A-LEGACY |
-| `.procedure` | `xscprocedure` | `[XSC]` | replaced → .hdbprocedure | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S1, S2, M1 |
-| `.hdbflowgraphtemplate` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.aflpmml` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | S1, M1 |
-| `.dqconfig` | `xscxmlmodel` | `[XSC]` | replaced → .hdbflowgraph | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.dataflow` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.epmmodel` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | migration only | — | — | M1 |
-| `.epmquerysource` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | migration only | — | — | M1 |
-| `.halmscenario` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | migration only | `HANA-MIG-013` | — | M1 |
-| `.pvsscenario` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | migration only | — | — | M1 |
+| `.attributeview` | `attributeview` | `[XSC]` | replaced → .hdbcalculationview | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1, A-VIEWS |
+| `.analyticview` | `analyticview` | `[XSC]` | replaced → .hdbcalculationview | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1, A-VIEWS |
+| `.analyticprivilege` | `analyticprivilege` | `[XSC]` | replaced → .hdbanalyticprivilege | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.hdbanalyticprivilege` | `hdbanalyticprivilege` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.analyticprivilege` | `text.xml.hana` | — | syntax | — | — | C1 |
+| `.hdbflowgraph` | `hdbflowgraph` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.flowgraph` | `text.xml.hana` | — | syntax | — | — | C1, M1 |
+| `.hdbreptask` | `hdbreptask` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.reptask` | `text.xml.hana` | — | syntax | — | — | C1, M1 |
+| `.hdbsearchruleset` | `hdbsearchruleset` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.searchruleset` | `text.xml.hana` | — | syntax | — | — | C1 |
+| `.searchruleset` | `hdbsearchruleset` | `[XSC]` | renamed → .hdbsearchruleset | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1 |
+| `.hdbtextconfig` | `hdbtextconfig` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textconfig` | `text.xml.hana` | — | syntax | — | — | H1, M1 |
+| `.hdbtextdict` | `hdbtextdict` | `[XSC]` `[XSA]` `[HDI]` | current | `com.sap.hana.di.textdictionary` | `text.xml.hana` | — | syntax | — | — | H1, M1 |
+| `.hdbtextminingconfig` | `hdbtextminingconfig` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.textminingconfig` | `text.xml.hana` | — | syntax | — | — | H1 |
+| `.textminingconfig` | `hdbtextminingconfig` | `[XSC]` | renamed → .hdbtextminingconfig | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.hdbdecisiontable` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | A-LEGACY |
+| `.hdbruldec` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.decrule` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S3 |
+| `.xswidget` | `xswidget` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | S1, A-LEGACY |
+| `.procedure` | `xscprocedure` | `[XSC]` | replaced → .hdbprocedure | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, S2, M1 |
+| `.hdbflowgraphtemplate` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.aflpmml` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1 |
+| `.dqconfig` | `xscxmlmodel` | `[XSC]` | replaced → .hdbflowgraph | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.dataflow` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.epmmodel` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
+| `.epmquerysource` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
+| `.halmscenario` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.pvsscenario` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
 | `.hdbtextbundle` | `hdbtextbundle` | `[XSC]` | unsupported | Repository | `source.hdbtextbundle` | — | migration only | `HANA-MIG-013` | — | S1, M1 |
 | `.hdbmigrationtable` | `hdbmigrationtable` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.table.migration` | `source.hdbmigrationtable` | migration table | syntax | — | — | C1 |
 | `.project` | `xml` | `[XSC]` | deprecated | Repository | built-in | — | — | — | — | S1, M2 |
@@ -181,7 +181,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 - `.xsxmla` is confirmed by M3 ("DXC (Direct Extractor Connection) and xsxmla are not supported" in XS Advanced). Its syntax is not printed (`xsc-legacy-artifacts.md`).
 - `.project`, `.jsdtscope`, `.hdiignore` and `.regiignore` are added as file names to VS Code's built-in `xml` and `ignore` languages instead of new languages, so Eclipse and Git tooling keeps working on them. M2 spells the Eclipse scope file `*.jdtscope`; the file on disk is `.settings/.jsdtscope`.
 - `undeploy.json` keeps VS Code's `json` language and gets `resources/schemas/undeploy.schema.json` (§4.3).
-- `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, `.aflpmml`, `.dqconfig` and `.hdbflowgraphtemplate` share the `xscxmlmodel` language. Their formats are not printed in the corpus. They are model files of SAP HANA Studio editors and get XML highlighting only.
+- `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, `.aflpmml`, `.dqconfig` and `.hdbflowgraphtemplate` share the `xscxmlmodel` language. Their formats are not printed in the corpus. They are model files of SAP HANA Studio editors and get XML highlighting and the XML well-formedness checks of `hana-xml.md` §5. A file without `<` produces no XML error.
 
 ---
 
