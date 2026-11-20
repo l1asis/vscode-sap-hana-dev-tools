@@ -15,6 +15,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import {
   CONFORMANCE_CHECKS,
+  FORMATTER_PROFILES,
   REPO_ROOT,
   blockHash,
   evaluate,
@@ -159,6 +160,17 @@ test('harness: formatter invariants pass on clean input and detect format-off re
   assert.deepEqual(formatterViolations(off), []);
   // Negative: an unterminated off region runs to the end of the text.
   assert.equal(formatOffRegions('select 1 from dummy;\n-- hanasql-format off\nselect  2;').length, 1);
+});
+
+test('harness: formatter invariants also run with a short maxLineLength (#107)', () => {
+  assert.deepEqual(FORMATTER_PROFILES.map((p) => p.name), ['default', 'narrow']);
+  assert.equal(FORMATTER_PROFILES[1].options.maxLineLength, 40);
+  // Ends at exactly 40 columns in an unterminated literal, which used to absorb the final newline
+  // on pass 2 and wrap only under the narrow profile.
+  const atLimit = "CALL p_rename (USER1.TITLES_XY, 'BOOKS);";
+  assert.equal(atLimit.length, 40);
+  assert.deepEqual(formatterViolations(atLimit), []);
+  assert.deepEqual(formatterViolations('SELECT first_column, second_column FROM t WHERE x = 1;'), []);
 });
 
 test('harness: unscopedKeywords ignores strings, comments, quoted and dotted names', () => {

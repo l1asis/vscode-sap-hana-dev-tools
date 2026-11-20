@@ -103,7 +103,7 @@ export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
     const ch = text[i];
 
     // whitespace
-    if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r' || ch === '\f' || ch === '\v' || ch === '\u00a0' || ch === '\ufeff') {
+    if (isWhitespace(ch)) {
       ws = true;
       if (ch === '\n') nl++;
       i++;
@@ -139,15 +139,19 @@ export function tokenize(text: string, options: TokenizeOptions = {}): Token[] {
     // quoted identifier
     if (ch === '"') {
       let j = i + 1;
+      let closed = false;
       while (j < n) {
         if (options.singleLineQident && (text[j] === '\n' || text[j] === '\r')) break;
         if (text[j] === '"') {
           if (text[j + 1] === '"') { j += 2; continue; }
           j++;
+          closed = true;
           break;
         }
         j++;
       }
+      // Unterminated to the end of the text: trailing whitespace is layout, as for strings (#107).
+      if (!closed && j === n) j = trimTrailingWhitespace(text, i + 1, j);
       push('qident', i, j);
       i = j;
       continue;
@@ -256,7 +260,23 @@ function scanString(text: string, i: number): number {
     }
     j++;
   }
-  return n;
+  // Unterminated: the literal runs to the end of the text. Trailing whitespace there is layout
+  // (the formatter emits its own final newline), so it must not become part of the token, or a
+  // second pass would measure the literal one column wider and wrap differently (#107).
+  return trimTrailingWhitespace(text, i + 1, n);
+}
+
+/** Space, TAB, LF, CR, FF, VT, NBSP, BOM. */
+const WHITESPACE: ReadonlySet<number> = new Set([0x20, 0x09, 0x0a, 0x0d, 0x0c, 0x0b, 0xa0, 0xfeff]);
+
+function isWhitespace(ch: string): boolean {
+  return WHITESPACE.has(ch.charCodeAt(0));
+}
+
+/** Move `end` back over whitespace, never before `min`. */
+function trimTrailingWhitespace(text: string, min: number, end: number): number {
+  while (end > min && isWhitespace(text[end - 1])) end--;
+  return end;
 }
 
 function isValueEnd(tokens: readonly Token[]): boolean {

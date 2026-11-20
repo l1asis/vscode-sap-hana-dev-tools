@@ -18,6 +18,7 @@ import * as path from 'node:path';
 import { analyzeDocument } from '../../src/analyzer/dispatch';
 import { DEFAULT_ANALYZER_OPTIONS, type AnalyzerDiagnostic } from '../../src/analyzer/types';
 import { formatDocument } from '../../src/formatter/dispatch';
+import { type PartialFormatterOptions } from '../../src/formatter/options';
 import { tokenize, type TmToken } from './tm';
 
 export const REPO_ROOT = fs.existsSync(path.join(__dirname, '..', '..', 'package.json'))
@@ -182,8 +183,8 @@ function firstDifference(a: readonly string[], b: readonly string[]): string {
 }
 
 /**
- * Lexeme texts of one kind (`code` = everything but comments). Checks run with default options,
- * where `trailingSemicolon` is `preserve`, so `;` is part of the compared code sequence.
+ * Lexeme texts of one kind (`code` = everything but comments). No profile changes the default
+ * `trailingSemicolon: preserve`, so `;` is part of the compared code sequence.
  */
 function sequence(lx: readonly Lexeme[], kind: Lexeme['kind'] | 'code'): string[] {
   return lx.filter((l) => (kind === 'code' ? l.kind !== 'comment' : l.kind === kind)).map((l) => l.text);
@@ -199,16 +200,35 @@ export function formatOffRegions(text: string): string[] {
 }
 
 /**
- * Format with default options and check the invariants. Returns an empty array when the
- * formatter is safe on `text`.
+ * Option profiles every formatter check runs under. The default profile covers the shipped
+ * settings. `narrow` forces wrapping, where layout bugs such as #107 show up that never trigger
+ * at the default `maxLineLength: 120`. Every option not listed keeps its default.
+ */
+export const FORMATTER_PROFILES: readonly { readonly name: string; readonly options: PartialFormatterOptions }[] = [
+  { name: 'default', options: {} },
+  { name: 'narrow', options: { maxLineLength: 40 } },
+];
+
+/**
+ * Format under every profile in `FORMATTER_PROFILES` and check the invariants. Returns an empty
+ * array when the formatter is safe on `text`. Details of a non-default profile start with
+ * `[<profile>]`.
  */
 export function formatterViolations(text: string, languageId = 'hanasql'): FormatterViolation[] {
+  return FORMATTER_PROFILES.flatMap(({ name, options }) =>
+    profileViolations(text, languageId, options).map((v) =>
+      name === 'default' ? v : { kind: v.kind, detail: `[${name}] ${v.detail}` }
+    )
+  );
+}
+
+function profileViolations(text: string, languageId: string, options: PartialFormatterOptions): FormatterViolation[] {
   const out: FormatterViolation[] = [];
   let once: string;
   let twice: string;
   try {
-    once = formatDocument(languageId, text);
-    twice = formatDocument(languageId, once);
+    once = formatDocument(languageId, text, options);
+    twice = formatDocument(languageId, once, options);
   } catch (e) {
     return [{ kind: 'throw', detail: e instanceof Error ? e.message : String(e) }];
   }
