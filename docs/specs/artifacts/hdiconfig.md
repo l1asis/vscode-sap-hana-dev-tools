@@ -57,7 +57,7 @@ SuffixEntry     ::= StringLiteral ":" "{"
 | `"properties"` | `com.sap.hana.di.tabledata.properties` | `[XSA]` `[HDI]` `[CLOUD]` | Key-value language/translatable properties companion to `.hdbtabledata` |
 | `"tags"` | `com.sap.hana.di.tabledata.properties` | `[XSA]` `[HDI]` `[CLOUD]` | Tag-style metadata companion to `.hdbtabledata` |
 | `"csv"` | `com.sap.hana.di.tabledata.source` | `[XSA]` `[HDI]` `[CLOUD]` | CSV source payload imported by `.hdbtabledata` |
-| `"txt"` | `com.sap.hana.di.tabledata.source` / Text Analysis | `[XSA]` `[HDI]` | Delimited source / text resource |
+| `"txt"` | `com.sap.hana.di.copyonly` | `[XSA]` `[HDI]` `[CLOUD]` | Arbitrary design-time resource, deployed as a plain file without a database object (C1 in `artifact-registry.md`) |
 | `"jar"` | `com.sap.hana.di.virtualfunctionpackage.hadoop` | `[XSA]` | Deprecated Hadoop JAR plug-in suffix |
 | `"hdbcollectionindex"` | `com.sap.hana.di.collection.index` | `[CLOUD]` | Document Store collection hash index (HDI Cloud 1006+) |
 | `"hdbcollectionadjindex"` | `com.sap.hana.di.collection.adjacency_index` | `[CLOUD]` | Document Store collection adjacency index (HDI Cloud 1006+) |
@@ -65,6 +65,9 @@ SuffixEntry     ::= StringLiteral ":" "{"
 | `"hdbvirtualpackagehadoop"` | `com.sap.hana.di.virtualpackage.hadoop` | `[XSA]` | Virtual package Hadoop JAR resource |
 | `"hdbvirtualpackagesparksql"` | `com.sap.hana.di.virtualpackage.sparksql` | `[XSA]` | Virtual package SparkSQL resource |
 | `"hdbmrjob"` | `com.sap.hana.di.virtualfunctionpackage.hadoop` | `[XSA]` | Deprecated Hadoop MapReduce job (also `"hdbhadoopmrjob"`) |
+| `"hdbmigrationtable"` | `com.sap.hana.di.table.migration` | `[XSA]` `[HDI]` `[CLOUD]` | Migration table (`.hdbmigrationtable`). Not `com.sap.hana.di.migrationtable`. |
+
+The complete suffix → plug-in list, including every `hdb*` suffix, is `docs/specs/artifacts/artifact-registry.md` §2 and §3. `.hdiconfig` completion offers exactly the plug-ins listed there (`HDI_PLUGIN_VALUES`).
 
 ---
 
