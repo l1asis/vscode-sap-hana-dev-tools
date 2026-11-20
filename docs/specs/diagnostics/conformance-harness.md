@@ -16,16 +16,25 @@ Every check takes one snippet `S` (language `hanasql` unless stated) and returns
 | Check | Name in fixtures | Passes when |
 | :--- | :--- | :--- |
 | Analyzer | `syntax` | `analyzeDocument(S)` with only `syntax: true` yields zero diagnostics of category `syntax` |
-| Formatter | `formatter` | All invariants F1–F5 hold for `F = formatDocument(S)` with default options |
+| Formatter | `formatter` | All invariants F1–F5 hold for `F = formatDocument(S, P)` under every profile `P` of §1.1 |
 | Grammar | `grammar` | No word of `S` that is a catalog keyword (a `sql-keywords.json` word with at least one role that has a `scope`, see `SPEC_RULES.md` §C.1) is left without a significant scope by `source.hanasql` |
 | Catalog | *(report only)* | No `NAME(` call is unknown to both the grammar and `builtin-functions.json` |
 
 ### 1.1 Formatter invariants
 
+Every invariant is checked once per option profile (`FORMATTER_PROFILES` in `test/helpers/conformance.ts`). Options a profile does not list keep their defaults.
+
+| Profile | Options | Why |
+| :--- | :--- | :--- |
+| `default` | none | The shipped settings |
+| `narrow` | `maxLineLength: 40` | Forces wrapping, where layout bugs show up that never trigger at 120 columns (#107) |
+
+A violation under a non-default profile has its detail prefixed with `[<profile>]`.
+
 | ID | Kind | Invariant |
 | :--- | :--- | :--- |
 | F1 | `throw` | `formatDocument` returns for `S` and for `F` |
-| F2 | `non-idempotent` | `formatDocument(F) === F` |
+| F2 | `non-idempotent` | `formatDocument(F, P) === F` |
 | F3 | `word-sequence` | `lex(S) === lex(F)` over code lexemes, words case-folded |
 | F4 | `comment-sequence` | Comment bodies in order are equal, internal whitespace collapsed |
 | F5 | `format-off` | Every `-- hanasql-format off` … `-- hanasql-format on` region (or `off` to end of text) of `S` occurs verbatim in `F` |

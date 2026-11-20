@@ -531,7 +531,7 @@ Before each top-level statement: `blankLinesBetweenTopLevelStatements` (if `≥ 
 | Never strip or reorder comments | §8.1 |
 | No `;` appended to headerless HDI root statements `[HDI]` | §8.3, `test/format.test.ts` |
 | `-- hanasql-format off` ... `-- hanasql-format on` (also `/* hanasql-format off */`, optional `:`) is copied verbatim, including its whitespace. An unterminated `off` runs to end of file | `tokenizer.ts` `collapseFormatOff` |
-| Idempotent: `format(format(x)) === format(x)` for every option set | `test/format.test.ts`, conformance harness |
+| Idempotent: `format(format(x)) === format(x)` for every option set. An unterminated string or quoted identifier runs to end of text but never includes the trailing whitespace there, so the final newline of pass 1 cannot widen it on pass 2 (#107) | `test/format.test.ts`, conformance harness (`default` and `narrow` profiles) |
 | `[XSC]` Classic KV content in dual-mode files is never given to the SQL formatter | `isKeyValueArtifact()` |
 
 ---
