@@ -561,6 +561,8 @@ fabric_virtual_table_artifact ::=
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/007_pages_211_245.md (Pages 211–245)
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/009_pages_281_291.md (Pages 281–291)
 
+The complete formatter specification (options, layout model, embedded queries, safety invariants) is `docs/specs/artifacts/sql-formatting.md`. This section keeps the grammar-level rules.
+
 - **Keyword Casing:** Upper-case SQL and SQLScript keywords, built-in types, and built-in function names (`upper` default) while preserving exact casing inside single-quoted strings `'...'`, double-quoted delimited identifiers `"..."`, and comments.
 - **Block Indentation:** Indent statements inside `BEGIN ... END`, `IF ... THEN ... ELSEIF ... ELSE ... END IF`, `CASE ... WHEN ... THEN ... ELSE ... END`, `WHILE ... DO ... END WHILE`, `LOOP ... END LOOP`, `FOR ... DO ... END FOR`, and `DO BEGIN ... END`.
 - **Clause Alignment:** Place major query clauses (`SELECT`, `FROM`, `INNER/LEFT/RIGHT/FULL/CROSS JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `WINDOW`, `ORDER BY`, `LIMIT`, `UNION [ALL]`, `INTERSECT`, `EXCEPT`) on their own lines with indented projection lists and predicates.

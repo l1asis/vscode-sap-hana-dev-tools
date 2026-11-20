@@ -2260,6 +2260,21 @@
           "default": "multiline",
           "markdownDescription": "Layout of `CASE` expressions. SQLScript `CASE` statements are always multi-line."
         },
+        "hanasql.format.embeddedQueryLayout": {
+          "type": "string",
+          "enum": [
+            "hanging",
+            "aligned",
+            "newLine"
+          ],
+          "enumDescriptions": [
+            "`SELECT` stays after `=` / `RETURN`; the query clauses are indented one level under the statement.",
+            "`SELECT` stays after `=` / `RETURN`; the query clauses align with the column of `SELECT`. Falls back to `hanging` with tab indentation or when `SELECT` starts past half of `maxLineLength`.",
+            "Break after `=` / `RETURN`; the whole query starts on the next line, one level deeper."
+          ],
+          "default": "hanging",
+          "markdownDescription": "Layout of a query assigned to a table variable (`lt = SELECT ...`, `lt := WITH ...`) or returned from a table function (`RETURN SELECT ...`). Parenthesised queries are not affected."
+        },
         "hanasql.format.trailingSemicolon": {
           "type": "string",
           "enum": [

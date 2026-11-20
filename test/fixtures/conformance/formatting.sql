@@ -31,3 +31,21 @@ select e.emp_id, count(*) from employees e where e.dept_id = 10 group by e.emp_i
 
 -- @case semicolon-free last statement
 SELECT 1 FROM DUMMY
+
+-- @case embedded queries: table variable assignment, WITH, set operators and RETURN (#64)
+CREATE FUNCTION top_customers (p_min DECIMAL(15, 2))
+RETURNS TABLE (customer_id INTEGER, total DECIMAL(15, 2))
+LANGUAGE SQLSCRIPT
+AS
+BEGIN
+  lt_orders = SELECT o.customer_id, SUM(o.amount) AS total FROM orders o INNER JOIN customers c ON c.id = o.customer_id WHERE o.status = 'A' AND o.amount > 0 GROUP BY o.customer_id;
+  lt_all := WITH big AS (SELECT customer_id, total FROM :lt_orders WHERE total >= :p_min) SELECT customer_id, total FROM big UNION ALL SELECT customer_id, 0 FROM :lt_orders WHERE total < :p_min;
+  RETURN SELECT customer_id, total FROM (SELECT customer_id, total FROM :lt_all) s ORDER BY total DESC;
+END;
+
+-- @case embedded query with comments after the prefix
+DO BEGIN
+  lt = -- all rows
+    SELECT a, /* first */ b FROM t;
+  lt2 /* note */ = SELECT a FROM :lt;
+END;

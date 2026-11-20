@@ -54,6 +54,7 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
     "parameters"
   ],
   "hanasql.format.logicalOperatorPosition": "after",
+  "hanasql.format.embeddedQueryLayout": "hanging", // "hanging" | "aligned" | "newLine" (lt = SELECT ..., RETURN SELECT ...)
   "hanasql.format.trailingSemicolon": "add",     // "preserve" | "add" | "remove"
   "hanasql.format.blankLinesBetweenTopLevelStatements": 2,
   "hanasql.format.identifierQuotes": "removeUnnecessary",

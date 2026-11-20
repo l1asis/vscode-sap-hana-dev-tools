@@ -18,6 +18,8 @@ export type ListContext =
   | 'values';
 export type LogicalOperatorPosition = 'before' | 'after';
 export type CaseLayout = 'multiline' | 'inline';
+/** Layout of a query after `<target> =` / `:=` / `RETURN` (docs/specs/artifacts/sql-formatting.md §5.1). */
+export type EmbeddedQueryLayout = 'hanging' | 'aligned' | 'newLine';
 export type TrailingSemicolonMode = 'preserve' | 'add' | 'remove';
 export type EndOfLineSetting = 'auto' | 'lf' | 'crlf';
 export type IdentifierQuotesMode = 'preserve' | 'removeUnnecessary';
@@ -56,6 +58,7 @@ export interface FormatterOptions {
   breakLogicalOperators: boolean;
   logicalOperatorPosition: LogicalOperatorPosition; // before | after
   caseLayout: CaseLayout; // multiline | inline
+  embeddedQueryLayout: EmbeddedQueryLayout; // hanging | aligned | newLine
 
   // semicolons
   trailingSemicolon: TrailingSemicolonMode; // preserve | add | remove
@@ -134,6 +137,7 @@ export const DEFAULTS: Readonly<FormatterOptions> = Object.freeze<FormatterOptio
   breakLogicalOperators: true,
   logicalOperatorPosition: 'before',
   caseLayout: 'multiline',
+  embeddedQueryLayout: 'hanging',
 
   // semicolons
   trailingSemicolon: 'preserve',
@@ -161,6 +165,7 @@ const ENUMS: Partial<Record<keyof FormatterOptions, readonly string[]>> = {
   commaPosition: ['trailing', 'leading'],
   logicalOperatorPosition: ['before', 'after'],
   caseLayout: ['multiline', 'inline'],
+  embeddedQueryLayout: ['hanging', 'aligned', 'newLine'],
   trailingSemicolon: ['preserve', 'add', 'remove'],
   endOfLine: ['auto', 'lf', 'crlf'],
   identifierQuotes: ['preserve', 'removeUnnecessary'],
