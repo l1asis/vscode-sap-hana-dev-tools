@@ -1,6 +1,7 @@
 import { isKeyValueArtifact } from '../formatter/detect';
 import { DEDICATED_ARTIFACT_LANGUAGES, JSON_ARTIFACT_LANGUAGES, SQL_LANGUAGES } from '../formatter/dispatch';
 import { tokenize, type Token } from '../formatter/tokenizer';
+import { analyzeCgulSyntax, analyzeXmlSyntax, CGUL_SYNTAX_LANGUAGES, XML_SYNTAX_LANGUAGES } from './artifact-syntax';
 import { KEYWORDS as FMT_KEYWORDS, RESERVED as FMT_RESERVED } from '../formatter/keywords';
 import { analyzeDelimiters, type DelimTokenInput } from './delimiters';
 import { embeddedOffset, type EmbeddedSql, mapEmbeddedDiagnostics, unescapeKvString, unescapeSqlLiteral } from './embedded-sql';
@@ -71,6 +72,8 @@ export { damerauLevenshtein, matchKeywordTypo, type TypoMatchOptions } from './t
 
 const SQL_SYNTAX_SET = new Set<string>([...SQL_LANGUAGES, 'sql']);
 const JSON_SYNTAX_SET = new Set<string>(JSON_ARTIFACT_LANGUAGES);
+const XML_SYNTAX_SET = new Set<string>(XML_SYNTAX_LANGUAGES);
+const CGUL_SYNTAX_SET = new Set<string>(CGUL_SYNTAX_LANGUAGES);
 const CLASSIC_KV_ALWAYS_SET = new Set<string>(['hdbschema', 'hdbti', 'hdbtid', 'hdbtim', 'xshttpdest']);
 const DUAL_SQL_KV_SET = new Set<string>(['hdbtable', 'hdbstructure', 'hdbview', 'hdbsequence', 'hdbprocedure']);
 const CDS_SET = new Set<string>(['hdbdd', 'hdbcds']);
@@ -3149,7 +3152,13 @@ function kvKeyBeforeValue(tokens: readonly NonSqlToken[]): string {
  */
 function scanNonSqlArtifacts(
   text: string,
-  options: { readonly allowCdsExpr?: boolean; readonly singleLineDoubleQuote?: boolean; readonly kv?: KvScanOptions }
+  options: {
+    readonly allowCdsExpr?: boolean;
+    readonly singleLineDoubleQuote?: boolean;
+    /** Classic `.hdbrole` catalog names: `""` is an escaped quote inside `"..."` and a backslash is an ordinary character. */
+    readonly doubledQuoteEscape?: boolean;
+    readonly kv?: KvScanOptions;
+  }
 ): { tokens: NonSqlToken[]; diagnostics: AnalyzerDiagnostic[] } {
   const diagnostics: AnalyzerDiagnostic[] = [];
   const tokens: NonSqlToken[] = [];
@@ -3210,11 +3219,16 @@ function scanNonSqlArtifacts(
       const key = options.kv ? kvKeyBeforeValue(tokens) : '';
       i++;
       let closed = false;
+      const doubled = options.doubledQuoteEscape === true && quote === '"';
       while (i < n) {
         if (options.singleLineDoubleQuote && quote === '"' && (text[i] === '\n' || text[i] === '\r')) {
           break;
         }
-        if (text[i] === '\\') {
+        if (doubled && text[i] === '"' && text[i + 1] === '"') {
+          i += 2;
+          continue;
+        }
+        if (text[i] === '\\' && !doubled) {
           i += 2;
           continue;
         }
@@ -4343,7 +4357,7 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
     if (isHdiJsonHdbrole(text)) {
       return filterSuppressedDiagnostics(text, analyzeJsonArtifactSyntax(text, languageId));
     }
-    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { singleLineDoubleQuote: true });
+    const { tokens, diagnostics } = scanNonSqlArtifacts(text, { singleLineDoubleQuote: true, doubledQuoteEscape: true });
     if (tokens.length > 0 && tokens[0].kind === 'word' && tokens[0].text.toLowerCase() !== 'role') {
       const fixKw = matchKeywordTypo(tokens[0].text, ['role'], { allowShort: true, lowercase: true });
       if (fixKw) {
@@ -4359,6 +4373,19 @@ export function analyzeSyntax(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       }
     }
     return filterSuppressedDiagnostics(text, diagnostics);
+  }
+
+  if (XML_SYNTAX_SET.has(languageId)) {
+    return filterSuppressedDiagnostics(text, analyzeXmlSyntax(text));
+  }
+
+  if (CGUL_SYNTAX_SET.has(languageId)) {
+    return filterSuppressedDiagnostics(text, analyzeCgulSyntax(text));
+  }
+
+  if (languageId === 'xsxmla') {
+    // XS Classic XMLA service definition: `//` and `/* */` comments, `"..."` names, `{ }` blocks (`xsc-legacy-artifacts.md`).
+    return filterSuppressedDiagnostics(text, scanNonSqlArtifacts(text, { singleLineDoubleQuote: true }).diagnostics);
   }
 
   if (languageId === 'hdbmigrationtable') {

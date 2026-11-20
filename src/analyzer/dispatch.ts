@@ -4,6 +4,7 @@ import {
   SQL_LANGUAGES,
   XSJS_LANGUAGES,
 } from '../formatter/dispatch';
+import { CGUL_SYNTAX_LANGUAGES, XML_SYNTAX_LANGUAGES } from './artifact-syntax';
 import { analyzeCalculationView } from './calculationview';
 import { analyzeMigration } from './migrator';
 import { analyzeRolesAndGrants, analyzeXsodata } from './roles-grants';
@@ -34,6 +35,9 @@ export const ANALYZER_LANGUAGES: readonly string[] = Array.from(
     ...XSJS_LANGUAGES,
     'calculationview',
     'hdbcalculationview',
+    ...XML_SYNTAX_LANGUAGES,
+    ...CGUL_SYNTAX_LANGUAGES,
+    'xsxmla',
     ...SUFFIX_MIGRATION_LANGUAGES,
   ])
 );
