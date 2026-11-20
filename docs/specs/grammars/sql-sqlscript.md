@@ -14,13 +14,17 @@
 | `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction` | `hanasql` | `source.hanasql` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | Table or scalar User-Defined Function (`FUNCTION ...`) |
 | `.hdbtrigger` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | Database trigger (`TRIGGER ...`) |
 | `.hdblibrary` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | SQLScript shared or test library (`LIBRARY ...`) |
-| `.hdbtable` (HDI DDL), `.hdbmigrationtable`, `.hdbvirtualtable`, `.hdbvirtualtableconfig` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `COLUMN TABLE`, `ROW TABLE`, `MIGRATION TABLE`, `VIRTUAL TABLE` DDL |
+| `.hdbtable` (HDI DDL), `.hdbmigrationtable`, `.hdbvirtualtable` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `COLUMN TABLE`, `ROW TABLE`, `MIGRATION TABLE`, `VIRTUAL TABLE` DDL |
 | `.hdbview` (HDI DDL), `.hdbresultcache` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `VIEW` and `RESULT CACHE` DDL |
 | `.hdbsequence` (HDI DDL), `.hdbindex`, `.hdbfulltextindex`, `.hdbconstraint`, `.hdbstatistics` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI headerless `SEQUENCE`, `INDEX`, `FULLTEXT INDEX`, `CONSTRAINT`, `STATISTICS` DDL |
 | `.hdbtabletype`, `.hdbstructuredprivilege`, `.hdbgraphworkspace`, `.hdbcollection`, `.hdbschedulerjob` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI `TYPE`, `STRUCTURED PRIVILEGE`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB` DDL |
 | `.hdbcollectionindex`, `.hdbcollectionadjindex` | `hdbcollectionindex`, `hdbcollectionadjindex` | `source.hanasql` | `[CLOUD]` | Headerless Document Store collection index and adjacency index DDL (`HASH INDEX` / `BLOCK RANGE INDEX` / `ADJACENCY INDEX`) |
 | `.hdbfabricvirtualtable` | `hdbfabricvirtualtable` | `source.hanasql` | `[CLOUD]` | Headerless Fabric Virtual Table shared replica DDL (`SHARED [SNAPSHOT] REPLICA [PAGE\|COLUMN LOADABLE] ON`) |
-| `.hdbafllangprocedure`, `.hdbvirtualfunction`, `.hdbvirtualprocedure`, `.hdbsearchruleset` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI AFL, Smart Data Integration, and Search Ruleset DDL |
+| `.hdbvirtualfunction`, `.hdbvirtualprocedure` | `hanasql` | `source.hanasql` | `[XSA]` `[HDI]` `[CLOUD]` | HDI Smart Data Integration virtual function and procedure DDL |
+| `.hdbstructuredfilter` | `hdbstructuredfilter` | `source.hanasql` | `[HDI]` `[CLOUD]` | Headerless structured filter DDL (`STRUCTURED FILTER ... FOR SELECT ...`), plug-in `com.sap.hana.di.structuredfilter` (§4.11) |
+| `.hdbremotetablereplica` | `hdbremotetablereplica` | `source.hanasql` | `[HDI]` `[CLOUD]` | Remote table replication, custom syntax `REMOTE TABLE REPLICA "<target>" ON "<virtual_table>"`, plug-in `com.sap.hana.di.remotetablereplica` (§4.11) |
+
+Not SQL: `.hdbvirtualtableconfig` and `.hdbafllangprocedure` are JSON artifacts with their own grammars, and `.hdbsearchruleset` is XML (`docs/specs/grammars/hana-xml.md`).
 
 ---
 
@@ -545,6 +549,73 @@ fabric_virtual_table_artifact ::=
 
 - Leading keywords `HASH`, `BLOCK`, `ADJACENCY`, and `SHARED` are root-level HDI artifact headers (no `CREATE` prefix and no root trailing semicolon appended).
 
+### 4.11 Headerless Structured Filters & Remote Table Replications `[HDI]` `[CLOUD]`
+
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/009_pages_241_270.md (Pages 241–270: *Remote Table Replications*, *Structured Filters*)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md (Pages 691–720: *CREATE STRUCTURED FILTER Statement*)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/015_pages_421_450.md (Pages 421–450: *ALTER STRUCTURED FILTER Statement*)
+
+Neither artifact is in the on-premise HDI references (`SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_*`), and neither statement is in the on-premise SQL references: both are SAP HANA Cloud only.
+
+**`.hdbstructuredfilter`**: the `CREATE STRUCTURED FILTER` statement without the leading `CREATE`, plus a wildcard object list that only the HDI plug-in accepts. The filtered views must be defined `WITH STRUCTURED FILTER CHECK`.
+
+```ebnf
+structured_filter_artifact ::=
+    "STRUCTURED" "FILTER" filter_name
+    "FOR" "SELECT"
+    [ "ON" object_name { "," object_name } ]
+    [ wildcard_objects ]                                  (* [HDI] plug-in only, not in CREATE STRUCTURED FILTER *)
+    filter_condition ;
+
+filter_name          ::= [ schema_name "." ] identifier ;
+object_name          ::= [ schema_name "." ] identifier ;
+
+wildcard_objects     ::= [ "ESCAPE" single_char_string ]
+                         "LIKE" wildcard_object { "," wildcard_object }
+                         [ "NOT" "LIKE" wildcard_object { "," wildcard_object } ] ;
+wildcard_object      ::= quoted_identifier ;              (* schema-local, wildcards '%' and '_' *)
+
+filter_condition     ::= static_filter_condition | dynamic_filter_condition ;
+static_filter_condition  ::= "WHERE" condition ;
+dynamic_filter_condition ::= "CONDITION" "PROVIDER" [ schema_name "." ] identifier ;   (* a procedure *)
+```
+
+- Without an `ON` list or `LIKE` list the filter has no effect. It can serve as a placeholder that is granted before the objects exist.
+- `LIKE a, b` / `NOT LIKE c, d` select the views `(a OR b) AND NOT (c OR d)`. `NOT LIKE` requires a `LIKE` list.
+- A `wildcard_object` is double-quoted and schema-local: `"someSchema"."V%1"` is not allowed.
+- `ESCAPE '\'` makes `\_` and `\%` match a literal `_` and `%`.
+
+```sql
+STRUCTURED FILTER USER_DATA_VIEW_FILTER_WILDCARD
+FOR SELECT ON USER_DATA_VIEW
+ESCAPE '\'
+LIKE "USER\_Data\_VIEW1%", "USER\_Data\_VIEW2%"
+NOT LIKE "USER_Data_VIEW1\%"
+WHERE USER_DATA_VIEW.USER_NAME = CURRENT_USER
+```
+
+**`.hdbremotetablereplica`**: a custom syntax, parsed by the `hdbremotetablereplica` build plug-in (it is not a catalog SQL statement).
+
+```ebnf
+remote_table_replica_artifact ::=
+    "REMOTE" "TABLE" "REPLICA" target_table "ON" virtual_table ;
+target_table   ::= identifier ;      (* created by the plug-in in the same container *)
+virtual_table  ::= identifier ;      (* an existing virtual table in the same container *)
+```
+
+- Both objects are in the same HDI container. The plug-in creates the target table, and the virtual table must already exist (`.hdbvirtualtable`).
+- Works only with the SAP HANA Smart Data Access adapter `hanaodbc`, not with the Smart Data Integration `HanaAdapter`.
+
+```sql
+REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"
+```
+
+**Known gaps** (follow-ups to #66):
+
+- The analyzer reports `HANA-SYN-023` (*Expected ','*) twice on the valid `CONDITION PROVIDER` form, because `FOR SELECT ON ...` is scanned as a `SELECT` list.
+- The formatter breaks the line between `FOR` and `SELECT` and folds `ESCAPE` / `LIKE` / `NOT LIKE` into the `SELECT` clause. The result is still valid, but the layout of §6 is not applied.
+- Neither artifact is checked against its production: a missing `ON <virtual_table>` or `FOR SELECT` is not reported.
+
 ---
 
 ## 5. Embedded Language Injections
@@ -573,6 +644,8 @@ The complete formatter specification (options, layout model, embedded queries, s
     - **`.hdbfunction` / `.hdbtablefunction` (`FUNCTION ... RETURNS ... AS { USING ...; } BEGIN ... END`):** Same root `END` semicolon suppression across optional `USING ...;` declarations.
     - **`.hdbtabletype` (`TYPE "<name>" AS TABLE ( ... )`):** Root `TYPE` headerless table-type definition formats column definitions one per line and must **not** receive an appended `;`.
     - **`.hdbprojectionview` (`PROJECTION VIEW "<name>" AS SELECT ... FROM ...`):** Root `PROJECTION VIEW` headerless definition formats the `SELECT` query clauses and must **not** receive an appended `;`.
-    - **Other HDI headerless root headers:** `COLUMN TABLE`, `ROW TABLE`, `VIEW`, `SEQUENCE`, `TRIGGER`, `LIBRARY`, `INDEX`, `FULLTEXT INDEX`, `FUZZY SEARCH INDEX`, `UNIQUE ... INDEX`, `HASH INDEX`, `BLOCK RANGE INDEX`, `ADJACENCY INDEX`, `SHARED ... REPLICA`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB`, `VIRTUAL TABLE`, `VIRTUAL PROCEDURE`, `VIRTUAL FUNCTION`, `STATISTICS`, `STRUCTURED PRIVILEGE`, `RESULT CACHE`, `APPLICATION TIME`, `SYSTEM VERSIONING`, `REMOTE TABLE REPLICA`.
+    - **Other HDI headerless root headers:** `COLUMN TABLE`, `ROW TABLE`, `VIEW`, `SEQUENCE`, `TRIGGER`, `LIBRARY`, `INDEX`, `FULLTEXT INDEX`, `FUZZY SEARCH INDEX`, `UNIQUE ... INDEX`, `HASH INDEX`, `BLOCK RANGE INDEX`, `ADJACENCY INDEX`, `SHARED ... REPLICA`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB`, `VIRTUAL TABLE`, `VIRTUAL PROCEDURE`, `VIRTUAL FUNCTION`, `STATISTICS`, `STRUCTURED PRIVILEGE`, `RESULT CACHE`, `APPLICATION TIME`, `SYSTEM VERSIONING`, `REMOTE TABLE REPLICA`, `STRUCTURED FILTER`.
+    - **`.hdbstructuredfilter` (`STRUCTURED FILTER ... FOR SELECT ... { WHERE <condition> | CONDITION PROVIDER <proc> }`):** one headerless statement. Keep `FOR SELECT` on the header line; `ON`, `ESCAPE`, `LIKE`, `NOT LIKE`, `WHERE` and `CONDITION PROVIDER` each start a line at the header's indentation. No `;` is appended.
+    - **`.hdbremotetablereplica` (`REMOTE TABLE REPLICA <target> ON <virtual_table>`):** one line, no `;` appended. The plug-in parses a custom syntax, not a SQL statement.
   - Contrast: Catalog DDL (`CREATE PROCEDURE ...;`, `CREATE TYPE ...;`) and standalone DML (`SELECT ...;`) are **not** headerless HDI root statements and **do** receive `;` under `trailingSemicolon: 'add'`.
 - **Safety Guarantees:** Never modify code between `-- hanasql-format off` and `-- hanasql-format on`, never strip comments, and support HDI headerless `.hdbprocedure` / `.hdbfunction` / `.hdbtabletype` / `.hdbprojectionview` / `.hdbtable` / `.hdbview` bodies that omit `CREATE`.
