@@ -612,9 +612,9 @@ REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"
 
 **Known gaps** (follow-ups to #66):
 
-- The analyzer reports `HANA-SYN-023` (*Expected ','*) twice on the valid `CONDITION PROVIDER` form, because `FOR SELECT ON ...` is scanned as a `SELECT` list.
-- The formatter breaks the line between `FOR` and `SELECT` and folds `ESCAPE` / `LIKE` / `NOT LIKE` into the `SELECT` clause. The result is still valid, but the layout of §6 is not applied.
-- Neither artifact is checked against its production: a missing `ON <virtual_table>` or `FOR SELECT` is not reported.
+- #109: the analyzer reports `HANA-SYN-023` (*Expected ','*) twice on the valid `CONDITION PROVIDER` form, because `FOR SELECT ON ...` is scanned as a `SELECT` list.
+- #110: the formatter breaks the line between `FOR` and `SELECT` and folds `ESCAPE` / `LIKE` / `NOT LIKE` into the `SELECT` clause. The result is still valid, but the layout of §6 is not applied.
+- #109: neither artifact is checked against its production: a missing `ON <virtual_table>` or `FOR SELECT` is not reported.
 
 ---
 
