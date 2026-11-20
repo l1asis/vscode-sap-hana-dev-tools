@@ -14,6 +14,7 @@ export const SQL_LANGUAGES: readonly string[] = [
   'hdbprocedure',
   'hdbfunction',
   'hdbtablefunction',
+  'hdbscalarfunction',
   'hdbtrigger',
   'hdbindex',
   'hdbfulltextindex',

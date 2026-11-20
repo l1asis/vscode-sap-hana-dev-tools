@@ -82,6 +82,20 @@
         }
       },
       {
+        "id": "hdbscalarfunction",
+        "aliases": [
+          "SAP HANA Scalar Function (XS Classic)"
+        ],
+        "extensions": [
+          ".hdbscalarfunction"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbfunction.svg",
+          "dark": "./images/icons/hdbfunction.svg"
+        }
+      },
+      {
         "id": "hdbtrigger",
         "aliases": [
           "SAP HANA Trigger"
@@ -770,7 +784,8 @@
           "SAP HANA Search Rule Set"
         ],
         "extensions": [
-          ".hdbsearchruleset"
+          ".hdbsearchruleset",
+          ".searchruleset"
         ],
         "configuration": "./language-configuration-xml.json",
         "icon": {
@@ -812,7 +827,8 @@
           "SAP HANA Text Mining Configuration"
         ],
         "extensions": [
-          ".hdbtextminingconfig"
+          ".hdbtextminingconfig",
+          ".textminingconfig"
         ],
         "configuration": "./language-configuration-xml.json",
         "icon": {
@@ -885,7 +901,8 @@
           "SAP HANA HDI Grants"
         ],
         "extensions": [
-          ".hdbgrants"
+          ".hdbgrants",
+          ".hdbsynonymgrantor"
         ],
         "configuration": "./language-configuration-xsjson.json",
         "icon": {
@@ -927,7 +944,8 @@
           "SAP HANA HDI Synonym Configuration"
         ],
         "extensions": [
-          ".hdbsynonymconfig"
+          ".hdbsynonymconfig",
+          ".hdbsynonymtemplate"
         ],
         "configuration": "./language-configuration-xsjson.json",
         "icon": {
@@ -1283,7 +1301,9 @@
           "SAP HANA HDI Hadoop MapReduce Job"
         ],
         "extensions": [
-          ".hdbmrjob"
+          ".hdbmrjob",
+          ".hdbrmjob",
+          ".hdbhadoopmrjob"
         ],
         "configuration": "./language-configuration-xsjson.json",
         "icon": {
@@ -1311,7 +1331,9 @@
           "SAP HANA Decision Table"
         ],
         "extensions": [
-          ".hdbdecisiontable"
+          ".hdbdecisiontable",
+          ".hdbruldec",
+          ".decrule"
         ],
         "configuration": "./language-configuration-xml.json",
         "icon": {
@@ -1374,6 +1396,75 @@
           "light": "./images/icons/hdbtim.svg",
           "dark": "./images/icons/hdbtim.svg"
         }
+      },
+      {
+        "id": "xscprocedure",
+        "aliases": [
+          "SAP HANA XS Classic XML Procedure (deprecated)"
+        ],
+        "extensions": [
+          ".procedure"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbprocedure.svg",
+          "dark": "./images/icons/hdbprocedure.svg"
+        }
+      },
+      {
+        "id": "proceduretemplate",
+        "aliases": [
+          "SAP HANA Procedure Template (XS Classic)"
+        ],
+        "extensions": [
+          ".proceduretemplate"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./images/icons/hdbprocedure.svg",
+          "dark": "./images/icons/hdbprocedure.svg"
+        }
+      },
+      {
+        "id": "hdbtextbundle",
+        "aliases": [
+          "SAP HANA Text Bundle (XS Classic)"
+        ],
+        "extensions": [
+          ".hdbtextbundle"
+        ],
+        "configuration": "./language-configuration-properties.json"
+      },
+      {
+        "id": "xscxmlmodel",
+        "aliases": [
+          "SAP HANA XS Classic XML Model"
+        ],
+        "extensions": [
+          ".hdbflowgraphtemplate",
+          ".aflpmml",
+          ".dqconfig",
+          ".dataflow",
+          ".epmmodel",
+          ".epmquerysource",
+          ".halmscenario",
+          ".pvsscenario"
+        ],
+        "configuration": "./language-configuration-xml.json"
+      },
+      {
+        "id": "xml",
+        "filenames": [
+          ".project",
+          ".jsdtscope"
+        ]
+      },
+      {
+        "id": "ignore",
+        "filenames": [
+          ".hdiignore",
+          ".regiignore"
+        ]
       }
     ],
     "grammars": [
@@ -1394,6 +1485,11 @@
       },
       {
         "language": "hdbtablefunction",
+        "scopeName": "source.hanasql",
+        "path": "./syntaxes/hanasql.tmLanguage.json"
+      },
+      {
+        "language": "hdbscalarfunction",
         "scopeName": "source.hanasql",
         "path": "./syntaxes/hanasql.tmLanguage.json"
       },
@@ -1858,6 +1954,33 @@
         "language": "hdbtim",
         "scopeName": "source.hdbtim",
         "path": "./syntaxes/hdbtim.tmLanguage.json"
+      },
+      {
+        "language": "xscprocedure",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "proceduretemplate",
+        "scopeName": "source.proceduretemplate",
+        "path": "./syntaxes/proceduretemplate.tmLanguage.json"
+      },
+      {
+        "scopeName": "proceduretemplate.injection",
+        "path": "./syntaxes/proceduretemplate-injection.tmLanguage.json",
+        "injectTo": [
+          "source.proceduretemplate"
+        ]
+      },
+      {
+        "language": "hdbtextbundle",
+        "scopeName": "source.hdbtextbundle",
+        "path": "./syntaxes/hdbtextbundle.tmLanguage.json"
+      },
+      {
+        "language": "xscxmlmodel",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
       }
     ],
     "commands": [
@@ -1889,6 +2012,9 @@
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdbtablefunction]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbscalarfunction]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdbtrigger]": {
@@ -2418,6 +2544,12 @@
       {
         "path": "./snippets/xsjs.code-snippets"
       }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "undeploy.json",
+        "url": "./resources/schemas/undeploy.schema.json"
+      }
     ]
   },
   "main": "./out/src/extension.js",
@@ -2426,6 +2558,7 @@
     "onLanguage:hdbprocedure",
     "onLanguage:hdbfunction",
     "onLanguage:hdbtablefunction",
+    "onLanguage:hdbscalarfunction",
     "onLanguage:hdbtrigger",
     "onLanguage:hdbindex",
     "onLanguage:hdbfulltextindex",
@@ -2516,7 +2649,11 @@
     "onLanguage:xswidget",
     "onLanguage:xsxmla",
     "onLanguage:hdbtid",
-    "onLanguage:hdbtim"
+    "onLanguage:hdbtim",
+    "onLanguage:xscprocedure",
+    "onLanguage:proceduretemplate",
+    "onLanguage:hdbtextbundle",
+    "onLanguage:xscxmlmodel"
   ],
   "scripts": {
     "vscode:prepublish": "npm run compile",

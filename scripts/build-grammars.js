@@ -1024,6 +1024,67 @@ jsonGrammar('hdbafllangprocedure', 'SAP HANA HDI AFL Language Procedure (.hdbafl
   write('hdbtextlexicon', { name: 'SAP HANA Text Analysis Lexicon', scopeName: 'source.hdbtextlexicon', patterns: [{ include: 'source.hdbtextrule' }] });
 }
 
+// ---------------------------------------------------------------------------
+// XS Classic text bundle (.hdbtextbundle): Java-properties-style translation texts
+// docs/specs/artifacts/artifact-registry.md §3.1
+// ---------------------------------------------------------------------------
+{
+  const ns = 'hdbtextbundle';
+  write('hdbtextbundle', {
+    name: 'SAP HANA Text Bundle (XS Classic)',
+    scopeName: 'source.hdbtextbundle',
+    patterns: [{ include: '#comment' }, { include: '#property' }],
+    repository: {
+      comment: {
+        name: `comment.line.number-sign.${ns}`,
+        begin: R(/^\s*[#!]/),
+        end: '$',
+        patterns: [
+          { name: `keyword.other.directive.${ns}`, match: R(/\b(?:TRANSLATE|NOTRANSLATE)\b/) },
+          {
+            match: R(/\b([XY][A-Z]{3})(?:(,)\s*(\d+))?(?=\s*:)/),
+            captures: {
+              1: { name: `storage.type.text-type.${ns}` },
+              2: { name: `punctuation.separator.${ns}` },
+              3: { name: `constant.numeric.max-length.${ns}` },
+            },
+          },
+        ],
+      },
+      property: {
+        begin: R(/^\s*((?:\\.|[^\s:=\\])+)\s*([:=]|(?=\s))/),
+        beginCaptures: {
+          1: { name: `support.type.property-name.${ns}` },
+          2: { name: `punctuation.separator.key-value.${ns}` },
+        },
+        end: R(/(?<!\\)$/),
+        contentName: `string.unquoted.value.${ns}`,
+        patterns: [
+          { name: `constant.character.escape.${ns}`, match: R(/\\u[0-9A-Fa-f]{4}|\\./) },
+          { name: `constant.character.escape.line-continuation.${ns}`, match: R(/\\$/) },
+          { name: `variable.parameter.placeholder.${ns}`, match: R(/\{\d+\}/) },
+        ],
+      },
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// XS Classic procedure template (.proceduretemplate): SQLScript with `<Parameter>` placeholders
+// docs/specs/artifacts/artifact-registry.md §3.2
+// ---------------------------------------------------------------------------
+write('proceduretemplate', {
+  name: 'SAP HANA Procedure Template (XS Classic)',
+  scopeName: 'source.proceduretemplate',
+  patterns: [{ include: 'source.hanasql' }],
+});
+write('proceduretemplate-injection', {
+  name: 'SAP HANA Procedure Template Placeholders',
+  scopeName: 'proceduretemplate.injection',
+  injectionSelector: 'L:source.proceduretemplate -comment -string',
+  patterns: [{ name: 'variable.parameter.placeholder.proceduretemplate', match: R(/<[A-Za-z_][A-Za-z0-9_]*>/) }],
+});
+
 if (require.main === module) {
   const { syncOutputs } = require('./build-keywords');
   const check = process.argv.includes('--check');

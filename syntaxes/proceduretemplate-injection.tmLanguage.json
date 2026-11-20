@@ -1,0 +1,11 @@
+{
+  "name": "SAP HANA Procedure Template Placeholders",
+  "scopeName": "proceduretemplate.injection",
+  "injectionSelector": "L:source.proceduretemplate -comment -string",
+  "patterns": [
+    {
+      "name": "variable.parameter.placeholder.proceduretemplate",
+      "match": "<[A-Za-z_][A-Za-z0-9_]*>"
+    }
+  ]
+}
