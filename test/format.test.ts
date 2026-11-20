@@ -503,3 +503,31 @@ test('embeddedQueryLayout: idempotent, keeps comments and format-off regions', (
 test('embeddedQueryLayout: invalid values fall back to hanging', () => {
   assert.strictEqual(f(EMBED_SRC, { embeddedQueryLayout: 'flush' as never }), f(EMBED_SRC));
 });
+
+// #107: an unterminated literal runs to the end of the text, but trailing whitespace there is
+// layout. Pass 2 sees pass 1's final newline, which must not widen the token and change wrapping.
+test('unterminated string / quoted identifier at maxLineLength: idempotent (#107)', () => {
+  const o: PartialFormatterOptions = { maxLineLength: 17, oneItemPerLine: [] };
+  for (const src of ["SELECT aaaa, 'bbb", 'SELECT aaaa, "bbb']) {
+    const once = f(src, o);
+    assert.strictEqual(once, src + '\n');
+    assert.strictEqual(f(once, o), once, `idempotent: ${src}`);
+  }
+  // Trailing whitespace in the input is layout too: the line still fits.
+  assert.strictEqual(f("SELECT aaaa, 'bbb  \n\n", o), "SELECT aaaa, 'bbb\n");
+});
+
+test('unterminated literal keeps its content verbatim, only trailing whitespace is dropped (#107)', () => {
+  const pieces = (s: string): string[] => tokenize(s).map((t) => `${t.type}:${t.text}`);
+  assert.deepEqual(pieces("x 'a  b\n  c \n"), ['word:x', "string:'a  b\n  c"]);
+  assert.deepEqual(pieces('x "a  b \t'), ['word:x', 'qident:"a  b']);
+  assert.deepEqual(pieces("x N'ab \n"), ['word:x', "string:N'ab"]);
+  assert.deepEqual(pieces("x '  \n"), ['word:x', "string:'"]);
+  // Negative: terminated literals keep whitespace inside the quotes.
+  assert.deepEqual(pieces("x 'ab  ' \n"), ['word:x', "string:'ab  '"]);
+  assert.deepEqual(pieces('x "ab  " \n'), ['word:x', 'qident:"ab  "']);
+  // Negative: an unterminated block comment was never affected and still runs to the end.
+  const comment = f('SELECT aaaa, /*bb', { maxLineLength: 17, oneItemPerLine: [] });
+  assert.strictEqual(comment, 'SELECT aaaa, /*bb\n');
+  assert.strictEqual(f(comment, { maxLineLength: 17, oneItemPerLine: [] }), comment);
+});
