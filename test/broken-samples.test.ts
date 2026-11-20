@@ -104,6 +104,10 @@ for (const file of files) {
     }
     for (const d of diags) {
       for (const fix of d.fixes) {
+        if (fix.edits.length === 0) {
+          assert.ok(fix.rename, `${d.ruleId} QuickFix "${fix.title}" has neither edits nor a file rename`);
+          continue;
+        }
         const fixed = applyTextEdits(text, fix.edits);
         assert.notEqual(fixed, text, `${d.ruleId} QuickFix "${fix.title}" changes nothing`);
         analyzeDocument({ languageId, text: fixed, filePath: file });

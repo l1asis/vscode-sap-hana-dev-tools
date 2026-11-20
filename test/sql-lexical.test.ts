@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { analyzeDocument } from '../src/analyzer/dispatch';
 import { applyTextEdits, DEFAULT_ANALYZER_OPTIONS, type AnalyzerDiagnostic } from '../src/analyzer/types';
 import { SQL_LANGUAGES } from '../src/formatter/dispatch';
-import { walkSamples } from './helpers/samples';
+import { sampleLanguageId, walkSamples } from './helpers/samples';
 
 const ROOT = fs.existsSync(path.join(__dirname, '..', 'samples'))
   ? path.join(__dirname, '..')
@@ -31,9 +31,8 @@ test('samples: every SQL / SQLScript sample artifact analyzes with zero syntax d
   let checked = 0;
   // samples/broken/ is intentionally invalid and checked by test/broken-samples.test.ts instead.
   for (const file of walkSamples({ includeBroken: false })) {
-    const ext = path.extname(file).slice(1);
-    const languageId = ext === 'sql' ? 'hanasql' : ext;
-    if (languageId !== 'hanasql' && !SQL_LANGUAGES.includes(languageId)) continue;
+    const languageId = sampleLanguageId(file);
+    if (!languageId || (languageId !== 'hanasql' && !SQL_LANGUAGES.includes(languageId))) continue;
     const text = fs.readFileSync(file, 'utf8');
     assert.deepEqual(syntaxDiags(languageId, text), [], path.relative(ROOT, file));
     checked++;

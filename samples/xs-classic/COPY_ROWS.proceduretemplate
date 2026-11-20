@@ -1,0 +1,8 @@
+PROCEDURE "SALES"."sap.hana.example::COPY_ROWS" ()
+LANGUAGE SQLSCRIPT
+SQL SECURITY INVOKER
+AS
+BEGIN
+    -- <My_Table> and <My_Column> are template parameters (SAP HANA Developer Guide for SAP HANA Studio, 7.4)
+    INSERT INTO <My_Target_Table> SELECT <My_Column> FROM <My_Table>;
+END;

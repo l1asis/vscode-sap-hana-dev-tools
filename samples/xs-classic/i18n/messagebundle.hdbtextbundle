@@ -1,0 +1,6 @@
+# TRANSLATE
+# XTIT,40: Application title
+helloworld=Hello World
+# XFLD: Greeting with the user name
+greeting = Hello {0}!
+multiline=First line     continued line

@@ -45,6 +45,7 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`default-schema.hdbprocedure`](migration/default-schema.hdbprocedure) | `HANA-MIG-011` | warning | `Replace '_SYS_BIC."app.sales/CV_ORDERS"' with '"app.sales::CV_ORDERS"'` |
 | [`legacy-model.hdbdd`](migration/legacy-model.hdbdd) | `HANA-MIG-005` | warning | `Convert .hdbdd annotations to HDI .hdbcds syntax` |
 | [`obsolete.hdbschema`](migration/obsolete.hdbschema) | `HANA-MIG-012` | information | — |
+| [`renamed-suffix.searchruleset`](migration/renamed-suffix.searchruleset) | `HANA-MIG-013` | information | `Rename to .hdbsearchruleset` |
 
 ### `performance/`
 
