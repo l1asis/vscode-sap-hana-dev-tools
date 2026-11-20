@@ -2,6 +2,18 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-20: narrow formatter profile and unterminated literals (#107), against `main` @ `acf01f9`
+
+| Metric | `main` | #107 |
+| :--- | ---: | ---: |
+| Formatter profiles checked | `default` | `default`, `narrow` (`maxLineLength: 40`) |
+| Analyzer: blocks with ≥1 syntax error | 460 | 460 |
+| Formatter: blocks with violations (default corpus) | 1 | 1 |
+| Formatter: `[narrow] non-idempotent`, `--no-allowlist`, Data Lake SQL Reference + `SAP_HANA_SQL_Reference_Guide_en` | 2 (with the narrow profile, unfixed tokenizer) | 0 |
+| `npm test`: tests / pass / todo | 451 / 443 / 8 | 454 / 446 / 8 |
+
+The narrow profile finds nothing new in the five default guides, with or without the fix. The two #107 blocks are in guides outside the default corpus and both hold an unterminated `'`, so they are not valid SQL and get no fixture case. The committed fixtures all pass under both profiles.
+
 ## 2026-11-19: EXEC / EXECUTE IMMEDIATE (#45, #78), against #42 + #47 @ `c6e564e`
 
 | Metric | #42 + #47 | #45 |
