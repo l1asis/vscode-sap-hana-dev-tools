@@ -24,6 +24,6 @@
 ## Grammar Conventions
 
 - **`.xsappsite` (`source.xsappsite`):** Tolerant JSON (`comments`, double-quoted keys/strings, numbers, booleans/null, structural punctuation) highlighting common Fiori launchpad site properties (`id`, `title`, `description`, `theme`, `catalogs`, `groups`, `tiles`, `personalization`).
-- **`.xswidget`, `.hdbdecisiontable` (`text.xml.hana`):** Delegates to SAP HANA XML (`syntaxes/hanaxml.tmLanguage.json`).
+- **`.xswidget`, `.hdbdecisiontable` (`text.xml.hana`):** Delegates to SAP HANA XML (`syntaxes/hanaxml.tmLanguage.json`, spec `docs/specs/grammars/hana-xml.md`).
 - **`.xsxmla` (`source.xsxmla`):** Highlights XS Classic service block structure (`service { ... }`, `namespace`), repository object references (`"pkg::VIEW"`), XMLA terms (`analytic`, `calculation`, `cube`, `dimension`, `measure`, `metadata`), classic `key = value;` assignments, `//` / `/* */` comments, and strings.
 - **`.hdbtid`, `.hdbtim` (`source.hdbtid`, `source.hdbtim`):** Classic XS key-value syntax (`key = value;`, `//` / `/* */` comments, double-quoted strings, numbers, booleans, braces/brackets, semicolons).
