@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RepTask Name="app.sales::ORDERS_REPLICATION" Type="REALTIME">
+  <TargetObjects SchemaName="SALES>
+    <TargetObject Type="TABLE" ObjectName="ORDERS"/>
+  </TargetObjects>
+</RepTask>

@@ -1717,14 +1717,11 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
   );
   let checkedCount = 0;
 
+  const checkedLanguages = new Set<string>();
   for (const file of sampleFiles) {
-    const base = path.basename(file);
-    const ext = path.extname(base).toLowerCase() || (base.startsWith('.') ? base.toLowerCase() : '');
-    // Skip non-language docs/data or CGUL rule files
-    if (!ext || ext === '.md' || ext === '.csv' || ext.startsWith('.hdbtext')) continue;
     const rawLang = sampleLanguageId(file);
     if (!rawLang || !analyzerLangSet.has(rawLang)) continue;
-    // Skip intentional format-demo files only if they have intentional syntax bugs? No, all samples should be syntactically valid!
+    checkedLanguages.add(rawLang);
     const text = fs.readFileSync(file, 'utf8');
     const diags = syntaxDiags(rawLang, text).filter((d) => d.category === 'syntax');
     assert.deepEqual(
@@ -1736,6 +1733,10 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
   }
 
   assert.ok(checkedCount >= 20, `Expected to scan >= 20 sample files, scanned ${checkedCount}`);
+  // #102: the XML, CGUL and XMLA samples are swept too
+  for (const lang of ['hdbtextrule', 'hdbdecisiontable', 'xswidget', 'hdbsearchruleset', 'xscxmlmodel', 'xsxmla', 'hdblogicalschema']) {
+    assert.ok(checkedLanguages.has(lang), `no ${lang} sample was swept`);
+  }
 });
 
 function clauseSyntaxDiags(languageId: string, text: string) {

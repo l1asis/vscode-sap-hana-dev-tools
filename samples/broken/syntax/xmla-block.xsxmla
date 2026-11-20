@@ -1,0 +1,2 @@
+service namespace "app.sales" {
+  "app.sales::CA_ORDERS" as "OrdersCube";
