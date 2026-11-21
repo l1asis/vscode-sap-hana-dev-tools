@@ -138,6 +138,12 @@ export const SUFFIX_MIGRATIONS: Readonly<Record<string, SuffixMigration>> = {
     rename: false,
     reason: '(HALM scenario) is not supported in HDI.',
   },
+  '.hdbremotesource': {
+    languageId: 'hdbremotesource',
+    rename: false,
+    reason:
+      "(Hadoop remote source) is not supported in HDI. An administrator creates the remote source; grant the container access with a '.hdbgrants' global_object_privileges entry of type 'REMOTE SOURCE'.",
+  },
   // Deprecated HDI plug-in [XSA]
   '.hdbhadoopmrjob': {
     languageId: 'hdbmrjob',
