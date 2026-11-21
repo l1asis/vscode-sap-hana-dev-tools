@@ -293,6 +293,11 @@ export const END_SUFFIXES: ReadonlySet<string> = new Set<string>([
   'CASE', 'FOR', 'IF', 'LOOP', 'WHILE',
 ]);
 
+/** Word that starts a clause after the `STRUCTURED FILTER <name> FOR SELECT` header (`NOT` only as `NOT LIKE`, `CONDITION` only as `CONDITION PROVIDER`). Context: [HDI] [CLOUD] Headerless `.hdbstructuredfilter` and `CREATE STRUCTURED FILTER` only. Catalog role `structured-filter-clause`. */
+export const STRUCTURED_FILTER_CLAUSES: readonly string[] = [
+  'ON', 'ESCAPE', 'LIKE', 'NOT', 'WHERE', 'CONDITION',
+];
+
 /** Datetime field name (`EXTRACT(YEAR FROM ...)`). Context: First argument of `EXTRACT`; a keyword when followed by `FROM`. Catalog role `datetime-field`. */
 export const DATETIME_FIELDS: ReadonlySet<string> = new Set<string>([
   'DAY', 'HOUR', 'MINUTE', 'MONTH', 'SECOND', 'YEAR',

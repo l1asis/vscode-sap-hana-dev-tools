@@ -1,0 +1,2 @@
+-- Replicates the remote data behind the virtual table into the target table.
+REMOTE TABLE REPLICA "SALES_REPLICA" ON "SALES_VIRTUAL"

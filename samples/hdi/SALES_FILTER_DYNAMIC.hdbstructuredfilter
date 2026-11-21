@@ -1,0 +1,2 @@
+-- Dynamic structured filter: a procedure provides the filter condition at run time.
+STRUCTURED FILTER SALES_FILTER_DYNAMIC FOR SELECT ON SALES_VIEW CONDITION PROVIDER SALES_FILTER_PROVIDER

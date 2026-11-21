@@ -290,6 +290,11 @@ export const JOIN_STARTERS: readonly string[] = [
   'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'CROSS', 'NATURAL', 'MANY', 'ONE', 'EXACT',
 ];
 
+/** Word that starts a clause after the `STRUCTURED FILTER <name> FOR SELECT` header (`NOT` only as `NOT LIKE`, `CONDITION` only as `CONDITION PROVIDER`). Context: [HDI] [CLOUD] Headerless `.hdbstructuredfilter` and `CREATE STRUCTURED FILTER` only. Catalog role `structured-filter-clause`. */
+export const STRUCTURED_FILTER_CLAUSES: readonly string[] = [
+  'ON', 'ESCAPE', 'LIKE', 'NOT', 'WHERE', 'CONDITION',
+];
+
 /** Word that is never an implicit alias, because it continues or ends the enclosing clause. Context: After a table reference or select item (clause parser). Catalog role `non-alias`. */
 export const NON_ALIAS: ReadonlySet<string> = new Set<string>([
   'AND', 'APPLY', 'AS', 'ASC', 'CROSS', 'DEFAULT', 'DESC', 'DO', 'ELSE', 'ELSEIF', 'END', 'EXACT', 'EXCEPT',

@@ -569,7 +569,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
             severity: issue.likelyAlias ? 'warning' : 'error',
             message: issue.message,
             start: baseOffset + tok.start,
-            end: baseOffset + tok.end,
+            end: baseOffset + (codeTokens[issue.endTokIdx ?? issue.tokIdx] ?? tok).end,
             fixes,
           });
         },
@@ -1673,6 +1673,26 @@ interface SelectListFrame {
   beforeAliasEnd: number;
 }
 
+/**
+ * The `SELECT` of each `[CREATE | ALTER] STRUCTURED FILTER <name> FOR SELECT` header `[HDI]` `[CLOUD]`
+ * (`sql-sqlscript.md` §4.11). It names the privilege being filtered and does not start a query, so the
+ * `SELECT`-list heuristics must not scan `ON` / `LIKE` / `CONDITION PROVIDER` as projection items.
+ */
+function structuredFilterSelects(codeTokens: readonly Token[]): ReadonlySet<Token> {
+  const out = new Set<Token>();
+  const isWord = (k: number, w: string): boolean => codeTokens[k]?.type === 'word' && codeTokens[k].text.toUpperCase() === w;
+  for (let k = 0; k + 1 < codeTokens.length; k++) {
+    if (!isWord(k, 'STRUCTURED') || !isWord(k + 1, 'FILTER')) continue;
+    let j = k + 2;
+    const isName = (t: Token | undefined): boolean => t?.type === 'word' || t?.type === 'qident';
+    if (!isName(codeTokens[j])) continue;
+    j++;
+    while (codeTokens[j]?.text === '.' && isName(codeTokens[j + 1])) j += 2;
+    if (isWord(j, 'FOR') && isWord(j + 1, 'SELECT')) out.add(codeTokens[j + 1]);
+  }
+  return out;
+}
+
 function hasTopLevelCommaInParen(codeTokens: readonly Token[], openIdx: number): boolean {
   let depth = 1;
   for (let k = openIdx + 1; k < codeTokens.length; k++) {
@@ -1723,6 +1743,7 @@ function checkSqlMissingCommas(
   unmatchedCloseStarts: ReadonlySet<number>,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
+  const filterSelects = structuredFilterSelects(codeTokens);
   const parenStack: DeclParenFrame[] = [];
   const selectStack: SelectListFrame[] = [];
   let parenDepth = 0;
@@ -1942,7 +1963,7 @@ function checkSqlMissingCommas(
     }
 
     // Track `SELECT` lists cleanly
-    if (up === 'SELECT' && !['GRANT', 'REVOKE', 'ALLOW', 'DENY', 'PRIVILEGE'].includes(prevUp)) {
+    if (up === 'SELECT' && !['GRANT', 'REVOKE', 'ALLOW', 'DENY', 'PRIVILEGE'].includes(prevUp) && !filterSelects.has(tok)) {
       const topParen = parenStack[parenStack.length - 1];
       if (!topParen || (topParen.kind !== 'params' && topParen.kind !== 'columns')) {
         selectStack.push({
@@ -2312,6 +2333,7 @@ function checkSqlExpressionsAndClauses(
   unmatchedCloseStarts: ReadonlySet<number>,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
+  const filterSelects = structuredFilterSelects(codeTokens);
   const exprStack: ExprClauseState[] = [];
   const parenFrames: ExprParenFrame[] = [];
   const blockStack: Array<{ kind: BlockKind; isLibraryRoot: boolean; hasStmtToken: boolean }> = [];
@@ -2669,7 +2691,7 @@ function checkSqlExpressionsAndClauses(
 
     // Track clause entry & incomplete clauses (HANA-SYN-025)
     if (tok.type === 'word') {
-      if (up === 'SELECT' && !SELECT_PRIVILEGE_PREV_CLAUSE.has(prevUp)) {
+      if (up === 'SELECT' && !SELECT_PRIVILEGE_PREV_CLAUSE.has(prevUp) && !filterSelects.has(tok)) {
         if (nextUp === 'FROM' || nextUp === 'INTO' || nextUp === ';' || nextUp === 'END' || nextUp === ')') {
           pushExprErr('HANA-SYN-025', tok, `Incomplete 'SELECT' clause: missing projection expression before '${next?.text ?? 'EOF'}'.`);
         }

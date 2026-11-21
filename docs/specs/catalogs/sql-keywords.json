@@ -607,6 +607,25 @@
         "EXACT"
       ]
     },
+    "structured-filter-clause": {
+      "group": "context",
+      "const": "STRUCTURED_FILTER_CLAUSES",
+      "emit": [
+        "analyzer",
+        "formatter"
+      ],
+      "description": "Word that starts a clause after the `STRUCTURED FILTER <name> FOR SELECT` header (`NOT` only as `NOT LIKE`, `CONDITION` only as `CONDITION PROVIDER`).",
+      "context": "[HDI] [CLOUD] Headerless `.hdbstructuredfilter` and `CREATE STRUCTURED FILTER` only.",
+      "source": "docs/specs/grammars/sql-sqlscript.md § 4.11",
+      "order": [
+        "ON",
+        "ESCAPE",
+        "LIKE",
+        "NOT",
+        "WHERE",
+        "CONDITION"
+      ]
+    },
     "non-alias": {
       "group": "context",
       "const": "NON_ALIAS",
@@ -1100,7 +1119,7 @@
     {"name": "COLUMN", "roles": ["ddl", "alter-system-word", "ddl-noun", "ddl-typo-target", "migration-table-root", "table-columns-prev", "column-end-modifier", "fmt-hdi-first"]},
     {"name": "COMMENT", "roles": ["ddl", "sql-statement-starter", "general-sql-root", "select-privilege-prev", "select-privilege-prev-clause", "column-clause-modifier"]},
     {"name": "COMMIT", "roles": ["dml", "sql-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "body-statement-word"]},
-    {"name": "CONDITION", "roles": ["control-flow", "reserved"]},
+    {"name": "CONDITION", "roles": ["control-flow", "reserved", "structured-filter-clause"]},
     {"name": "CONDITIONAL", "roles": ["json-column-trailing"]},
     {"name": "CONFIGURATION", "roles": ["alter-system-word", "routine-clause-starter"]},
     {"name": "CONNECT", "roles": ["dml", "reserved", "sql-statement-starter", "general-sql-root", "expr-clause-terminator"]},
@@ -1181,7 +1200,7 @@
     {"name": "EPS", "roles": ["clause-word"]},
     {"name": "EQUIDISTANT", "roles": ["clause-word"]},
     {"name": "ERROR", "roles": ["hierarchy-option", "json-call-clause", "json-column-trailing"]},
-    {"name": "ESCAPE", "roles": ["clause-word", "keyword", "select-prefix-op", "expr-infix-direct", "call-infix-or-clause"]},
+    {"name": "ESCAPE", "roles": ["clause-word", "keyword", "structured-filter-clause", "select-prefix-op", "expr-infix-direct", "call-infix-or-clause"]},
     {"name": "EXACT", "roles": ["join-starter", "non-alias", "follow-hidden"]},
     {"name": "EXCEPT", "roles": ["dml", "reserved", "block-end-stop-prev", "set-operator", "subselect-context", "query-clause", "non-alias", "query-start-prev", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
     {"name": "EXCEPTION", "roles": ["control-flow", "reserved"]},
@@ -1291,7 +1310,7 @@
     {"name": "LEFT", "roles": ["dml", "reserved", "block-end-stop-prev", "join-starter", "non-alias", "expr-clause-terminator", "fmt-join-starter", "fmt-join-phrase"]},
     {"name": "LEVELS", "roles": ["clause-word", "hierarchy-clause"]},
     {"name": "LIBRARY", "roles": ["sqlscript-keyword", "statement-noun", "keyword", "routine-header-opener", "ddl-noun", "ddl-typo-target", "fmt-object-type", "fmt-hdi-first"], "platforms": ["XSA", "HDI", "CLOUD"]},
-    {"name": "LIKE", "roles": ["word-operator", "block-end-stop-prev", "column-list-constraint-starter", "comparison-word", "select-prefix-op", "expr-infix-direct", "expr-infix-after-not", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "LIKE", "roles": ["word-operator", "block-end-stop-prev", "column-list-constraint-starter", "structured-filter-clause", "comparison-word", "select-prefix-op", "expr-infix-direct", "expr-infix-after-not", "call-infix-or-clause", "paren-expression-prev", "fmt-non-value"]},
     {"name": "LIKE_REGEXPR", "roles": ["word-operator", "expr-infix-direct", "expr-infix-after-not"]},
     {"name": "LIMIT", "roles": ["dml", "reserved", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
     {"name": "LOAD", "roles": ["dml", "alter-system-word", "sql-statement-starter", "general-sql-root", "column-clause-modifier", "hierarchy-clause"]},
@@ -1332,7 +1351,7 @@
     {"name": "NEW", "roles": ["select-prefix-op", "expr-prefix-word", "call-prefix-word"]},
     {"name": "NEXTVAL", "roles": ["dml", "reserved", "reserved-after-dot"]},
     {"name": "NO", "roles": ["clause-word", "keyword", "routine-clause-starter", "ddl-modifier", "column-clause-modifier", "hierarchy-clause"]},
-    {"name": "NOT", "roles": ["word-operator", "block-end-stop-prev", "column-end-modifier", "non-alias", "comparison-word", "select-prefix-op", "expr-prefix-word", "call-infix-or-clause", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "NOT", "roles": ["word-operator", "block-end-stop-prev", "column-end-modifier", "structured-filter-clause", "non-alias", "comparison-word", "select-prefix-op", "expr-prefix-word", "call-infix-or-clause", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
     {"name": "NOTFOUND", "roles": ["cursor-attribute"]},
     {"name": "NOW", "roles": ["nondeterministic-call"]},
     {"name": "NOWAIT", "roles": ["ddl"]},
@@ -1348,7 +1367,7 @@
     {"name": "OF", "roles": ["preposition", "keyword"]},
     {"name": "OFFSET", "roles": ["dml", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "incomplete-where-follow", "incomplete-having-follow", "expr-clause-terminator", "paren-expression-prev", "fmt-non-value"]},
     {"name": "OMIT", "roles": ["json-call-clause", "json-column-trailing"]},
-    {"name": "ON", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "select-privilege-prev", "column-clause-modifier", "non-alias", "ident-context", "json-call-clause", "json-column-trailing", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "ON", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "select-privilege-prev", "column-clause-modifier", "structured-filter-clause", "non-alias", "ident-context", "json-call-clause", "json-column-trailing", "call-prefix-no-op", "paren-expression-prev", "fmt-non-value"]},
     {"name": "ONE", "roles": ["join-starter", "non-alias", "follow-hidden"]},
     {"name": "ONLINE", "roles": ["clause-word", "ddl-modifier", "column-end-modifier"]},
     {"name": "ONLY", "roles": ["clause-word", "keyword"]},
@@ -1588,7 +1607,7 @@
     {"name": "VISIT", "roles": ["sqlscript-keyword"]},
     {"name": "WAITGRAPH", "roles": ["alter-system-word"]},
     {"name": "WHEN", "roles": ["control-flow", "reserved", "block-end-stop-prev", "block-stop", "case-body-stop", "non-alias", "follow-hidden", "select-stop-clause", "select-prefix-op", "expr-clause-terminator", "call-prefix-word", "paren-expression-prev", "fmt-non-value"]},
-    {"name": "WHERE", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "expr-clause-terminator", "hierarchy-clause", "paren-expression-prev", "fmt-non-value"]},
+    {"name": "WHERE", "roles": ["dml", "reserved", "block-end-stop-prev", "statement-continuation-prev", "query-clause", "structured-filter-clause", "non-alias", "select-stop-clause", "incomplete-from-follow", "expr-clause-terminator", "hierarchy-clause", "paren-expression-prev", "fmt-non-value"]},
     {"name": "WHILE", "roles": ["control-flow", "reserved", "sqlscript-statement-starter", "general-sql-root", "unambiguous-statement-start", "statement-exit-word", "top-level-imperative", "end-compound-suffix", "end-suffix", "body-statement-word", "body-typo-target", "paren-expression-prev", "fmt-non-value"]},
     {"name": "WINDOW", "roles": ["dml", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator"]},
     {"name": "WITH", "roles": ["dml", "reserved", "sql-statement-starter", "sqlscript-statement-starter", "general-sql-root", "block-end-stop-prev", "subselect-context", "routine-clause-starter", "column-end-modifier", "column-clause-modifier", "query-clause", "non-alias", "select-stop-clause", "expr-clause-terminator", "hierarchy-clause", "json-call-clause", "json-column-trailing", "paren-expression-prev"]},

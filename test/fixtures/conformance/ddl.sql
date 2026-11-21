@@ -107,3 +107,9 @@ CREATE TRIGGER emp_audit AFTER UPDATE ON employees REFERENCING NEW ROW new_row F
 BEGIN
   INSERT INTO emp_log VALUES (:new_row.emp_id, CURRENT_TIMESTAMP);
 END;
+
+-- @case structured filter with a condition provider [CLOUD]
+CREATE STRUCTURED FILTER sales_filter FOR SELECT ON sales_view CONDITION PROVIDER sales_filter_provider;
+
+-- @case structured filter with a static condition on two views [CLOUD]
+CREATE STRUCTURED FILTER region_filter FOR SELECT ON sales_view, orders_view WHERE region = SESSION_CONTEXT('REGION');

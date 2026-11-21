@@ -135,6 +135,55 @@ test('headerless HDI collection indexes and fabric virtual tables format safely'
   assert.ok(regularSql.trimEnd().endsWith(';'));
 });
 
+test('structured filter: FOR SELECT stays on the header line, one clause per line (#110)', () => {
+  const add = { trailingSemicolon: 'add' } as const;
+  // plain form
+  assert.strictEqual(f('structured filter sf for\nselect on v where a = 1', add), ['STRUCTURED FILTER sf FOR SELECT', 'ON v', 'WHERE a = 1', ''].join('\n'));
+  // wildcard form from the HDI reference
+  const wildcard = [
+    'STRUCTURED FILTER USER_DATA_VIEW_FILTER_WILDCARD',
+    'FOR SELECT ON USER_DATA_VIEW',
+    "ESCAPE '\\'",
+    'LIKE "USER\\_Data\\_VIEW1%", "USER\\_Data\\_VIEW2%"',
+    'NOT LIKE "USER_Data_VIEW1\\%"',
+    'WHERE USER_DATA_VIEW.USER_NAME = CURRENT_USER',
+  ].join('\n');
+  const wildcardOut = [
+    'STRUCTURED FILTER USER_DATA_VIEW_FILTER_WILDCARD FOR SELECT',
+    'ON USER_DATA_VIEW',
+    "ESCAPE '\\'",
+    'LIKE "USER\\_Data\\_VIEW1%", "USER\\_Data\\_VIEW2%"',
+    'NOT LIKE "USER_Data_VIEW1\\%"',
+    'WHERE USER_DATA_VIEW.USER_NAME = CURRENT_USER',
+    '',
+  ].join('\n');
+  assert.strictEqual(f(wildcard, add), wildcardOut);
+  assert.strictEqual(f(wildcardOut, add), wildcardOut, 'idempotent');
+  // CONDITION PROVIDER form; PROVIDER is cased as a keyword
+  assert.strictEqual(
+    f('structured filter sf_t2_view for select on dynamic_t1_view condition provider proc_t2', { ...add, keywordCase: 'lower' }),
+    ['structured filter sf_t2_view for select', 'on dynamic_t1_view', 'condition provider proc_t2', ''].join('\n')
+  );
+  // after WHERE, LIKE / NOT are operators and AND / OR break as in any WHERE clause
+  assert.strictEqual(
+    f("STRUCTURED FILTER sf FOR SELECT ON v, w WHERE name LIKE 'A%' AND NOT b = 1"),
+    ['STRUCTURED FILTER sf FOR SELECT', 'ON v, w', "WHERE name LIKE 'A%'", '    AND NOT b = 1', ''].join('\n')
+  );
+  // the catalog statement keeps its `;`
+  assert.strictEqual(
+    f('create structured filter sf for select on v condition provider p', add),
+    ['CREATE STRUCTURED FILTER sf FOR SELECT', 'ON v', 'CONDITION PROVIDER p;', ''].join('\n')
+  );
+  // negative: other FOR SELECT / NOT LIKE contexts keep their layout
+  assert.strictEqual(f("SELECT a FROM t WHERE x NOT LIKE 'a';"), ['SELECT a', 'FROM t', "WHERE x NOT LIKE 'a';", ''].join('\n'));
+  assert.strictEqual(
+    f('DO BEGIN DECLARE CURSOR c FOR SELECT a FROM t; END;'),
+    ['DO BEGIN', '    DECLARE CURSOR c FOR', '    SELECT a', '    FROM t;', 'END;', ''].join('\n')
+  );
+  // a remote table replica stays one line without `;`
+  assert.strictEqual(f('remote table replica "T" on "V"', add), 'REMOTE TABLE REPLICA "T" ON "V"\n');
+});
+
 test('hexadecimal numeric literal stays one token (#88)', () => {
   assert.strictEqual(
     f('SELECT 0x0abc "hex_value" FROM DUMMY;'),

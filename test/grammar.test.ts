@@ -724,6 +724,7 @@ test('hanasql: clause phrases scope context-only keywords (#79)', () => {
     ['CREATE USER u PASSWORD Initial1 NO FORCE_FIRST_PASSWORD_CHANGE;', ['NO']],
     ["SELECT a FROM t WHERE b LIKE 'x!%' ESCAPE '!';", ['ESCAPE']],
     ['CREATE GLOBAL TEMPORARY TABLE g (a INT) ON COMMIT PRESERVE ROWS;', ['PRESERVE ROWS']],
+    ['CREATE STRUCTURED FILTER f FOR SELECT ON v CONDITION PROVIDER p;', ['CONDITION PROVIDER']],
   ];
   for (const [src, words] of cases) keywordIn('source.hanasql', src, words);
 });
@@ -733,6 +734,8 @@ test('hanasql: context-only keywords stay identifiers outside their clause (#79)
     'range', 'data', 'first', 'last', 'source', 'matched', 'hint', 'rows', 'depth',
   ]);
   bareIn('source.hanasql', 'SELECT no FROM t WHERE no IS NULL AND no IN (1, 2);', ['no']);
+  // PROVIDER outside `CONDITION PROVIDER` is a column name
+  bareIn('source.hanasql', 'SELECT provider FROM t;', ['provider']);
   bareIn('source.hanasql', 'SELECT a FROM t WHERE no = 1;', ['no']);
   // a CTE named `data` is not `WITH DATA`
   bareIn('source.hanasql', 'WITH data AS (SELECT 1 AS a FROM DUMMY) SELECT a FROM data;', ['data']);
