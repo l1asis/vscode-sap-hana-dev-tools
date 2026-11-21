@@ -116,5 +116,12 @@ jobs:
               --notes-file RELEASE_NOTES.md
           fi
 
+      # --skip-duplicate on both steps keeps a re-run safe when one registry
+      # already has this version (e.g. Marketplace succeeded, Open VSX failed).
       - name: Publish to VS Code Marketplace
-        run: npx @vscode/vsce publish --oidc --packagePath "${{ steps.meta.outputs.vsix }}"
+        run: npx @vscode/vsce publish --oidc --skip-duplicate --packagePath "${{ steps.meta.outputs.vsix }}"
+
+      # Trusted publishing (GitHub OIDC): registered for this workflow file at
+      # https://open-vsx.org/user-settings/trusted-publishers; no stored token.
+      - name: Publish to Open VSX
+        run: npx ovsx publish --trusted-publishing --skip-duplicate --packagePath "${{ steps.meta.outputs.vsix }}"
