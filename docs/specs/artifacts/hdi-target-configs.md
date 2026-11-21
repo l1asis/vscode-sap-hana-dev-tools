@@ -321,7 +321,7 @@ Invalid: two configurations in one file; the `esh_config()` envelope around the 
 ## 10. `.hdbmrjob`
 
 > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(HDI)_Reference_for_SAP_HAN/008_pages_211_240.md (Pages 211–240)
-> Source: SAP HANA Hadoop Integration, SAP HANA Platform 2.0 SPS 02 (help.sap.com `Hadoop_Integration.pdf`, outside the corpus) §1.5.3 _Adding a MapReduce Program to SAP HANA_ (Page 13)
+> Source: https://help.sap.com/doc/28efe66a0e694712bd81994bcc49522c/2.0.2.0/en-US/Hadoop_Integration.pdf (SAP HANA Platform 2.0 SPS 02, outside the corpus, #114): § 1.5.3 _Adding a MapReduce Program to SAP HANA_ (Page 13)
 
 Deprecated: use `.hdbvirtualpackagehadoop` (`hdbvirtualpackage.md`). The plug-in reads a binary file, either a Hadoop JAR packaged with a metadata header or a plain Hadoop JAR, and creates a virtual-function package with adapter type `HADOOP`. There is no JSON property schema.
 
