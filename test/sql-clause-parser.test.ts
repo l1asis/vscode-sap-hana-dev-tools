@@ -147,3 +147,83 @@ test('HANA-SYN-042: no duplicate when an existing rule already reports the state
   const d = syntaxDiags('hanasql', src);
   assert.equal(d.length, 1, JSON.stringify(d));
 });
+
+// ---------------------------------------------------------------------------
+// Headerless structured filters and remote table replicas [HDI] [CLOUD] (#109, sql-sqlscript.md §4.11)
+// ---------------------------------------------------------------------------
+const FILTER_WILDCARD = [
+  'STRUCTURED FILTER USER_DATA_VIEW_FILTER_WILDCARD',
+  'FOR SELECT ON USER_DATA_VIEW',
+  "ESCAPE '\'",
+  'LIKE "USER\_Data\_VIEW1%", "USER\_Data\_VIEW2%"',
+  'NOT LIKE "USER_Data_VIEW1\%"',
+  'WHERE USER_DATA_VIEW.USER_NAME = CURRENT_USER',
+].join('\n');
+
+test('structured filter: the documented forms, CREATE STRUCTURED FILTER and a cursor FOR SELECT stay valid', () => {
+  const valid: Array<[string, string]> = [
+    ['hdbstructuredfilter', 'STRUCTURED FILTER SF_T2_VIEW FOR SELECT ON DYNAMIC_T1_VIEW CONDITION PROVIDER PROC_DYNAMIC_T2_VIEW'],
+    ['hdbstructuredfilter', 'STRUCTURED FILTER F FOR SELECT ON V WHERE V.USER_NAME = CURRENT_USER'],
+    ['hdbstructuredfilter', 'STRUCTURED FILTER "S"."F" FOR SELECT ON "S"."V", "S"."W" WHERE A = 1 AND B IN (1, 2)'],
+    ['hdbstructuredfilter', 'STRUCTURED FILTER F FOR SELECT WHERE A = 1'],
+    ['hdbstructuredfilter', 'STRUCTURED FILTER F FOR SELECT LIKE "V%" NOT LIKE "V1%" CONDITION PROVIDER S.P'],
+    ['hdbstructuredfilter', FILTER_WILDCARD],
+    ['hdbstructuredfilter', 'structured filter f for select on v condition provider p'],
+    ['hdbremotetablereplica', 'REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"'],
+    ['hanasql', 'CREATE STRUCTURED FILTER F FOR SELECT ON V CONDITION PROVIDER P;'],
+    ['hanasql', 'ALTER STRUCTURED FILTER F FOR SELECT ON V, W CONDITION PROVIDER P;'],
+  ];
+  for (const [lang, src] of valid) assert.deepEqual(blamed(lang, src), [], src);
+  // The header skip is limited to STRUCTURED FILTER: a cursor query is still a SELECT list.
+  assert.ok(blamed('hanasql', doBlock('  DECLARE CURSOR c FOR SELECT a b c FROM t;')).includes('HANA-SYN-023:c'));
+});
+
+test('structured filter: missing clauses and misplaced wildcard lists are reported with exact spans', () => {
+  const cases: Array<[string, string]> = [
+    ['STRUCTURED FILTER F ON V WHERE A = 1', "HANA-SYN-025:F|Incomplete structured filter: missing 'FOR SELECT' after 'F'."],
+    ['STRUCTURED FILTER F WHERE A = 1', 'HANA-SYN-025:F'],
+    ['STRUCTURED FILTER F', 'HANA-SYN-025:F'],
+    ['STRUCTURED FILTER F FOR ON V WHERE A = 1', "HANA-SYN-025:FOR|Incomplete structured filter: missing 'SELECT' after 'FOR'."],
+    [
+      'STRUCTURED FILTER F FOR SELECT ON V',
+      "HANA-SYN-025:V|Incomplete structured filter: missing 'WHERE <condition>' or 'CONDITION PROVIDER <procedure>' after 'V'.",
+    ],
+    ['STRUCTURED FILTER F FOR SELECT ON V, W', 'HANA-SYN-025:W'],
+    ['STRUCTURED FILTER F FOR SELECT ON', 'HANA-SYN-025:ON'],
+    ['STRUCTURED FILTER F FOR SELECT ON V WHERE', 'HANA-SYN-025:WHERE'],
+    ['STRUCTURED FILTER F FOR SELECT ON V CONDITION PROVIDER', 'HANA-SYN-025:PROVIDER'],
+    ["STRUCTURED FILTER F FOR SELECT ESCAPE '\' WHERE A = 1", "HANA-SYN-025:'\'"],
+    ['STRUCTURED FILTER F FOR SELECT ON V NOT LIKE "V%" WHERE A = 1', "HANA-SYN-042:NOT LIKE|'NOT LIKE' requires a preceding 'LIKE' list in a structured filter."],
+    ['STRUCTURED FILTER F FOR SELECT NOT  LIKE "V%" WHERE A = 1', 'HANA-SYN-042:NOT  LIKE'],
+    ["STRUCTURED FILTER F FOR SELECT LIKE 'V%' WHERE A = 1", "HANA-SYN-042:'V%'"],
+    ['STRUCTURED FILTER F FOR SELECT LIKE "S"."V%" WHERE A = 1', 'HANA-SYN-042:.'],
+    ['STRUCTURED FILTER F FOR SELECT ON V CONDITION P', 'HANA-SYN-042:P'],
+    ['STRUCTURED FILTER F FOR SELCT ON V WHERE A = 1', 'HANA-SYN-021:SELCT'],
+    ['STRUCTURED FILTER F FOR SELECT ON V WHER A = 1', 'HANA-SYN-021:WHER'],
+  ];
+  for (const [src, expected] of cases) {
+    const [want, message] = expected.split('|');
+    const diags = syntaxDiags('hdbstructuredfilter', src);
+    assert.deepEqual(diags.map((d) => `${d.ruleId}:${src.slice(d.start, d.end)}`), [want], src);
+    if (message) assert.equal(diags[0].message, message, src);
+  }
+  const typo = syntaxDiags('hdbstructuredfilter', 'STRUCTURED FILTER F FOR SELCT ON V WHERE A = 1')[0];
+  assert.equal(applyTextEdits('STRUCTURED FILTER F FOR SELCT ON V WHERE A = 1', typo.fixes[0].edits), 'STRUCTURED FILTER F FOR SELECT ON V WHERE A = 1');
+  assert.deepEqual(blamed('hanasql', 'CREATE STRUCTURED FILTER F FOR SELECT ON V;'), ['HANA-SYN-025:V']);
+});
+
+test('remote table replica: a missing target, ON clause or virtual table is reported', () => {
+  const cases: Array<[string, string]> = [
+    ['REMOTE TABLE REPLICA "TARGET_TABLE"', `HANA-SYN-025:"TARGET_TABLE"|Incomplete remote table replica: missing 'ON <virtual_table>' after '"TARGET_TABLE"'.`],
+    ['REMOTE TABLE REPLICA ON "V"', 'HANA-SYN-025:REPLICA'],
+    ['REMOTE TABLE REPLICA "T" ON', 'HANA-SYN-025:ON'],
+    ['REMOTE TABLE REPLICA "T" "V"', `HANA-SYN-042:"V"|Unexpected '"V"' after remote table replica target; expected 'ON'.`],
+    ['REMOTE TABLE REPLICA "T" ON "V" X', 'HANA-SYN-042:X'],
+  ];
+  for (const [src, expected] of cases) {
+    const [want, message] = expected.split('|');
+    const diags = syntaxDiags('hdbremotetablereplica', src);
+    assert.deepEqual(diags.map((d) => `${d.ruleId}:${src.slice(d.start, d.end)}`), [want], src);
+    if (message) assert.equal(diags[0].message, message, src);
+  }
+});

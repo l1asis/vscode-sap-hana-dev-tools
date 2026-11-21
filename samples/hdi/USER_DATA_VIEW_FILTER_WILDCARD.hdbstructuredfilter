@@ -1,0 +1,7 @@
+-- Wildcard structured filter: the views selected by LIKE, minus NOT LIKE, are filtered by user name.
+STRUCTURED FILTER USER_DATA_VIEW_FILTER_WILDCARD
+FOR SELECT ON USER_DATA_VIEW
+ESCAPE '\'
+LIKE "USER\_Data\_VIEW1%", "USER\_Data\_VIEW2%"
+NOT LIKE "USER_Data_VIEW1\%"
+WHERE USER_DATA_VIEW.USER_NAME = CURRENT_USER
