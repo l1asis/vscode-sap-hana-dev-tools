@@ -2,7 +2,8 @@
 
 > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/007_5_Defining_the_Data_Model_in_XS_Advanced.md (Pages 272–275, 498–503)
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/009_pages_241_270.md (Pages 241–270: _Roles (.hdbrole and .hdbroleconfig)_)
-> Source: `@sap/hdi-deploy` 5.7.0 (npm, outside the corpus, #121): `README.md` § _.hdbgrants Files_; `lib/privileges/privilege_utils.js` (`validateGrants`, `handlePrivileges`); `CHANGELOG.md` 3.0.0, 5.2.3
+> Source: @sap/hdi-deploy@5.7.0 (npm, outside the corpus, #121): `README.md` § _.hdbgrants Files_; `lib/privileges/privilege_utils.js` § `validateGrants`, `handlePrivileges`; `CHANGELOG.md` § 3.0.0, § 5.2.3
+> Source: https://github.com/sap-tutorials/Tutorials/blob/master/tutorials/xsa-create-user-provided-anonymous-service/xsa-create-user-provided-anonymous-service.md (SAP tutorial, outside the corpus, #121): § Grant privileges to the schema (`"reference": "PLAIN"`)
 
 Layout rules: `json-formatting.md`. Security checks: `security-rules.md` (`HANA-SEC-030` .. `-033` for roles, `-040` .. `-042` for grants). Classic `.hdbrole` DSL and its migration to this JSON format: `hdbrole-formatting.md`, `migration-xsc-to-hdi.md` §2.4. Completion and hover: `src/sql/artifact-intellisense.ts` (§5).
 

@@ -14,6 +14,8 @@ The `text.xml.hana` grammar covers every XML-based design-time artifact. It adds
 
 ## 1. File Extensions & Scope Name
 
+> Source: https://github.com/SAP-archive/hana-shine/blob/main/Tutorials/SHINE-Procedures/README.md (SAP SHINE tutorial, outside the corpus, #118): § Procedures (`.procedure` is XML)
+
 | Attribute | Value |
 | :--- | :--- |
 | **TextMate `scopeName`** | `text.xml.hana` |
@@ -36,12 +38,13 @@ The `text.xml.hana` grammar covers every XML-based design-time artifact. It adds
 | `.hdbtextminingconfig`, `.textminingconfig` `[XSC]` | `hdbtextminingconfig` | `[XSA]` `[HDI]` | `com.sap.hana.di.textminingconfig` | not printed ² | none |
 | `.hdbdecisiontable`, `.hdbruldec`, `.decrule` | `hdbdecisiontable` | `[XSC]` | Repository | `DecisionTable:decisionTable` ¹ | `artifacts/xsc-legacy-artifacts.md` |
 | `.xswidget` | `xswidget` | `[XSC]` | Repository | not printed ² | `artifacts/xsc-legacy-artifacts.md` |
-| `.procedure` | `xscprocedure` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` |
+| `.procedure` | `xscprocedure` | `[XSC]` | Repository | not printed ²,⁴ | `artifacts/artifact-registry.md` |
 | `.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario` | `xscxmlmodel` | `[XSC]` | Repository | not printed ² (`.aflpmml`: DMG `PMML`) | `artifacts/artifact-registry.md` |
 
 ¹ Not printed in `research/refs/extracted/`. The root shown is the SAP HANA Studio export format (`artifacts/xsc-modeled-views.md` §2 lists its provenance).
 ² Not printed in the corpus (the Text Analysis Developer Guide and the UI Integration Services guide it refers to are not extracted). Only the XML well-formedness of §5 applies.
 ³ From `grammars/cgul-text-analysis.md` §5.2 / §5.3. The element schema itself is not printed in the extracted corpus.
+⁴ Outside the corpus, SAP's SHINE tutorial confirms that "the .procedure file format was used which was XML based" (replaced by `.hdbprocedure` in SPS 07). No public file shows the root element. Searched without a hit: GitHub code search and the SAP sample repositories listed as E3 in `artifacts/artifact-registry.md` §1 (#118).
 
 **Platform notes:**
 

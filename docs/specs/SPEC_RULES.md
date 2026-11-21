@@ -14,9 +14,39 @@ You are extracting compiler-grade, machine-actionable technical specifications f
 4. **Source Traceability:** At the top of every section, include a blockquote citing the exact extracted source file and page range (and extracted diagram PNG when distilling visual rules):
    `> Source: research/refs/extracted/<guide_folder>/<chapter_file>.md (Pages X–Y)`
    `> Source: research/refs/extracted/<guide_folder>/images/<image_file>.png (Page X)`
+
+   A source outside the corpus (rule 8) is cited with its version and the issue that needed it:
+
+   `> Source: <package>@<version> (npm, outside the corpus, #N): <file> § <section>`
+   `> Source: <URL> (<product> <release>, outside the corpus, #N): § <section> (Page X)`
 5. **Incremental Merging:** Never overwrite existing rules in a `docs/specs/` file when processing a new guide. Merge new keywords, edge cases, or version differences into the existing specification.
 6. **Visual & Diagram Distillation:** When an extracted chapter contains `![Figure ...](./images/...)` links or `images_catalog.md` entries (such as PlanViz `Before` / `After` query plans, execution engine stacks, Calculation View node mappings, or architecture flows), inspect the referenced PNG and distill its rules, transformations, or AST constraints into structured prose, tables, or code fences inside `docs/specs/`. Never copy or embed raw PNGs from `research/` into `docs/specs/`.
 7. **Custom-PDF Clipping Verification:** SAP Dynamic Custom PDFs occasionally clip wide `<pre>` code lines at the right page margin. Whenever a syntax rule or code example appears truncated mid-token in a Custom PDF chapter, cross-check the corresponding prebuilt `_en.pdf` guide (if available) or live SAP Help Portal topic before encoding the spec.
+8. **External Sources:** The corpus is the default source. Look outside it, without asking first, only when the corpus:
+   - never mentions the suffix, key, value or statement in question;
+   - mentions it but prints no syntax, schema or example;
+   - contradicts itself (`.hdbconfig` next to `.hdiconfig` for the same file);
+   - or when an issue asks for a check outside the corpus.
+
+   Do not use outside sources to add detail where the corpus already gives a clear answer.
+
+   **Sources, strongest first:**
+
+   | Tier | Source | Pinned by |
+   | :--- | :--- | :--- |
+   | 1 | Source code and documentation shipped in an SAP tool (`@sap/hdi-deploy`, `@sap/cds-compiler`, ...) | `<package>@<version>` and the file path |
+   | 2 | SAP Help Portal topics and SAP PDF guides | URL and product release (`SAP HANA Platform 2.0 SPS 02`) |
+   | 3 | Repositories of the `SAP`, `SAP-samples`, `SAP-archive` and `sap-tutorials` GitHub organizations | repository, path and commit or branch |
+   | 4 | SAP Community posts, third-party blogs and books | URL. Supporting evidence only: never the only source of a spec rule |
+
+   When sources disagree, the behaviour of the shipped tool (tier 1) wins over documentation, and the newer release wins over the older one. Record the conflict in the spec next to the rule that depends on it; do not resolve it silently.
+
+   **Negative results are findings.** When nothing is found, write what was searched (sources, queries, versions) in the issue and in the spec row that depends on it (for example the Reason column of `artifacts/artifact-registry.md` §3). Leave the item unregistered or blocked; never guess a format.
+
+   **Safety:**
+   - Search queries never contain project, user or customer details.
+   - Downloaded packages and files go into a fresh scratch folder outside the repository. They are read, never installed or run (`npm pack`, not `npm install`).
+   - Nothing from outside the corpus is copied into `research/` or committed. Specs keep only the distilled rule and its citation (rule 4).
 
 ---
 

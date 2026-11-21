@@ -34,6 +34,9 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | CM | `hana-cloud_SAP_HANA_Cloud_Migration_Guide/004_pages_91_120.md` (Pages 91–120) |
 | X1 | `SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/007_5_Defining_the_Data_Model_in_XS_Advanced.md` §5.2.1 _HDI Deployer_ (Pages 251–275) |
 | G-SQL, G-XSODATA | `docs/specs/grammars/sql-sqlscript.md`, `docs/specs/grammars/xsodata.md` |
+| E1 | `@sap/hdi-deploy@5.7.0` (npm, outside the corpus, #116): `README.md`, `lib/content.js`, `lib/zdm/` |
+| E2 | https://help.sap.com/doc/28efe66a0e694712bd81994bcc49522c/2.0.2.0/en-US/Hadoop_Integration.pdf (SAP HANA Platform 2.0 SPS 02, outside the corpus, #117): § 1.5.1 _Create a Remote Source_ (Page 11) |
+| E3 | Searched without a hit (#117): SAP Help Portal, SAP Community, GitHub code search, `SAP-archive/hana-shine`, `SAP-samples/xsc-xsa-migration`, `codbex/codbex-kronos`, `@sap/hdi-deploy@5.7.0` |
 | A-HDICONFIG, A-FABRIC, A-VPKG, A-LEGACY, A-VIEWS, A-TARGET | `docs/specs/artifacts/hdiconfig.md`, `hdbfabricvirtualtable.md`, `hdbvirtualpackage.md`, `xsc-legacy-artifacts.md`, `xsc-modeled-views.md`, `hdi-target-configs.md` |
 
 | Column | Values |
@@ -191,11 +194,11 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.tags` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.tabledata.properties` | Generic tag-style properties. | M1, A-HDICONFIG |
 | `.txt` | `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.copyonly` | Any suffix mapped to the copy-only plug-in is deployed as a plain file. | C1 |
 | `.jar` | `[XSA]` `[HDI]` | `com.sap.hana.di.virtualfunctionpackage.hadoop` | Binary Hadoop archive (deprecated plug-in). | C1 |
-| `.hdbconfig` | — | — | Documentation typo of `.hdiconfig`: H3 introduces "the container-configuration file `.hdbconfig`" right after naming the mandatory suffix `.hdiconfig`. | H3 |
-| `.hdbnamespace` | — | — | Documentation spelling of `.hdinamespace` (same description, same naming rules). | H3, X1 |
+| `.hdbconfig` | — | — | Documentation typo of `.hdiconfig`: H3 introduces "the container-configuration file `.hdbconfig`" right after naming the mandatory suffix `.hdiconfig`. The HDI Deployer reads only `.hdiconfig`. | H3, E1 |
+| `.hdbnamespace` | — | — | Documentation spelling of `.hdinamespace` (same description, same naming rules). The HDI Deployer reads only `.hdinamespace`. | H3, X1, E1 |
 | `.hdbroles` | — | — | Plural of `.hdbrole` in running text. | M1 |
-| `.hdbviewcache` | `[XSC]` `[HDI]` | — | View cache. The corpus has only the migration-table row: no syntax, no plug-in. | M1 |
-| `.hdbremotesource` | `[XSC]` | — | Remote source for Hadoop. No syntax in the corpus. In HDI an administrator creates remote sources. | M1 |
+| `.hdbviewcache` | `[XSC]` `[HDI]` | — | View cache. The corpus has only the migration-table row: no syntax, no plug-in. No format found outside the corpus either. | M1, E3 |
+| `.hdbremotesource` | `[XSC]` | — | Remote source for Hadoop. No syntax in the corpus. In HDI an administrator creates remote sources. The Hadoop Integration guide creates it with `CREATE REMOTE SOURCE` only; no file format found. | M1, E2, E3 |
 | `.hdbdcs` | `[XSA]` `[HDI]` | — | Must be undeployed before migrating to SAP HANA Cloud. No syntax in the corpus. | CM |
 | `.project`, `.jsdtscope` | `[XSC]` | — | Eclipse / SAP HANA Studio project descriptors (`.project`, `.settings/.jsdtscope`; M2 spells it `*.jdtscope`). No function in VS Code (#119). | S1, M2 |
 | `.regiignore` | `[XSC]` | — | Ignore list of the SAP HANA Studio Repository Team Provider. No function in VS Code (#119). | M2 |
