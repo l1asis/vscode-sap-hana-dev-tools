@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HDI Deployer undeploy allowlist (undeploy.json)",
+  "description": "Top-level array of the design-time files the HDI Deployer may undeploy. Paths are relative to the root of the db/ module and use '/' as the delimiter (docs/specs/artifacts/artifact-registry.md).",
+  "type": "array",
+  "uniqueItems": true,
+  "items": {
+    "type": "string",
+    "minLength": 1,
+    "pattern": "^(?!/)[^\\\\]+$",
+    "patternErrorMessage": "Use a path relative to the db/ module root with '/' delimiters, for example \"src/Table.hdbtable\".",
+    "description": "Design-time file to undeploy, for example \"src/Table.hdbtable\"."
+  }
+}

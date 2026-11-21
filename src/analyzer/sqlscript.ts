@@ -1506,6 +1506,7 @@ export function analyzeSqlScript(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
       (languageId === 'hdbprocedure' ||
         languageId === 'hdbfunction' ||
         languageId === 'hdbtablefunction' ||
+        languageId === 'hdbscalarfunction' ||
         targetPlatform === 'hdi' ||
         targetPlatform === 'cloud')
     ) {

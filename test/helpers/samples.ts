@@ -29,13 +29,32 @@ export function walkSamples(opts: { includeBroken: boolean }, dir: string = SAMP
   return out.sort();
 }
 
-/** The VS Code language ID of a sample file, or `undefined` for docs and data files. */
+interface PackageLanguage {
+  readonly id: string;
+  readonly extensions?: readonly string[];
+  readonly filenames?: readonly string[];
+}
+
+/** `package.json` suffix / file name -> language ID, as VS Code resolves it (aliases such as `.searchruleset` included). */
+const LANGUAGE_BY_SUFFIX: ReadonlyMap<string, string> = (() => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8')) as {
+    contributes: { languages: PackageLanguage[] };
+  };
+  const map = new Map<string, string>();
+  for (const lang of pkg.contributes.languages) {
+    for (const key of [...(lang.extensions ?? []), ...(lang.filenames ?? [])]) {
+      if (!map.has(key.toLowerCase())) map.set(key.toLowerCase(), lang.id);
+    }
+  }
+  return map;
+})();
+
+/** The VS Code language ID of a sample file, or `undefined` for docs, data and unregistered files. */
 export function sampleLanguageId(file: string): string | undefined {
-  const base = path.basename(file);
-  const ext = path.extname(base).toLowerCase() || (base.startsWith('.') ? base.toLowerCase() : '');
+  const base = path.basename(file).toLowerCase();
+  const ext = path.extname(base) || (base.startsWith('.') ? base : '');
   if (!ext || ext === '.md' || ext === '.csv') return undefined;
-  if (ext === '.sql') return 'hanasql';
-  return ext.slice(1);
+  return LANGUAGE_BY_SUFFIX.get(base) ?? LANGUAGE_BY_SUFFIX.get(ext) ?? ext.slice(1);
 }
 
 /** Repository-relative path with forward slashes (stable in messages on every OS). */

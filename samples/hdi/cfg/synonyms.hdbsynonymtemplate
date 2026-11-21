@@ -1,0 +1,8 @@
+{
+  "EXT_TABLE1": {
+    "target": {
+      "object": "TABLE1",
+      "grantor": "ext-service"
+    }
+  }
+}

@@ -62,13 +62,13 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
 }
 ```
 
-## Supported File Types (95 Extensions)
+## Supported File Types (115 Extensions)
 
 ### 1. SQL, SQLScript & Procedural Artifacts
 
 | Extensions | Support Details |
 | :--- | :--- |
-| `.sql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbtrigger` | Full HANA SQL & SQLScript grammar, procedural blocks, `CE_*` functions, and `SQLSCRIPT_*` library calls |
+| `.sql`, `.hdbprocedure`, `.hdbfunction`, `.hdbtablefunction`, `.hdbscalarfunction`, `.hdbtrigger` | Full HANA SQL & SQLScript grammar, procedural blocks, `CE_*` functions, and `SQLSCRIPT_*` library calls |
 | `.hdbindex`, `.hdbfulltextindex`, `.hdbconstraint`, `.hdbvirtualtable`, `.hdbtabletype` | DDL highlighting and SQL formatting |
 | `.hdbmigrationtable` | HDI migration table SQL plus `== version = N` / `== migration = N` header markers |
 | `.hdbstructuredprivilege`, `.hdbstructuredfilter`, `.hdbresultcache`, `.hdbstatistics`, `.hdbsystemversioning`, `.hdbschedulerjob`, `.hdbremotetablereplica`, `.hdbcollection`, `.hdbcollectionindex`, `.hdbcollectionadjindex`, `.hdbfabricvirtualtable`, `.hdblibrary`, `.hdbprojectionview` | HDI headerless SQL artifacts (highlighted and formatted without requiring `CREATE`) |
@@ -98,10 +98,21 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
 | Extensions | Support Details |
 | :--- | :--- |
 | `.hdbrole` | Both XS Classic `role x::y { ... }` syntax and HDI JSON role definitions |
-| `.hdbgrants`, `.hdbrevokes`, `.hdbroleconfig`, `.hdbsynonymconfig`, `.hdbpublicsynonym`, `.hdbvirtualtableconfig`, `.hdbfabricvirtualtableconfig`, `.hdblogicalschemaconfig`, `.hdbprojectionviewconfig`, `.hdbtabledata`, `.hdbeshconfig`, `.hdiconfig`, `.hdinamespace` | Schema-aware HDI JSON / JSONC configuration keys (with `//` comment support; `.hdiconfig` also highlights `"properties"` and `"tags"` plug-in keys) |
-| `.hdbafllangprocedure`, `.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig`, `.hdbvirtualpackage`, `.hdbvirtualpackagehadoop`, `.hdbvirtualpackagesparksql`, `.hdbmrjob` | Specialized HDI JSON / JSONC configuration and virtual package / MapReduce job artifacts |
+| `.hdbgrants` (also `.hdbsynonymgrantor`), `.hdbrevokes`, `.hdbroleconfig`, `.hdbsynonymconfig` (also `.hdbsynonymtemplate`), `.hdbpublicsynonym`, `.hdbvirtualtableconfig`, `.hdbfabricvirtualtableconfig`, `.hdblogicalschemaconfig`, `.hdbprojectionviewconfig`, `.hdbtabledata`, `.hdbeshconfig`, `.hdiconfig`, `.hdinamespace` | Schema-aware HDI JSON / JSONC configuration keys (with `//` comment support; `.hdiconfig` also highlights `"properties"` and `"tags"` plug-in keys) |
+| `.hdbafllangprocedure`, `.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig`, `.hdbvirtualpackage`, `.hdbvirtualpackagehadoop`, `.hdbvirtualpackagesparksql`, `.hdbmrjob` (also `.hdbhadoopmrjob`, `.hdbrmjob`) | Specialized HDI JSON / JSONC configuration and virtual package / MapReduce job artifacts |
 | `.hdbtextrule`, `.hdbtextinclude`, `.hdbtextlexicon` | Text analysis extraction rules (CGUL directives `#include`, `#lexicon`, `#define`, `#group`, `<STEM:x>`, `%(name)`) |
-| `.calculationview`, `.hdbcalculationview`, `.attributeview`, `.analyticview`, `.analyticprivilege`, `.hdbanalyticprivilege`, `.hdbdecisiontable`, `.xswidget`, `.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig`, `.hdbsearchruleset`, `.hdbreptask`, `.hdbflowgraph` | Automatically associated with VS Code's XML grammar |
+| `.calculationview`, `.hdbcalculationview`, `.attributeview`, `.analyticview`, `.analyticprivilege`, `.hdbanalyticprivilege`, `.hdbdecisiontable` (also `.hdbruldec`, `.decrule`), `.xswidget`, `.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig` (also `.textminingconfig`), `.hdbsearchruleset` (also `.searchruleset`), `.hdbreptask`, `.hdbflowgraph` | Automatically associated with VS Code's XML grammar |
+| `.procedure`, `.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario` | Older XS Classic XML models (XML highlighting) |
+| `.proceduretemplate`, `.hdbtextbundle` | XS Classic procedure templates (SQLScript with `<Parameter>` placeholders) and UI text bundles |
+
+### 5. Project Files
+
+| Files | What You Get |
+| :--- | :--- |
+| `.hdiignore` | HDI Deployer ignore list opens as an ignore file |
+| `undeploy.json` | HDI Deployer undeploy allowlist, validated against a JSON schema |
+
+Renamed or HDI-unsupported XS Classic suffixes (`.searchruleset`, `.hdbtablefunction`, `.attributeview`, ...) show a `HANA-MIG-013` hint, with a QuickFix that renames the file where the content can stay as it is. The full list of suffixes and what each one gets is in [`docs/specs/artifacts/artifact-registry.md`](docs/specs/artifacts/artifact-registry.md).
 
 ## Roadmap & Feedback
 

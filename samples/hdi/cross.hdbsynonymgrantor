@@ -1,0 +1,8 @@
+{
+  "ext-service": {
+    "object_owner": {
+      "object_privileges": [{ "schema": "EXT", "name": "TABLE1", "privileges": ["SELECT"] }]
+    },
+    "application_user": { "system_privileges": ["DATA ADMIN"] }
+  }
+}

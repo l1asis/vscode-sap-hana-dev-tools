@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SearchRuleSet:ruleSet xmlns:SearchRuleSet="http://www.sap.com/ndb/SearchRuleSet.ecore" scoreSelection="firstRule">
+  <attributeView name="p1.p2.p3::aView">
+    <keyColumn name="id1"/>
+    <keyColumn name="id2"/>
+  </attributeView>
+  <rule name="Rule 1">
+    <column minFuzziness="0.7" name="firstName" weight="0.9">
+      <textColumnOptions abbreviationSimilarity="0.9"/>
+    </column>
+    <column minFuzziness="1.0" name="lastName">
+      <textColumnOptions/>
+    </column>
+  </rule>
+</SearchRuleSet:ruleSet>

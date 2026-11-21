@@ -1,0 +1,9 @@
+{
+  "name": "SAP HANA Procedure Template (XS Classic)",
+  "scopeName": "source.proceduretemplate",
+  "patterns": [
+    {
+      "include": "source.hanasql"
+    }
+  ]
+}

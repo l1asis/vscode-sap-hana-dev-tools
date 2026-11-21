@@ -153,6 +153,12 @@ export function registerAnalyzerFeatures(): vscode.Disposable[] {
               span.newText
             );
           }
+          if (fix.rename) {
+            const target = document.uri.with({
+              path: document.uri.path.replace(/\.[^./]+$/, fix.rename.toExtension),
+            });
+            edit.renameFile(document.uri, target, { overwrite: false });
+          }
           action.edit = edit;
           action.diagnostics =
             matchingVsDiags.length > 0

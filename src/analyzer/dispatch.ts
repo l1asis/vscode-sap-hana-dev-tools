@@ -8,6 +8,7 @@ import { analyzeCalculationView } from './calculationview';
 import { analyzeMigration } from './migrator';
 import { analyzeRolesAndGrants, analyzeXsodata } from './roles-grants';
 import { analyzeSqlScript } from './sqlscript';
+import { analyzeSuffixMigration, SUFFIX_MIGRATION_LANGUAGES } from './suffix-migration';
 import { mapEmbeddedDiagnostics } from './embedded-sql';
 import { analyzeSyntax, classicKvEmbeddedSql } from './syntax';
 import { type AnalyzerContext, type AnalyzerDiagnostic } from './types';
@@ -20,6 +21,7 @@ const SQLSCRIPT_ANALYZER_LANGUAGES = new Set([
   'hdbprocedure',
   'hdbfunction',
   'hdbtablefunction',
+  'hdbscalarfunction',
   'hdblibrary',
   'hdbtrigger',
 ]);
@@ -32,6 +34,7 @@ export const ANALYZER_LANGUAGES: readonly string[] = Array.from(
     ...XSJS_LANGUAGES,
     'calculationview',
     'hdbcalculationview',
+    ...SUFFIX_MIGRATION_LANGUAGES,
   ])
 );
 
@@ -98,6 +101,12 @@ function analyzeSemantics(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
  * on a document in pure TypeScript without any VS Code runtime dependency.
  */
 export function analyzeDocument(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
+  const suffix = analyzeSuffixMigration(ctx);
+  const rest = analyzeByLanguage(ctx);
+  return suffix.length === 0 ? rest : [...suffix, ...rest];
+}
+
+function analyzeByLanguage(ctx: AnalyzerContext): AnalyzerDiagnostic[] {
   const { languageId } = ctx;
 
   if (languageId === 'xsjs' || languageId === 'xsjslib') {

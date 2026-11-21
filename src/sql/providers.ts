@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { SQL_LANGUAGES } from '../formatter/dispatch';
 import { type CaseMode } from '../formatter/options';
 import {
+  ARTIFACT_INTELLISENSE_LANGUAGES,
   getArtifactCompletions,
   getArtifactHover,
   isDesignTimeConfigOrKvMode,
@@ -17,19 +18,9 @@ import {
 } from './intellisense-core';
 
 const SQL_LANGUAGE_SET = new Set<string>([...SQL_LANGUAGES, 'sql']);
-const ARTIFACT_LANGUAGE_IDS: readonly string[] = [
-  'xsaccess',
-  'hdiconfig',
-  'hdbgrants',
-  'hdbrevokes',
-  'hdbrole',
-  'hdbschema',
-  'hdbti',
-  'xshttpdest',
-];
 
 export const ALL_INTELLISENSE_LANGUAGES: readonly string[] = [
-  ...new Set([...SQL_LANGUAGE_SET, ...ARTIFACT_LANGUAGE_IDS]),
+  ...new Set([...SQL_LANGUAGE_SET, ...ARTIFACT_INTELLISENSE_LANGUAGES]),
 ];
 
 function isSqlIntelliSenseEnabled(): boolean {

@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { ANALYZER_LANGUAGES, analyzeDocument } from '../src/analyzer/dispatch';
 import { parseJsonAstWithErrors } from '../src/analyzer/json-parser';
 import { applyTextEdits, DEFAULT_ANALYZER_OPTIONS } from '../src/analyzer/types';
-import { walkSamples } from './helpers/samples';
+import { sampleLanguageId, walkSamples } from './helpers/samples';
 
 const ROOT = fs.existsSync(path.join(__dirname, '..', 'samples'))
   ? path.join(__dirname, '..')
@@ -1707,10 +1707,6 @@ test('Options & suppressions control HANA-SYN-* independently of semantics', () 
 });
 
 test('samples/: zero syntax false positives across all repository SAP HANA artifacts', () => {
-  const extToLang: Record<string, string> = {
-    '.sql': 'hanasql',
-    '.calculationview': 'calculationview',
-  };
   const analyzerLangSet = new Set(ANALYZER_LANGUAGES);
 
   // samples/broken/ is intentionally invalid and checked by test/broken-samples.test.ts instead.
@@ -1726,8 +1722,8 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
     const ext = path.extname(base).toLowerCase() || (base.startsWith('.') ? base.toLowerCase() : '');
     // Skip non-language docs/data or CGUL rule files
     if (!ext || ext === '.md' || ext === '.csv' || ext.startsWith('.hdbtext')) continue;
-    const rawLang = extToLang[ext] ?? ext.slice(1);
-    if (!analyzerLangSet.has(rawLang)) continue;
+    const rawLang = sampleLanguageId(file);
+    if (!rawLang || !analyzerLangSet.has(rawLang)) continue;
     // Skip intentional format-demo files only if they have intentional syntax bugs? No, all samples should be syntactically valid!
     const text = fs.readFileSync(file, 'utf8');
     const diags = syntaxDiags(rawLang, text).filter((d) => d.category === 'syntax');

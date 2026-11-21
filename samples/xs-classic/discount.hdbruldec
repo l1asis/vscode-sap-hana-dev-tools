@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DecisionTable:decisionTable xmlns:DecisionTable="http://www.sap.com/ndb/BiModelRule.ecore" id="discount">
+  <description>Customer Tier Discount Decision Table</description>
+  <dataFoundation>
+    <column name="TIER" sqlType="NVARCHAR" length="20" />
+    <column name="DISCOUNT" sqlType="DECIMAL" precision="5" scale="2" />
+  </dataFoundation>
+</DecisionTable:decisionTable>

@@ -27,6 +27,7 @@
 | `HANA-MIG-010` | `Warning` | `[XSC]` -> `[HDI]` | `.hdbprocedure`, `.hdbfunction` | Yes | Remove `DEFAULT SCHEMA <schema>` clause disallowed in schema-agnostic HDI deployments. |
 | `HANA-MIG-011` | `Warning` | `[XSC]` -> `[HDI]` | `.hdbprocedure`, `.hdbview`, `.xsjs`, `.xsodata` | Yes | Remove hardcoded `_SYS_BIC` or explicit schema prefixes (`"SCHEMA"."pkg::OBJ"`). |
 | `HANA-MIG-012` | `Information` | `[XSC]` -> `[HDI]` | `.hdbschema`, `.hdbti`, `.xsodata` | Partial | Obsolete `.hdbschema` / `.hdbti` -> `.hdbtabledata` / `.xsodata` `"/" -> "::"` & schema cleanup. |
+| `HANA-MIG-013` | `Information` | `[XSC]` -> `[HDI]` | renamed, replaced or unsupported suffixes (`docs/specs/artifacts/artifact-registry.md`) | Rename | The file suffix is renamed, replaced or not supported in HDI. A file-rename QuickFix where the content stays valid. |
 | `HANA-MIG-020` | `Warning` | `[XSC]` -> `[XSA]` | `.xsjs`, `.xsjslib` | No | Deprecated/unsupported XS Classic APIs (`$.repo`, `$.config`, `assertSystemPrivilege`). |
 
 *(Note: Structural conversion diagnostics `HANA-MIG-001`–`004` and `006` fire as low-noise `Information` hints on classic artifacts or when reverse-converting HDI artifacts via command palette `hanasql.migrate.*`, enabling single-click preview/apply CodeActions without spamming errors in pure XSC workspaces.)*
@@ -230,6 +231,43 @@ XS Classic attribute views become calculation views with `dataCategory="DIMENSIO
   - `.hdbschema`: In HDI, database schemas are managed by the container (`#OO` / RT schema); `.hdbschema` files are obsolete (`004_2_Migrating_...md:3998-4008`).
   - `.hdbti`: Replaced by HDI JSON `.hdbtabledata` (`004_2_Migrating_...md:3837-3846`).
   - `.hdbstructure`: Replaced by HDI DDL `.hdbtabletype` (`HANA-MIG-006` QuickFix converts structure columns -> `TYPE "<name>" AS TABLE (...)`).
+
+### `HANA-MIG-013` Renamed, Replaced or Unsupported Design-Time Suffix
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide/052_Migrated_XS_Database_Objects.md (Pages 65–67)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide/053_hdbtable.md (Page 68)
+
+- **Severity:** `Information`
+- **Platform Scope:** `[XSC]` -> `[HDI]`. Off when `hanasql.analyze.migration` is `false` or `hanasql.analyze.targetPlatform` is `xsc`. Suppressible with `hanasql-analyze-disable`.
+- **Scope (#120):** the rule covers every suffix the migration guide marks as renamed, replaced or unsupported in HDI, including suffixes registered before #82 (`.calculationview`, `.hdbtablefunction`, `.analyticprivilege`, `.attributeview`, `.analyticview`, `.hdbtid`, `.hdbtim`, `.hdbdecisiontable`). This matches `HANA-MIG-001` .. `-006` and `-012`, which also report XS Classic files under `targetPlatform: "auto"`. XS Classic-only workspaces set `hanasql.analyze.targetPlatform` to `xsc`.
+- **Target Extensions:** every suffix whose `artifact-registry.md` §2 Migrator column lists `HANA-MIG-013` (`SUFFIX_MIGRATIONS` in `src/analyzer/suffix-migration.ts`). Suffixes handled by `HANA-MIG-005`, `-006` and `-012` (`.hdbdd`, `.hdbstructure`, `.hdbschema`, `.hdbti`) are not repeated.
+- **AST / Lexical Trigger:** the last suffix of the document's file path (case-insensitive). The content is not inspected, so the rule needs a file path and fires on untitled documents never.
+- **Diagnostic Span & Message:** the first line. `'<suffix>' <reason>`, e.g. `'.searchruleset' is the XS Classic suffix of search rule sets. HDI uses '.hdbsearchruleset' with the same syntax.`
+- **QuickFix:** `Rename to <suffix>`, a file rename without text edits (`CodeFixSuggestion.rename`), offered only when the registry status is `renamed → <suffix>`:
+
+| Suffix | Status | QuickFix |
+| :--- | :--- | :--- |
+| `.calculationview` | `renamed → .hdbcalculationview` (same syntax) | `Rename to .hdbcalculationview` |
+| `.searchruleset` | `renamed → .hdbsearchruleset` (same syntax) | `Rename to .hdbsearchruleset` |
+| `.textminingconfig` | `renamed → .hdbtextminingconfig` (same syntax) | `Rename to .hdbtextminingconfig` |
+| `.hdbsynonymgrantor` | `renamed → .hdbgrants` (backwards-compatible alias) | `Rename to .hdbgrants` |
+| `.hdbscalarfunction`, `.hdbtablefunction` | `renamed → .hdbfunction` | `Rename to .hdbfunction` |
+| `.analyticprivilege` | `replaced → .hdbanalyticprivilege` (classical XML privilege must become an SQL analytic privilege) | — |
+| `.attributeview`, `.analyticview` | `replaced → .hdbcalculationview` (`artifacts/xsc-modeled-views.md` §5) | — |
+| `.procedure` | `replaced → .hdbprocedure` (XML format) | — |
+| `.hdbtid`, `.hdbtim` | `replaced → .hdbtabledata` | — |
+| `.dqconfig` | `replaced → .hdbflowgraph` | — |
+| `.hdbhadoopmrjob` | `replaced → .hdbvirtualpackagehadoop` (deprecated plug-in) | — |
+| `.hdbtextbundle`, `.hdbruldec`, `.decrule`, `.hdbdecisiontable`, `.aflpmml`, `.hdbflowgraphtemplate`, `.dataflow`, `.halmscenario` | `unsupported` | — |
+
+  - **Legacy Code (`Before`):** `models/Search.searchruleset`
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+    <SearchRuleSet:ruleSet xmlns:SearchRuleSet="http://www.sap.com/ndb/SearchRuleSet.ecore">
+    ```
+
+  - **Migrated Code (`After`):** the same content in `models/Search.hdbsearchruleset`.
 
 ### `HANA-MIG-020` Unsupported XS Classic Runtime APIs in XSA (`$.repo`, `$.config`, `hasSystemPrivilege`)
 - **Severity:** `Warning`

@@ -1,0 +1,66 @@
+{
+  "name": "SAP HANA Text Bundle (XS Classic)",
+  "scopeName": "source.hdbtextbundle",
+  "patterns": [
+    {
+      "include": "#comment"
+    },
+    {
+      "include": "#property"
+    }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.number-sign.hdbtextbundle",
+      "begin": "^\\s*[#!]",
+      "end": "$",
+      "patterns": [
+        {
+          "name": "keyword.other.directive.hdbtextbundle",
+          "match": "\\b(?:TRANSLATE|NOTRANSLATE)\\b"
+        },
+        {
+          "match": "\\b([XY][A-Z]{3})(?:(,)\\s*(\\d+))?(?=\\s*:)",
+          "captures": {
+            "1": {
+              "name": "storage.type.text-type.hdbtextbundle"
+            },
+            "2": {
+              "name": "punctuation.separator.hdbtextbundle"
+            },
+            "3": {
+              "name": "constant.numeric.max-length.hdbtextbundle"
+            }
+          }
+        }
+      ]
+    },
+    "property": {
+      "begin": "^\\s*((?:\\\\.|[^\\s:=\\\\])+)\\s*([:=]|(?=\\s))",
+      "beginCaptures": {
+        "1": {
+          "name": "support.type.property-name.hdbtextbundle"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.hdbtextbundle"
+        }
+      },
+      "end": "(?<!\\\\)$",
+      "contentName": "string.unquoted.value.hdbtextbundle",
+      "patterns": [
+        {
+          "name": "constant.character.escape.hdbtextbundle",
+          "match": "\\\\u[0-9A-Fa-f]{4}|\\\\."
+        },
+        {
+          "name": "constant.character.escape.line-continuation.hdbtextbundle",
+          "match": "\\\\$"
+        },
+        {
+          "name": "variable.parameter.placeholder.hdbtextbundle",
+          "match": "\\{\\d+\\}"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Application Function Modeler procedure (old format); PMML is the DMG Predictive Model Markup Language -->
+<PMML version="4.1" xmlns="http://www.dmg.org/PMML-4_1">
+  <Header description="Sales forecast"/>
+  <DataDictionary numberOfFields="1">
+    <DataField name="AMOUNT" optype="continuous" dataType="double"/>
+  </DataDictionary>
+</PMML>

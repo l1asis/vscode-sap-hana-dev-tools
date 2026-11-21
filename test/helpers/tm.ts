@@ -309,6 +309,14 @@ function tokenizeLine(line: string, stack: StackEntry[], rootGrammar: TmGrammar)
       if (m[0].length === 0) pos = Math.max(pos, m.index);
     }
   }
+  // As in vscode-textmate, a zero-width end (`$`, `(?<!\\)$`) still closes the region when the last match consumed the line.
+  while (pos >= line.length && stack.length > 0) {
+    const r = rx(stack[stack.length - 1].endSrc);
+    r.lastIndex = line.length;
+    const m = r.exec(line);
+    if (!m || m.index !== line.length || m[0].length !== 0) break;
+    stack.pop();
+  }
   return tokens;
 }
 

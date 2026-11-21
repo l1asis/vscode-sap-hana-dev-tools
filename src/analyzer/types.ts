@@ -23,6 +23,8 @@ export interface CodeFixSuggestion {
   readonly kind: 'quickfix' | 'refactor' | 'source';
   readonly isPreferred?: boolean;
   readonly edits: readonly TextEditSpan[];
+  /** Also rename the document's file, replacing its last suffix (`f.searchruleset` -> `f.hdbsearchruleset`). */
+  readonly rename?: { readonly toExtension: string };
 }
 
 export interface AnalyzerDiagnostic {
