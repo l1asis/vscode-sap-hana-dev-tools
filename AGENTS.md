@@ -17,7 +17,7 @@ VS Code language support, formatters, static analyzers, and tooling for **SAP HA
 
 ## 3. Core Operating Rules
 
-1. **Spec-First Development:** Before implementing or modifying a grammar (`syntaxes/`), formatter, linter rule, or API client (`src/`), read its spec in `docs/specs/`. If missing or incomplete, extract it from `research/refs/extracted/` first following `docs/specs/SPEC_RULES.md`.
+1. **Spec-First Development:** Before implementing or modifying a grammar (`syntaxes/`), formatter, linter rule, or API client (`src/`), read its spec in `docs/specs/`. If missing or incomplete, extract it from `research/refs/extracted/` first following `docs/specs/SPEC_RULES.md`. When the corpus is silent or contradicts itself, research outside it per `SPEC_RULES.md` §1 rule 8.
 2. **Search Before Reading:** Never read entire folders in `research/refs/extracted/` blindly. Use `ripgrep` (`rg -i "<keyword>" research/refs/extracted/`) to locate the exact chapter `.md` file first.
 3. **Never Commit `research/`:** Everything under root `research/` is local scratchpad data and must remain untracked. Only commit distilled specs in `docs/specs/` and updates to `docs/research/CHECKLIST.md`.
 4. **Platform Tagging:** Always distinguish between `[XSC]`, `[XSA]`, `[HDI]`, and `[CLOUD]` syntax variants in specs and code comments.
