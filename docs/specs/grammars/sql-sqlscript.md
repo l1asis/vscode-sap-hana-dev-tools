@@ -626,10 +626,6 @@ REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"
 
 A misspelled clause keyword (`FOR SELCT`, `WHER`) is `HANA-SYN-021` with a QuickFix. A missing filter name, object name, `SELECT` after `FOR`, `WHERE` condition, or virtual table name is `HANA-SYN-025` on the token before the gap. Trailing tokens after the condition, provider or virtual table follow the boundary rule of `HANA-SYN-042`. `ALTER STRUCTURED FILTER` is not parsed (long tail).
 
-**Known gap** (follow-up to #66):
-
-- #110: the formatter breaks the line between `FOR` and `SELECT` and folds `ESCAPE` / `LIKE` / `NOT LIKE` into the `SELECT` clause. The result is still valid, but the layout of §6 is not applied.
-
 ---
 
 ## 5. Embedded Language Injections
@@ -659,7 +655,7 @@ The complete formatter specification (options, layout model, embedded queries, s
     - **`.hdbtabletype` (`TYPE "<name>" AS TABLE ( ... )`):** Root `TYPE` headerless table-type definition formats column definitions one per line and must **not** receive an appended `;`.
     - **`.hdbprojectionview` (`PROJECTION VIEW "<name>" AS SELECT ... FROM ...`):** Root `PROJECTION VIEW` headerless definition formats the `SELECT` query clauses and must **not** receive an appended `;`.
     - **Other HDI headerless root headers:** `COLUMN TABLE`, `ROW TABLE`, `VIEW`, `SEQUENCE`, `TRIGGER`, `LIBRARY`, `INDEX`, `FULLTEXT INDEX`, `FUZZY SEARCH INDEX`, `UNIQUE ... INDEX`, `HASH INDEX`, `BLOCK RANGE INDEX`, `ADJACENCY INDEX`, `SHARED ... REPLICA`, `GRAPH WORKSPACE`, `COLLECTION`, `SCHEDULER JOB`, `VIRTUAL TABLE`, `VIRTUAL PROCEDURE`, `VIRTUAL FUNCTION`, `STATISTICS`, `STRUCTURED PRIVILEGE`, `RESULT CACHE`, `APPLICATION TIME`, `SYSTEM VERSIONING`, `REMOTE TABLE REPLICA`, `STRUCTURED FILTER`.
-    - **`.hdbstructuredfilter` (`STRUCTURED FILTER ... FOR SELECT ... { WHERE <condition> | CONDITION PROVIDER <proc> }`):** one headerless statement. Keep `FOR SELECT` on the header line; `ON`, `ESCAPE`, `LIKE`, `NOT LIKE`, `WHERE` and `CONDITION PROVIDER` each start a line at the header's indentation. No `;` is appended.
+    - **`.hdbstructuredfilter` (`STRUCTURED FILTER ... FOR SELECT ... { WHERE <condition> | CONDITION PROVIDER <proc> }`):** one headerless statement. Keep `FOR SELECT` on the header line; `ON`, `ESCAPE`, `LIKE`, `NOT LIKE`, `WHERE` and `CONDITION PROVIDER` each start a line at the header's indentation. No `;` is appended. The `ON` and `LIKE` lists stay on their clause line. After `WHERE`, the condition is laid out like any `WHERE` clause (`AND` / `OR` breaks, subqueries), and `LIKE` / `NOT` inside it are operators. The catalog `CREATE STRUCTURED FILTER` statement `[CLOUD]` uses the same layout and keeps its `;` (#110).
     - **`.hdbremotetablereplica` (`REMOTE TABLE REPLICA <target> ON <virtual_table>`):** one line, no `;` appended. The plug-in parses a custom syntax, not a SQL statement.
   - Contrast: Catalog DDL (`CREATE PROCEDURE ...;`, `CREATE TYPE ...;`) and standalone DML (`SELECT ...;`) are **not** headerless HDI root statements and **do** receive `;` under `trailingSemicolon: 'add'`.
 - **Safety Guarantees:** Never modify code between `-- hanasql-format off` and `-- hanasql-format on`, never strip comments, and support HDI headerless `.hdbprocedure` / `.hdbfunction` / `.hdbtabletype` / `.hdbprojectionview` / `.hdbtable` / `.hdbview` bodies that omit `CREATE`.
