@@ -13,6 +13,7 @@
 - Note: Minimal `{ application privilege: ...; }` without a leading `role` keyword still contains privilege keywords + `;` instead of JSON `"key":`, so sniffing `role` OR top-level `{` followed by quoted string key cleanly disambiguates both SAP docs forms.
 
 ### Grammar & Tokens
+- **Catalog names `[XSC]`:** `catalog sql object "SCHEMA"."NAME"` and `catalog schema "SCHEMA"` names are SQL delimited identifiers (`docs/specs/grammars/sql-sqlscript.md` §2). Inside `"..."`, `""` is an escaped quote and a backslash is an ordinary character, and a name does not span lines. The offline syntax check follows this rule (`HANA-SYN-001`, `syntax-rules.md`).
 - **Comments:** `// ...` and `-- ...` line comments, plus `/* ... */` block comments; pragmas via `hanasql-format off` / `hanasql-format on`.
 - **Header:**
   ```text

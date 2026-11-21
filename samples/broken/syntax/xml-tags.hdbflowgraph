@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flowgraph:ContainerNode xmlns:flowgraph="http://www.sap.com/ndb/flowgraph" id="app.sales::LOAD_ORDERS">
+  <nodes>
+    <node id="source" type="DataSource">
+  </nodes>
+  <node id="target" type=DataTarget/>
+</flowgraph:ContainerNode>

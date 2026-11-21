@@ -1,0 +1,8 @@
+{
+  "SALES_LOGICAL": {
+    "target": {
+      "schema": "SALES"
+      "object": "ORDERS"
+    }
+  }
+}

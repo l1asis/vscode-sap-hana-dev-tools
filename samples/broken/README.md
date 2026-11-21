@@ -89,6 +89,8 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | :--- | :--- | :--- | :--- |
 | [`cds-lists.hdbcds`](syntax/cds-lists.hdbcds) | `HANA-SYN-023` | error | `Insert ','` |
 | [`cds-members.hdbcds`](syntax/cds-members.hdbcds) | `HANA-SYN-026` | error | `Insert ':'`<br>`Insert ';'` |
+| [`cgul-rules.hdbtextrule`](syntax/cgul-rules.hdbtextrule) | `HANA-SYN-003` | error | — |
+| [`cgul-rules.hdbtextrule`](syntax/cgul-rules.hdbtextrule) | `HANA-SYN-021` | error | `Replace with '#include'` |
 | [`classic-kv.hdbtable`](syntax/classic-kv.hdbtable) | `HANA-MIG-001` | information | `Convert Classic .hdbtable to HDI DDL syntax` |
 | [`classic-kv.hdbtable`](syntax/classic-kv.hdbtable) | `HANA-SYN-022` | error | — |
 | [`classic-view-sql.hdbview`](syntax/classic-view-sql.hdbview) | `HANA-MIG-002` | information | `Convert Classic .hdbview to HDI DDL syntax` |
@@ -103,6 +105,7 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`exec-clauses.hdbprocedure`](syntax/exec-clauses.hdbprocedure) | `HANA-SYN-043` | error | — |
 | [`incomplete-clauses.sql`](syntax/incomplete-clauses.sql) | `HANA-SYN-025` | error | — |
 | [`invalid-characters.sql`](syntax/invalid-characters.sql) | `HANA-SYN-005` | error | `Replace '//' with '--'` |
+| [`json-config.hdblogicalschema`](syntax/json-config.hdblogicalschema) | `HANA-SYN-010` | error | — |
 | [`json-errors.hdiconfig`](syntax/json-errors.hdiconfig) | `HANA-SYN-010` | error | — |
 | [`json-errors.hdiconfig`](syntax/json-errors.hdiconfig) | `HANA-SYN-011` | error | `Remove trailing comma` |
 | [`keyword-typos.sql`](syntax/keyword-typos.sql) | `HANA-SYN-021` | error | `Replace 'WHRE' with 'WHERE'` |
@@ -124,6 +127,11 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`view-lists.hdbview`](syntax/view-lists.hdbview) | `HANA-SYN-023` | error | `Insert ','` |
 | [`view-lists.hdbview`](syntax/view-lists.hdbview) | `HANA-SYN-023` | warning | `Insert ','`<br>`Insert 'AS'` |
 | [`wrong-root.hdbprocedure`](syntax/wrong-root.hdbprocedure) | `HANA-SYN-004` | error | — |
+| [`xml-attribute-value.hdbreptask`](syntax/xml-attribute-value.hdbreptask) | `HANA-SYN-001` | error | — |
+| [`xml-comment.xswidget`](syntax/xml-comment.xswidget) | `HANA-SYN-002` | error | — |
+| [`xml-tags.hdbflowgraph`](syntax/xml-tags.hdbflowgraph) | `HANA-SYN-003` | error | — |
+| [`xml-tags.hdbflowgraph`](syntax/xml-tags.hdbflowgraph) | `HANA-SYN-012` | error | — |
+| [`xmla-block.xsxmla`](syntax/xmla-block.xsxmla) | `HANA-SYN-003` | error | — |
 
 ### `xsjs/`
 

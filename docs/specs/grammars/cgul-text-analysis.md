@@ -43,6 +43,15 @@
 | Escape Sequence | `\\.` | `constant.character.escape.hdbtextrule` | `[XSC]` `[XSA]` `[HDI]` | Escapes meta-characters inside strings, character classes, and tokens |
 | Numeric Literal | `(?<![\w.])-?\d+(?:\.\d+)?\b` | `constant.numeric.hdbtextrule` | `[XSC]` `[XSA]` `[HDI]` | Quantifier bounds and attribute numbers |
 
+**Offline syntax checks** (`src/analyzer/artifact-syntax.ts`, `docs/specs/diagnostics/syntax-rules.md`):
+
+- `HANA-SYN-001`: unterminated `"..."` / `'...'` string. Strings end at the end of the line, and inside `<...>` only `"` starts a string.
+- `HANA-SYN-002`: unterminated `/* */`.
+- `HANA-SYN-003`: unbalanced `( )` / `{ }`, and single-line `< >` tokens and `[ ]` character classes. `=>` / `->` are not closers, and `[...]` content is literal.
+- `HANA-SYN-021`: a misspelled `#` directive at the start of a line, with a typo QuickFix.
+
+The XML files (`.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig`) get the XML checks of `hana-xml.md` §5.
+
 ---
 
 ## 3. Keywords by TextMate Scope

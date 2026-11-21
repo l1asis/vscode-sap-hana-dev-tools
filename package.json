@@ -2207,6 +2207,21 @@
       "[hdbmrjob]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
+      "[hdblogicalschema]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbsysbicsynonym]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualprocedureconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbvirtualfunctionconfig]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
+      "[hdbafllangprocedure]": {
+        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
+      },
       "[xsjs]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },

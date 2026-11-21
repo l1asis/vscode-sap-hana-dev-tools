@@ -30,15 +30,18 @@ The `text.xml.hana` grammar covers every XML-based design-time artifact. It adds
 | `.hdbanalyticprivilege` | `hdbanalyticprivilege` | `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.analyticprivilege` | `Privilege:analyticPrivilege` | none |
 | `.hdbflowgraph` | `hdbflowgraph` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.flowgraph` | `flowgraph:ContainerNode` | none |
 | `.hdbreptask` | `hdbreptask` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.reptask` | `RepTask` | none |
-| `.hdbsearchruleset` | `hdbsearchruleset` | `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.searchruleset` | `SearchRuleSet:ruleSet` | none |
-| `.hdbtextconfig` | `hdbtextconfig` | `[XSC]` `[XSA]` `[HDI]` | `com.sap.hana.di.textconfig` | not printed ² | none |
-| `.hdbtextdict` | `hdbtextdict` | `[XSC]` `[XSA]` `[HDI]` | `com.sap.hana.di.textdictionary` | not printed ² | none |
-| `.hdbtextminingconfig` | `hdbtextminingconfig` | `[XSA]` `[HDI]` | `com.sap.hana.di.textminingconfig` | not printed ² | none |
-| `.hdbdecisiontable` | `hdbdecisiontable` | `[XSC]` | Repository | `DecisionTable:decisionTable` ¹ | `artifacts/xsc-legacy-artifacts.md` |
+| `.hdbsearchruleset`, `.searchruleset` `[XSC]` | `hdbsearchruleset` | `[XSA]` `[HDI]` `[CLOUD]` | `com.sap.hana.di.searchruleset` | `SearchRuleSet:ruleSet` | none |
+| `.hdbtextconfig` | `hdbtextconfig` | `[XSC]` `[XSA]` `[HDI]` | `com.sap.hana.di.textconfig` | `configuration` ³ | `grammars/cgul-text-analysis.md` §5.3 |
+| `.hdbtextdict` | `hdbtextdict` | `[XSC]` `[XSA]` `[HDI]` | `com.sap.hana.di.textdictionary` | `dictionary` ³ | `grammars/cgul-text-analysis.md` §5.2 |
+| `.hdbtextminingconfig`, `.textminingconfig` `[XSC]` | `hdbtextminingconfig` | `[XSA]` `[HDI]` | `com.sap.hana.di.textminingconfig` | not printed ² | none |
+| `.hdbdecisiontable`, `.hdbruldec`, `.decrule` | `hdbdecisiontable` | `[XSC]` | Repository | `DecisionTable:decisionTable` ¹ | `artifacts/xsc-legacy-artifacts.md` |
 | `.xswidget` | `xswidget` | `[XSC]` | Repository | not printed ² | `artifacts/xsc-legacy-artifacts.md` |
+| `.procedure` | `xscprocedure` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` |
+| `.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario` | `xscxmlmodel` | `[XSC]` | Repository | not printed ² (`.aflpmml`: DMG `PMML`) | `artifacts/artifact-registry.md` |
 
 ¹ Not printed in `research/refs/extracted/`. The root shown is the SAP HANA Studio export format (`artifacts/xsc-modeled-views.md` §2 lists its provenance).
-² The corpus refers to the SAP HANA Text Analysis Developer Guide and the UI Integration Services guide, which are not extracted. Only the XML well-formedness of §5 applies.
+² Not printed in the corpus (the Text Analysis Developer Guide and the UI Integration Services guide it refers to are not extracted). Only the XML well-formedness of §5 applies.
+³ From `grammars/cgul-text-analysis.md` §5.2 / §5.3. The element schema itself is not printed in the extracted corpus.
 
 **Platform notes:**
 
@@ -117,13 +120,14 @@ A future injection must keep the XML tokenizer in control of `<`, `&` and the cl
 
 ## 5. Complete EBNF / BNF Productions
 
-Well-formed XML subset accepted by the offline parser (`parseXmlTree` in `src/analyzer/calculationview.ts`). The productions are XML 1.0 well-formedness with the restrictions listed below; no DTD, schema or namespace validation is performed.
+Well-formed XML subset accepted by the offline parser (`parseXmlTree` in `src/analyzer/xml-parser.ts`). The productions are XML 1.0 well-formedness with the restrictions listed below; no DTD, schema or namespace validation is performed.
 
 ```ebnf
 document        ::= prolog element misc* ;
 prolog          ::= [ xml_decl ] misc* ;
 xml_decl        ::= "<?xml" { any_char - "?>" } "?>" ;
-misc            ::= comment | pi | whitespace ;
+misc            ::= comment | pi | doctype | whitespace ;
+doctype         ::= "<!" { any_char | quoted | "[" { any_char } "]" } ">" ;   (* skipped, not validated *)
 
 element         ::= empty_tag
                   | start_tag content end_tag ;          (* end_tag name = start_tag name *)
@@ -148,10 +152,31 @@ attr_name       ::= ( letter | digit | "_" | ":" | "-" | "." ) { letter | digit 
 char_data       ::= { any_char - ( "<" | "&" ) } ;
 ```
 
-**Well-formedness errors** (exact span = the construct named):
+**Well-formedness errors.** Rule IDs for the languages of §1 (`docs/specs/diagnostics/syntax-rules.md`). Calculation views report every row as `HANA-LINT-101` instead.
 
-| Condition | Message | Span |
-| :--- | :--- | :--- |
+| Condition | Rule | Message | Span |
+| :--- | :--- | :--- | :--- |
+| `<!--` without `-->` | `HANA-SYN-002` | `Unterminated XML comment.` | the `<!--` opener |
+| `<![CDATA[` without `]]>` | `HANA-SYN-001` | `Unterminated CDATA section.` | the `<![CDATA[` opener |
+| Attribute value without its closing quote | `HANA-SYN-001` | `Unterminated attribute value in '<tag>'.` | opening quote to the end of its line |
+| `<?` without `?>` | `HANA-SYN-003` | `Unterminated XML processing instruction.` | the `<?` opener |
+| `<!` declaration without `>` | `HANA-SYN-003` | `Unterminated XML declaration.` | the `<!` opener |
+| `<name` without `>` | `HANA-SYN-003` | `Unterminated opening tag '<name'.` | `<name` |
+| `</name` without `>` | `HANA-SYN-003` | `Unterminated closing tag '</name'.` | `</name` |
+| `</b>` while `<a>` is open | `HANA-SYN-003` | `Mismatched closing tag '</b>' (expected '</a>').` | the end tag |
+| `</a>` with nothing open | `HANA-SYN-003` | `Unexpected closing tag '</a>'.` | the end tag |
+| Element still open at end of file | `HANA-SYN-003` | `Unclosed XML element '<a>'.` | the start tag |
+| Attribute without `=`, unquoted value, or stray character in a tag | `HANA-SYN-012` | `Expected '=' after attribute 'a'.` / `Expected quoted value for attribute 'a'.` / `Unexpected character 'c' inside element attributes.` | the attribute name / the character |
+
+**Recovery** (no cascading errors):
+
+- A `<` inside a tag or an attribute value ends it, because XML 1.0 never allows `<` there. Parsing resumes at the `<`. The broken element stays in the tree, and closes silently at its own end tag or at its parent's end tag, because it may have been an empty element.
+- A mismatched end tag closes its matching ancestor, if there is one.
+- After an unterminated comment, CDATA section, PI, declaration or attribute value that reaches the end of the file, the elements still open are not reported again.
+
+**Not checked** (accepted silently): DTD content (`<!DOCTYPE>` is skipped), undefined entity names (`&nbsp;`), a bare `&` in text or values, a `<` in text content, duplicate attributes, multiple root elements, text before the root, unbound namespace prefixes, root element names.
+
+--- | :--- | :--- |
 | `<!--` without `-->` | `Unterminated XML comment` | the `<!--` opener |
 | `<![CDATA[` without `]]>` | `Unterminated CDATA section` | the `<![CDATA[` opener |
 | `<?` without `?>` | `Unterminated XML processing instruction` | the `<?` opener |

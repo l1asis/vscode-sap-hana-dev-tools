@@ -77,6 +77,11 @@ export const JSON_ARTIFACT_LANGUAGES: readonly string[] = [
   'hdbvirtualpackagehadoop',
   'hdbvirtualpackagesparksql',
   'hdbmrjob',
+  'hdblogicalschema',
+  'hdbsysbicsynonym',
+  'hdbvirtualprocedureconfig',
+  'hdbvirtualfunctionconfig',
+  'hdbafllangprocedure',
 ];
 
 /** Dedicated non-SQL design-time artifact languages handled synchronously by AST formatters. */
