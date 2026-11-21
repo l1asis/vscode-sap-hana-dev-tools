@@ -60,7 +60,6 @@ import {
   SQL_TYPE_ARG_UNITS,
   STMT_BLOCK_END_STOP_PREV_WORDS,
   SUBSELECT_CONTEXT_WORDS,
-  TABLE_COLUMNS_PREV,
   TYPED_LITERAL_WORDS,
   UNAMBIGUOUS_STMT_START_WORDS,
   VALID_DDL_MODIFIERS,
@@ -473,6 +472,28 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     );
   }
 
+  // The consuming clause parsers (step 9) run only when block and delimiter structure is intact. Statement boundaries
+  // cannot be trusted otherwise.
+  const sectionStart = baseOffset;
+  const sectionEnd = baseOffset + slice.length;
+  const structureBroken = diagnostics.some(
+    (d) => (d.ruleId === 'HANA-SYN-020' || d.ruleId === 'HANA-SYN-003') && d.start >= sectionStart && d.start <= sectionEnd
+  );
+  // `##IF` / `##ifdef` ... `##else` ... `##endif` conditional compilation interleaves alternative code paths.
+  const hasConditionalCompilation = codeTokens.some((t) => t.type === 'word' && t.text.startsWith('##'));
+  // Before a `LANGUAGE RLANG | GRAPH | ...` routine (whose body is cut off), the parsers see the complete statements only.
+  let parserTokenCount = codeTokens.length;
+  if (foreignBodyStart >= 0) {
+    parserTokenCount = 0;
+    for (let k = codeTokens.length - 1; k >= 0; k--) {
+      if (codeTokens[k].text === ';') {
+        parserTokenCount = k + 1;
+        break;
+      }
+    }
+  }
+  const clauseParserRuns = parserTokenCount > 0 && !structureBroken && !hasConditionalCompilation;
+
   // 4. Missing comma separators (HANA-SYN-023) & trailing commas (HANA-SYN-024)
   checkSqlMissingCommas(
     codeTokens,
@@ -481,6 +502,7 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
     brokenQidentLines,
     delimResult.unclosedStarts,
     delimResult.unmatchedCloseStarts,
+    clauseParserRuns ? parserTokenCount : 0,
     diagnostics
   );
 
@@ -532,66 +554,59 @@ function analyzeSqlSection(slice: string, opts: SqlSectionScanOptions): Analyzer
         diagnostics,
       });
     }
-    // 9. Statement starters & imperative assignment targets (HANA-SYN-041, HANA-SYN-021) and consuming clause /
-    //    expression parsers (HANA-SYN-042, HANA-SYN-021). Skipped when block or delimiter structure is already
-    //    broken, since statement boundaries cannot be trusted then.
-    const sectionStart = baseOffset;
-    const sectionEnd = baseOffset + slice.length;
-    const structureBroken = diagnostics.some(
-      (d) => (d.ruleId === 'HANA-SYN-020' || d.ruleId === 'HANA-SYN-003') && d.start >= sectionStart && d.start <= sectionEnd
+  }
+  // 9. Statement starters & imperative assignment targets (HANA-SYN-041, HANA-SYN-021) and consuming clause /
+  //    expression parsers (HANA-SYN-042, HANA-SYN-021, HANA-SYN-023).
+  if (clauseParserRuns) {
+    const parserTokens = parserTokenCount === codeTokens.length ? codeTokens : codeTokens.slice(0, parserTokenCount);
+    const isBlocked = (tok: Token): boolean =>
+      delimResult.unclosedStarts.has(tok.start) ||
+      delimResult.unmatchedCloseStarts.has(tok.start) ||
+      brokenQidentLines.has(findLineNumber(lineStarts, tok.start));
+    const execStatements: ExecStatement[] = [];
+    const hooks = createClauseHooks(
+      codeTokens,
+      (issue) => {
+        const tok = codeTokens[issue.tokIdx];
+        if (!tok || isBlocked(tok)) return;
+        const fixes: CodeFixSuggestion[] = [];
+        if (issue.replaceWith !== undefined) {
+          fixes.push(makeReplaceFix(`Replace '${tok.text}' with '${issue.replaceWith}'`, baseOffset + tok.start, baseOffset + tok.end, issue.replaceWith));
+        } else if (issue.insertCommaAfter !== undefined && codeTokens[issue.insertCommaAfter]) {
+          fixes.push(makeInsertCommaFix(baseOffset + codeTokens[issue.insertCommaAfter].end));
+          if (issue.likelyAlias) fixes.push({ ...makeReplaceFix("Insert 'AS'", baseOffset + tok.start, baseOffset + tok.start, 'AS '), isPreferred: false });
+        } else if (issue.insert && codeTokens[issue.insert.afterTok]) {
+          const at = baseOffset + codeTokens[issue.insert.afterTok].end;
+          fixes.push(makeReplaceFix(`Insert '${issue.insert.text.trim()}'`, at, at, issue.insert.text));
+        }
+        diagnostics.push({
+          ruleId: issue.ruleId,
+          category: 'syntax',
+          severity: issue.likelyAlias ? 'warning' : 'error',
+          message: issue.message,
+          start: baseOffset + tok.start,
+          end: baseOffset + (codeTokens[issue.endTokIdx ?? issue.tokIdx] ?? tok).end,
+          fixes,
+        });
+      },
+      (start, end) => {
+        const from = baseOffset + codeTokens[start].start;
+        const to = baseOffset + codeTokens[Math.min(end, codeTokens.length) - 1].end;
+        return diagnostics.some((d) => d.start >= from && d.start <= to);
+      },
+      (stmt) => execStatements.push(stmt)
     );
-    // `##IF` / `##ifdef` ... `##else` ... `##endif` conditional compilation interleaves alternative code paths.
-    const hasConditionalCompilation = codeTokens.some((t) => t.type === 'word' && t.text.startsWith('##'));
-    if (!structureBroken && !hasConditionalCompilation) {
-      const isBlocked = (tok: Token): boolean =>
-        delimResult.unclosedStarts.has(tok.start) ||
-        delimResult.unmatchedCloseStarts.has(tok.start) ||
-        brokenQidentLines.has(findLineNumber(lineStarts, tok.start));
-      const execStatements: ExecStatement[] = [];
-      const hooks = createClauseHooks(
-        codeTokens,
-        (issue) => {
-          const tok = codeTokens[issue.tokIdx];
-          if (!tok || isBlocked(tok)) return;
-          const fixes: CodeFixSuggestion[] = [];
-          if (issue.replaceWith !== undefined) {
-            fixes.push(makeReplaceFix(`Replace '${tok.text}' with '${issue.replaceWith}'`, baseOffset + tok.start, baseOffset + tok.end, issue.replaceWith));
-          } else if (issue.insertCommaAfter !== undefined && codeTokens[issue.insertCommaAfter]) {
-            fixes.push(makeInsertCommaFix(baseOffset + codeTokens[issue.insertCommaAfter].end));
-            if (issue.likelyAlias) fixes.push({ ...makeReplaceFix("Insert 'AS'", baseOffset + tok.start, baseOffset + tok.start, 'AS '), isPreferred: false });
-          } else if (issue.insert && codeTokens[issue.insert.afterTok]) {
-            const at = baseOffset + codeTokens[issue.insert.afterTok].end;
-            fixes.push(makeReplaceFix(`Insert '${issue.insert.text.trim()}'`, at, at, issue.insert.text));
-          }
-          diagnostics.push({
-            ruleId: issue.ruleId,
-            category: 'syntax',
-            severity: issue.likelyAlias ? 'warning' : 'error',
-            message: issue.message,
-            start: baseOffset + tok.start,
-            end: baseOffset + (codeTokens[issue.endTokIdx ?? issue.tokIdx] ?? tok).end,
-            fixes,
-          });
-        },
-        (start, end) => {
-          const from = baseOffset + codeTokens[start].start;
-          const to = baseOffset + codeTokens[Math.min(end, codeTokens.length) - 1].end;
-          return diagnostics.some((d) => d.start >= from && d.start <= to);
-        },
-        (stmt) => execStatements.push(stmt)
-      );
-      checkSqlStatements({
-        languageId,
-        codeTokens,
-        baseOffset,
-        validateTopLevel: SQLSCRIPT_BLOCK_LANGUAGES.has(languageId) && !HDI_ROOT_TARGETS[languageId],
-        extraTopStarters: opts.extraTopStarters,
-        isBlocked,
-        diagnostics,
-        hooks,
-      });
-      for (const stmt of execStatements) checkDynamicSql(stmt, codeTokens, slice, baseOffset, diagnostics);
-    }
+    checkSqlStatements({
+      languageId,
+      codeTokens: parserTokens,
+      baseOffset,
+      validateTopLevel: SQLSCRIPT_BLOCK_LANGUAGES.has(languageId) && !HDI_ROOT_TARGETS[languageId],
+      extraTopStarters: opts.extraTopStarters,
+      isBlocked,
+      diagnostics,
+      hooks,
+    });
+    for (const stmt of execStatements) checkDynamicSql(stmt, codeTokens, slice, baseOffset, diagnostics);
   }
 
   // `IN (1 2)`: one missing comma is reported once (HANA-SYN-023), not also as a missing operator (HANA-SYN-024).
@@ -1496,6 +1511,54 @@ function isValueOperandStart(tok: Token, inCall = false): boolean {
   return false;
 }
 
+/**
+ * `(` at `openIdx` opens a table element list that the consuming clause parser validates (`sql-clauses.ts`,
+ * `sql-sqlscript.md` §4.12): `[CREATE] [<table_type>] TABLE <name> (`, `[CREATE] TYPE <name> AS TABLE (` and
+ * `ALTER TABLE <name> { ADD | ALTER } (`. The comma heuristic skips these lists (#78, #101).
+ */
+function isParserTableElementList(codeTokens: readonly Token[], openIdx: number): boolean {
+  const upAt = (k: number): string => (codeTokens[k]?.type === 'word' ? codeTokens[k].text.toUpperCase() : codeTokens[k]?.text ?? '');
+  const isName = (k: number): boolean => codeTokens[k]?.type === 'word' || codeTokens[k]?.type === 'qident';
+  /** Index of the token before the qualified name that ends at `end`, or `-2` when `end` is not a name. */
+  const beforeName = (end: number): number => {
+    if (!isName(end)) return -2;
+    let k = end;
+    while (codeTokens[k - 1]?.text === '.' && isName(k - 2)) k -= 2;
+    return k - 1;
+  };
+  /** `TABLE` at `k` follows a statement start, `CREATE` or a table type (`COLUMN`, `ROW`, `GLOBAL TEMPORARY`, ...). */
+  const isDdlTable = (k: number): boolean => {
+    if (upAt(k) !== 'TABLE') return false;
+    const lead = upAt(k - 1);
+    return k === 0 || lead === ';' || lead === 'CREATE' || lead === 'REPLACE' || lead === 'COLUMN' || lead === 'ROW' || lead === 'TEMPORARY';
+  };
+  let k = openIdx - 1;
+  const clause = upAt(k);
+  if (clause === 'ALTER' || (clause === 'ADD' && codeTokens[k - 1]?.text !== ')')) {
+    const t = beforeName(k - 1);
+    return t >= 1 && upAt(t) === 'TABLE' && upAt(t - 1) === 'ALTER';
+  }
+  if (clause === 'ADD') {
+    // `CREATE TABLE <name> (<columns>) ADD (<identity column>) AS (<subquery>)`: find the statement's `TABLE <name>`
+    let depth = 0;
+    for (let b = k - 1; b >= 0 && codeTokens[b].text !== ';'; b--) {
+      const t = codeTokens[b].text;
+      if (t === ')') depth++;
+      else if (t === '(') depth--;
+      else if (depth === 0 && isDdlTable(b)) return true;
+    }
+    return false;
+  }
+  if (clause === 'TABLE') {
+    // `TYPE <name> AS TABLE (`
+    if (upAt(k - 1) !== 'AS') return false;
+    const t = beforeName(k - 2);
+    return t >= 0 && upAt(t) === 'TYPE';
+  }
+  k = beforeName(k);
+  return k >= 0 && isDdlTable(k);
+}
+
 function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'params' | 'columns' | null {
   // Parameterized view `VIEW <name> [(<cols>)] (IN <p> <type> [DEFAULT <v>], ...)`: a typed parameter list
   if (codeTokens[openIdx + 1]?.type === 'word' && codeTokens[openIdx + 1].text.toUpperCase() === 'IN' && isInViewHeader(codeTokens, openIdx)) {
@@ -1512,25 +1575,11 @@ function isTypeListOpener(codeTokens: readonly Token[], openIdx: number): 'param
   }
   if (k < 0) return null;
 
+  if (isParserTableElementList(codeTokens, openIdx)) return 'columns';
   const before = codeTokens[k];
   const beforeUp = before.type === 'word' ? before.text.toUpperCase() : '';
-  if (beforeUp === 'TABLE') {
-    const prevUp = codeTokens[k - 1]?.type === 'word' ? codeTokens[k - 1].text.toUpperCase() : '';
-    if (TABLE_COLUMNS_PREV.has(prevUp)) {
-      return 'columns';
-    }
-    // Check inside procedure/function parameter declaration: `IN im_tbl TABLE (...)`
-    return 'columns';
-  }
-  if (beforeUp === 'ADD' && openIdx >= 2) {
-    // `ALTER TABLE ... ADD (...)`
-    for (let b = k - 1; b >= Math.max(0, k - 8); b--) {
-      if (codeTokens[b].text === ';') break;
-      if (codeTokens[b].type === 'word' && codeTokens[b].text.toUpperCase() === 'TABLE') {
-        return 'columns';
-      }
-    }
-  }
+  // Anonymous table type of a routine parameter, `RETURNS TABLE (...)` or `DECLARE <v> TABLE (...)`
+  if (beforeUp === 'TABLE') return 'columns';
   if (before.type === 'word' || before.type === 'qident') {
     // Check header keyword immediately before object name: `PROCEDURE "name" (...)`, `FUNCTION "name" (...)`, `TABLE "name" (...)`
     const prevWordIdx = k;
@@ -1643,6 +1692,8 @@ function classifyParenFrame(
 interface DeclParenFrame {
   readonly kind: 'params' | 'columns' | 'call' | 'skip' | 'json_columns';
   readonly depth: number;
+  // A table element list validated by the consuming clause parser (`isParserTableElementList`)
+  readonly parserOwned: boolean;
   // For `JSON_VALUE` / `JSON_QUERY` 'call' frames: disable comma checks at the first clause keyword
   readonly jsonClauseCall: boolean;
   // For 'json_columns' frames (`JSON_TABLE ... COLUMNS (...)`):
@@ -1741,6 +1792,8 @@ function checkSqlMissingCommas(
   brokenQidentLines: ReadonlySet<number>,
   unclosedStarts: ReadonlyMap<number, number | undefined>,
   unmatchedCloseStarts: ReadonlySet<number>,
+  /** Tokens `[0, n)` are validated by the consuming clause parsers (`0` when they do not run). */
+  parserTokenCount: number,
   diagnostics: AnalyzerDiagnostic[]
 ): void {
   const filterSelects = structuredFilterSelects(codeTokens);
@@ -1911,6 +1964,7 @@ function checkSqlMissingCommas(
       parenStack.push({
         kind,
         depth: parenDepth,
+        parserOwned: kind === 'columns' && i < parserTokenCount && isParserTableElementList(codeTokens, i),
         jsonClauseCall: kind === 'call' && prev?.type === 'word' && JSON_CLAUSE_CALL_NAMES.has(prev.text.toUpperCase()),
         jsonPhase: 'start',
         jsonNested: false,
@@ -1985,6 +2039,7 @@ function checkSqlMissingCommas(
     // Active paren declaration/call handling at exact top paren depth
     const topParen = parenStack[parenStack.length - 1];
     if (topParen && topParen.depth === parenDepth) {
+      if (topParen.parserOwned) continue;
       if (topParen.kind === 'params' || topParen.kind === 'columns') {
         if (tok.text === ',') {
           topParen.declPhase = 'start';

@@ -7,9 +7,11 @@
  *
  * Covered statements: queries (`SELECT`, `WITH ... SELECT`, `( query )`, set operations), `INSERT`, `UPDATE`,
  * `UPSERT` / `REPLACE`, `DELETE`, SQLScript `DECLARE` (variables / cursors), `RETURN`, assignments, `CALL`,
- * `SIGNAL` / `RESIGNAL`, `IF` / `ELSEIF` / `WHILE` conditions, and HDI / catalog `VIEW`, `COLUMN | ROW TABLE`,
- * and `SEQUENCE` DDL, the headerless `[HDI]` `[CLOUD]` `STRUCTURED FILTER` and `REMOTE TABLE REPLICA` productions
- * (`sql-sqlscript.md` §4.11), plus the clause lists of the `HIERARCHY*( ... )` table functions (`sql-sqlscript.md` §4.5).
+ * `SIGNAL` / `RESIGNAL`, `IF` / `ELSEIF` / `WHILE` conditions, HDI / catalog `VIEW` and `SEQUENCE` DDL, table DDL
+ * (`[<table_type>] TABLE`, `TYPE ... AS TABLE`, `ALTER TABLE ... ADD | ALTER | DROP`, index / statistics / graph workspace
+ * column lists, `PARTITION BY` column lists, window specifications: `sql-sqlscript.md` §4.12), the headerless `[HDI]`
+ * `[CLOUD]` `STRUCTURED FILTER` and `REMOTE TABLE REPLICA` productions (`sql-sqlscript.md` §4.11), plus the clause lists
+ * of the `HIERARCHY*( ... )` table functions (`sql-sqlscript.md` §4.5).
  * Every other statement is left to the lexical (#25), header (#26) and starter (#27) checks.
  *
  * Error policy (zero false positives on valid long-tail SQL):
@@ -25,13 +27,15 @@
  *   clause keyword), so all of its errors are reported, even in a statement with other diagnostics, except at a
  *   token that already carries one.
  */
-import { KEYWORDS, RESERVED } from '../formatter/keywords';
+import { KEYWORDS, RESERVED, TYPES } from '../formatter/keywords';
 import { type Token } from '../formatter/tokenizer';
 import { type StatementScope, type StatementWalkerHooks } from './sql-statements';
 import { matchKeywordTypo, suggestOptionKeyword, suggestSlotKeyword } from './typo';
 import {
   BLOCK_STOPS,
+  COLUMN_ATTRIBUTE_STARTERS,
   FOLLOW_HIDDEN,
+  GRAPH_WORKSPACE_CLAUSES,
   HIERARCHY_CLAUSE_FUNCTIONS,
   HIERARCHY_CLAUSE_STARTERS,
   INTERVAL_UNITS,
@@ -258,7 +262,7 @@ export function createClauseHooks(
         skipGroup();
       } else if (isWord(i, 'OVER') && tx(i + 1) === '(') {
         i++;
-        skipGroup();
+        windowSpec();
       } else if (isWord(i, 'WITHIN') && isWord(i + 1, 'GROUP') && tx(i + 2) === '(') {
         i += 2;
         skipGroup();
@@ -1177,11 +1181,39 @@ export function createClauseHooks(
         if (!isWord(i, 'VIEW')) throw BAIL;
         view();
         return;
+      case 'TABLE':
       case 'COLUMN':
       case 'ROW':
-        i++;
-        if (!isWord(i, 'TABLE')) throw BAIL;
+      case 'HISTORY':
+      case 'GLOBAL':
+      case 'LOCAL':
+        if (tableTypeAt(i) < 0) break;
         table();
+        return;
+      case 'TYPE':
+        if (!isNameTok(i + 1)) break;
+        tableType();
+        return;
+      case 'ALTER':
+        if (!isWord(i + 1, 'TABLE')) break;
+        alterTable();
+        return;
+      case 'UNIQUE':
+      case 'BTREE':
+      case 'CPBTREE':
+      case 'INVERTED':
+      case 'INDEX':
+      case 'FULLTEXT':
+      case 'FUZZY':
+      case 'HASH':
+      case 'BLOCK':
+      case 'STATISTICS':
+        if (indexNounAt(i) < 0) break;
+        indexOrStatistics();
+        return;
+      case 'GRAPH':
+        if (!isWord(i + 1, 'WORKSPACE')) break;
+        graphWorkspace();
         return;
       case 'SEQUENCE':
         sequence();
@@ -1204,10 +1236,11 @@ export function createClauseHooks(
           view();
         } else if (k === 'SEQUENCE') sequence();
         else if (k === 'STRUCTURED' && isWord(i + 1, 'FILTER')) structuredFilter();
-        else if ((k === 'COLUMN' || k === 'ROW') && isWord(i + 1, 'TABLE')) {
-          i++;
-          table();
-        } else throw BAIL;
+        else if (tableTypeAt(i) >= 0) table();
+        else if (k === 'TYPE' && isNameTok(i + 1)) tableType();
+        else if (indexNounAt(i) >= 0) indexOrStatistics();
+        else if (k === 'GRAPH' && isWord(i + 1, 'WORKSPACE')) graphWorkspace();
+        else throw BAIL;
         return;
       }
       default:
@@ -1487,52 +1520,568 @@ export function createClauseHooks(
     }
   };
 
-  /** `[COLUMN | ROW] TABLE <name> ( <element> {, <element>} ) [table options]` */
-  const table = (): void => {
-    expect('TABLE');
+  // ---- table DDL: column definitions, constraints, indexes, statistics, partitions (sql-sqlscript.md §4.12) -----
+  /** `HANA-SYN-023` at `tok(i)`: a `,` is missing before it (QuickFix inserts it after the previous token). */
+  const missingComma = (what: string): never => {
+    const shown = isWord(i, '$') && tx(i + 1) === '.' ? `$.${tx(i + 2)}` : tx(i); // document path `$."b"`
+    throw new Stop({ ruleId: 'HANA-SYN-023', tokIdx: i, message: `Expected ',' before ${what} '${shown}'.`, insertCommaAfter: i - 1 });
+  };
+  const onOff = (): void => {
+    if (!eat('ON') && !eat('OFF')) throw BAIL;
+  };
+  const needString = (): void => {
+    if (tok(i)?.type !== 'string') throw BAIL;
+    i++;
+  };
+  const nameTok = (): void => {
+    if (!isNameTok(i)) throw BAIL;
+    i++;
+  };
+  /** `[BTREE | CPBTREE | INVERTED { HASH | VALUE | INDIVIDUAL }]` (`rs_tree_type_index`, `cs_inverted_type_index`). */
+  const indexTypeOpt = (): void => {
+    if (eat('BTREE') || eat('CPBTREE')) return;
+    if (eat('INVERTED') && !eat('HASH') && !eat('VALUE') && !eat('INDIVIDUAL')) throw BAIL;
+  };
+  /** A data type follows at `k`: a built-in type word, a quoted (user-defined) type, or a qualified type name. */
+  const typeAt = (k: number): boolean => {
+    const t = tok(k);
+    if (!t) return false;
+    if (t.type === 'qident') return true;
+    return t.type === 'word' && (TYPES.has(up(k)) || /^(?:CS|DDIC)_/.test(up(k)) || (tx(k + 1) === '.' && tok(k + 2)?.type !== undefined));
+  };
+  /** `<name> <type>` starts at `k`: the next column definition of an element list. */
+  const columnDefAt = (k: number): boolean => isNameTok(k) && typeAt(k + 1);
+  /**
+   * A table-level constraint starts at `k`: `[CONSTRAINT <name>] { PRIMARY KEY [<index_type>] ( | UNIQUE [<index_type>] (
+   * | FOREIGN KEY | CHECK ( }`. `PRIMARY KEY` / `UNIQUE` without a column list are column constraints.
+   */
+  const tableConstraintAt = (k: number): boolean => {
+    let j = k;
+    if (isWord(j, 'CONSTRAINT') && isNameTok(j + 1)) j += 2;
+    if (isWord(j, 'FOREIGN') && isWord(j + 1, 'KEY')) return true;
+    if (isWord(j, 'CHECK') && tx(j + 1) === '(') return true;
+    if (isWord(j, 'PRIMARY') && isWord(j + 1, 'KEY')) j += 2;
+    else if (isWord(j, 'UNIQUE')) j++;
+    else return false;
+    if (isWord(j, 'BTREE') || isWord(j, 'CPBTREE')) j++;
+    else if (isWord(j, 'INVERTED')) j += 2;
+    return tx(j) === '(';
+  };
+
+  /**
+   * `( <item> {, <item>} )`, entered at `(`. An item is a (qualified) column name, a document path `$.a.b`
+   * (collection indexes), `YEAR | MONTH | HOUR ( <column> )` or `<column> AS <type>` (partition expressions), with an
+   * optional `ASC | DESC` (index columns). Two adjacent items are `HANA-SYN-023`; anything else ends validation.
+   */
+  const columnList = (what: string, opts: { order?: boolean; partition?: boolean } = {}): void => {
+    i++;
+    for (;;) {
+      const item = i;
+      if (isWord(i, '$') && tx(i + 1) === '.') i++;
+      else if (opts.partition && tok(i)?.type === 'word' && tx(i + 1) === '(') {
+        i++;
+        skipGroup();
+      } else nameTok();
+      while (tx(i) === '.' && (tok(i + 1)?.type === 'word' || tok(i + 1)?.type === 'qident')) i += 2;
+      if (i === item) throw BAIL;
+      if (opts.partition && eat('AS')) {
+        if (!typeAt(i)) throw BAIL;
+        i++;
+        if (tx(i) === '(') skipGroup();
+      }
+      if (opts.order) eat('ASC') || eat('DESC');
+      if (eat(',')) continue;
+      if (eat(')')) return;
+      if (isNameTok(i) || (isWord(i, '$') && tx(i + 1) === '.')) missingComma(what);
+      throw BAIL;
+    }
+  };
+
+  /**
+   * `REFERENCES <table> [( <columns> )] { ON { UPDATE | DELETE } <action> } [[NOT] ENFORCED] [[NOT] VALIDATED]
+   * [INITIALLY { IMMEDIATE | DEFERRED }]`, entered after `REFERENCES`.
+   */
+  const references = (): void => {
     targetName();
-    if (isWord(i, 'AS') || isWord(i, 'LIKE')) throw BAIL;
-    if (tx(i) !== '(') throw BAIL;
+    if (tx(i) === '(') columnList('column');
+    for (;;) {
+      if (isWord(i, 'ON') && (isWord(i + 1, 'UPDATE') || isWord(i + 1, 'DELETE'))) {
+        i += 2;
+        if (eat('CASCADE') || eat('RESTRICT')) continue;
+        if (eat('SET') && (eat('NULL') || eat('DEFAULT'))) continue;
+        throw BAIL;
+      }
+      if (isWord(i, 'NOT') && (isWord(i + 1, 'ENFORCED') || isWord(i + 1, 'VALIDATED'))) i += 2;
+      else if (eat('ENFORCED') || eat('VALIDATED')) {
+        /* constraint enforcement */
+      } else if (eat('INITIALLY')) {
+        if (!eat('IMMEDIATE') && !eat('DEFERRED')) throw BAIL;
+      } else return;
+    }
+  };
+
+  /**
+   * Column attributes after the data type, in any order (`column_definition` and `column_constraint` of CREATE TABLE,
+   * the `fulltext_elem` options of `TEXT` / `BINTEXT` / `SHORTTEXT`, and `CS_*` / `DDIC_*` storage types). Returns at
+   * the first token that starts none of them.
+   */
+  const columnAttributes = (): void => {
+    for (;;) {
+      if (atEnd() || tx(i) === ',' || tx(i) === ')' || tableConstraintAt(i)) return;
+      const w = up(i);
+      const next = up(i + 1);
+      // A word followed by a data type is the next column (`ID INT PRIMARY KEY TEXT NVARCHAR(10)`): a missing `,`.
+      if (TYPES.has(next) && w !== 'AS' && w !== 'DEFAULT') return;
+      if (/^(?:CS|DDIC)_[A-Z0-9_]+$/.test(w)) {
+        i++;
+        if (tx(i) === '(') skipGroup();
+        continue;
+      }
+      // Each attribute is recognized by its leading word(s), so a column named `text` or `language` is not one.
+      switch (w) {
+        case 'NULL':
+        case 'HIDDEN':
+        case 'SYNC':
+        case 'SYNCHRONOUS':
+          i++;
+          continue;
+        case 'NOT':
+          if (next !== 'NULL' && next !== 'HIDDEN') return;
+          i += 2;
+          continue;
+        case 'DEFAULT':
+          i++;
+          if (eat('LOADABLE')) continue; // load_unit `DEFAULT LOADABLE`
+          expr(0);
+          continue;
+        case 'CONSTRAINT':
+          if (!isNameTok(i + 1) || !['PRIMARY', 'UNIQUE', 'REFERENCES'].includes(up(i + 2))) return;
+          i += 2;
+          continue;
+        case 'UNIQUE':
+          i++;
+          indexTypeOpt();
+          continue;
+        case 'PRIMARY':
+          if (next !== 'KEY') return;
+          i += 2;
+          indexTypeOpt();
+          continue;
+        case 'REFERENCES':
+          i++;
+          references();
+          continue;
+        case 'GENERATED':
+          if (next !== 'ALWAYS' && next !== 'BY') return;
+          i++;
+          if (eat('BY')) {
+            expect('DEFAULT');
+            expect('AS');
+            expect('IDENTITY');
+          } else {
+            expect('ALWAYS');
+            expect('AS');
+            if (eat('ROW')) {
+              if (!eat('START') && !eat('END')) throw BAIL;
+              eat('COMMIT');
+              continue;
+            }
+            if (!eat('IDENTITY')) {
+              expr(0);
+              continue;
+            }
+          }
+          if (tx(i) === '(') skipGroup(); // sequence options
+          continue;
+        case 'AS': // calculated field
+          i++;
+          expr(0);
+          continue;
+        case 'MEMORY':
+          if (next !== 'THRESHOLD') return;
+          i += 2;
+          if (!eat('NULL')) expr(5);
+          continue;
+        case 'ENABLE':
+        case 'DISABLE':
+          if (next !== 'SCHEMA') return;
+          i += 2;
+          expect('FLEXIBILITY');
+          continue;
+        case 'FUZZY':
+          if (next !== 'SEARCH') return;
+          i += 2;
+          if (eat('INDEX')) onOff();
+          else {
+            expect('MODE');
+            if (!eat('NULL') && tok(i)?.type === 'string') i++;
+          }
+          continue;
+        case 'PERSISTENT':
+          if (next !== 'MEMORY') return;
+          i += 2;
+          if (!eat('ON') && !eat('OFF') && !eat('DEFAULT')) throw BAIL;
+          continue;
+        case 'COMMENT':
+        case 'CONFIGURATION':
+          if (tok(i + 1)?.type !== 'string') return;
+          i += 2;
+          continue;
+        case 'TOKEN':
+          if (next !== 'SEPARATORS') return;
+          i += 2;
+          needString();
+          continue;
+        case 'COLUMN':
+        case 'PAGE':
+          if (next !== 'LOADABLE') return;
+          i += 2;
+          continue;
+        case 'NUMA':
+          if (next !== 'NODE') return;
+          i += 2;
+          if (!eat('NULL')) {
+            if (tx(i) !== '(') throw BAIL;
+            skipGroup();
+          }
+          eat('IMMEDIATE') || eat('DEFERRED');
+          continue;
+        case 'AUDIT':
+          if (next !== 'READ' && next !== 'NONE') return;
+          i += 2;
+          continue;
+        case 'LANGUAGE':
+          if (next === 'COLUMN') {
+            i += 2;
+            nameTok();
+          } else if (next === 'DETECTION' && tx(i + 2) === '(') {
+            i += 2;
+            skipGroup();
+          } else return;
+          continue;
+        case 'MIME':
+          if (next !== 'TYPE') return;
+          i += 2;
+          if (eat('COLUMN')) nameTok();
+          else needString();
+          continue;
+        case 'ASYNC':
+        case 'ASYNCHRONOUS':
+          i++;
+          if (eat('FLUSH')) {
+            eat('QUEUE');
+            for (;;) {
+              if (eat('EVERY')) {
+                expr(5);
+                expect('MINUTES');
+              } else if (eat('AFTER')) {
+                expr(5);
+                expect('DOCUMENTS');
+              } else throw BAIL;
+              if (!eat('OR')) break;
+            }
+          }
+          continue;
+        case 'PHRASE':
+          if (next !== 'INDEX') return;
+          i += 2;
+          expect('RATIO');
+          expr(5);
+          continue;
+        case 'SEARCH':
+        case 'FAST':
+        case 'TEXT':
+          if (next !== (w === 'SEARCH' ? 'ONLY' : w === 'FAST' ? 'PREPROCESS' : 'ANALYSIS')) return;
+          i += 2;
+          onOff();
+          continue;
+        case 'CLIENTSIDE': // `CLIENTSIDE ENCRYPTION { [ON] WITH <key> [RANDOM | DETERMINISTIC] | OFF }`
+          if (next !== 'ENCRYPTION') return;
+          i += 2;
+          if (eat('OFF')) continue;
+          eat('ON');
+          expect('WITH');
+          targetName();
+          eat('RANDOM') || eat('DETERMINISTIC');
+          continue;
+        default:
+          return; // long tail, or the end of the column definition
+      }
+    }
+  };
+
+  /**
+   * After a table element: `,`, `)`, or the end. A table constraint or `<name> <type>` here is a missing `,`
+   * (`HANA-SYN-023`); a misspelled attribute keyword is `HANA-SYN-021`; anything else ends validation silently.
+   */
+  const elementEnd = (): void => {
+    if (atEnd() || tx(i) === ',' || tx(i) === ')') return;
+    if (tableConstraintAt(i)) missingComma('table constraint');
+    if (columnDefAt(i) || (isNameTok(i) && isWord(i + 1, 'ALTER'))) missingComma('column');
+    const t = tok(i)!;
+    const w = up(i);
+    if (t.type === 'word' && !KEYWORDS.has(w) && !RESERVED.has(w)) {
+      // `PRIMARYKEY`, `NOTNULL`: two attribute words written as one
+      const glued = [['PRIMARY', 'KEY'], ['NOT', 'NULL']].find(([a, b]) => w === a + b || w === `${a}_${b}`);
+      const fix = glued ? glued.join(' ') : matchKeywordTypo(t.text, [...COLUMN_ATTRIBUTE_STARTERS].filter((x) => x.length >= 4));
+      if (fix) throw new Stop({ ruleId: 'HANA-SYN-021', tokIdx: i, message: `Unknown keyword '${t.text}' in column definition. Did you mean '${fix}'?`, replaceWith: fix });
+    }
+    throw BAIL;
+  };
+
+  /** `<column_name> <data_type> [ARRAY] { <column_attribute> }`, or `<column_name> ALTER { <column_attribute> }` (ALTER TABLE). */
+  const columnDefinition = (): void => {
+    nameTok();
+    if (eat('ALTER')) {
+      columnAttributes();
+      return;
+    }
+    // A user-defined type is any other word; `(a, b) AS <query>` and `ALTER (<c> ALTER ...)` are long tail.
+    if (!typeAt(i) && !(tok(i)?.type === 'word' && !COLUMN_ATTRIBUTE_STARTERS.has(up(i)) && !RESERVED.has(up(i)))) throw BAIL;
+    i++;
+    while (tx(i) === '.' && (tok(i + 1)?.type === 'word' || tok(i + 1)?.type === 'qident')) i += 2;
+    if (tx(i) === '(') skipGroup();
+    eat('ARRAY');
+    columnAttributes();
+  };
+
+  /**
+   * `[CONSTRAINT <name>] { PRIMARY KEY [<index_type>] (cols) | UNIQUE [<index_type>] (cols)
+   * | FOREIGN KEY (cols) <references_specification> | CHECK (<condition>) }`. `INDEX` / `PERIOD FOR` elements are long tail.
+   */
+  const tableConstraint = (): void => {
+    if (eat('CONSTRAINT')) nameTok();
+    if (eat('PRIMARY')) {
+      expect('KEY');
+      indexTypeOpt();
+      if (tx(i) !== '(') throw BAIL;
+      columnList('column', { order: true });
+    } else if (eat('UNIQUE')) {
+      indexTypeOpt();
+      if (tx(i) !== '(') throw BAIL;
+      columnList('column', { order: true });
+    } else if (eat('FOREIGN')) {
+      expect('KEY');
+      if (tx(i) !== '(') throw BAIL;
+      columnList('column');
+      expect('REFERENCES');
+      references();
+    } else if (eat('CHECK')) {
+      if (tx(i) !== '(') throw BAIL;
+      primary();
+    } else {
+      while (!atEnd() && tx(i) !== ',' && tx(i) !== ')') {
+        if (tx(i) === '(') skipGroup();
+        else i++;
+      }
+    }
+  };
+
+  /** `( <table_element> {, <table_element>} )`, entered at `(`: column definitions and table constraints. */
+  const tableElements = (): void => {
     i++;
     for (;;) {
       const w = up(i);
-      if (TABLE_CONSTRAINT_STARTERS.has(w)) {
-        // table constraint: lenient up to the next top-level `,` / `)`
-        while (!atEnd() && tx(i) !== ',' && tx(i) !== ')') {
-          if (tx(i) === '(') skipGroup();
-          else i++;
-        }
-      } else {
-        if (!isNameTok(i)) throw BAIL;
-        i++;
-        const typeTok = tok(i);
-        if (!typeTok || (typeTok.type !== 'word' && typeTok.type !== 'qident')) throw BAIL;
-        i++;
-        while (tx(i) === '.' && (tok(i + 1)?.type === 'word' || tok(i + 1)?.type === 'qident')) i += 2;
-        if (tx(i) === '(') skipGroup();
-        // Column attributes (NOT NULL, PRIMARY KEY, GENERATED ..., FUZZY SEARCH INDEX ON, PAGE LOADABLE, NUMA NODE,
-        // ARRAY, CS_* modifiers, REFERENCES <t>(<c>), ...) are long tail and consumed leniently; only DEFAULT
-        // expressions are validated.
-        while (!atEnd() && tx(i) !== ',' && tx(i) !== ')') {
-          if (isWord(i, 'DEFAULT')) {
-            i++;
-            expr(0);
-          } else if (tx(i) === '(' || tx(i) === '[') {
-            skipGroup();
-          } else {
-            i++;
-          }
-        }
-      }
+      if (TABLE_CONSTRAINT_STARTERS.has(w) && !typeAt(i + 1)) tableConstraint();
+      else columnDefinition();
+      elementEnd();
       if (eat(',')) continue;
       expect(')');
-      break;
+      return;
     }
+  };
+
+  /**
+   * Table options after the element list are long tail. They are scanned up to the statement end, and only the
+   * column lists of `[SUB]PARTITION BY { HASH | RANGE } ( ... )` (also after `,` in multi-level schemes) are validated.
+   */
+  const tableOptions = (): void => {
+    let partitioning = false;
+    while (!atEnd()) {
+      if ((isWord(i, 'PARTITION') || isWord(i, 'SUBPARTITION')) && isWord(i + 1, 'BY')) {
+        i += 2;
+        partitioning = true;
+        continue;
+      }
+      if (partitioning && (isWord(i, 'HASH') || isWord(i, 'RANGE')) && tx(i + 1) === '(') {
+        i++;
+        columnList('partitioning column', { partition: true });
+        continue;
+      }
+      if (partitioning && isWord(i, 'PARTITIONS')) {
+        i += 2; // `PARTITIONS <n>` or `PARTITIONS GET_NUM_SERVERS()`
+        if (tx(i) === '(') skipGroup();
+        continue;
+      }
+      if (partitioning && (isWord(i, 'ROUNDROBIN') || tx(i) === ',')) {
+        i++;
+        continue;
+      }
+      partitioning = false;
+      if (tx(i) === '(' || tx(i) === '[') skipGroup();
+      else i++;
+    }
+  };
+
+  /** `<table_type> TABLE` starts at `k` (`COLUMN`, `ROW`, `HISTORY COLUMN`, `{ GLOBAL | LOCAL } TEMPORARY [COLUMN | ROW]`). */
+  const tableTypeAt = (k: number): number => {
+    let j = k;
+    if (isWord(j, 'GLOBAL') || isWord(j, 'LOCAL')) {
+      if (!isWord(j + 1, 'TEMPORARY')) return -1;
+      j += 2;
+      if (isWord(j, 'COLUMN') || isWord(j, 'ROW')) j++;
+    } else if (isWord(j, 'HISTORY')) {
+      if (!isWord(j + 1, 'COLUMN')) return -1;
+      j += 2;
+    } else if (isWord(j, 'COLUMN') || isWord(j, 'ROW')) j++;
+    return isWord(j, 'TABLE') ? j : -1;
+  };
+
+  /**
+   * `<table_type> TABLE <name> ( <table_element> {, ...} ) [WITH ASSOCIATIONS (...)] [<table options>]`, or
+   * `... TABLE <name> ( <column_name> {, ...} ) [ADD ( <identity column> )] AS ...` (the subquery is long tail).
+   */
+  const table = (): void => {
+    i = tableTypeAt(i) + 1;
+    targetName();
+    if (isWord(i, 'AS') || isWord(i, 'LIKE')) throw BAIL;
+    if (tx(i) !== '(') throw BAIL;
+    if (isNameTok(i + 1) && (tx(i + 2) === ',' || tx(i + 2) === ')')) {
+      columnList('column');
+      if (!isWord(i, 'ADD') || tx(i + 1) !== '(') throw BAIL;
+      i++;
+      tableElements();
+      throw BAIL;
+    }
+    tableElements();
     if (isWord(i, 'WITH') && isWord(i + 1, 'ASSOCIATIONS') && tx(i + 2) === '(') {
       i += 2;
       associations();
     }
-    // Other table options (PARTITION BY, UNLOAD PRIORITY, WITH ..., ...) are long tail.
+    tableOptions();
+  };
+
+  /** `TYPE <name> AS TABLE ( <table_element> {, ...} ) [...]` (`.hdbtabletype`, `.hdbstructure`, `CREATE TYPE`). */
+  const tableType = (): void => {
+    i++;
+    targetName();
+    expect('AS');
+    expect('TABLE');
+    if (tx(i) !== '(') throw BAIL;
+    tableElements();
+  };
+
+  /**
+   * `ALTER TABLE <name> { ADD ( <elements> ) | ALTER ( <elements> ) | DROP ( <columns> ) | ADD [CONSTRAINT <n>]
+   * <table_constraint> | PARTITION BY ... }`. Other ALTER TABLE clauses are long tail.
+   */
+  const alterTable = (): void => {
+    i += 2;
+    targetName();
+    if ((isWord(i, 'ADD') || isWord(i, 'ALTER')) && tx(i + 1) === '(') {
+      i++;
+      tableElements();
+    } else if (isWord(i, 'DROP') && tx(i + 1) === '(') {
+      i++;
+      columnList('column');
+    } else if (isWord(i, 'ADD') && (isWord(i + 1, 'CONSTRAINT') || tableConstraintAt(i + 1))) {
+      i++;
+      tableConstraint();
+    } else if (!(isWord(i, 'PARTITION') && isWord(i + 1, 'BY'))) throw BAIL;
+    tableOptions();
+  };
+
+  /**
+   * An index or statistics header ends at `k` - 1 and returns the index of its noun, or `-1`:
+   * `[UNIQUE] [<index_type>] INDEX`, `FULLTEXT INDEX`, `FUZZY SEARCH INDEX`, `HASH INDEX`, `BLOCK RANGE INDEX`, `STATISTICS`.
+   */
+  const indexNounAt = (k: number): number => {
+    let j = k;
+    if (isWord(j, 'STATISTICS')) return j;
+    if (isWord(j, 'FULLTEXT') || isWord(j, 'HASH')) j++;
+    else if (isWord(j, 'FUZZY') && isWord(j + 1, 'SEARCH')) j += 2;
+    else if (isWord(j, 'BLOCK') && isWord(j + 1, 'RANGE')) j += 2;
+    else {
+      if (isWord(j, 'UNIQUE')) j++;
+      if (isWord(j, 'BTREE') || isWord(j, 'CPBTREE')) j++;
+      else if (isWord(j, 'INVERTED')) j += 2;
+    }
+    return isWord(j, 'INDEX') ? j : -1;
+  };
+
+  /** `<index header> <name> ON <table> ( <column> [ASC | DESC] {, ...} ) [...]` and `STATISTICS [<name>] ON <table> [( <columns> )] [...]` */
+  const indexOrStatistics = (): void => {
+    i = indexNounAt(i);
+    const statistics = isWord(i, 'STATISTICS');
+    i++;
+    if (!(statistics && isWord(i, 'ON'))) targetName();
+    expect('ON');
+    targetName();
+    if (tx(i) === '(') columnList(statistics ? 'column' : 'index column', { order: !statistics });
+    else if (!statistics) throw BAIL;
+    // Index and statistics options (`ASYNC`, `FAST PREPROCESS OFF`, `TYPE HISTOGRAM`, `ONLINE`, ...) are long tail.
+  };
+
+  /**
+   * `GRAPH WORKSPACE <name> EDGE TABLE <t> SOURCE [COLUMN] <columns> [REFERENCES <t>] TARGET [COLUMN] <columns> ...
+   * KEY [COLUMN] <columns> [LABEL '...'] VERTEX TABLE <t> KEY [COLUMN] <columns> [...]` (§4.4). The clauses are read in
+   * any order; each `<columns>` list is `<name> {, <name>}`.
+   */
+  const graphWorkspace = (): void => {
+    i += 2;
+    targetName();
+    if (!isWord(i, 'EDGE') && !isWord(i, 'VERTEX')) throw BAIL; // ADJACENCY INDEX / COLLECTION forms
+    while (!atEnd()) {
+      if ((eat('EDGE') || eat('VERTEX')) && eat('TABLE')) targetName();
+      else if (eat('SOURCE') || eat('TARGET') || eat('KEY')) {
+        eat('COLUMN');
+        for (;;) {
+          nameTok();
+          if (eat(',')) continue;
+          if (isNameTok(i) && !(tok(i)?.type === 'word' && GRAPH_WORKSPACE_CLAUSES.has(up(i)))) missingComma('column');
+          break;
+        }
+      } else if (eat('REFERENCES')) targetName();
+      else if (eat('LABEL')) needString();
+      else return; // cache options, ... (long tail)
+    }
+  };
+
+  /**
+   * `OVER ( [<window_name>] [PARTITION BY <expr> {, <expr>}] [ORDER BY <expr> [ASC | DESC] [NULLS FIRST | LAST] {, ...}]
+   * [<window_frame_clause>] )`, entered at `(`. Two adjacent `PARTITION BY` / `ORDER BY` items are `HANA-SYN-023`. A
+   * frame clause, `SERIES (...)` or anything else is skipped silently.
+   */
+  const windowSpec = (): void => {
+    const open = i;
+    try {
+      i++;
+      if (isNameTok(i) && !isWord(i, 'PARTITION') && !isWord(i, 'ORDER') && tok(i)?.type === 'word' && (isWord(i + 1, 'PARTITION') || isWord(i + 1, 'ORDER') || tx(i + 1) === ')')) i++;
+      for (const clause of ['PARTITION', 'ORDER']) {
+        if (!isWord(i, clause) || !isWord(i + 1, 'BY')) continue;
+        i += 2;
+        for (;;) {
+          expr(0);
+          if (clause === 'ORDER') {
+            eat('ASC') || eat('DESC');
+            if (eat('NULLS') && !eat('FIRST') && !eat('LAST')) throw BAIL;
+          }
+          if (eat(',')) continue;
+          if (isWord(i, 'ROWS') || isWord(i, 'RANGE') || isWord(i, 'GROUPS')) throw BAIL; // window frame: long tail
+          const t = tok(i);
+          if (t && (t.type === 'qident' || t.type === 'number' || t.type === 'string' || t.type === 'var' || (t.type === 'word' && isNameTok(i) && !NON_ALIAS.has(up(i)) && !KEYWORDS.has(up(i))))) {
+            missingComma(`${clause} BY item`);
+          }
+          break;
+        }
+      }
+      expect(')');
+    } catch (e) {
+      if (e instanceof Stop) throw e;
+      if (!(e instanceof Bail)) throw e;
+      i = open;
+      skipGroup();
+    }
   };
 
   // ---- headerless structured filters and remote table replicas (sql-sqlscript.md §4.11) ------------------------

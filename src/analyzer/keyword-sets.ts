@@ -225,12 +225,6 @@ export const MIGRATION_TABLE_ROOTS: ReadonlySet<string> = new Set<string>([
   'COLUMN', 'ROW',
 ]);
 
-/** Word before `TABLE (` that makes the parenthesis a column definition list. Context: `RETURNS TABLE (...)`, `CREATE COLUMN TABLE t (...)`, `IN p TABLE (...)`. Catalog role `table-columns-prev`. */
-export const TABLE_COLUMNS_PREV: ReadonlySet<string> = new Set<string>([
-  'AS', 'COLUMN', 'CREATE', 'GLOBAL', 'HISTORY', 'IN', 'INOUT', 'LOCAL', 'OUT', 'RETURNS', 'ROW',
-  'TEMPORARY', 'VIRTUAL',
-]);
-
 /** DDL object noun whose `ON <name> (...)` parenthesis is a column list, not a call. Context: CREATE INDEX / TRIGGER / STATISTICS ... ON <name> (...). Catalog role `on-target-ddl-noun`. */
 export const ON_TARGET_DDL_NOUNS: ReadonlySet<string> = new Set<string>([
   'ADJACENCY', 'GRAPH', 'INDEX', 'PROJECTION', 'STATISTICS', 'TRIGGER',
@@ -261,11 +255,24 @@ export const COLUMN_CLAUSE_MODIFIERS: ReadonlySet<string> = new Set<string>([
   'SET', 'UNLOAD', 'UPDATE', 'WITH',
 ]);
 
+/** Word that starts a column attribute after the data type of a table column definition (`DEFAULT`, `NOT NULL`, `FUZZY SEARCH INDEX`, `FAST PREPROCESS`, ...). Context: After the data type in a table column definition (clause parser: HANA-SYN-021 typo slot). Catalog role `column-attribute-starter`. */
+export const COLUMN_ATTRIBUTE_STARTERS: ReadonlySet<string> = new Set<string>([
+  'AS', 'ASYNC', 'ASYNCHRONOUS', 'AUDIT', 'CLIENTSIDE', 'COLUMN', 'COMMENT', 'CONFIGURATION', 'CONSTRAINT',
+  'DEFAULT', 'DISABLE', 'ENABLE', 'FAST', 'FUZZY', 'GENERATED', 'HIDDEN', 'LANGUAGE', 'MEMORY', 'MIME',
+  'NOT', 'NULL', 'NUMA', 'PAGE', 'PERSISTENT', 'PHRASE', 'PRIMARY', 'REFERENCES', 'SEARCH', 'SYNC',
+  'SYNCHRONOUS', 'TEXT', 'TOKEN', 'UNIQUE',
+]);
+
 /** Data type that takes a length / precision argument list. Context: `<type> (` in a column or parameter definition. Catalog role `type-with-args`. */
 export const SQL_TYPE_ARG_NAMES: ReadonlySet<string> = new Set<string>([
   'ALPHANUM', 'BINARY', 'CHAR', 'DEC', 'DECIMAL', 'DOUBLE', 'FLOAT', 'NCHAR', 'NUMERIC', 'NVARCHAR',
   'SECONDDATE', 'SHORTTEXT', 'SMALLDECIMAL', 'ST_GEOMETRY', 'ST_POINT', 'TIME', 'TIMESTAMP', 'VARBINARY',
   'VARCHAR', 'VECTOR',
+]);
+
+/** Word that starts the next clause of a graph workspace definition, so it ends a column name list. Context: `[CREATE] GRAPH WORKSPACE ... SOURCE [COLUMN] <list>` (clause parser, HANA-SYN-023). Catalog role `graph-workspace-clause`. */
+export const GRAPH_WORKSPACE_CLAUSES: ReadonlySet<string> = new Set<string>([
+  'EDGE', 'KEY', 'LABEL', 'NO', 'REFERENCES', 'SOURCE', 'TARGET', 'VERTEX', 'WITH',
 ]);
 
 /** Length unit inside a data type argument list (`NVARCHAR(10 CHAR)`). Context: Inside a data type argument list. Catalog role `type-length-unit`. */

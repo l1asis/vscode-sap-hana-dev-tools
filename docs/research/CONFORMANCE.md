@@ -2,6 +2,20 @@
 
 Numbers only, no corpus text. Method: [`docs/specs/diagnostics/conformance-harness.md`](../specs/diagnostics/conformance-harness.md). Re-run with `npm run conformance` (local corpus required) and append a new section, newest first, when a change under #81 moves a number.
 
+## 2026-11-21: table DDL in the consuming parser (#101, #78), against `main` @ `a7ce0ae`
+
+| Metric | `main` | #101 |
+| :--- | ---: | ---: |
+| Analyzer: blocks with ≥1 syntax error | 458 | 437 |
+| Analyzer: `HANA-SYN-023` / `024` / `025` (blocks) | 97 / 72 / 49 | 75 / 72 / 49 |
+| Formatter: blocks with violations | 1 | 1 |
+| Grammar: unscoped catalog keywords | 91 (640 blocks) | 91 (640 blocks) |
+| All 13,302 `sql` fences of the local HANA guides (Data Lake and SDI excluded), blocks that gain a diagnostic | n/a | 5 |
+| Mutation check: one element `,` removed per list in a clean block, reported as `HANA-SYN-023` (table / `ALTER` / index + statistics / partition lists) | 1783 of 1820 / 6 of 6 / 0 of 41 / 0 of 24 | 1804 of 1820 / 6 of 6 / 18 of 41 / 16 of 24 |
+| `npm test`: tests / pass / todo | 505 / 497 / 8 | 516 / 511 / 5 |
+
+Per block in the default corpus: 21 blocks are clean now (`UNIQUE BTREE`, `TEXT FAST PREPROCESS OFF`, `LANGUAGE DETECTION (...)`, `ALTER (<c> <type> ...)`, `DEFAULT LOADABLE`, `AUDIT READ`, `CLIENTSIDE ENCRYPTION ...`), 0 are newly flagged, and 1 changes: SAP's `I INTEGER PRIMARYKEY` is now `HANA-SYN-021` (`PRIMARY KEY`) instead of a missing `,`. Of the 5 HANA fences that gain a diagnostic, 2 are the same `PRIMARYKEY` typo (one per SQLScript Reference), 1 is a real missing `,` in a Search Developer Guide example (`... FAST PREPROCESS OFF` + newline + `language VARCHAR(2)`), and 2 start with a GraphScript statement (`GRAPH g1 = GRAPH(...)`) at SQL top level, now reported because the statements before a `LANGUAGE GRAPH` routine are walked. Most index and partition mutations the parser misses glue two names into one token (`(a,b)` -> `(ab)`), which no checker can see. Three `@todo syntax #78` markers are gone (`UNIQUE BTREE`, `FAST PREPROCESS OFF`, `ALTER (... NVARCHAR(20))`).
+
 ## 2026-11-20: narrow formatter profile and unterminated literals (#107), against `main` @ `acf01f9`
 
 | Metric | `main` | #107 |
