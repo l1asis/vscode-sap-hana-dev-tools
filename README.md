@@ -1,5 +1,8 @@
 # Developer Tools for SAP HANA
 
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/l1asis.sap-hana-dev-tools?label=VS%20Code%20Marketplace)](https://marketplace.visualstudio.com/items?itemName=l1asis.sap-hana-dev-tools)
+[![Open VSX](https://img.shields.io/open-vsx/v/l1asis/sap-hana-dev-tools?label=Open%20VSX)](https://open-vsx.org/extension/l1asis/sap-hana-dev-tools)
+
 Language support for **SAP HANA XS Classic (XSC)**, **XS Advanced (XSA) / HDI**, and **SAP HANA Cloud**, all in VS Code and without a database connection.
 
 Open a `.hdbprocedure`, `.hdbtable`, `.hdbdd`, `.xsjs`, or `.hdbrole` file and you get highlighting, formatting, error checking, completion, and migration help right away. Nothing to set up and no server to run.
