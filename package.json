@@ -1453,17 +1453,9 @@
         "configuration": "./language-configuration-xml.json"
       },
       {
-        "id": "xml",
-        "filenames": [
-          ".project",
-          ".jsdtscope"
-        ]
-      },
-      {
         "id": "ignore",
         "filenames": [
-          ".hdiignore",
-          ".regiignore"
+          ".hdiignore"
         ]
       }
     ],
