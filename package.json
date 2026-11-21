@@ -1254,20 +1254,6 @@
         }
       },
       {
-        "id": "hdbvirtualpackage",
-        "aliases": [
-          "SAP HANA HDI Virtual Package"
-        ],
-        "extensions": [
-          ".hdbvirtualpackage"
-        ],
-        "configuration": "./language-configuration-xsjson.json",
-        "icon": {
-          "light": "./images/icons/hdbvirtualpackage.svg",
-          "dark": "./images/icons/hdbvirtualpackage.svg"
-        }
-      },
-      {
         "id": "hdbvirtualpackagehadoop",
         "aliases": [
           "SAP HANA HDI Hadoop Virtual Package"
@@ -1275,7 +1261,6 @@
         "extensions": [
           ".hdbvirtualpackagehadoop"
         ],
-        "configuration": "./language-configuration-xsjson.json",
         "icon": {
           "light": "./images/icons/hdbvirtualpackagehadoop.svg",
           "dark": "./images/icons/hdbvirtualpackagehadoop.svg"
@@ -1289,7 +1274,6 @@
         "extensions": [
           ".hdbvirtualpackagesparksql"
         ],
-        "configuration": "./language-configuration-xsjson.json",
         "icon": {
           "light": "./images/icons/hdbvirtualpackagesparksql.svg",
           "dark": "./images/icons/hdbvirtualpackagesparksql.svg"
@@ -2009,21 +1993,6 @@
         "path": "./syntaxes/hdbfabricvirtualtableconfig.tmLanguage.json"
       },
       {
-        "language": "hdbvirtualpackage",
-        "scopeName": "source.hdbvirtualpackage",
-        "path": "./syntaxes/hdbvirtualpackage.tmLanguage.json"
-      },
-      {
-        "language": "hdbvirtualpackagehadoop",
-        "scopeName": "source.hdbvirtualpackage",
-        "path": "./syntaxes/hdbvirtualpackage.tmLanguage.json"
-      },
-      {
-        "language": "hdbvirtualpackagesparksql",
-        "scopeName": "source.hdbvirtualpackage",
-        "path": "./syntaxes/hdbvirtualpackage.tmLanguage.json"
-      },
-      {
         "language": "xsappsite",
         "scopeName": "source.xsappsite",
         "path": "./syntaxes/xsappsite.tmLanguage.json"
@@ -2334,15 +2303,6 @@
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdinamespace]": {
-        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
-      },
-      "[hdbvirtualpackage]": {
-        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
-      },
-      "[hdbvirtualpackagehadoop]": {
-        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
-      },
-      "[hdbvirtualpackagesparksql]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdblogicalschema]": {
@@ -2785,7 +2745,6 @@
     "onLanguage:hdbcollectionindex",
     "onLanguage:hdbcollectionadjindex",
     "onLanguage:hdbfabricvirtualtableconfig",
-    "onLanguage:hdbvirtualpackage",
     "onLanguage:hdbvirtualpackagehadoop",
     "onLanguage:hdbvirtualpackagesparksql",
     "onLanguage:hdbmrjob",
