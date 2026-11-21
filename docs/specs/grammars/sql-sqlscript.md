@@ -610,11 +610,25 @@ virtual_table  ::= identifier ;      (* an existing virtual table in the same co
 REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"
 ```
 
-**Known gaps** (follow-ups to #66):
+**Diagnostics** (#109, `docs/specs/diagnostics/syntax-rules.md`): the consuming clause parser checks both productions, and the catalog `CREATE STRUCTURED FILTER` statement in `.sql`. The `SELECT` of `[CREATE | ALTER] STRUCTURED FILTER <name> FOR SELECT` names the filtered privilege, so the `SELECT`-list heuristics (`HANA-SYN-023`, `-025`) do not scan the clauses after it as a projection.
 
-- #109: the analyzer reports `HANA-SYN-023` (*Expected ','*) twice on the valid `CONDITION PROVIDER` form, because `FOR SELECT ON ...` is scanned as a `SELECT` list.
+| Input | Rule | Span | Message |
+| :--- | :--- | :--- | :--- |
+| `STRUCTURED FILTER F ON V WHERE ...` | `HANA-SYN-025` | `F` | `Incomplete structured filter: missing 'FOR SELECT' after 'F'.` |
+| `STRUCTURED FILTER F FOR SELECT ON V` | `HANA-SYN-025` | `V` | `Incomplete structured filter: missing 'WHERE <condition>' or 'CONDITION PROVIDER <procedure>' after 'V'.` |
+| `... ON V NOT LIKE "V%" WHERE ...` | `HANA-SYN-042` | `NOT LIKE` | `'NOT LIKE' requires a preceding 'LIKE' list in a structured filter.` |
+| `... ESCAPE '\' WHERE ...` | `HANA-SYN-025` | `'\'` | `Incomplete structured filter: missing a 'LIKE' list after ''\''.` |
+| `... LIKE 'V%' ...` | `HANA-SYN-042` | `'V%'` | `Unexpected ''V%'' in LIKE list; expected a double-quoted object name pattern.` |
+| `... LIKE "S"."V%" ...` | `HANA-SYN-042` | `.` | `Unexpected '.' in LIKE list; a wildcard object name is schema-local.` |
+| `... CONDITION PROVIDER` | `HANA-SYN-025` | `PROVIDER` | `Incomplete structured filter: missing a condition provider procedure name after 'PROVIDER'.` |
+| `REMOTE TABLE REPLICA "T"` | `HANA-SYN-025` | `"T"` | `Incomplete remote table replica: missing 'ON <virtual_table>' after '"T"'.` |
+| `REMOTE TABLE REPLICA "T" "V"` | `HANA-SYN-042` | `"V"` | `Unexpected '"V"' after remote table replica target; expected 'ON'.` |
+
+A misspelled clause keyword (`FOR SELCT`, `WHER`) is `HANA-SYN-021` with a QuickFix. A missing filter name, object name, `SELECT` after `FOR`, `WHERE` condition, or virtual table name is `HANA-SYN-025` on the token before the gap. Trailing tokens after the condition, provider or virtual table follow the boundary rule of `HANA-SYN-042`. `ALTER STRUCTURED FILTER` is not parsed (long tail).
+
+**Known gap** (follow-up to #66):
+
 - #110: the formatter breaks the line between `FOR` and `SELECT` and folds `ESCAPE` / `LIKE` / `NOT LIKE` into the `SELECT` clause. The result is still valid, but the layout of §6 is not applied.
-- #109: neither artifact is checked against its production: a missing `ON <virtual_table>` or `FOR SELECT` is not reported.
 
 ---
 
