@@ -222,7 +222,7 @@ test('artifact registry: dispatch, migration and plug-in drift is reported', () 
   assert.ok(
     checkRegistry(markdown, { ...IMPL, formatterLanguages: noFormatter }).some((e) => e.startsWith('registry row .hdbscalarfunction: formatter'))
   );
-  const noAnalyzer = ANALYZER_LANGUAGES.filter((l) => l !== 'xscxmlmodel');
+  const noAnalyzer = ANALYZER_LANGUAGES.filter((l) => l !== 'aflpmml');
   assert.ok(checkRegistry(markdown, { ...IMPL, analyzerLanguages: noAnalyzer }).some((e) => e.startsWith('registry row .aflpmml: analyzer')));
   const { ['.searchruleset']: _dropped, ...fewer } = SUFFIX_MIGRATIONS;
   assert.ok(checkRegistry(markdown, { ...IMPL, suffixMigrations: fewer }).some((e) => e.includes('.searchruleset: HANA-MIG-013')));
@@ -256,7 +256,7 @@ test('HANA-MIG-013: a renamed suffix gets a file-rename QuickFix on the first li
 });
 
 test('HANA-MIG-013: replaced and unsupported suffixes are reported without a QuickFix', () => {
-  for (const [file, lang] of [['a.analyticview', 'analyticview'], ['b.procedure', 'xscprocedure'], ['c.hdbruldec', 'hdbdecisiontable'], ['d.dqconfig', 'xscxmlmodel']]) {
+  for (const [file, lang] of [['a.analyticview', 'analyticview'], ['b.procedure', 'xscprocedure'], ['c.hdbruldec', 'hdbdecisiontable'], ['d.dqconfig', 'dqconfig']]) {
     const d = mig013(file, lang);
     assert.equal(d.length, 1, file);
     assert.deepEqual(d[0].fixes, [], file);
@@ -349,7 +349,17 @@ test('grammar: new suffixes map to the expected grammars and injections', () => 
   const grammarOf = new Map(pkg.contributes.grammars.filter((g) => g.language).map((g) => [g.language!, g.scopeName]));
   assert.equal(grammarOf.get('hdbscalarfunction'), 'source.hanasql');
   assert.equal(grammarOf.get('xscprocedure'), 'text.xml.hana');
-  assert.equal(grammarOf.get('xscxmlmodel'), 'text.xml.hana');
+  // the former shared `xscxmlmodel` language is split: one XML language per suffix
+  const languageOf = new Map(pkg.contributes.languages.flatMap((l) => (l.extensions ?? []).map((e) => [e, l.id] as const)));
+  const xscModels: Array<[string, string]> = [
+    ['.hdbflowgraphtemplate', 'hdbflowgraphtemplate'], ['.aflpmml', 'aflpmml'], ['.dqconfig', 'dqconfig'], ['.dataflow', 'xscdataflow'],
+    ['.epmmodel', 'epmmodel'], ['.epmquerysource', 'epmquerysource'], ['.halmscenario', 'halmscenario'], ['.pvsscenario', 'pvsscenario'],
+  ];
+  for (const [suffix, id] of xscModels) {
+    assert.equal(languageOf.get(suffix), id, suffix);
+    assert.equal(grammarOf.get(id), 'text.xml.hana', id);
+  }
+  assert.ok(!pkg.contributes.languages.some((l) => l.id === 'xscxmlmodel'), 'xscxmlmodel is gone');
   assert.equal(grammarOf.get('proceduretemplate'), 'source.proceduretemplate');
   assert.equal(grammarOf.get('hdbtextbundle'), 'source.hdbtextbundle');
   assert.ok(pkg.contributes.grammars.find((g) => g.scopeName === 'proceduretemplate.injection')?.injectTo?.includes('source.proceduretemplate'));

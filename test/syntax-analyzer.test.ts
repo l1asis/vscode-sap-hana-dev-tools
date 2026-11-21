@@ -1734,7 +1734,7 @@ test('samples/: zero syntax false positives across all repository SAP HANA artif
 
   assert.ok(checkedCount >= 20, `Expected to scan >= 20 sample files, scanned ${checkedCount}`);
   // #102: the XML, CGUL and XMLA samples are swept too
-  for (const lang of ['hdbtextrule', 'hdbdecisiontable', 'xswidget', 'hdbsearchruleset', 'xscxmlmodel', 'xsxmla', 'hdblogicalschema']) {
+  for (const lang of ['hdbtextrule', 'hdbdecisiontable', 'xswidget', 'hdbsearchruleset', 'aflpmml', 'xsxmla', 'hdblogicalschema']) {
     assert.ok(checkedLanguages.has(lang), `no ${lang} sample was swept`);
   }
 });

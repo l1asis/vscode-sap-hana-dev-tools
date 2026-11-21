@@ -33,7 +33,7 @@ test('#102: every previously unchecked language is analyzed', () => {
   ];
   for (const lang of unchecked) assert.ok(ANALYZER_LANGUAGES.includes(lang), `${lang} is not in ANALYZER_LANGUAGES`);
   for (const lang of unchecked.slice(0, 5)) assert.ok(JSON_ARTIFACT_LANGUAGES.includes(lang), `${lang} is not a JSON artifact language`);
-  for (const lang of ['xscprocedure', 'xscxmlmodel']) assert.ok(XML_SYNTAX_LANGUAGES.includes(lang), `#82 suffix language ${lang} is not checked`);
+  for (const lang of ['xscprocedure', 'hdbflowgraphtemplate', 'aflpmml', 'dqconfig', 'xscdataflow', 'epmmodel', 'epmquerysource', 'halmscenario', 'pvsscenario']) assert.ok(XML_SYNTAX_LANGUAGES.includes(lang), `#82 suffix language ${lang} is not checked`);
   assert.deepEqual([...CGUL_SYNTAX_LANGUAGES].sort(), ['hdbtextinclude', 'hdbtextlexicon', 'hdbtextrule']);
 });
 
