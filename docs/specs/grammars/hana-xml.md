@@ -39,7 +39,14 @@ The `text.xml.hana` grammar covers every XML-based design-time artifact. It adds
 | `.hdbdecisiontable`, `.hdbruldec`, `.decrule` | `hdbdecisiontable` | `[XSC]` | Repository | `DecisionTable:decisionTable` ¹ | `artifacts/xsc-legacy-artifacts.md` |
 | `.xswidget` | `xswidget` | `[XSC]` | Repository | not printed ² | `artifacts/xsc-legacy-artifacts.md` |
 | `.procedure` | `xscprocedure` | `[XSC]` | Repository | not printed ²,⁴ | `artifacts/artifact-registry.md` |
-| `.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario` | `xscxmlmodel` | `[XSC]` | Repository | not printed ² (`.aflpmml`: DMG `PMML`) | `artifacts/artifact-registry.md` |
+| `.hdbflowgraphtemplate` | `hdbflowgraphtemplate` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (node palette flowgraph: a custom palette of the Application Function Modeler, no runtime object) |
+| `.aflpmml` | `aflpmml` | `[XSC]` | Repository | not printed ² (DMG `PMML`) | `artifacts/artifact-registry.md` (AFL model of the Application Function Modeler) |
+| `.dqconfig` | `dqconfig` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (data quality configuration) |
+| `.dataflow` | `xscdataflow` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (data provisioning flow) |
+| `.epmmodel` | `epmmodel` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (EPM model) |
+| `.epmquerysource` | `epmquerysource` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (EPM query source) |
+| `.halmscenario` | `halmscenario` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (application lifecycle management scenario) |
+| `.pvsscenario` | `pvsscenario` | `[XSC]` | Repository | not printed ² | `artifacts/artifact-registry.md` (operational process intelligence scenario) |
 
 ¹ Not printed in `research/refs/extracted/`. The root shown is the SAP HANA Studio export format (`artifacts/xsc-modeled-views.md` §2 lists its provenance).
 ² Not printed in the corpus (the Text Analysis Developer Guide and the UI Integration Services guide it refers to are not extracted). Only the XML well-formedness of §5 applies.
