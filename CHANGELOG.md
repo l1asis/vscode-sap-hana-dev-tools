@@ -2,6 +2,43 @@
 
 All notable changes to the **Developer Tools for SAP HANA** extension will be documented in this file.
 
+## [0.13.0] - 2026-11-21
+
+### Added
+
+- **Every SAP HANA Artifact Suffix Registered:** The extension now recognizes the remaining documented suffixes:
+  - `.hdbscalarfunction` gets SQL highlighting, formatting and checks.
+  - `.proceduretemplate` gets SQLScript highlighting, including its `<Parameter>` placeholders.
+  - `.hdbtextbundle` gets a properties grammar.
+  - `.procedure`, `.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario` and `.pvsscenario` get XML highlighting and checks, each as its own language with its own file icon.
+  - `.searchruleset`, `.textminingconfig`, `.hdbruldec`, `.decrule`, `.hdbsynonymgrantor` and `.hdbsynonymtemplate` reuse their existing languages.
+  - `.hdiignore` opens as an ignore file, and `undeploy.json` gets JSON validation.
+
+  `docs/specs/artifacts/artifact-registry.md` lists every suffix, and a test keeps it in sync with the extension (#112, #128).
+- **Renamed Suffixes in HDI (`HANA-MIG-013`):** An information hint marks XS Classic suffixes that HDI renamed, replaced or no longer supports, such as `.calculationview`, `.attributeview`, `.hdbtablefunction` and `.hdbremotesource`. Where the content can stay the same, a QuickFix renames the file (`.calculationview` -> `.hdbcalculationview`). Turn it off with `hanasql.analyze.targetPlatform: "xsc"` or `hanasql.analyze.migration: false` (#112, #127).
+- **Syntax Checks for 21 More Languages:** Files that had no checks before are now checked:
+  - XML artifacts report unclosed tags, attribute values, comments and CDATA, plus malformed attributes (new rule `HANA-SYN-012`), with exact positions. Calculation views get the same, more precise messages.
+  - CGUL rule files report unclosed strings and comments, unbalanced brackets and misspelled `#` directives, with a typo QuickFix.
+  - `.xsxmla` gets the same checks as `.xsodata`, and five more JSON artifacts (`.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig`, `.hdbafllangprocedure`) get JSON checks and formatting (#113).
+- **Structured Filters and Remote Table Replicas `[HDI]` `[CLOUD]`:** `.hdbstructuredfilter` and `.hdbremotetablereplica` are checked for missing clauses (`FOR SELECT`, `ON`, `WHERE` / `CONDITION PROVIDER`, ...), misplaced `NOT LIKE` lists and misspelled keywords, with a typo QuickFix. `CONDITION PROVIDER` is highlighted as a keyword phrase (#124).
+- **Query Layout After Assignments (`hanasql.format.embeddedQueryLayout`):** Queries after `lt = ...`, `:=` or `RETURN` are now indented under the assignment, so their clauses no longer look like separate statements. Choose `hanging` (default), `aligned` (under `SELECT`) or `newLine` (`SELECT` on its own line) (#106).
+
+### Changed
+
+- **Key Completion Matches the SAP Documentation:** Completion in `.xsaccess`, `.xshttpdest`, `.hdbgrants` and `.hdbrole` now offers the documented keys and values. Wrong ones like `mime_types` and `clientCertificate` are gone, and missing ones like `mime_mapping`, `customHeaders`, `global_roles`, `system_privileges` and `pattern_mode` are added. `.hdbgrants` also offers `reference` and `names` again, as the HDI Deployer accepts them (#115, #124).
+- **`.hdiconfig` Plug-in Completion:** All 63 documented plug-ins are offered, including `copyonly` and `table.migration`. The non-existent `com.sap.hana.di.migrationtable` is gone (#112).
+- **Structured Filter Formatting:** `FOR SELECT` stays on the header line, and `ON`, `ESCAPE`, `LIKE`, `NOT LIKE`, `WHERE` and `CONDITION PROVIDER` each start their own line (#124).
+- **One Language per XS Classic Model:** The shared `xscxmlmodel` language is split into eight languages, one per suffix. If you set `files.associations` or `[xscxmlmodel]` settings for these files, switch to the new language IDs (#128).
+- **SAP HANA Studio Files:** `.project`, `.jsdtscope` and `.regiignore` are no longer associated with the extension (#112).
+
+### Fixed
+
+- **Binary Files Treated as JSON:** `.hdbmrjob` (also `.hdbhadoopmrjob` and `.hdbrmjob`), `.hdbvirtualpackagehadoop` and `.hdbvirtualpackagesparksql` hold JAR or SparkSQL content, not JSON. They are no longer highlighted, formatted or checked as JSON and keep only their file icons. `.hdbvirtualpackage` is not a real suffix and is no longer registered (#123, #129).
+- **False Error on `CONDITION PROVIDER` Filters:** A structured filter using `CONDITION PROVIDER` no longer reports a bogus `HANA-SYN-023` (#124).
+- **Formatter Not Stable on Unclosed Strings:** An unclosed `'...` or `"..."` no longer absorbs the trailing newline, so formatting twice gives the same result even at the line-length limit (#108).
+- **Classic `.hdbrole` Quotes `[XSC]`:** `""` inside a catalog name is read as an escaped quote, and a backslash no longer escapes (#113).
+- **Specs & Tests:** New specs for the SQL formatter, HANA XML, XS Classic modeled views, structured filters and replicas, JSON artifact properties and the artifact registry, plus rules for research outside the reference corpus. The suite grew to `497` passing tests (`8` tracked `@todo` cases).
+
 ## [0.12.0] - 2026-11-19
 
 ### Added
