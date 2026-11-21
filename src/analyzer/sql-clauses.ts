@@ -8,7 +8,8 @@
  * Covered statements: queries (`SELECT`, `WITH ... SELECT`, `( query )`, set operations), `INSERT`, `UPDATE`,
  * `UPSERT` / `REPLACE`, `DELETE`, SQLScript `DECLARE` (variables / cursors), `RETURN`, assignments, `CALL`,
  * `SIGNAL` / `RESIGNAL`, `IF` / `ELSEIF` / `WHILE` conditions, and HDI / catalog `VIEW`, `COLUMN | ROW TABLE`,
- * and `SEQUENCE` DDL, plus the clause lists of the `HIERARCHY*( ... )` table functions (`sql-sqlscript.md` §4.5).
+ * and `SEQUENCE` DDL, the headerless `[HDI]` `[CLOUD]` `STRUCTURED FILTER` and `REMOTE TABLE REPLICA` productions
+ * (`sql-sqlscript.md` §4.11), plus the clause lists of the `HIERARCHY*( ... )` table functions (`sql-sqlscript.md` §4.5).
  * Every other statement is left to the lexical (#25), header (#26) and starter (#27) checks.
  *
  * Error policy (zero false positives on valid long-tail SQL):
@@ -43,8 +44,10 @@ import {
 } from './keyword-sets';
 
 export interface ClauseIssue {
-  readonly ruleId: 'HANA-SYN-021' | 'HANA-SYN-023' | 'HANA-SYN-042';
+  readonly ruleId: 'HANA-SYN-021' | 'HANA-SYN-023' | 'HANA-SYN-025' | 'HANA-SYN-042';
   readonly tokIdx: number;
+  /** Last token of the span when it covers more than `tokIdx` (`NOT LIKE`). */
+  readonly endTokIdx?: number;
   readonly message: string;
   readonly replaceWith?: string;
   /** `HANA-SYN-023`: QuickFix inserts `,` after this token. */
@@ -1182,6 +1185,14 @@ export function createClauseHooks(
       case 'SEQUENCE':
         sequence();
         return;
+      case 'STRUCTURED':
+        if (!isWord(i + 1, 'FILTER')) throw BAIL;
+        structuredFilter();
+        return;
+      case 'REMOTE':
+        if (!isWord(i + 1, 'TABLE') || !isWord(i + 2, 'REPLICA')) throw BAIL;
+        remoteTableReplica();
+        return;
       case 'CREATE': {
         i++;
         if (eat('OR')) expect('REPLACE');
@@ -1191,6 +1202,7 @@ export function createClauseHooks(
           i++;
           view();
         } else if (k === 'SEQUENCE') sequence();
+        else if (k === 'STRUCTURED' && isWord(i + 1, 'FILTER')) structuredFilter();
         else if ((k === 'COLUMN' || k === 'ROW') && isWord(i + 1, 'TABLE')) {
           i++;
           table();
@@ -1520,6 +1532,119 @@ export function createClauseHooks(
       associations();
     }
     // Other table options (PARTITION BY, UNLOAD PRIORITY, WITH ..., ...) are long tail.
+  };
+
+  // ---- headerless structured filters and remote table replicas (sql-sqlscript.md §4.11) ------------------------
+  /** `HANA-SYN-025` on the last consumed token: a required clause is missing after it. */
+  const missing = (what: string, context: string): never => {
+    throw new Stop({ ruleId: 'HANA-SYN-025', tokIdx: i - 1, message: `Incomplete ${context}: missing ${what} after '${tx(i - 1)}'.` });
+  };
+  /**
+   * Requires `tok(i)` to be one of `follow`. At the statement end, or at a keyword of a later clause in
+   * `later`, the clause is missing from `production` (`HANA-SYN-025`); anything else goes through
+   * {@link boundary} with `after` as its context.
+   */
+  const need = (follow: readonly string[], what: string, production: string, after: string, later: readonly string[]): void => {
+    if (atEnd() || (later.includes(up(i)) && !follow.includes(up(i)))) missing(what, production);
+    boundary(follow, after, false);
+    if (!follow.includes(up(i)) && !follow.includes(tx(i))) throw BAIL;
+  };
+  /** A name is required at `i` (a reserved word or the statement end means it is missing). */
+  const needName = (what: string, context: string): void => {
+    if (atEnd() || (tok(i)?.type === 'word' && RESERVED.has(up(i)))) missing(what, context);
+    targetName();
+  };
+
+  const FILTER_CLAUSES = ['ON', 'ESCAPE', 'LIKE', 'NOT', 'WHERE', 'CONDITION'];
+  const FILTER_CONDITION = "'WHERE <condition>' or 'CONDITION PROVIDER <procedure>'";
+
+  /** `<wildcard_object> {, <wildcard_object>}` after `LIKE` / `NOT LIKE`: schema-local, double-quoted names. */
+  const wildcardList = (keyword: string): void => {
+    const ctx = 'structured filter';
+    for (;;) {
+      const t = tok(i);
+      if (!t || (t.type === 'word' && RESERVED.has(up(i)))) missing(`an object name pattern`, ctx);
+      if (t!.type === 'string') {
+        throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${t!.text}' in ${keyword} list; expected a double-quoted object name pattern.` });
+      }
+      if (t!.type !== 'qident' && t!.type !== 'word') throw BAIL;
+      i++;
+      if (tx(i) === '.') {
+        throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '.' in ${keyword} list; a wildcard object name is schema-local.` });
+      }
+      if (!eat(',')) return;
+    }
+  };
+
+  /**
+   * `STRUCTURED FILTER <name> FOR SELECT [ON <object> {, <object>}]
+   *  [[ESCAPE '<char>'] LIKE <wildcard> {, ...} [NOT LIKE <wildcard> {, ...}]]
+   *  (WHERE <condition> | CONDITION PROVIDER <procedure>)`, entered at `STRUCTURED`. The wildcard clauses are
+   * `[HDI]` plug-in syntax; `CREATE STRUCTURED FILTER` `[CLOUD]` uses the same production.
+   */
+  const structuredFilter = (): void => {
+    const ctx = 'structured filter';
+    i += 2;
+    needName('a filter name', ctx);
+    need(['FOR'], "'FOR SELECT'", ctx, 'structured filter name', FILTER_CLAUSES);
+    i++;
+    need(['SELECT'], "'SELECT'", ctx, "'FOR'", FILTER_CLAUSES);
+    i++;
+    let after = "'FOR SELECT'";
+    if (eat('ON')) {
+      for (;;) {
+        needName('an object name', ctx);
+        if (!eat(',')) break;
+      }
+      after = 'structured filter object';
+    }
+    if (eat('ESCAPE')) {
+      if (atEnd() || tok(i)?.type === 'word') missing('an escape character string', ctx);
+      if (tok(i)?.type !== 'string') {
+        throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${tx(i)}' after 'ESCAPE'; expected a single-character string.` });
+      }
+      i++;
+      need(['LIKE'], "a 'LIKE' list", ctx, "'ESCAPE' character", ['NOT', 'WHERE', 'CONDITION']);
+    }
+    if (eat('LIKE')) {
+      wildcardList('LIKE');
+      after = "'LIKE' list";
+      if (isWord(i, 'NOT') && isWord(i + 1, 'LIKE')) {
+        i += 2;
+        wildcardList('NOT LIKE');
+        after = "'NOT LIKE' list";
+      }
+    } else if (isWord(i, 'NOT') && isWord(i + 1, 'LIKE')) {
+      throw new Stop({
+        ruleId: 'HANA-SYN-042',
+        tokIdx: i,
+        endTokIdx: i + 1,
+        message: "'NOT LIKE' requires a preceding 'LIKE' list in a structured filter.",
+      });
+    }
+    need(['WHERE', 'CONDITION'], FILTER_CONDITION, ctx, after, []);
+    if (eat('WHERE')) {
+      if (atEnd()) missing('a filter condition', ctx);
+      expr(0);
+      finish('structured filter condition');
+      return;
+    }
+    i++;
+    need(['PROVIDER'], "'PROVIDER'", ctx, "'CONDITION'", []);
+    i++;
+    needName('a condition provider procedure name', ctx);
+    finish('condition provider procedure');
+  };
+
+  /** `REMOTE TABLE REPLICA <target_table> ON <virtual_table>`, entered at `REMOTE` (plug-in syntax, `[HDI]` `[CLOUD]`). */
+  const remoteTableReplica = (): void => {
+    const ctx = 'remote table replica';
+    i += 3;
+    needName('a target table name', ctx);
+    need(['ON'], "'ON <virtual_table>'", ctx, 'remote table replica target', []);
+    i++;
+    needName('a virtual table name', ctx);
+    finish('virtual table name');
   };
 
   /** `SEQUENCE <name> { <sequence_option> }` */
