@@ -580,18 +580,6 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   check(tFvtCfg, '"remote"', 'support.type.property-name.json.hdbfabricvirtualtableconfig');
   assert.ok(!has(tFvtCfg, '"MY_VIRTUAL_TABLE"', 'support.type.property-name.json.hdbfabricvirtualtableconfig'));
 
-  const tVpHadoop = tokenize('source.hdbvirtualpackage', sample('hdi/hadoop_analytics.hdbvirtualpackagehadoop'));
-  check(tVpHadoop, '// Hadoop Virtual Package configuration', 'comment.line.double-slash.hdbvirtualpackage');
-  check(tVpHadoop, '"adapter_type"', 'support.type.property-name.json.hdbvirtualpackage');
-  check(tVpHadoop, '"location"', 'support.type.property-name.json.hdbvirtualpackage');
-
-  const tVpSpark = tokenize('source.hdbvirtualpackage', sample('hdi/sparksql_analytics.hdbvirtualpackagesparksql'));
-  check(tVpSpark, '// SparkSQL Virtual Package configuration', 'comment.line.double-slash.hdbvirtualpackage');
-  check(tVpSpark, '"remote_source"', 'support.type.property-name.json.hdbvirtualpackage');
-
-  const tVpBase = tokenize('source.hdbvirtualpackage', sample('hdi/custom_pkg.hdbvirtualpackage'));
-  check(tVpBase, '"schema"', 'support.type.property-name.json.hdbvirtualpackage');
-
   // 4. XS Classic JSON (.xsappsite)
   const tSite = tokenize('source.xsappsite', sample('launchpad.xsappsite'));
   check(tSite, '"theme"', 'support.type.property-name.json.xsappsite');
@@ -635,13 +623,13 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   const allExt = new Set(pkg.contributes.languages.flatMap((l) => l.extensions));
   for (const expected of [
     '.hdbcollectionindex', '.hdbcollectionadjindex', '.hdbfabricvirtualtable',
-    '.hdbvirtualpackagehadoop', '.hdbvirtualpackagesparksql', '.hdbvirtualpackage',
+    '.hdbvirtualpackagehadoop', '.hdbvirtualpackagesparksql',
     '.hdbmrjob', '.hdbfabricvirtualtableconfig', '.xsappsite',
     '.hdbdecisiontable', '.xswidget', '.xsxmla', '.hdbtid', '.hdbtim',
   ]) {
     assert.ok(allExt.has(expected), `Missing extension ${expected} in package.json`);
   }
-  for (const excluded of ['.properties', '.csv', '.txt', '.jar', '.hdbtabledataprops', '.hdbtabledatatags']) {
+  for (const excluded of ['.properties', '.csv', '.txt', '.jar', '.hdbvirtualpackage', '.hdbtabledataprops', '.hdbtabledatatags']) {
     assert.ok(!allExt.has(excluded), `Excluded extension ${excluded} must NOT be registered in package.json`);
   }
   const grammarMap = new Map(

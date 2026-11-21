@@ -1,6 +1,0 @@
-// SparkSQL Virtual Package configuration
-{
-  "name": "sparksql_analytics",
-  "adapter_type": "sparksql",
-  "remote_source": "SPARK_CONTROLLER"
-}

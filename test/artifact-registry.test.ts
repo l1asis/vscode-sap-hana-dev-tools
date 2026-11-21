@@ -297,7 +297,28 @@ test('.hdbmrjob family: binary JAR content gets no grammar, formatter or syntax 
   const legacy = analyzeDocument({ languageId: 'hdbmrjob', text: jar, filePath: '/repo/db/src/wordcount.hdbhadoopmrjob' });
   assert.deepEqual(legacy.map((d) => d.ruleId), ['HANA-MIG-013']);
   // The negative case: the same bytes in a JSON artifact are still reported.
-  assert.ok(analyzeDocument({ languageId: 'hdbvirtualpackage', text: jar }).some((d) => d.ruleId === 'HANA-SYN-010'));
+  assert.ok(analyzeDocument({ languageId: 'hdbsynonymconfig', text: jar }).some((d) => d.ruleId === 'HANA-SYN-010'));
+});
+
+test('virtual packages: JAR and SparkSQL content gets no grammar, formatter or diagnostics (#122)', () => {
+  const jar = 'PK  META-INF/MANIFEST.MF {ÿ]PK';
+  const sparkSql = 'SELECT word, count(*) AS n FROM words GROUP BY word';
+  for (const id of ['hdbvirtualpackagehadoop', 'hdbvirtualpackagesparksql']) {
+    const lang = pkg.contributes.languages.find((l) => l.id === id);
+    assert.deepEqual(lang?.extensions, [`.${id}`], `${id} keeps its own language for the file icon`);
+    assert.ok(!pkg.contributes.grammars.some((g) => g.language === id), `${id} must not have a grammar`);
+    assert.ok(!ALL_FORMATTER_LANGUAGES.includes(id), `${id} must not be formatted`);
+    assert.ok(!JSON_ARTIFACT_LANGUAGES.includes(id), `${id} must not get the JSON syntax checks`);
+    assert.ok(!ANALYZER_LANGUAGES.includes(id), `${id} must not be analyzed`);
+    for (const text of [jar, sparkSql]) {
+      assert.deepEqual(analyzeDocument({ languageId: id, text, filePath: `/repo/db/src/wordcount.${id}` }), [], `${id}: ${text}`);
+    }
+  }
+  // `.hdbvirtualpackage` names the family; no plug-in or deployer reads a file with that suffix.
+  assert.ok(!pkg.contributes.languages.some((l) => l.id === 'hdbvirtualpackage' || l.extensions?.includes('.hdbvirtualpackage')));
+  assert.ok(!pkg.contributes.grammars.some((g) => g.scopeName === 'source.hdbvirtualpackage'), 'the invented JSONC grammar is gone');
+  // The negative case: SparkSQL text in a JSON artifact is still reported.
+  assert.ok(analyzeDocument({ languageId: 'hdbsynonymconfig', text: sparkSql }).some((d) => d.ruleId.startsWith('HANA-SYN-01')));
 });
 
 test('HANA-MIG-013: fileSuffix takes the last suffix, case-insensitively, on both path styles', () => {

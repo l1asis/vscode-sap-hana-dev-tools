@@ -746,9 +746,6 @@ jsonGrammar('xsoauthclientconfig', 'SAP HANA XS OAuth Client Configuration', ['c
 jsonGrammar('xsoauthclientflavor', 'SAP HANA XS OAuth Client Flavor', ['description', 'flavorStep', 'paramLocation', 'paramName', 'paramValue', 'valueType', 'paramMandatory', 'modifies', 'parameters']);
 jsonGrammar('xsappsite', 'SAP HANA XS Application Site (.xsappsite)', ['id', 'title', 'description', 'theme', 'catalogs', 'groups', 'tiles', 'personalization']);
 jsonGrammar('hdbfabricvirtualtableconfig', 'SAP HANA HDI Fabric Virtual Table Configuration (.hdbfabricvirtualtableconfig)', TARGET_KEYS);
-jsonGrammar('hdbvirtualpackage', 'SAP HANA HDI Virtual Package (.hdbvirtualpackage, .hdbvirtualpackagehadoop, .hdbvirtualpackagesparksql)', [
-  'plugin_name', 'plugin_version', 'adapter_type', 'location', 'remote_source', 'schema', 'package', 'name', 'file', 'jar', 'class_name',
-]);
 
 // ---------------------------------------------------------------------------
 // .hdbmigrationtable  (SQL DDL plus "== version = N" / "== migration = N" markers)
