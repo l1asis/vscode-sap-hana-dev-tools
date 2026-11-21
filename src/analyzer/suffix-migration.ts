@@ -113,28 +113,28 @@ export const SUFFIX_MIGRATIONS: Readonly<Record<string, SuffixMigration>> = {
     reason: 'is not supported in HDI. Convert the decision table to a graphical calculation view or a table function.',
   },
   '.dqconfig': {
-    languageId: 'xscxmlmodel',
+    languageId: 'dqconfig',
     target: '.hdbflowgraph',
     rename: false,
     reason: "(data quality) is deprecated and not supported in HDI. Use a '.hdbflowgraph'.",
   },
   '.aflpmml': {
-    languageId: 'xscxmlmodel',
+    languageId: 'aflpmml',
     rename: false,
     reason: '(old Application Function Modeler file) is not supported in HDI.',
   },
   '.hdbflowgraphtemplate': {
-    languageId: 'xscxmlmodel',
+    languageId: 'hdbflowgraphtemplate',
     rename: false,
     reason: '(AFL node-palette template) is not supported in HDI.',
   },
   '.dataflow': {
-    languageId: 'xscxmlmodel',
+    languageId: 'xscdataflow',
     rename: false,
     reason: '(data provisioning) is not supported in HDI.',
   },
   '.halmscenario': {
-    languageId: 'xscxmlmodel',
+    languageId: 'halmscenario',
     rename: false,
     reason: '(HALM scenario) is not supported in HDI.',
   },

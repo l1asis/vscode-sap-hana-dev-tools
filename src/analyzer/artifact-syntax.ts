@@ -23,7 +23,14 @@ export const XML_SYNTAX_LANGUAGES: readonly string[] = [
   'hdbdecisiontable',
   'xswidget',
   'xscprocedure',
-  'xscxmlmodel',
+  'hdbflowgraphtemplate',
+  'aflpmml',
+  'dqconfig',
+  'xscdataflow',
+  'epmmodel',
+  'epmquerysource',
+  'halmscenario',
+  'pvsscenario',
 ];
 
 /** CGUL text analysis rule languages (`cgul-text-analysis.md`). */

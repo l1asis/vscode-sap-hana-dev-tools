@@ -1445,24 +1445,123 @@
         "extensions": [
           ".hdbtextbundle"
         ],
-        "configuration": "./language-configuration-properties.json"
+        "configuration": "./language-configuration-properties.json",
+        "icon": {
+          "light": "./images/icons/hdbtextbundle.svg",
+          "dark": "./images/icons/hdbtextbundle.svg"
+        }
       },
       {
-        "id": "xscxmlmodel",
+        "id": "hdbflowgraphtemplate",
         "aliases": [
-          "SAP HANA XS Classic XML Model"
+          "SAP HANA XS Classic Node Palette Flowgraph"
         ],
         "extensions": [
-          ".hdbflowgraphtemplate",
-          ".aflpmml",
-          ".dqconfig",
-          ".dataflow",
-          ".epmmodel",
-          ".epmquerysource",
-          ".halmscenario",
+          ".hdbflowgraphtemplate"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbflowgraphtemplate.svg",
+          "dark": "./images/icons/hdbflowgraphtemplate.svg"
+        }
+      },
+      {
+        "id": "aflpmml",
+        "aliases": [
+          "SAP HANA XS Classic AFL Model"
+        ],
+        "extensions": [
+          ".aflpmml"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/aflpmml.svg",
+          "dark": "./images/icons/aflpmml.svg"
+        }
+      },
+      {
+        "id": "dqconfig",
+        "aliases": [
+          "SAP HANA XS Classic Data Quality Configuration"
+        ],
+        "extensions": [
+          ".dqconfig"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/dqconfig.svg",
+          "dark": "./images/icons/dqconfig.svg"
+        }
+      },
+      {
+        "id": "xscdataflow",
+        "aliases": [
+          "SAP HANA XS Classic Data Provisioning Flow"
+        ],
+        "extensions": [
+          ".dataflow"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/xscdataflow.svg",
+          "dark": "./images/icons/xscdataflow.svg"
+        }
+      },
+      {
+        "id": "epmmodel",
+        "aliases": [
+          "SAP HANA XS Classic EPM Model"
+        ],
+        "extensions": [
+          ".epmmodel"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/epmmodel.svg",
+          "dark": "./images/icons/epmmodel.svg"
+        }
+      },
+      {
+        "id": "epmquerysource",
+        "aliases": [
+          "SAP HANA XS Classic EPM Query Source"
+        ],
+        "extensions": [
+          ".epmquerysource"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/epmquerysource.svg",
+          "dark": "./images/icons/epmquerysource.svg"
+        }
+      },
+      {
+        "id": "halmscenario",
+        "aliases": [
+          "SAP HANA Application Lifecycle Management Scenario"
+        ],
+        "extensions": [
+          ".halmscenario"
+        ],
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/halmscenario.svg",
+          "dark": "./images/icons/halmscenario.svg"
+        }
+      },
+      {
+        "id": "pvsscenario",
+        "aliases": [
+          "SAP HANA Operational Process Intelligence Scenario"
+        ],
+        "extensions": [
           ".pvsscenario"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/pvsscenario.svg",
+          "dark": "./images/icons/pvsscenario.svg"
+        }
       },
       {
         "id": "ignore",
@@ -1977,7 +2076,42 @@
         "path": "./syntaxes/hdbtextbundle.tmLanguage.json"
       },
       {
-        "language": "xscxmlmodel",
+        "language": "hdbflowgraphtemplate",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "aflpmml",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "dqconfig",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "xscdataflow",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "epmmodel",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "epmquerysource",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "halmscenario",
+        "scopeName": "text.xml.hana",
+        "path": "./syntaxes/hanaxml.tmLanguage.json"
+      },
+      {
+        "language": "pvsscenario",
         "scopeName": "text.xml.hana",
         "path": "./syntaxes/hanaxml.tmLanguage.json"
       }
@@ -2665,7 +2799,14 @@
     "onLanguage:xscprocedure",
     "onLanguage:proceduretemplate",
     "onLanguage:hdbtextbundle",
-    "onLanguage:xscxmlmodel"
+    "onLanguage:hdbflowgraphtemplate",
+    "onLanguage:aflpmml",
+    "onLanguage:dqconfig",
+    "onLanguage:xscdataflow",
+    "onLanguage:epmmodel",
+    "onLanguage:epmquerysource",
+    "onLanguage:halmscenario",
+    "onLanguage:pvsscenario"
   ],
   "scripts": {
     "vscode:prepublish": "npm run compile",

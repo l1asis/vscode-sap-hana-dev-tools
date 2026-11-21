@@ -618,7 +618,7 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   // 6. package.json registration checks (and explicit exclusions)
   const pkg = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8')) as {
     contributes: {
-      languages: Array<{ id: string; extensions: string[]; icon?: { light: string; dark: string } }>;
+      languages: Array<{ id: string; aliases?: string[]; extensions: string[]; icon?: { light: string; dark: string } }>;
       grammars: Array<{ language?: string; scopeName: string; injectTo?: string[] }>;
     };
   };
@@ -628,6 +628,10 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
       assert.ok(fs.existsSync(path.join(rootDir, lang.icon.dark)), `Missing dark icon for ${lang.id}: ${lang.icon.dark}`);
     }
   }
+  // Every language this extension declares (it has `aliases`) has a file icon. Built-in languages it only adds
+  // file names to (`ignore` for `.hdiignore`) keep VS Code's own icon.
+  const withoutIcon = pkg.contributes.languages.filter((l) => l.aliases && !l.icon).map((l) => l.id);
+  assert.deepEqual(withoutIcon, [], `languages without an icon: ${withoutIcon.join(', ')}`);
   const allExt = new Set(pkg.contributes.languages.flatMap((l) => l.extensions));
   for (const expected of [
     '.hdbcollectionindex', '.hdbcollectionadjindex', '.hdbfabricvirtualtable',

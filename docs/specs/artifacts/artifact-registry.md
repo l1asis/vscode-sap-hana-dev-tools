@@ -162,14 +162,14 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.decrule` | `hdbdecisiontable` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S3 |
 | `.xswidget` | `xswidget` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | S1, A-LEGACY |
 | `.procedure` | `xscprocedure` | `[XSC]` | replaced → .hdbprocedure | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, S2, M1 |
-| `.hdbflowgraphtemplate` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
-| `.aflpmml` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1 |
-| `.dqconfig` | `xscxmlmodel` | `[XSC]` | replaced → .hdbflowgraph | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
-| `.dataflow` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
-| `.epmmodel` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
-| `.epmquerysource` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
-| `.halmscenario` | `xscxmlmodel` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
-| `.pvsscenario` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
+| `.hdbflowgraphtemplate` | `hdbflowgraphtemplate` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.aflpmml` | `aflpmml` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | S1, M1 |
+| `.dqconfig` | `dqconfig` | `[XSC]` | replaced → .hdbflowgraph | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.dataflow` | `xscdataflow` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.epmmodel` | `epmmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
+| `.epmquerysource` | `epmquerysource` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
+| `.halmscenario` | `halmscenario` | `[XSC]` | unsupported | Repository | `text.xml.hana` | — | syntax | `HANA-MIG-013` | — | M1 |
+| `.pvsscenario` | `pvsscenario` | `[XSC]` | current | Repository | `text.xml.hana` | — | syntax | — | — | M1 |
 | `.hdbtextbundle` | `hdbtextbundle` | `[XSC]` | unsupported | Repository | `source.hdbtextbundle` | — | migration only | `HANA-MIG-013` | — | S1, M1 |
 | `.hdbmigrationtable` | `hdbmigrationtable` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.table.migration` | `source.hdbmigrationtable` | migration table | syntax | — | — | C1 |
 | `.hdiignore` | `ignore` | `[XSA]` `[HDI]` `[CLOUD]` | current | HDI Deployer | built-in | — | — | — | — | X1 |
@@ -182,7 +182,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 - `.xsxmla` is confirmed by M3 ("DXC (Direct Extractor Connection) and xsxmla are not supported" in XS Advanced). Its syntax is not printed (`xsc-legacy-artifacts.md`).
 - `.hdiignore` is added as a file name to VS Code's built-in `ignore` language instead of a new language, so Git tooling keeps working on it.
 - `undeploy.json` keeps VS Code's `json` language and gets `resources/schemas/undeploy.schema.json` (§4.3).
-- `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, `.aflpmml`, `.dqconfig` and `.hdbflowgraphtemplate` share the `xscxmlmodel` language. Their formats are not printed in the corpus. They are model files of SAP HANA Studio editors and get XML highlighting and the XML well-formedness checks of `hana-xml.md` §5. A file without `<` produces no XML error.
+- `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, `.aflpmml`, `.dqconfig` and `.hdbflowgraphtemplate` each have their own language (the language ID is the suffix without the dot; `.dataflow` is `xscdataflow` because a bare `dataflow` ID could collide with other extensions). They used to share one language, `xscxmlmodel`; one language per suffix gives each its own icon, name and, should its format turn out not to be XML (#118), its own grammar. Their formats are not printed in the corpus. They are model files of SAP HANA Studio editors and get XML highlighting and the XML well-formedness checks of `hana-xml.md` §5. A file without `<` produces no XML error.
 
 ---
 

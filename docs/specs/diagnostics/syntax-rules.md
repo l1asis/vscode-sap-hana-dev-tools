@@ -207,7 +207,7 @@
 
 - **Severity:** `error`
 - **Platform Scope:** `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
-- **Target Extensions:** the XML artifacts of `docs/specs/grammars/hana-xml.md` §1 except calculation views (`HANA-LINT-101`): `.analyticprivilege`, `.analyticview`, `.attributeview`, `.hdbanalyticprivilege`, `.hdbflowgraph`, `.hdbreptask`, `.hdbsearchruleset` / `.searchruleset`, `.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig` / `.textminingconfig`, `.hdbdecisiontable` / `.hdbruldec` / `.decrule`, `.xswidget`, `.procedure`, and the `xscxmlmodel` suffixes.
+- **Target Extensions:** the XML artifacts of `docs/specs/grammars/hana-xml.md` §1 except calculation views (`HANA-LINT-101`): `.analyticprivilege`, `.analyticview`, `.attributeview`, `.hdbanalyticprivilege`, `.hdbflowgraph`, `.hdbreptask`, `.hdbsearchruleset` / `.searchruleset`, `.hdbtextconfig`, `.hdbtextdict`, `.hdbtextminingconfig` / `.textminingconfig`, `.hdbdecisiontable` / `.hdbruldec` / `.decrule`, `.xswidget`, `.procedure`, and the former `xscxmlmodel` suffixes (`.hdbflowgraphtemplate`, `.aflpmml`, `.dqconfig`, `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, one language each).
 - **AST / Lexical Trigger:** inside a well-terminated start tag (`hana-xml.md` §5 `attribute`): an attribute name not followed by `=`, a value that is not quoted, or a character that cannot start an attribute name. Parsing of that tag's attributes stops at the first error.
 - **Diagnostic Span & Message:** the attribute name, or the offending character. `Expected '=' after attribute 'b'.`, `Expected quoted value for attribute 'b'.`, `Unexpected character '%' inside element attributes.`
 - **QuickFix:** none.
