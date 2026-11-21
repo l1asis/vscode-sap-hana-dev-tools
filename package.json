@@ -1445,7 +1445,11 @@
         "extensions": [
           ".hdbtextbundle"
         ],
-        "configuration": "./language-configuration-properties.json"
+        "configuration": "./language-configuration-properties.json",
+        "icon": {
+          "light": "./images/icons/hdbtextbundle.svg",
+          "dark": "./images/icons/hdbtextbundle.svg"
+        }
       },
       {
         "id": "hdbflowgraphtemplate",
@@ -1455,7 +1459,11 @@
         "extensions": [
           ".hdbflowgraphtemplate"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/hdbflowgraphtemplate.svg",
+          "dark": "./images/icons/hdbflowgraphtemplate.svg"
+        }
       },
       {
         "id": "aflpmml",
@@ -1465,7 +1473,11 @@
         "extensions": [
           ".aflpmml"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/aflpmml.svg",
+          "dark": "./images/icons/aflpmml.svg"
+        }
       },
       {
         "id": "dqconfig",
@@ -1475,7 +1487,11 @@
         "extensions": [
           ".dqconfig"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/dqconfig.svg",
+          "dark": "./images/icons/dqconfig.svg"
+        }
       },
       {
         "id": "xscdataflow",
@@ -1485,7 +1501,11 @@
         "extensions": [
           ".dataflow"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/xscdataflow.svg",
+          "dark": "./images/icons/xscdataflow.svg"
+        }
       },
       {
         "id": "epmmodel",
@@ -1495,7 +1515,11 @@
         "extensions": [
           ".epmmodel"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/epmmodel.svg",
+          "dark": "./images/icons/epmmodel.svg"
+        }
       },
       {
         "id": "epmquerysource",
@@ -1505,7 +1529,11 @@
         "extensions": [
           ".epmquerysource"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/epmquerysource.svg",
+          "dark": "./images/icons/epmquerysource.svg"
+        }
       },
       {
         "id": "halmscenario",
@@ -1515,7 +1543,11 @@
         "extensions": [
           ".halmscenario"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/halmscenario.svg",
+          "dark": "./images/icons/halmscenario.svg"
+        }
       },
       {
         "id": "pvsscenario",
@@ -1525,7 +1557,11 @@
         "extensions": [
           ".pvsscenario"
         ],
-        "configuration": "./language-configuration-xml.json"
+        "configuration": "./language-configuration-xml.json",
+        "icon": {
+          "light": "./images/icons/pvsscenario.svg",
+          "dark": "./images/icons/pvsscenario.svg"
+        }
       },
       {
         "id": "ignore",
