@@ -323,12 +323,11 @@ test('grammar: new suffixes map to the expected grammars and injections', () => 
   assert.equal(grammarOf.get('hdbtextbundle'), 'source.hdbtextbundle');
   assert.ok(pkg.contributes.grammars.find((g) => g.scopeName === 'proceduretemplate.injection')?.injectTo?.includes('source.proceduretemplate'));
   const byId = new Map(pkg.contributes.languages.map((l) => [l.id, l]));
-  assert.ok(byId.get('xml')?.filenames?.includes('.project'));
   assert.ok(byId.get('ignore')?.filenames?.includes('.hdiignore'));
-  // negative: no new language hijacks the generic Eclipse / ignore files
+  // negative: SAP HANA Studio files are not associated (#119), and no HANA language claims .hdiignore
   for (const l of pkg.contributes.languages) {
-    if (l.id === 'xml' || l.id === 'ignore') continue;
-    for (const f of ['.project', '.jsdtscope', '.hdiignore', '.regiignore']) assert.ok(!l.filenames?.includes(f), `${l.id} claims ${f}`);
+    for (const f of ['.project', '.jsdtscope', '.regiignore']) assert.ok(!l.filenames?.includes(f), `${l.id} claims ${f}`);
+    if (l.id !== 'ignore') assert.ok(!l.filenames?.includes('.hdiignore'), `${l.id} claims .hdiignore`);
   }
 });
 

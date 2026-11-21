@@ -168,9 +168,6 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.pvsscenario` | `xscxmlmodel` | `[XSC]` | current | Repository | `text.xml.hana` | — | migration only | — | — | M1 |
 | `.hdbtextbundle` | `hdbtextbundle` | `[XSC]` | unsupported | Repository | `source.hdbtextbundle` | — | migration only | `HANA-MIG-013` | — | S1, M1 |
 | `.hdbmigrationtable` | `hdbmigrationtable` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.table.migration` | `source.hdbmigrationtable` | migration table | syntax | — | — | C1 |
-| `.project` | `xml` | `[XSC]` | deprecated | Repository | built-in | — | — | — | — | S1, M2 |
-| `.jsdtscope` | `xml` | `[XSC]` | deprecated | — | built-in | — | — | — | — | M2 |
-| `.regiignore` | `ignore` | `[XSC]` | deprecated | — | built-in | — | — | — | — | M2 |
 | `.hdiignore` | `ignore` | `[XSA]` `[HDI]` `[CLOUD]` | current | HDI Deployer | built-in | — | — | — | — | X1 |
 | `undeploy.json` | `json` | `[XSA]` `[HDI]` `[CLOUD]` | current | HDI Deployer | built-in | — | — | — | schema | X1 |
 
@@ -179,7 +176,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 - C1 lists `com.sap.hana.di.roleconfig` for `.hdbroleconfig`, but every plug-in configuration example in H1 and C1 uses `com.sap.hana.di.role.config`. The registry and the `.hdiconfig` completion use `role.config`.
 - `.hdbdecisiontable` is not in the corpus. The corpus names decision tables `*.hdbruldec` (M1, CM) and `*.decrule` (S3). The suffix stays registered for existing files and shares the language of the two documented suffixes.
 - `.xsxmla` is confirmed by M3 ("DXC (Direct Extractor Connection) and xsxmla are not supported" in XS Advanced). Its syntax is not printed (`xsc-legacy-artifacts.md`).
-- `.project`, `.jsdtscope`, `.hdiignore` and `.regiignore` are added as file names to VS Code's built-in `xml` and `ignore` languages instead of new languages, so Eclipse and Git tooling keeps working on them. M2 spells the Eclipse scope file `*.jdtscope`; the file on disk is `.settings/.jsdtscope`.
+- `.hdiignore` is added as a file name to VS Code's built-in `ignore` language instead of a new language, so Git tooling keeps working on it.
 - `undeploy.json` keeps VS Code's `json` language and gets `resources/schemas/undeploy.schema.json` (§4.3).
 - `.dataflow`, `.epmmodel`, `.epmquerysource`, `.halmscenario`, `.pvsscenario`, `.aflpmml`, `.dqconfig` and `.hdbflowgraphtemplate` share the `xscxmlmodel` language. Their formats are not printed in the corpus. They are model files of SAP HANA Studio editors and get XML highlighting only.
 
@@ -200,6 +197,8 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbviewcache` | `[XSC]` `[HDI]` | — | View cache. The corpus has only the migration-table row: no syntax, no plug-in. | M1 |
 | `.hdbremotesource` | `[XSC]` | — | Remote source for Hadoop. No syntax in the corpus. In HDI an administrator creates remote sources. | M1 |
 | `.hdbdcs` | `[XSA]` `[HDI]` | — | Must be undeployed before migrating to SAP HANA Cloud. No syntax in the corpus. | CM |
+| `.project`, `.jsdtscope` | `[XSC]` | — | Eclipse / SAP HANA Studio project descriptors (`.project`, `.settings/.jsdtscope`; M2 spells it `*.jdtscope`). No function in VS Code (#119). | S1, M2 |
+| `.regiignore` | `[XSC]` | — | Ignore list of the SAP HANA Studio Repository Team Provider. No function in VS Code (#119). | M2 |
 | `.classpath`, `.pyc`, `.bat`, `.DS_Store` | `[XSC]` | — | Generic files listed as not migrated. | M2 |
 
 ---
@@ -259,10 +258,9 @@ The HDI Deployer undeploy allowlist lives in the root of the `db/` module. It is
 
 Invalid: an object instead of an array; `"/src/Table.hdbcds"` (absolute path); `"src\\Table.hdbcds"` (backslash delimiter); the same path twice.
 
-### 4.4 `.hdiignore`, `.regiignore` (VS Code `ignore`)
+### 4.4 `.hdiignore` (VS Code `ignore`)
 
 > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/007_5_Defining_the_Data_Model_in_XS_Advanced.md (Pages 264–265)
 
 - `.hdiignore` sits in the root of the application project, next to `undeploy.json`. It lists real paths or path patterns as in `.gitignore` (`src/table_1.hdbtable`, `src/*_2.hdbtable`) and works like the HDI Deployer's `--exclude-filter`.
-- `.regiignore` holds the ignore patterns of the SAP HANA Studio Repository Team Provider (M2).
-- Both reuse the built-in `ignore` grammar.
+- It reuses the built-in `ignore` grammar.

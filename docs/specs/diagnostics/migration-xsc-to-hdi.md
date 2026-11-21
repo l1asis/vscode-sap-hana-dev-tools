@@ -239,6 +239,7 @@ XS Classic attribute views become calculation views with `dataCategory="DIMENSIO
 
 - **Severity:** `Information`
 - **Platform Scope:** `[XSC]` -> `[HDI]`. Off when `hanasql.analyze.migration` is `false` or `hanasql.analyze.targetPlatform` is `xsc`. Suppressible with `hanasql-analyze-disable`.
+- **Scope (#120):** the rule covers every suffix the migration guide marks as renamed, replaced or unsupported in HDI, including suffixes registered before #82 (`.calculationview`, `.hdbtablefunction`, `.analyticprivilege`, `.attributeview`, `.analyticview`, `.hdbtid`, `.hdbtim`, `.hdbdecisiontable`). This matches `HANA-MIG-001` .. `-006` and `-012`, which also report XS Classic files under `targetPlatform: "auto"`. XS Classic-only workspaces set `hanasql.analyze.targetPlatform` to `xsc`.
 - **Target Extensions:** every suffix whose `artifact-registry.md` §2 Migrator column lists `HANA-MIG-013` (`SUFFIX_MIGRATIONS` in `src/analyzer/suffix-migration.ts`). Suffixes handled by `HANA-MIG-005`, `-006` and `-012` (`.hdbdd`, `.hdbstructure`, `.hdbschema`, `.hdbti`) are not repeated.
 - **AST / Lexical Trigger:** the last suffix of the document's file path (case-insensitive). The content is not inspected, so the rule needs a file path and fires on untitled documents never.
 - **Diagnostic Span & Message:** the first line. `'<suffix>' <reason>`, e.g. `'.searchruleset' is the XS Classic suffix of search rule sets. HDI uses '.hdbsearchruleset' with the same syntax.`
