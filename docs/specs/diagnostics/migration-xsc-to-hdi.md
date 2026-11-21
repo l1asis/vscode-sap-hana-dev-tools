@@ -197,6 +197,12 @@ SEQUENCE "my.pkg::SEQ_ORDER_ID"
 3. **Block already present:** merge the clauses into it before its closing `}`. Skip the store clause when the block already has `column store;` or `row store;`, and skip any index whose name is already declared. SAP forbids the annotation and the matching clause together, so the existing clause wins and nothing is duplicated.
 4. Store clauses come before index clauses. Running the fix again on its own output changes nothing.
 
+### 2.6 `.attributeview` / `.analyticview` -> `.hdbcalculationview` (no rule yet)
+
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_XS_Advanced_Migration_Guide/061_Modeler_Artifacts_(Attribute,_Analytic,_Calcview_etc.).md (Pages 73–74)
+
+XS Classic attribute views become calculation views with `dataCategory="DIMENSION"` and analytic views become calculation views with `dataCategory="CUBE"`. The migrator has no conversion or diagnostic for them yet. The structure mapping and the list of features removed during migration are in `docs/specs/artifacts/xsc-modeled-views.md` §5. SQL references to the activated views (`"_SYS_BIC"."pkg/AT_X"` -> `"pkg::AT_X"`) are already rewritten by `HANA-MIG-011`.
+
 ---
 
 ## 3. Code-Level Migration Rules (`HANA-MIG-010` – `HANA-MIG-020`)
