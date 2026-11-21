@@ -263,6 +263,19 @@ test('HANA-MIG-013: replaced and unsupported suffixes are reported without a Qui
   }
 });
 
+test('HANA-MIG-013: .hdbremotesource gets only the migration hint, whatever its content (#117)', () => {
+  assert.ok(!pkg.contributes.grammars.some((g) => g.language === 'hdbremotesource'), 'the format is undocumented: no grammar');
+  assert.ok(!ALL_FORMATTER_LANGUAGES.includes('hdbremotesource'), 'no formatter');
+  for (const text of ['', 'not { json', '<?xml version="1.0"?>\n<a/>\n', 'CREATE REMOTE SOURCE "H" ADAPTER "hadoop";']) {
+    const all = analyzeDocument({ languageId: 'hdbremotesource', text, filePath: '/repo/hadoop/HADOOP_SRC.hdbremotesource', options: {} });
+    assert.deepEqual(all.map((d) => [d.ruleId, d.severity]), [['HANA-MIG-013', 'information']], JSON.stringify(text));
+    assert.match(all[0].message, /^'\.hdbremotesource' \(Hadoop remote source\) is not supported in HDI\. An administrator creates the remote source/);
+    assert.deepEqual(all[0].fixes, []);
+  }
+  // negative: an XS Classic-only workspace is not told to migrate
+  assert.deepEqual(mig013('/repo/HADOOP_SRC.hdbremotesource', 'hdbremotesource', 'x', { targetPlatform: 'xsc' }), []);
+});
+
 test('HANA-MIG-013: current suffixes, missing paths, targetPlatform xsc and migration off stay silent', () => {
   assert.deepEqual(mig013('x.hdbsearchruleset', 'hdbsearchruleset'), []);
   assert.deepEqual(mig013('x.hdbcalculationview', 'hdbcalculationview'), []);
