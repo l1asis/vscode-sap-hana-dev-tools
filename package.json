@@ -1311,6 +1311,19 @@
         }
       },
       {
+        "id": "hdbremotesource",
+        "aliases": [
+          "SAP HANA XS Classic Remote Source"
+        ],
+        "extensions": [
+          ".hdbremotesource"
+        ],
+        "icon": {
+          "light": "./images/icons/hdbremotesource.svg",
+          "dark": "./images/icons/hdbremotesource.svg"
+        }
+      },
+      {
         "id": "xsappsite",
         "aliases": [
           "SAP HANA XS Application Site"
@@ -2642,6 +2655,7 @@
     "onLanguage:hdbvirtualpackagehadoop",
     "onLanguage:hdbvirtualpackagesparksql",
     "onLanguage:hdbmrjob",
+    "onLanguage:hdbremotesource",
     "onLanguage:xsappsite",
     "onLanguage:hdbdecisiontable",
     "onLanguage:xswidget",
