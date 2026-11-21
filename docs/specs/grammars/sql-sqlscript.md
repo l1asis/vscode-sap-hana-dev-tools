@@ -626,6 +626,113 @@ REMOTE TABLE REPLICA "TARGET_TABLE" ON "VIRTUAL_TABLE"
 
 A misspelled clause keyword (`FOR SELCT`, `WHER`) is `HANA-SYN-021` with a QuickFix. A missing filter name, object name, `SELECT` after `FOR`, `WHERE` condition, or virtual table name is `HANA-SYN-025` on the token before the gap. Trailing tokens after the condition, provider or virtual table follow the boundary rule of `HANA-SYN-042`. `ALTER STRUCTURED FILTER` is not parsed (long tail).
 
+### 4.12 Table DDL: Column Definitions, Constraints, Indexes, Statistics & Partitions `[XSC]` `[XSA]` `[HDI]` `[CLOUD]`
+
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/024_pages_691_720.md (Pages 691–720: *CREATE TABLE Statement*, `<table_contents_source>`, `<table_element>`, `<column_definition>`, `<column_constraint>`; *CREATE STATISTICS Statement*)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/025_pages_721_750.md (Pages 721–750: `<unique_specification>`, `<rs_tree_type_index>`, `<cs_inverted_type_index>`, `<table_constraint>`, `<references_specification>`, `<as_subquery>`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/017_pages_481_510.md (Pages 481–510: *ALTER TABLE Statement*, `<add_columns_clause>`, `<drop_columns_clause>`, `<add_constraint_clause>`, `<constraint_enforcement>`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/018_pages_511_540.md (Pages 511–540: `<range_partition>`, `<partition_expression>`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/022_pages_631_660.md (Pages 631–660: *CREATE INDEX Statement*, `<index_type>`, `<column_name_order_entry>`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_SQL_Reference_Guide/013_pages_361_390.md (Pages 361–390: *Window Functions and the Window Specification*)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/023_pages_661_690.md (Pages 661–690: *CREATE TABLE Statement*, `<schema_flexibility>`, `<clientside_encryption>`)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/001_pages_1_30.md (Pages 1–30: `TEXT`, `BINTEXT`, `<fulltext_elem>`)
+> Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_SQL_Reference_Guide_for_SAP_HANA_Platform/025_pages_721_750.md (Pages 721–750: *CREATE TYPE Statement*, `<column_store_data_type>`)
+> Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Property_Graph_Engine_Refe/001_pages_1_30.md (Pages 3–40: `<source_columns_specification>`, `<column_name_list>`)
+
+The headerless HDI forms (`.hdbtable`, `.hdbtabletype`, `.hdbstructure`, `.hdbindex`, `.hdbfulltextindex`, `.hdbstatistics`, `.hdbcollectionindex`, `.hdbgraphworkspace`, `.hdbmigrationtable` sections) are the same productions without the leading `CREATE`.
+
+```ebnf
+create_table        ::= [ "CREATE" ] [ table_type ] "TABLE" table_name table_contents
+                        [ "WITH" "ASSOCIATIONS" "(" ... ")" ] { table_option } ;
+table_type          ::= "COLUMN" | "ROW" | "HISTORY" "COLUMN"
+                      | ( "GLOBAL" | "LOCAL" ) "TEMPORARY" [ "COLUMN" | "ROW" ] ;
+table_contents      ::= "(" table_element { "," table_element } ")"
+                      | "LIKE" table_name ...                                         (* long tail *)
+                      | [ "(" column_name { "," column_name } ")" ] [ "ADD" "(" table_element ")" ] "AS" ... ;
+create_table_type   ::= [ "CREATE" ] "TYPE" type_name "AS" "TABLE" "(" table_element { "," table_element } ")" ... ;
+alter_table_columns ::= "ALTER" "TABLE" table_name
+                        ( "ADD" "(" table_element { "," table_element } ")"
+                        | "ALTER" "(" table_element { "," table_element } ")"
+                        | "DROP" "(" column_name { "," column_name } ")"
+                        | "ADD" table_constraint
+                        | "PARTITION" "BY" ... ) ... ;
+
+table_element       ::= column_definition | table_constraint ;
+column_definition   ::= column_name ( data_type [ "ARRAY" ] | "ALTER" ) { column_attribute } ;  (* "ALTER": in ALTER TABLE ... ALTER *)
+column_attribute    ::= "NULL" | "NOT" "NULL" | [ "NOT" ] "HIDDEN"
+                      | "DEFAULT" ( expression | "LOADABLE" )
+                      | [ "CONSTRAINT" name ] ( "UNIQUE" [ index_type ] | "PRIMARY" "KEY" [ index_type ] | references_spec )
+                      | "GENERATED" "ALWAYS" "AS" ( expression | "IDENTITY" [ "(" ... ")" ] | "ROW" ( "START" | "END" ) [ "COMMIT" ] )
+                      | "GENERATED" "BY" "DEFAULT" "AS" "IDENTITY" [ "(" ... ")" ]
+                      | "AS" expression                                               (* calculated field *)
+                      | cs_or_ddic_type [ "(" ... ")" ]                               (* CS_INT, CS_FIXED(12, 2), DDIC_CHAR, ... *)
+                      | "MEMORY" "THRESHOLD" ( integer | "NULL" )
+                      | "CLIENTSIDE" "ENCRYPTION" ( [ "ON" ] "WITH" key_name [ "RANDOM" | "DETERMINISTIC" ] | "OFF" )
+                      | ( "ENABLE" | "DISABLE" ) "SCHEMA" "FLEXIBILITY"
+                      | "FUZZY" "SEARCH" ( "INDEX" on_off | "MODE" [ string | "NULL" ] )
+                      | "PERSISTENT" "MEMORY" ( "ON" | "OFF" | "DEFAULT" )
+                      | "COMMENT" string
+                      | ( "COLUMN" | "PAGE" ) "LOADABLE"
+                      | "NUMA" "NODE" ( "(" ... ")" | "NULL" ) [ "IMMEDIATE" | "DEFERRED" ]
+                      | "AUDIT" ( "READ" | "NONE" )
+                      | fulltext_elem ;                                               (* TEXT, BINTEXT, SHORTTEXT columns *)
+fulltext_elem       ::= "LANGUAGE" ( "COLUMN" column_name | "DETECTION" "(" ... ")" )
+                      | "MIME" "TYPE" ( "COLUMN" column_name | string )
+                      | "SYNC" | "SYNCHRONOUS"
+                      | ( "ASYNC" | "ASYNCHRONOUS" ) [ "FLUSH" [ "QUEUE" ] flush_queue ]
+                      | "PHRASE" "INDEX" "RATIO" number | "CONFIGURATION" string | "TOKEN" "SEPARATORS" string
+                      | ( "SEARCH" "ONLY" | "FAST" "PREPROCESS" | "TEXT" "ANALYSIS" ) on_off ;
+flush_queue         ::= ( "EVERY" integer "MINUTES" | "AFTER" integer "DOCUMENTS" ) [ "OR" flush_queue ] ;
+index_type          ::= "BTREE" | "CPBTREE" | "INVERTED" ( "HASH" | "VALUE" | "INDIVIDUAL" ) ;
+on_off              ::= "ON" | "OFF" ;
+
+table_constraint    ::= [ "CONSTRAINT" name ]
+                        ( ( "PRIMARY" "KEY" | "UNIQUE" ) [ index_type ] "(" column_name [ "ASC" | "DESC" ] { "," ... } ")"
+                        | "FOREIGN" "KEY" "(" column_name { "," column_name } ")" references_spec
+                        | "CHECK" "(" condition ")"
+                        | "PERIOD" "FOR" ... | "INDEX" ... ) ;                        (* long tail *)
+references_spec     ::= "REFERENCES" table_name [ "(" column_name { "," column_name } ")" ]
+                        { "ON" ( "UPDATE" | "DELETE" ) ( "CASCADE" | "RESTRICT" | "SET" ( "NULL" | "DEFAULT" ) ) }
+                        [ [ "NOT" ] "ENFORCED" ] [ [ "NOT" ] "VALIDATED" ] [ "INITIALLY" ( "IMMEDIATE" | "DEFERRED" ) ] ;
+
+table_option        ::= ( "PARTITION" | "SUBPARTITION" ) "BY" partition_scheme { "," partition_scheme }
+                      | ... ;                                                         (* other options: long tail *)
+partition_scheme    ::= "HASH" "(" partition_expr { "," partition_expr } ")" "PARTITIONS" ( integer | "GET_NUM_SERVERS" "(" ")" )
+                      | "RANGE" "(" partition_expr { "," partition_expr } ")" [ [ "NO" ] "PRIMARY" "KEY" "CHECK" ] "(" part_range ... ")"
+                      | "ROUNDROBIN" "PARTITIONS" ... ;
+partition_expr      ::= column_name [ "AS" data_type ] | ( "YEAR" | "MONTH" | "HOUR" ) "(" column_name ")" ;
+
+create_index        ::= [ "CREATE" ] ( [ "UNIQUE" ] [ index_type ] | "FULLTEXT" | "FUZZY" "SEARCH" | "HASH" | "BLOCK" "RANGE" )
+                        "INDEX" index_name "ON" table_name "(" index_item [ "ASC" | "DESC" ] { "," ... } ")" ... ;
+index_item          ::= column_name | "$" { "." name } ;                              (* document path of a collection index *)
+create_statistics   ::= [ "CREATE" ] "STATISTICS" [ name ] "ON" table_name [ "(" column_name { "," column_name } ")" ] ... ;
+window_spec         ::= "OVER" "(" [ window_name ] [ "PARTITION" "BY" expression { "," expression } ]
+                        [ "ORDER" "BY" expression [ "ASC" | "DESC" ] [ "NULLS" ( "FIRST" | "LAST" ) ] { "," ... } ]
+                        [ window_frame ] ")" ;
+```
+
+- The column attributes may come in any order. Each one is recognized by its leading word or words (`FAST PREPROCESS`, `PAGE LOADABLE`), so columns named `text`, `language` or `comment` are not attributes. A word directly followed by a built-in data type starts the next column.
+- The fulltext options belong to `TEXT`, `BINTEXT` and `SHORTTEXT` columns `[XSC]` `[XSA]`. The 2.0 grammar also allows a comma between them (`<fulltext_elem> [{, <fulltext_elem>}]`), but in an element list a `,` ends the column, and every example writes them space-separated. Only the space-separated form is parsed.
+- `CS_*` / `DDIC_*` column store and DDIC types follow the data type. The Cloud reference keeps only the DDIC types.
+- After the element list, `WITH ASSOCIATIONS (...)` is parsed (`docs/specs/diagnostics/syntax-rules.md`, *Views*). Every other table option (`UNLOAD PRIORITY`, `AUTO MERGE`, `WITH SYSTEM VERSIONING ...`, `COMMENT`, ...) is long tail. Only the column lists of `[SUB]PARTITION BY HASH | RANGE (...)` are validated, also after a `,` in a multi-level scheme. Range partition specs are skipped.
+- The graph workspace column lists (`SOURCE | TARGET | KEY [COLUMN] <name> {, <name>}`, §4.4) have no parentheses. A list ends at the next clause word (catalog role `graph-workspace-clause`).
+
+**Diagnostics** (#101, `docs/specs/diagnostics/syntax-rules.md` `HANA-SYN-023` item 9): checked by the consuming clause parser (`src/analyzer/sql-clauses.ts`).
+
+| Input | Rule | Span | Message |
+| :--- | :--- | :--- | :--- |
+| `("A" INT DEFAULT 1 "B" INT)` | `HANA-SYN-023` | `"B"` | `Expected ',' before column '"B"'.` |
+| `("ID" INT NOT NULL PRIMARY KEY ("ID"))` | `HANA-SYN-023` | `PRIMARY` | `Expected ',' before table constraint 'PRIMARY'.` |
+| `INDEX "I" ON "T" ("A" "B")` | `HANA-SYN-023` | `"B"` | `Expected ',' before index column '"B"'.` |
+| `HASH INDEX "I" ON "C" ($."a" $."b")` | `HANA-SYN-023` | `$` | `Expected ',' before index column '$."b"'.` |
+| `PARTITION BY HASH (a b)` | `HANA-SYN-023` | `b` | `Expected ',' before partitioning column 'b'.` |
+| `OVER (PARTITION BY a b ORDER BY c)` | `HANA-SYN-023` | `b` | `Expected ',' before PARTITION BY item 'b'.` |
+| `SOURCE COLUMN "A" "B"` | `HANA-SYN-023` | `"B"` | `Expected ',' before column '"B"'.` |
+| `(a INT DEFALT 1)` | `HANA-SYN-021` | `DEFALT` | `Unknown keyword 'DEFALT' in column definition. Did you mean 'DEFAULT'?` |
+| `(i INTEGER PRIMARYKEY)` | `HANA-SYN-021` | `PRIMARYKEY` | `Unknown keyword 'PRIMARYKEY' in column definition. Did you mean 'PRIMARY KEY'?` |
+
+Every `HANA-SYN-023` has the QuickFix `Insert ','` and every `HANA-SYN-021` a `Replace` QuickFix. Any other token that the productions do not model ends validation of the statement silently (long tail): unknown attribute keywords, window frames, range partition specs, `ADJACENCY INDEX` field pairs, and `CREATE TABLE ... AS` subqueries.
+
 ---
 
 ## 5. Embedded Language Injections
