@@ -190,7 +190,7 @@
 
 ### `HANA-SYN-010` — JSON / JSONC Syntax Error
 - **Severity:** `error`
-- **Target Extensions:** every language of `JSON_ARTIFACT_LANGUAGES` (`src/formatter/dispatch.ts`; formatter `json` in `docs/specs/artifacts/artifact-registry.md` §2), including `.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig` and `.hdbafllangprocedure` (#102), and HDI JSON `.hdbrole` (detected via leading `{`). The aliases `.hdbsynonymgrantor`, `.hdbsynonymtemplate`, `.hdbrmjob` and `.hdbhadoopmrjob` are checked with their language.
+- **Target Extensions:** every language of `JSON_ARTIFACT_LANGUAGES` (`src/formatter/dispatch.ts`; formatter `json` in `docs/specs/artifacts/artifact-registry.md` §2), including `.hdblogicalschema`, `.hdbsysbicsynonym`, `.hdbvirtualprocedureconfig`, `.hdbvirtualfunctionconfig` and `.hdbafllangprocedure` (#102), and HDI JSON `.hdbrole` (detected via leading `{`). The aliases `.hdbsynonymgrantor` and `.hdbsynonymtemplate` are checked with their language. The binary `.hdbmrjob` family (`.hdbhadoopmrjob`, `.hdbrmjob`) is not checked (`docs/specs/artifacts/hdi-target-configs.md` §10).
 - **AST / Parser Trigger:** `parseJsonAstWithErrors(text, options)` records structured recovery errors without aborting the partial AST needed for `HANA-SEC-*`:
   - Empty / comment-only document (no root JSON value). Note: `.xsapp` marker files permit empty or whitespace-only content without emitting `HANA-SYN-010`.
   - Unterminated string `"..."` (reaches EOF or unescaped newline before closing `"`).
