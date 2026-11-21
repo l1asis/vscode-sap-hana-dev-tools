@@ -104,59 +104,61 @@ const PRIVILEGE_ENUM_VALUES: readonly { readonly value: string; readonly descrip
 ];
 
 const XSACCESS_ROOT_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'exposed', detail: 'boolean', description: 'Controls whether package HTTP content is accessible over HTTP(S).', defaultSnippet: 'true' },
+  { name: 'exposed', detail: 'boolean', description: 'Exposes the package content over HTTP(S). Default `false`.', defaultSnippet: 'true' },
   {
     name: 'authentication',
-    detail: 'object | object[] | null',
-    description: 'Specifies HTTP authentication mechanism(s). Setting `null` exposes unauthenticated public endpoints (HANA-SEC-020).',
-    defaultSnippet: '{ "method": "$1" }',
+    detail: 'object | null',
+    description: 'Required. `{ "method": "Form" }`; other methods are configured in the XS Administration Tool. `null` allows unauthenticated access (HANA-SEC-020).',
+    defaultSnippet: '{ "method": "Form" }',
   },
-  { name: 'authorization', detail: 'string[]', description: 'List of application privileges required to access package resources.', defaultSnippet: '["$1"]' },
-  { name: 'prevent_xsrf', detail: 'boolean', description: 'Enables CSRF token enforcement on state-changing requests (recommended `true`).', defaultSnippet: 'true' },
-  { name: 'force_ssl', detail: 'boolean', description: 'Requires encrypted HTTPS connections (recommended `true`).', defaultSnippet: 'true' },
-  { name: 'anonymous_connection', detail: 'string | null', description: 'Anonymous `.xssqlcc` SQL connection configuration (high-risk public execution; HANA-SEC-022).', defaultSnippet: 'null' },
-  { name: 'default_connection', detail: 'string', description: 'Package default `.xssqlcc` configuration.', defaultSnippet: '"$1"' },
-  { name: 'cors', detail: 'object', description: 'Cross-Origin Resource Sharing configuration (`enabled`, `allowOrigin`, `allowMethods`, `allowCredential`).', defaultSnippet: '{ "enabled": true, "allowOrigin": ["$1"] }' },
-  { name: 'headers', detail: 'object', description: 'Custom HTTP response headers and `x_frame_options` clickjacking protection.', defaultSnippet: '{ "x_frame_options": "SAMEORIGIN" }' },
-  { name: 'cache_control', detail: 'string', description: 'Cache-Control HTTP response directive (`no-cache`, `max-age=...`).', defaultSnippet: '"no-cache, no-store"' },
-  { name: 'mime_types', detail: 'object[]', description: 'Custom MIME type overrides for served static assets.', defaultSnippet: '[{ "extension": "$1", "mimetype": "$2" }]' },
-  { name: 'rewrite_rules', detail: 'object[]', description: 'URL rewrite rules mapping source patterns to target paths.', defaultSnippet: '[{ "source": "$1", "target": "$2" }]' },
-  { name: 'default_file', detail: 'string', description: 'Default entry file served when requesting the package root.', defaultSnippet: '"index.html"' },
-  { name: 'max_request_runtime', detail: 'number', description: 'Maximum allowed XSJS request execution time in seconds.', defaultSnippet: '300' },
-  { name: 'enable_etags', detail: 'boolean', description: 'Enables HTTP ETag headers for conditional caching.', defaultSnippet: 'true' },
+  { name: 'authorization', detail: 'string[] | null', description: 'Application privileges from `.xsprivileges` required for access. `null` disables inherited authorization.', defaultSnippet: '["$1"]' },
+  { name: 'anonymous_connection', detail: 'string | null', description: '`.xssqlcc` used when no credentials are provided. Default `null`; not recommended (HANA-SEC-022).', defaultSnippet: 'null' },
+  { name: 'default_connection', detail: 'string', description: '`.xssqlcc` used for every SQL execution in the package (HANA-SEC-022).', defaultSnippet: '"$1"' },
+  { name: 'cache_control', detail: 'string | null', description: 'HTTP `Cache-Control` directives. Default `null`; `"no-cache, no-store"` recommended.', defaultSnippet: '"no-cache, no-store"' },
+  { name: 'cors', detail: 'object', description: 'Cross-origin resource sharing (`enabled`, `allowMethods`, `allowOrigin`, `maxAge`, `allowHeaders`, `exposeHeaders`). Disabled by default.', defaultSnippet: '{ "enabled": true, "allowOrigin": ["https://$1"] }' },
+  { name: 'default_file', detail: 'string', description: 'File served for the package URL. Default `"index.html"`.', defaultSnippet: '"index.html"' },
+  { name: 'enable_etags', detail: 'boolean', description: 'Generates ETags. Default `true`.', defaultSnippet: 'true' },
+  { name: 'force_ssl', detail: 'boolean', description: 'Requires HTTPS. Default `false` (HANA-SEC-024).', defaultSnippet: 'true' },
+  { name: 'mime_mapping', detail: 'object[]', description: 'MIME type overrides `{ "extension", "mimetype" }`; the server defaults stay valid for other extensions.', defaultSnippet: '[{ "extension": "$1", "mimetype": "$2" }]' },
+  { name: 'prevent_xsrf', detail: 'boolean', description: 'Enforces the `X-CSRF-Token` check. Default `false` (HANA-SEC-021).', defaultSnippet: 'true' },
+  { name: 'rewrite_rules', detail: 'object[]', description: 'URL rewrite rules `{ "source": "<regex>", "target": "<path>" }`.', defaultSnippet: '[{ "source": "$1", "target": "$2" }]' },
+  { name: 'headers', detail: 'object', description: 'Custom response headers (`enabled`, `customHeaders`), e.g. X-Frame-Options (HANA-SEC-025).', defaultSnippet: '{ "enabled": true, "customHeaders": [{ "name": "X-Frame-Options", "value": "SAMEORIGIN" }] }' },
 ];
 
 const XSACCESS_AUTH_FIELDS: readonly ArtifactFieldSpec[] = [
   {
     name: 'method',
     detail: 'string',
-    description: 'Authentication scheme (`Form`, `Basic`, `SAML`, `LogonTicket`, `X509`, `SPNEGO`).',
+    description: 'Authentication method. Only `Form` is evaluated from `.xsaccess`; configure other methods in the SAP HANA XS Administration Tool.',
     defaultSnippet: '"Form"',
     enumValues: [
-      { value: 'Form', description: 'Form-based HTML login redirect authentication.' },
-      { value: 'Basic', description: 'HTTP Basic authentication over HTTPS.' },
-      { value: 'SAML', description: 'SAML 2.0 Single Sign-On identity provider assertion.' },
-      { value: 'LogonTicket', description: 'SAP Logon Ticket authentication.' },
-      { value: 'X509', description: 'Mutual TLS X.509 client certificate authentication.' },
-      { value: 'SPNEGO', description: 'Kerberos / SPNEGO browser SSO.' },
+      { value: 'Form', description: 'Form-based logon (the only method evaluated from `.xsaccess`).' },
+      { value: 'Basic', description: 'HTTP Basic authentication.', deprecated: 'Configure Basic authentication in the SAP HANA XS Administration Tool.' },
+      { value: 'SAML', description: 'SAML 2.0 single sign-on.', deprecated: 'Configure SAML in the SAP HANA XS Administration Tool.' },
+      { value: 'LogonTicket', description: 'SAP logon ticket.', deprecated: 'Configure logon tickets in the SAP HANA XS Administration Tool.' },
+      { value: 'X509', description: 'X.509 client certificate.', deprecated: 'Configure X.509 in the SAP HANA XS Administration Tool.' },
+      { value: 'SPNEGO', description: 'Kerberos / SPNEGO single sign-on.', deprecated: 'Configure SPNEGO in the SAP HANA XS Administration Tool.' },
     ],
   },
-  { name: 'realm', detail: 'string', description: 'HTTP authentication realm identifier.' },
 ];
 
 const XSACCESS_CORS_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'enabled', detail: 'boolean', description: 'Enables CORS headers for cross-origin requests.', defaultSnippet: 'true' },
-  { name: 'allowOrigin', detail: 'string[]', description: 'Allowed Origin URLs. Avoid `"*"` wildcard (HANA-SEC-023).', defaultSnippet: '["https://$1"]' },
-  { name: 'allowMethods', detail: 'string[]', description: 'Permitted HTTP verbs (`GET`, `POST`, `PUT`, `DELETE`).', defaultSnippet: '["GET", "POST"]' },
-  { name: 'allowHeaders', detail: 'string[]', description: 'Permitted custom request headers.', defaultSnippet: '["X-CSRF-Token", "Content-Type"]' },
-  { name: 'exposeHeaders', detail: 'string[]', description: 'Response headers exposed to browser XHR/fetch clients.' },
-  { name: 'maxAge', detail: 'string | number', description: 'Preflight OPTIONS cache duration in seconds.' },
-  { name: 'allowCredential', detail: 'boolean', description: 'Allows cookies/credentials on cross-origin requests (never combine with `"*"` origin; HANA-SEC-024).', defaultSnippet: 'false' },
+  { name: 'enabled', detail: 'boolean', description: 'Enables CORS. Default `false`: no preflight answers and no CORS headers.', defaultSnippet: 'true' },
+  { name: 'allowMethods', detail: 'string[]', description: 'Allowed methods. Default `["GET", "POST", "HEAD", "OPTIONS"]`.', defaultSnippet: '["GET", "POST"]' },
+  { name: 'allowOrigin', detail: 'string[]', description: 'Allowed origins (`*.sap.com` wildcards). Default `["*"]` (HANA-SEC-023).', defaultSnippet: '["https://$1"]' },
+  { name: 'maxAge', detail: 'string', description: 'Preflight cache time in seconds. Default `"3600"`.', defaultSnippet: '"3600"' },
+  { name: 'allowHeaders', detail: 'string[]', description: 'Allowed request headers. No default.', defaultSnippet: '["X-CSRF-Token", "Content-Type"]' },
+  { name: 'exposeHeaders', detail: 'string[]', description: 'Response headers exposed to the client. No default.' },
 ];
 
 const XSACCESS_HEADERS_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'custom', detail: 'object[]', description: 'Array of `{ name, value }` custom HTTP response headers.' },
-  { name: 'x_frame_options', detail: 'string', description: 'Clickjacking protection (`DENY`, `SAMEORIGIN`, or `ALLOW-FROM <uri>`).' },
+  { name: 'enabled', detail: 'boolean', description: 'Must be `true` for custom headers to apply. Runtime settings override design-time settings.', defaultSnippet: 'true' },
+  {
+    name: 'customHeaders',
+    detail: 'object[]',
+    description: '`{ "name", "value" }` headers, e.g. X-Frame-Options `DENY`, `SAMEORIGIN` or `ALLOW-FROM <URL>`.',
+    defaultSnippet: '[{ "name": "X-Frame-Options", "value": "SAMEORIGIN" }]',
+  },
 ];
 
 const HDICONFIG_ROOT_FIELDS: readonly ArtifactFieldSpec[] = [
@@ -176,51 +178,80 @@ const HDICONFIG_SUFFIX_FIELDS: readonly ArtifactFieldSpec[] = [
 ];
 
 const GRANTOR_OWNER_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'schema_privileges', detail: 'object[]', description: 'Schema-level privileges granted by the grantor service.' },
-  { name: 'object_privileges', detail: 'object[]', description: 'Object-level privileges (`reference`, `privileges`) granted by the grantor service.' },
-  { name: 'global_object_privileges', detail: 'object[]', description: 'External/catalog object privileges with explicit `schema`.' },
-  { name: 'roles', detail: 'string[]', description: 'Database roles granted to the HDI container technical user.' },
-  { name: 'schema_roles', detail: 'object[]', description: 'Schema-scoped HDI role names (`names`).' },
+  { name: 'system_privileges', detail: 'object[]', description: 'System privileges: `{ "privileges", "privileges_with_admin_option" }`.' },
+  { name: 'global_roles', detail: 'object[]', description: 'Roles without a schema: `{ "roles", "roles_with_admin_option" }`. Not supported with an HDI container grantor.' },
+  { name: 'schema_privileges', detail: 'object[]', description: 'Schema privileges: `{ "schema"?, "privileges", "privileges_with_grant_option" }`.' },
+  { name: 'schema_roles', detail: 'object[]', description: 'Schema-local roles: `{ "schema"?, "roles", "roles_with_admin_option" }`.' },
+  { name: 'object_privileges', detail: 'object[]', description: 'Object privileges: `{ "schema"?, "name", "privileges", "privileges_with_grant_option" }`.' },
+  { name: 'global_object_privileges', detail: 'object[]', description: 'Objects without a schema: `{ "name", "type", "privileges", "privileges_with_grant_option" }`.' },
+  { name: 'roles', detail: 'string[]', description: 'Global roles (older form).', deprecated: 'Superseded by `global_roles`; still accepted for backward compatibility.' },
+  { name: 'container_roles', detail: 'string[]', description: 'Container roles (older form).', deprecated: 'Superseded by `schema_roles`; still accepted for backward compatibility.' },
 ];
 
 const HDBGRANTS_ROOT_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'object_owner', detail: 'object', description: 'Privileges granted to the HDI container `#OO` object owner (with optional `WITH GRANT OPTION`).' },
-  { name: 'application_user', detail: 'object', description: 'Privileges granted to the runtime `#RT` application user (keep least-privilege; avoid `privileges_with_grant_option`; HANA-SEC-042).' },
+  { name: 'object_owner', detail: 'object', description: 'Privileges granted to the container object owner `<container>#OO`.' },
+  { name: 'application_user', detail: 'object', description: 'Privileges granted to the application users bound to the modules (least privilege; HANA-SEC-040).' },
 ];
 
-const PRIVILEGE_ITEM_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'reference', detail: 'string', description: 'Target catalog schema, table, view, or procedure identifier.' },
-  { name: 'type', detail: 'string', description: 'Optional catalog object type (`TABLE`, `VIEW`, `PROCEDURE`, ...).' },
-  {
-    name: 'privileges',
-    detail: 'string[]',
-    description: 'Database privileges granted without grant option.',
-    defaultSnippet: '["SELECT"]',
-    enumValues: PRIVILEGE_ENUM_VALUES,
-  },
+/** Items of `.hdbgrants` / `.hdbrevokes` privilege sets (`hdi-grants-roles.md` §2.3). */
+const GRANTS_PRIVILEGE_ITEM_FIELDS: readonly ArtifactFieldSpec[] = [
+  { name: 'schema', detail: 'string', description: 'Fixed schema; overrides the schema of the grantor service.' },
+  { name: 'name', detail: 'string', description: 'Object name (`object_privileges`, `global_object_privileges`).' },
+  { name: 'type', detail: 'string', description: 'Object type for `global_object_privileges` (`REMOTE SOURCE`, `USERGROUP`, ...).' },
+  { name: 'privileges', detail: 'string[]', description: 'Privileges granted without grant or admin option.', defaultSnippet: '["SELECT"]', enumValues: PRIVILEGE_ENUM_VALUES },
   {
     name: 'privileges_with_grant_option',
     detail: 'string[]',
-    description: 'Database privileges granted `WITH GRANT OPTION` (avoid on `application_user`; HANA-SEC-030/042).',
+    description: 'Privileges granted `WITH GRANT OPTION` (needed by the object owner for exposed definer-mode objects; HANA-SEC-040 on `application_user`).',
     defaultSnippet: '["SELECT"]',
     enumValues: PRIVILEGE_ENUM_VALUES,
   },
-  { name: 'include_filter', detail: 'object[]', description: 'Wildcard filters constraining which objects receive privileges.' },
+  { name: 'privileges_with_admin_option', detail: 'string[]', description: 'System privileges granted `WITH ADMIN OPTION` (`system_privileges` only).' },
+  { name: 'roles', detail: 'string[]', description: 'Role names (`global_roles`, `schema_roles`). A name ending in `#` is for the object owner only.' },
+  { name: 'roles_with_admin_option', detail: 'string[]', description: 'Roles granted `WITH ADMIN OPTION` (not with an HDI container grantor).' },
 ];
 
 const HDBROLE_JSON_ROOT_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'role', detail: 'object', description: 'Top-level HDI JSON role definition object.' },
+  { name: 'role', detail: 'object', description: 'Root: an object with the single key `role`.' },
 ];
 
 const HDBROLE_JSON_BODY_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'name', detail: 'string', description: 'Fully qualified HDI role name (e.g. `"my.ns::ReaderRole"`).' },
-  { name: 'schema_privileges', detail: 'object[]', description: 'Privileges granted across the container runtime schema.' },
-  { name: 'object_privileges', detail: 'object[]', description: 'Privileges granted on specific tables, views, procedures, or calculation views.' },
-  { name: 'schema_analytic_privileges', detail: 'object[]', description: 'Analytic privileges attached to this role.' },
-  { name: 'global_object_privileges', detail: 'object[]', description: 'Catalog object privileges outside the HDI container schema.' },
-  { name: 'schema_roles', detail: 'object[]', description: 'Contained sub-roles in this HDI schema (`names`).' },
-  { name: 'system_privileges', detail: 'string[]', description: 'System-level administrative privileges (flagged by HANA-SEC-032 if overly broad).' },
-  { name: 'application_privileges', detail: 'string[]', description: 'XS application privilege names.' },
+  { name: 'name', detail: 'string', description: 'Run-time role name. A name ending in `#` may hold grant-option privileges (HANA-SEC-033).' },
+  { name: 'pattern_escape_character', detail: 'string', description: 'Escape character for `%` / `_` in wildcard object names. Default `\\`.' },
+  { name: 'global_roles', detail: 'string[]', description: 'Roles without a schema.' },
+  { name: 'schema_roles', detail: 'object[]', description: 'Schema-local roles: `{ "schema_reference"?, "names" }`.' },
+  { name: 'system_privileges', detail: 'string[]', description: 'System privileges (HANA-SEC-031 / -032 on administrative or broad privileges).' },
+  { name: 'schema_privileges', detail: 'object[]', description: 'Schema privileges: `{ "reference"?, "privileges", "privileges_with_grant_option"? }`.' },
+  { name: 'object_privileges', detail: 'object[]', description: 'Object privileges: `{ "name", "type", "privileges", "privileges_with_grant_option"?, "pattern_mode"? }`.' },
+  { name: 'global_object_privileges', detail: 'object[]', description: 'Objects without a schema: `{ "name", "type", "privileges", "schema_reference"? }`.' },
+  { name: 'schema_analytic_privileges', detail: 'object[]', description: 'Analytic privileges: `{ "schema_reference"?, "privileges", "privileges_with_grant_option"? }`.' },
+];
+
+/** Entries of `.hdbrole` privilege and role lists (`hdi-grants-roles.md` §3.2). */
+const ROLE_PRIVILEGE_ITEM_FIELDS: readonly ArtifactFieldSpec[] = [
+  { name: 'name', detail: 'string', description: 'Object name or synonym, or a wildcard pattern (`TABLE%`) with `pattern_mode`.' },
+  { name: 'type', detail: 'string', description: 'Object type (`TABLE`, `VIEW`, `PROCEDURE`, `FUNCTION`, `SEQUENCE`, `SYNONYM`, `INDEX`, `TRIGGER`, ...).' },
+  { name: 'privileges', detail: 'string[]', description: 'Privileges without grant option (non-empty).', defaultSnippet: '["SELECT"]', enumValues: PRIVILEGE_ENUM_VALUES },
+  {
+    name: 'privileges_with_grant_option',
+    detail: 'string[]',
+    description: 'Privileges with grant option; only in roles whose name ends with `#` (HANA-SEC-030 / -033).',
+    defaultSnippet: '["SELECT"]',
+    enumValues: PRIVILEGE_ENUM_VALUES,
+  },
+  {
+    name: 'pattern_mode',
+    detail: 'string',
+    description: 'Required with a wildcard `name`: `include` grants to matching objects, `exclude` revokes from them.',
+    defaultSnippet: '"include"',
+    enumValues: [
+      { value: 'include', description: 'Grant the privileges to every matching object at deployment.' },
+      { value: 'exclude', description: 'Revoke the privileges from every matching object at deployment.' },
+    ],
+  },
+  { name: 'reference', detail: 'string', description: 'Schema reference of a `schema_privileges` entry, resolved by `.hdbroleconfig`.' },
+  { name: 'schema_reference', detail: 'string', description: 'Schema reference resolved by `.hdbroleconfig`; omitted = the container schema.' },
+  { name: 'names', detail: 'string[]', description: 'Role or analytic privilege names (`schema_roles`, `schema_analytic_privileges`).' },
 ];
 
 // Classic KV schemas
@@ -334,30 +365,59 @@ const KV_HDBTI_FIELDS: readonly ArtifactFieldSpec[] = [
 ];
 
 const KV_XSHTTPDEST_FIELDS: readonly ArtifactFieldSpec[] = [
-  { name: 'description', detail: 'string', description: 'Human-readable HTTP destination description ([XSC]).', defaultSnippet: '"$1";' },
-  { name: 'host', detail: 'string', description: 'Target HTTP(S) hostname.', defaultSnippet: '"$1";' },
-  { name: 'port', detail: 'number', description: 'Target TCP port (`443` for HTTPS, `80` for HTTP).', defaultSnippet: '443;' },
-  { name: 'pathPrefix', detail: 'string', description: 'Base URL path prefix prepended to outbound requests.', defaultSnippet: '"/";' },
-  { name: 'useProxy', detail: 'boolean', description: 'Routes outbound calls through `proxyHost`:`proxyPort`.', defaultSnippet: 'false;' },
-  { name: 'proxyHost', detail: 'string', description: 'Outbound HTTP proxy host.' },
-  { name: 'proxyPort', detail: 'number', description: 'Outbound HTTP proxy port.' },
+  { name: 'host', detail: 'string', description: 'Required. Host name of the HTTP destination ([XSC]).', defaultSnippet: '"$1";' },
+  { name: 'port', detail: 'number', description: 'Required. Port of the HTTP destination.', defaultSnippet: '443;' },
+  { name: 'description', detail: 'string', description: 'Short description. Default `""`.', defaultSnippet: '"$1";' },
+  { name: 'useSSL', detail: 'boolean', description: 'Secures outbound connections with SSL (HTTPS). Default `false`.', defaultSnippet: 'true;' },
+  {
+    name: 'sslAuth',
+    detail: 'client | anonymous',
+    description: 'SSL authentication with `useSSL = true`. Default `client`.',
+    defaultSnippet: 'client;',
+    enumValues: [
+      { value: 'client', description: 'Trust-store entry required (default).' },
+      { value: 'anonymous', description: 'Built-in key; no trust store, no SSL authentication.' },
+    ],
+  },
+  { name: 'sslHostCheck', detail: 'boolean', description: 'Certificate subject must match `host`. Default `true`.', defaultSnippet: 'true;' },
+  { name: 'pathPrefix', detail: 'string', description: 'Prefix added to the request path. Default `""`.', defaultSnippet: '"/";' },
   {
     name: 'authType',
     detail: 'string',
-    description: 'Outbound authentication method.',
+    description: 'Outbound authentication. Default `none`.',
     defaultSnippet: 'none;',
     enumValues: [
-      { value: 'none', description: 'No outbound authentication.' },
-      { value: 'basic', description: 'HTTP Basic authentication using XS destination credentials.' },
-      { value: 'clientCertificate', description: 'Mutual TLS X.509 client certificate.' },
-      { value: 'samlAssertion', description: 'SAML 2.0 assertion propagation.' },
-      { value: 'logonTicket', description: 'SAP Logon Ticket authentication.' },
+      { value: 'none', description: 'No authentication (default).' },
+      { value: 'basic', description: 'User name and password.' },
+      { value: 'AssertionTicket', description: 'SAP assertion ticket SSO to a remote ABAP system (`remoteSID`, `remoteClient`).' },
+      { value: 'SamlAssertion', description: 'SAML assertion (`samlProvider`, `samlACS`, `samlAttributes`, `samlNameId`).' },
+      { value: 'SamlAssertionPropagation', description: 'Propagates the SAML assertion of the logged-on user.' },
     ],
   },
-  { name: 'useSSL', detail: 'boolean', description: 'Requires TLS/HTTPS transport.', defaultSnippet: 'true;' },
-  { name: 'sslHostCheck', detail: 'boolean', description: 'Verifies server TLS certificate hostname.', defaultSnippet: 'true;' },
-  { name: 'sslAuth', detail: 'string', description: 'SSL authentication trust mode (`client`, `anonymous`).' },
-  { name: 'timeout', detail: 'number', description: 'Outbound request timeout in milliseconds (-1 for unlimited).', defaultSnippet: '5000;' },
+  { name: 'samlProvider', detail: 'string', description: 'SAML identity provider (`authType = SamlAssertion`).' },
+  { name: 'samlACS', detail: 'string', description: 'How the SAML response is sent: `""` (POST parameter), a URL path, `"header"`, `"parameter:assertion"`.' },
+  { name: 'samlAttributes', detail: 'string', description: 'Additional SAML attributes: `"name1=<property>&name2=<property>"`.' },
+  { name: 'samlNameId', detail: 'string[]', description: 'Name-ID mappings: `"email"`, `"unspecified"`.' },
+  {
+    name: 'proxyType',
+    detail: 'none | http | socks',
+    description: 'Proxy used to resolve the host. Default `none`.',
+    defaultSnippet: 'none;',
+    enumValues: [
+      { value: 'none', description: 'No proxy (default).' },
+      { value: 'http', description: 'HTTP proxy (`proxyHost`, `proxyPort`).' },
+      { value: 'socks', description: 'SOCKS proxy (`proxyHost`, `proxyPort`).' },
+    ],
+  },
+  { name: 'proxyHost', detail: 'string', description: 'Proxy host name. Default `""`.' },
+  { name: 'proxyPort', detail: 'number', description: 'Proxy port. Default `0`.' },
+  { name: 'useProxy', detail: 'boolean', description: 'Older proxy switch.', deprecated: 'Use `proxyType`.' },
+  { name: 'timeout', detail: 'number', description: 'Connect timeout in milliseconds. Default `-1` (no limit; the 300 s request-session timeout still applies).', defaultSnippet: '5000;' },
+  { name: 'remoteSID', detail: 'string', description: 'SID of the remote ABAP system (`authType = AssertionTicket`).' },
+  { name: 'remoteClient', detail: 'string', description: 'Client of the remote ABAP system (`authType = AssertionTicket`).' },
+  { name: 'oAuthAppConfigPackage', detail: 'string', description: 'Package of the `.xsoauthappconfig`.' },
+  { name: 'oAuthAppConfig', detail: 'string', description: 'Name of the `.xsoauthappconfig` used by this destination.' },
+  { name: 'modifies', detail: 'path', description: 'Extension files only: `modifies pkg.path:dest.xshttpdest;` names the destination to extend.' },
 ];
 
 interface JsonFrame {
@@ -556,11 +616,14 @@ function resolveJsonFieldsForContext(languageId: string, ctx: JsonCursorContext)
   }
   if (languageId === 'hdbgrants' || languageId === 'hdbrevokes') {
     if (
+      ctx.parentContainerKey === 'system_privileges' ||
+      ctx.parentContainerKey === 'global_roles' ||
       ctx.parentContainerKey === 'schema_privileges' ||
+      ctx.parentContainerKey === 'schema_roles' ||
       ctx.parentContainerKey === 'object_privileges' ||
       ctx.parentContainerKey === 'global_object_privileges'
     ) {
-      return PRIVILEGE_ITEM_FIELDS;
+      return GRANTS_PRIVILEGE_ITEM_FIELDS;
     }
     if (ctx.parentContainerKey === 'object_owner' || ctx.parentContainerKey === 'application_user') {
       return GRANTOR_OWNER_FIELDS;
@@ -572,9 +635,10 @@ function resolveJsonFieldsForContext(languageId: string, ctx: JsonCursorContext)
       ctx.parentContainerKey === 'schema_privileges' ||
       ctx.parentContainerKey === 'object_privileges' ||
       ctx.parentContainerKey === 'global_object_privileges' ||
-      ctx.parentContainerKey === 'schema_analytic_privileges'
+      ctx.parentContainerKey === 'schema_analytic_privileges' ||
+      ctx.parentContainerKey === 'schema_roles'
     ) {
-      return PRIVILEGE_ITEM_FIELDS;
+      return ROLE_PRIVILEGE_ITEM_FIELDS;
     }
     if (ctx.parentContainerKey === 'role' || ctx.ancestorKeys[0] === 'role') {
       return HDBROLE_JSON_BODY_FIELDS;
@@ -592,9 +656,9 @@ function allJsonFieldsForLanguage(languageId: string): readonly ArtifactFieldSpe
       return [...HDICONFIG_ROOT_FIELDS, ...HDICONFIG_SUFFIX_FIELDS];
     case 'hdbgrants':
     case 'hdbrevokes':
-      return [...HDBGRANTS_ROOT_FIELDS, ...GRANTOR_OWNER_FIELDS, ...PRIVILEGE_ITEM_FIELDS];
+      return [...HDBGRANTS_ROOT_FIELDS, ...GRANTOR_OWNER_FIELDS, ...GRANTS_PRIVILEGE_ITEM_FIELDS];
     case 'hdbrole':
-      return [...HDBROLE_JSON_ROOT_FIELDS, ...HDBROLE_JSON_BODY_FIELDS, ...PRIVILEGE_ITEM_FIELDS];
+      return [...HDBROLE_JSON_ROOT_FIELDS, ...HDBROLE_JSON_BODY_FIELDS, ...ROLE_PRIVILEGE_ITEM_FIELDS];
     default:
       return [];
   }
@@ -680,6 +744,8 @@ const KV_SQL_ASSIGN_ENUMS: ReadonlyMap<string, readonly { readonly value: string
   ['indexType', KV_INDEX_FIELDS.find((f) => f.name === 'indexType')!.enumValues!],
   ['order', KV_INDEX_FIELDS.find((f) => f.name === 'order')!.enumValues!],
   ['authType', KV_XSHTTPDEST_FIELDS.find((f) => f.name === 'authType')!.enumValues!],
+  ['sslAuth', KV_XSHTTPDEST_FIELDS.find((f) => f.name === 'sslAuth')!.enumValues!],
+  ['proxyType', KV_XSHTTPDEST_FIELDS.find((f) => f.name === 'proxyType')!.enumValues!],
 ]);
 
 function scanKvCommentAndString(text: string, offset: number): boolean {

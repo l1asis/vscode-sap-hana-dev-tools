@@ -234,7 +234,11 @@ test('Design-Time Config & Classic KV IntelliSense: .xsaccess, .hdiconfig, .hdbg
 
   // Classic .xshttpdest & comment/string suppression
   const dest = 'authType = ';
-  assert.ok(getArtifactCompletions('xshttpdest', dest, dest.length).some((i) => i.label === 'clientCertificate'));
+  const destAuth = getArtifactCompletions('xshttpdest', dest, dest.length).map((i) => i.label);
+  assert.ok(destAuth.includes('AssertionTicket') && destAuth.includes('SamlAssertion'));
+  assert.ok(!destAuth.includes('clientCertificate'), 'clientCertificate is not a documented authType (#65)');
+  const destProxy = 'proxyType = ';
+  assert.deepEqual(getArtifactCompletions('xshttpdest', destProxy, destProxy.length).map((i) => i.label).sort(), ['http', 'none', 'socks']);
   assert.deepEqual(getArtifactCompletions('xsaccess', '// "prevent_xsrf', '// "prevent_xsrf'.length), []);
   assert.deepEqual(getArtifactCompletions('hdbview', 'query = "SELECT *', 'query = "SELECT *'.length), []);
 });
@@ -262,4 +266,44 @@ test('package.json snippets: all snippet files exist, parse as JSON, and contain
       assert.ok(Array.isArray(snip.body) && snip.body.length > 0, `${title} missing body`);
     }
   }
+});
+
+test('#65: artifact key completion matches the property-schema specs', () => {
+  const labels = (lang: string, src: string): string[] => getArtifactCompletions(lang, src, src.length).map((i) => i.label);
+
+  // .xsaccess (xsc-application-artifacts.md §3)
+  const root = labels('xsaccess', '{\n  "');
+  for (const k of ['exposed', 'authentication', 'mime_mapping', 'headers', 'enable_etags']) assert.ok(root.includes(k), k);
+  for (const k of ['mime_types', 'max_request_runtime']) assert.ok(!root.includes(k), `${k} is not documented`);
+  assert.deepEqual(labels('xsaccess', '{\n  "headers": {\n    "').sort(), ['customHeaders', 'enabled']);
+  const cors = labels('xsaccess', '{\n  "cors": {\n    "');
+  assert.ok(cors.includes('exposeHeaders') && !cors.includes('allowCredential'));
+  assert.ok(!labels('xsaccess', '{\n  "authentication": {\n    "').includes('realm'));
+  const methodSrc = '{\n  "authentication": {\n    "method": "';
+  const method = getArtifactCompletions('xsaccess', methodSrc, methodSrc.length);
+  assert.equal(method.find((i) => i.label === 'Form')?.deprecated, undefined);
+  assert.ok(method.find((i) => i.label === 'Basic')?.deprecated, 'non-Form methods are configured in the XS Administration Tool');
+
+  // .hdbgrants (hdi-grants-roles.md §2)
+  const grantee = labels('hdbgrants', '{\n  "svc": {\n    "object_owner": {\n      "');
+  for (const k of ['system_privileges', 'global_roles', 'schema_roles', 'global_object_privileges']) assert.ok(grantee.includes(k), k);
+  const granteeSrc = '{\n  "svc": {\n    "object_owner": {\n      "';
+  assert.ok(getArtifactCompletions('hdbgrants', granteeSrc, granteeSrc.length).find((i) => i.label === 'roles')?.deprecated);
+  const item = labels('hdbgrants', '{\n  "svc": {\n    "object_owner": {\n      "object_privileges": [{\n        "');
+  for (const k of ['schema', 'name', 'privileges', 'privileges_with_grant_option']) assert.ok(item.includes(k), k);
+  for (const k of ['reference', 'include_filter']) assert.ok(!item.includes(k), `${k} is not an .hdbgrants key`);
+  assert.ok(labels('hdbgrants', '{\n  "svc": {\n    "object_owner": {\n      "system_privileges": [{\n        "').includes('privileges_with_admin_option'));
+
+  // .hdbrole (hdi-grants-roles.md §3)
+  const body = labels('hdbrole', '{\n  "role": {\n    "');
+  for (const k of ['name', 'global_roles', 'pattern_escape_character', 'schema_analytic_privileges']) assert.ok(body.includes(k), k);
+  assert.ok(!body.includes('application_privileges'));
+  const entry = labels('hdbrole', '{\n  "role": {\n    "object_privileges": [{\n      "');
+  for (const k of ['name', 'type', 'pattern_mode']) assert.ok(entry.includes(k), k);
+  assert.deepEqual(labels('hdbrole', '{\n  "role": {\n    "object_privileges": [{\n      "pattern_mode": "').sort(), ['exclude', 'include']);
+
+  // .xshttpdest (xsc-application-artifacts.md §8)
+  const dest = labels('xshttpdest', 'host = "h";\nport = 443;\n');
+  for (const k of ['samlACS', 'proxyType', 'remoteSID', 'oAuthAppConfig', 'modifies']) assert.ok(dest.includes(k), k);
+  assert.deepEqual(labels('xshttpdest', 'sslAuth = ').sort(), ['anonymous', 'client']);
 });
