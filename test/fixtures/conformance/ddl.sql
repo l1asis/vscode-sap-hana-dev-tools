@@ -38,6 +38,34 @@ CREATE COLUMN TABLE events (event_id INT, region_id INT) PARTITION BY HASH (regi
 CREATE COLUMN TABLE readings (reading_id INT, taken_year INT)
 PARTITION BY RANGE (taken_year) (PARTITION 2020 <= VALUES < 2025, PARTITION OTHERS);
 
+-- @case multi-level partitioning with get_num_servers
+CREATE COLUMN TABLE sales_facts (sale_id INT, region_id INT, sold_on DATE)
+PARTITION BY HASH (sale_id, region_id) PARTITIONS GET_NUM_SERVERS(), RANGE (YEAR(sold_on)) (PARTITION '2020' <= VALUES < '2030', PARTITION OTHERS);
+
+-- @case column attributes in any order
+CREATE COLUMN TABLE customers (
+  cust_id INT NOT NULL PRIMARY KEY INVERTED INDIVIDUAL,
+  cust_name NVARCHAR(100) DEFAULT 'n/a' NOT NULL COMMENT 'display name',
+  cust_blob BLOB MEMORY THRESHOLD 1000,
+  cust_hint NVARCHAR(10) PAGE LOADABLE,
+  cust_code NVARCHAR(10) UNIQUE
+);
+
+-- @case table constraints with names and enforcement
+CREATE COLUMN TABLE orders_link (
+  order_id INT,
+  cust_id INT,
+  CONSTRAINT orders_link_pk PRIMARY KEY (order_id),
+  CONSTRAINT orders_link_fk FOREIGN KEY (cust_id) REFERENCES customers (cust_id) ON UPDATE CASCADE NOT ENFORCED
+);
+
+-- @case column name list with an added identity column
+CREATE LOCAL TEMPORARY TABLE #dept_ids (src_id) ADD (row_id INT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1)) AS (SELECT dept_id FROM departments);
+
+-- @case index and statistics column lists
+CREATE UNIQUE INDEX emp_name_idx ON employees (last_name ASC, first_name DESC);
+CREATE STATISTICS emp_dept_stats ON employees (dept_id, hired) TYPE HISTOGRAM;
+
 -- @case create table as select
 CREATE COLUMN TABLE dept_copy AS (SELECT * FROM departments) WITH NO DATA;
 
@@ -48,6 +76,9 @@ CREATE COLUMN TABLE dept_shadow LIKE departments WITH DATA;
 ALTER TABLE departments ADD (cost_center NVARCHAR(10));
 ALTER TABLE departments ALTER (cost_center NVARCHAR(20));
 ALTER TABLE departments DROP (cost_center);
+
+-- @case alter table load units
+ALTER TABLE departments ALTER (budget DECIMAL(15, 2) PAGE LOADABLE, loc_id INT NOT NULL);
 
 -- @case alter table constraints
 ALTER TABLE assignments ADD CONSTRAINT share_chk CHECK (share_pct BETWEEN 0 AND 100);

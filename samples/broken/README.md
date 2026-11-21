@@ -119,6 +119,8 @@ When you change a rule's behavior, update the row in the same PR. Rows are group
 | [`separators.sql`](syntax/separators.sql) | `HANA-SYN-024` | error | `Remove trailing ','` |
 | [`statement-context.sql`](syntax/statement-context.sql) | `HANA-SYN-029` | error | — |
 | [`statement-start.sql`](syntax/statement-start.sql) | `HANA-SYN-041` | error | — |
+| [`table-ddl.sql`](syntax/table-ddl.sql) | `HANA-SYN-021` | error | `Replace 'DEFALT' with 'DEFAULT'`<br>`Replace 'PRIMARYKEY' with 'PRIMARY KEY'` |
+| [`table-ddl.sql`](syntax/table-ddl.sql) | `HANA-SYN-023` | error | `Insert ','` |
 | [`unbalanced-delimiters.sql`](syntax/unbalanced-delimiters.sql) | `HANA-SYN-003` | error | — |
 | [`unclosed-blocks.sql`](syntax/unclosed-blocks.sql) | `HANA-SYN-020` | error | — |
 | [`unconsumed-tokens.sql`](syntax/unconsumed-tokens.sql) | `HANA-SYN-042` | error | — |
