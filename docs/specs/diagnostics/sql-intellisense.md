@@ -66,10 +66,18 @@ Triggered for `xsjs`, `xsjslib`, covering:
 
 ### 2.4 Design-Time JSON & Classic KV Suggestions
 
-- `.xsaccess`: Root keys (`exposed`, `authentication`, `authorization`, `prevent_xsrf`, `force_ssl`, `anonymous_connection`, `default_connection`, `cors`, `headers`, `cache_control`, `mime_types`, `rewrite_rules`, `default_file`, `max_request_runtime`) plus authentication `"method"` enums (`"Form"`, `"Basic"`, `"SAML"`, `"LogonTicket"`, `"X509"`, `"SPNEGO"`).
-- `.hdiconfig`: `plugin_version`, `minimum_feature_version`, `file_suffixes`, `plugin_name`, and documented `com.sap.hana.di.*` plug-in identifiers.
-- `.hdbgrants` / `.hdbrevokes`: Grantor object-level blocks (`object_owner`, `application_user`), privilege containers (`schema_privileges`, `object_privileges`, `global_object_privileges`, `roles`, `schema_roles`), and object privilege properties (`reference`, `privileges`, `privileges_with_grant_option`, `include_filter`).
-- Classic KV (`hdbtable`, `hdbview`, `hdbsequence`, `hdbti`, `xshttpdest`): Property keys matching [classic-kv-formatting.md](file:///e:/Code/js/vscode-sap-hana-dev-tools/docs/specs/artifacts/classic-kv-formatting.md) (`table.schemaName`, `table.tableType`, `table.columns`, `sqlType`, `reset_by`, `delimField`, `authType`, etc.).
+Key completion and hover offer exactly the keys, types, defaults and enum values of the artifact specs. `src/sql/artifact-intellisense.ts` holds one field table per context and must not add keys the specs do not list.
+
+| Language | Contexts (cursor inside ...) | Key schema |
+| :--- | :--- | :--- |
+| `xsaccess` | root, `authentication`, `cors`, `headers` | `docs/specs/artifacts/xsc-application-artifacts.md` §3 |
+| `xshttpdest` (Classic KV) | file level; enum values of `authType`, `sslAuth`, `proxyType` | `xsc-application-artifacts.md` §8 |
+| `hdiconfig` | root, `file_suffixes.<suffix>`; `plugin_name` values | `docs/specs/artifacts/hdiconfig.md`, plug-in list `artifact-registry.md` §2 / §3 |
+| `hdbgrants`, `hdbrevokes` | grantee (`object_owner`, `application_user`), privilege-set items | `docs/specs/artifacts/hdi-grants-roles.md` §2 |
+| `hdbrole` (HDI JSON) | root, `role`, privilege and role entries | `hdi-grants-roles.md` §3 |
+| `hdbtable`, `hdbview`, `hdbsequence`, `hdbschema`, `hdbti` (Classic KV) | file level, column and index objects | `docs/specs/artifacts/classic-kv-formatting.md`, `docs/specs/grammars/hdb-classic-kv.md` |
+
+The other JSON artifacts (`hdi-target-configs.md`, the rest of `xsc-application-artifacts.md`) have no key completion yet.
 
 ### 2.5 XSJS Inheritance, Overloads & Hover Cards `[XSC]` `[XSA]`
 
