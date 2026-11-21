@@ -34,14 +34,14 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | CM | `hana-cloud_SAP_HANA_Cloud_Migration_Guide/004_pages_91_120.md` (Pages 91–120) |
 | X1 | `SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/007_5_Defining_the_Data_Model_in_XS_Advanced.md` §5.2.1 _HDI Deployer_ (Pages 251–275) |
 | G-SQL, G-XSODATA | `docs/specs/grammars/sql-sqlscript.md`, `docs/specs/grammars/xsodata.md` |
-| A-HDICONFIG, A-FABRIC, A-VPKG, A-LEGACY, A-VIEWS | `docs/specs/artifacts/hdiconfig.md`, `hdbfabricvirtualtable.md`, `hdbvirtualpackage.md`, `xsc-legacy-artifacts.md`, `xsc-modeled-views.md` |
+| A-HDICONFIG, A-FABRIC, A-VPKG, A-LEGACY, A-VIEWS, A-TARGET | `docs/specs/artifacts/hdiconfig.md`, `hdbfabricvirtualtable.md`, `hdbvirtualpackage.md`, `xsc-legacy-artifacts.md`, `xsc-modeled-views.md`, `hdi-target-configs.md` |
 
 | Column | Values |
 | :--- | :--- |
 | **Platform** | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` (`SPEC_RULES.md` §1.3) |
 | **Status** | `current`; `alias of <suffix>` (still accepted, same content); `renamed → <suffix>` (`HANA-MIG-013` offers a file-rename QuickFix); `replaced → <suffix>` (the content must change); `unsupported` (no HDI equivalent); `deprecated` (still works, not migrated) |
 | **HDI plug-in** | `com.sap.hana.di.*` id; `Repository` (XS Classic activation); `HDI Deployer` (read by `@sap/hdi-deploy`, no build plug-in); `—` (no plug-in in the corpus) |
-| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`, or `built-in` (a VS Code language this extension only adds file names to) |
+| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`; `built-in` (a VS Code language this extension only adds file names to); `—` (a language of this extension with no grammar, for binary content) |
 | **Formatter** | `sql`, `kv`, `kv / sql` (content-sniffed), `cds`, `role / json`, `xsodata`, `migration table`, `json`, `xsjs` (delegated), `—` (`src/formatter/dispatch.ts`) |
 | **Analyzer** | Checks that run (`src/analyzer/dispatch.ts`): `syntax`, `security`, `performance`, `calcview`, `xsjs`, `migration only` (`HANA-MIG-013` only), `—` (not in `ANALYZER_LANGUAGES`) |
 | **Migrator** | `HANA-MIG-*` rules that can fire (`docs/specs/diagnostics/migration-xsc-to-hdi.md`), `—` |
@@ -117,9 +117,9 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbvirtualpackage` | `hdbvirtualpackage` | `[XSA]` `[HDI]` | current | — | `source.hdbvirtualpackage` | json | syntax | — | — | A-VPKG |
 | `.hdbvirtualpackagehadoop` | `hdbvirtualpackagehadoop` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.hadoop` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
 | `.hdbvirtualpackagesparksql` | `hdbvirtualpackagesparksql` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.sparksql` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
-| `.hdbmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | deprecated | `com.sap.hana.di.virtualfunctionpackage.hadoop` | `source.hdbmrjob` | json | syntax | — | — | H1, A-VPKG |
-| `.hdbhadoopmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | replaced → .hdbvirtualpackagehadoop | `com.sap.hana.di.virtualfunctionpackage.hadoop` | `source.hdbmrjob` | json | syntax | `HANA-MIG-013` | — | H1 |
-| `.hdbrmjob` | `hdbmrjob` | `[XSC]` | alias of .hdbmrjob | Repository | `source.hdbmrjob` | json | syntax | — | — | M1 |
+| `.hdbmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | deprecated | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | — | — | H1, A-TARGET |
+| `.hdbhadoopmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | replaced → .hdbvirtualpackagehadoop | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | `HANA-MIG-013` | — | H1, A-TARGET |
+| `.hdbrmjob` | `hdbmrjob` | `[XSC]` | alias of .hdbmrjob | Repository | — | — | migration only | — | — | M1 |
 | `.hdiconfig` | `hdiconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | — | `source.hdiconfig` | json | syntax | — | artifact | A-HDICONFIG |
 | `.hdinamespace` | `hdinamespace` | `[XSA]` `[HDI]` `[CLOUD]` | current | — | `source.hdinamespace` | json | syntax | — | — | H1 |
 | `.xsaccess` | `xsaccess` | `[XSC]` | current | Repository | `source.xsaccess` | json | syntax, security | — | artifact | S1 |

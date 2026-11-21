@@ -9,7 +9,7 @@
 | Runtime | Language IDs | Notes |
 | :--- | :--- | :--- |
 | `[XSC]` | `xsaccess`, `xsapp`, `xsprivileges`, `xssecurestore`, `xssqlcc`, `xsjob`, `hdbsynonym`, `xsappsite`, `xsoauthappconfig`, `xsoauthclientconfig`, `xsoauthclientflavor` | Several XS Classic SAP documentation examples contain comments or omitted commas (notably `.xssqlcc` and `.xsaccess` variants). |
-| `[HDI]` `[XSA]` `[CLOUD]` | `hdbrole` (when root begins with `{`), `hdbgrants`, `hdbrevokes`, `hdbroleconfig`, `hdbsynonymconfig`, `hdbpublicsynonym`, `hdbvirtualtableconfig`, `hdblogicalschemaconfig`, `hdbprojectionviewconfig`, `hdbfabricvirtualtableconfig`, `hdbtabledata`, `hdbeshconfig`, `hdiconfig`, `hdinamespace`, `hdbvirtualpackage`, `hdbvirtualpackagehadoop`, `hdbvirtualpackagesparksql`, `hdbmrjob` | `.hdbrole` disambiguates dynamically: `{` selects this formatter; `role` or non-JSON privilege DSL selects `hdbrole-formatting.md`. |
+| `[HDI]` `[XSA]` `[CLOUD]` | `hdbrole` (when root begins with `{`), `hdbgrants`, `hdbrevokes`, `hdbroleconfig`, `hdbsynonymconfig`, `hdbpublicsynonym`, `hdbvirtualtableconfig`, `hdblogicalschemaconfig`, `hdbprojectionviewconfig`, `hdbfabricvirtualtableconfig`, `hdbtabledata`, `hdbeshconfig`, `hdiconfig`, `hdinamespace`, `hdbvirtualpackage`, `hdbvirtualpackagehadoop`, `hdbvirtualpackagesparksql` | `.hdbrole` disambiguates dynamically: `{` selects this formatter; `role` or non-JSON privilege DSL selects `hdbrole-formatting.md`. |
 
 ---
 

@@ -76,7 +76,6 @@ export const JSON_ARTIFACT_LANGUAGES: readonly string[] = [
   'hdbvirtualpackage',
   'hdbvirtualpackagehadoop',
   'hdbvirtualpackagesparksql',
-  'hdbmrjob',
   'hdblogicalschema',
   'hdbsysbicsynonym',
   'hdbvirtualprocedureconfig',

@@ -749,9 +749,6 @@ jsonGrammar('hdbfabricvirtualtableconfig', 'SAP HANA HDI Fabric Virtual Table Co
 jsonGrammar('hdbvirtualpackage', 'SAP HANA HDI Virtual Package (.hdbvirtualpackage, .hdbvirtualpackagehadoop, .hdbvirtualpackagesparksql)', [
   'plugin_name', 'plugin_version', 'adapter_type', 'location', 'remote_source', 'schema', 'package', 'name', 'file', 'jar', 'class_name',
 ]);
-jsonGrammar('hdbmrjob', 'SAP HANA HDI Hadoop MapReduce Job (.hdbmrjob)', [
-  'plugin_name', 'name', 'jar', 'class_name', 'remote_source', 'location', 'parameters',
-]);
 
 // ---------------------------------------------------------------------------
 // .hdbmigrationtable  (SQL DDL plus "== version = N" / "== migration = N" markers)

@@ -592,10 +592,6 @@ test('Newly added HDI DDL, HDI JSON, XS Classic JSON, XML & Config artifacts', (
   const tVpBase = tokenize('source.hdbvirtualpackage', sample('hdi/custom_pkg.hdbvirtualpackage'));
   check(tVpBase, '"schema"', 'support.type.property-name.json.hdbvirtualpackage');
 
-  const tMrj = tokenize('source.hdbmrjob', sample('hdi/legacy_mrjob.hdbmrjob'));
-  check(tMrj, '"class_name"', 'support.type.property-name.json.hdbmrjob');
-  assert.ok(!has(tMrj, '"com.example.hana.WordCountJob"', 'support.type.property-name.json.hdbmrjob'));
-
   // 4. XS Classic JSON (.xsappsite)
   const tSite = tokenize('source.xsappsite', sample('launchpad.xsappsite'));
   check(tSite, '"theme"', 'support.type.property-name.json.xsappsite');

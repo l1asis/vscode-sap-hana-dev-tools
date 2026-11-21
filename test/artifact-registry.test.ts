@@ -36,7 +36,7 @@ interface UnregisteredRow {
 
 interface PackageJson {
   contributes: {
-    languages: Array<{ id: string; extensions?: string[]; filenames?: string[] }>;
+    languages: Array<{ id: string; aliases?: string[]; extensions?: string[]; filenames?: string[] }>;
     grammars: Array<{ language?: string; scopeName: string; injectTo?: string[] }>;
     jsonValidation?: Array<{ fileMatch: string | string[]; url: string }>;
   };
@@ -107,6 +107,9 @@ function checkRegistry(markdown: string, impl: Implementation): string[] {
   const fmt = new Set(impl.formatterLanguages);
   const ana = new Set(impl.analyzerLanguages);
   const grammarOf = new Map(impl.pkg.contributes.grammars.filter((g) => g.language).map((g) => [g.language!, g.scopeName]));
+  // A language this extension declares (it has `aliases`) without a grammar holds binary content: `—`.
+  // One it only adds file names to (no `aliases`) keeps VS Code's own grammar: `built-in`.
+  const ownLanguages = new Set(impl.pkg.contributes.languages.filter((l) => l.aliases).map((l) => l.id));
   const languageOf = new Map<string, string>();
   for (const l of impl.pkg.contributes.languages) {
     for (const key of [...(l.extensions ?? []), ...(l.filenames ?? [])]) {
@@ -138,7 +141,7 @@ function checkRegistry(markdown: string, impl: Implementation): string[] {
       continue;
     }
     if (registeredAs !== r.languageId) errors.push(`${where}: language ${r.languageId}, package.json says ${registeredAs}`);
-    const grammar = grammarOf.get(r.languageId) ?? 'built-in';
+    const grammar = grammarOf.get(r.languageId) ?? (ownLanguages.has(r.languageId) ? '—' : 'built-in');
     if (grammar !== r.grammar) errors.push(`${where}: grammar ${r.grammar}, package.json says ${grammar}`);
 
     if ((r.formatter !== '—') !== fmt.has(r.languageId)) errors.push(`${where}: formatter "${r.formatter}" disagrees with ALL_FORMATTER_LANGUAGES`);
@@ -267,6 +270,21 @@ test('HANA-MIG-013: current suffixes, missing paths, targetPlatform xsc and migr
   assert.deepEqual(mig013('x.searchruleset', 'hdbsearchruleset', '<a/>', { targetPlatform: 'xsc' }), []);
   assert.deepEqual(mig013('x.searchruleset', 'hdbsearchruleset', '<a/>', { migration: false }), []);
   assert.deepEqual(mig013('x.searchruleset', 'hdbsearchruleset', '<!-- hanasql-analyze-disable HANA-MIG-013 -->\n<a/>'), []);
+});
+
+test('.hdbmrjob family: binary JAR content gets no grammar, formatter or syntax diagnostics (#114)', () => {
+  // A JAR is a ZIP archive: local file header, NUL bytes, a stray brace, no JSON.
+  const jar = 'PK  META-INF/MANIFEST.MF {ÿ]PK';
+  assert.ok(!pkg.contributes.grammars.some((g) => g.language === 'hdbmrjob'), 'hdbmrjob must not have a grammar');
+  assert.ok(!ALL_FORMATTER_LANGUAGES.includes('hdbmrjob'), 'hdbmrjob must not be formatted');
+  assert.ok(!JSON_ARTIFACT_LANGUAGES.includes('hdbmrjob'), 'hdbmrjob must not get the JSON syntax checks');
+  for (const file of ['/repo/db/src/wordcount.hdbmrjob', '/repo/wordcount.hdbrmjob']) {
+    assert.deepEqual(analyzeDocument({ languageId: 'hdbmrjob', text: jar, filePath: file }), [], file);
+  }
+  const legacy = analyzeDocument({ languageId: 'hdbmrjob', text: jar, filePath: '/repo/db/src/wordcount.hdbhadoopmrjob' });
+  assert.deepEqual(legacy.map((d) => d.ruleId), ['HANA-MIG-013']);
+  // The negative case: the same bytes in a JSON artifact are still reported.
+  assert.ok(analyzeDocument({ languageId: 'hdbvirtualpackage', text: jar }).some((d) => d.ruleId === 'HANA-SYN-010'));
 });
 
 test('HANA-MIG-013: fileSuffix takes the last suffix, case-insensitively, on both path styles', () => {

@@ -1305,7 +1305,6 @@
           ".hdbrmjob",
           ".hdbhadoopmrjob"
         ],
-        "configuration": "./language-configuration-xsjson.json",
         "icon": {
           "light": "./images/icons/hdbmrjob.svg",
           "dark": "./images/icons/hdbmrjob.svg"
@@ -1913,11 +1912,6 @@
         "path": "./syntaxes/hdbvirtualpackage.tmLanguage.json"
       },
       {
-        "language": "hdbmrjob",
-        "scopeName": "source.hdbmrjob",
-        "path": "./syntaxes/hdbmrjob.tmLanguage.json"
-      },
-      {
         "language": "xsappsite",
         "scopeName": "source.xsappsite",
         "path": "./syntaxes/xsappsite.tmLanguage.json"
@@ -2202,9 +2196,6 @@
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdbvirtualpackagesparksql]": {
-        "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
-      },
-      "[hdbmrjob]": {
         "editor.defaultFormatter": "l1asis.sap-hana-dev-tools"
       },
       "[hdblogicalschema]": {
