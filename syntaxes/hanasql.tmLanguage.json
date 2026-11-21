@@ -331,6 +331,10 @@
         },
         {
           "name": "keyword.other.clause.hanasql",
+          "match": "(?i)(?:\\b|(?<=\\\\[nrt]))CONDITION\\s+PROVIDER\\b"
+        },
+        {
+          "name": "keyword.other.clause.hanasql",
           "match": "(?i)(?:\\b|(?<=\\\\[nrt]))ESCAPE\\b(?=\\s*')"
         },
         {

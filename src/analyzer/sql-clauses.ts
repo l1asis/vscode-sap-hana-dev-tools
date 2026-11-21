@@ -39,6 +39,7 @@ import {
   NON_ALIAS,
   QUERY_CLAUSES,
   RESERVED_OPERANDS,
+  STRUCTURED_FILTER_CLAUSES,
   TABLE_CONSTRAINT_STARTERS,
   TYPED_LITERAL_WORDS,
 } from './keyword-sets';
@@ -1555,7 +1556,10 @@ export function createClauseHooks(
     targetName();
   };
 
-  const FILTER_CLAUSES = ['ON', 'ESCAPE', 'LIKE', 'NOT', 'WHERE', 'CONDITION'];
+  /** Clause words of a structured filter in order (`ON`, `ESCAPE`, `LIKE`, `NOT`, `WHERE`, `CONDITION`). */
+  const FILTER_CLAUSES = STRUCTURED_FILTER_CLAUSES;
+  const FILTER_CLAUSES_FROM_NOT = FILTER_CLAUSES.slice(FILTER_CLAUSES.indexOf('NOT'));
+  const FILTER_CONDITION_WORDS = FILTER_CLAUSES.slice(FILTER_CLAUSES.indexOf('WHERE'));
   const FILTER_CONDITION = "'WHERE <condition>' or 'CONDITION PROVIDER <procedure>'";
 
   /** `<wildcard_object> {, <wildcard_object>}` after `LIKE` / `NOT LIKE`: schema-local, double-quoted names. */
@@ -1604,7 +1608,7 @@ export function createClauseHooks(
         throw new Stop({ ruleId: 'HANA-SYN-042', tokIdx: i, message: `Unexpected '${tx(i)}' after 'ESCAPE'; expected a single-character string.` });
       }
       i++;
-      need(['LIKE'], "a 'LIKE' list", ctx, "'ESCAPE' character", ['NOT', 'WHERE', 'CONDITION']);
+      need(['LIKE'], "a 'LIKE' list", ctx, "'ESCAPE' character", FILTER_CLAUSES_FROM_NOT);
     }
     if (eat('LIKE')) {
       wildcardList('LIKE');
@@ -1622,7 +1626,7 @@ export function createClauseHooks(
         message: "'NOT LIKE' requires a preceding 'LIKE' list in a structured filter.",
       });
     }
-    need(['WHERE', 'CONDITION'], FILTER_CONDITION, ctx, after, []);
+    need(FILTER_CONDITION_WORDS, FILTER_CONDITION, ctx, after, []);
     if (eat('WHERE')) {
       if (atEnd()) missing('a filter condition', ctx);
       expr(0);

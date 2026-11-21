@@ -83,6 +83,8 @@ const CLAUSE_PHRASES = [
   String.raw`\b(?:VALID\s+)?FOR\s+DATA\s+DEPENDENCY\b`,
   // temporary tables: ON COMMIT DELETE ROWS / PRESERVE ROWS
   String.raw`\b(?:DELETE|PRESERVE)\s+ROWS\b`,
+  // structured filters [HDI] [CLOUD]: STRUCTURED FILTER f FOR SELECT ON v CONDITION PROVIDER p
+  String.raw`\bCONDITION\s+PROVIDER\b`,
   // LIKE ... ESCAPE '\'
   String.raw`\bESCAPE\b(?=\s*')`,
   // IMPORT FROM CSV FILE ... SKIP FIRST 1 ROW, COLUMN LIST IN FIRST ROW
