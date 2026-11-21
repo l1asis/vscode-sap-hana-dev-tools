@@ -321,9 +321,10 @@ Invalid: two configurations in one file; the `esh_config()` envelope around the 
 ## 10. `.hdbmrjob`
 
 > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Deployment_Infrastructure_(HDI)_Reference_for_SAP_HAN/008_pages_211_240.md (Pages 211–240)
+> Source: SAP HANA Hadoop Integration, SAP HANA Platform 2.0 SPS 02 (help.sap.com `Hadoop_Integration.pdf`, outside the corpus) §1.5.3 _Adding a MapReduce Program to SAP HANA_ (Page 13)
 
 Deprecated: use `.hdbvirtualpackagehadoop` (`hdbvirtualpackage.md`). The plug-in reads a binary file, either a Hadoop JAR packaged with a metadata header or a plain Hadoop JAR, and creates a virtual-function package with adapter type `HADOOP`. There is no JSON property schema.
 
-**Extension support:** `.hdbmrjob`, `.hdbhadoopmrjob` and the XS Classic alias `.hdbrmjob` `[XSC]` are registered as language `hdbmrjob` for the file icon only. The language has no grammar, no language configuration and no formatter. It is not in `JSON_ARTIFACT_LANGUAGES`, so the JSON syntax checks (`HANA-SYN-010` / `-011`) do not run on it. The only diagnostic is the file-name hint `HANA-MIG-013` on `.hdbhadoopmrjob` (`migration-xsc-to-hdi.md`). The repository has no sample, because a real file is a JAR archive.
+**Extension support:** `.hdbmrjob`, `.hdbhadoopmrjob` and the XS Classic alias `.hdbrmjob` `[XSC]` are registered as language `hdbmrjob` for the file icon only. The language has no grammar, no language configuration and no formatter. It is not in `JSON_ARTIFACT_LANGUAGES`, so the JSON syntax checks (`HANA-SYN-010` / `-011`) do not run on it. The only diagnostic is the file-name hint `HANA-MIG-013` on `.hdbhadoopmrjob` (`migration-xsc-to-hdi.md`). The repository has no sample, because a real file is a JAR archive. `[XSC]` The same holds in the repository: SAP HANA studio's _Hadoop MR Jobs Archive_ wizard packs the Java project into a JAR with all its dependencies, and activation stores it as the catalog object `.hdbmrjob`.
 
 The extension does not inspect the content to choose a mode. Every documented form is binary, and VS Code asks before it opens a binary file in a text editor.
