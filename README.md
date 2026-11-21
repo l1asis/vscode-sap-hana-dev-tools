@@ -109,8 +109,7 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
 
 | Files | What You Get |
 | :--- | :--- |
-| `.project`, `.settings/.jsdtscope` | Eclipse / SAP HANA Studio project files open as XML |
-| `.hdiignore`, `.regiignore` | HDI Deployer and XS Classic repository ignore lists open as ignore files |
+| `.hdiignore` | HDI Deployer ignore list opens as an ignore file |
 | `undeploy.json` | HDI Deployer undeploy allowlist, validated against a JSON schema |
 
 Renamed or HDI-unsupported XS Classic suffixes (`.searchruleset`, `.hdbtablefunction`, `.attributeview`, ...) show a `HANA-MIG-013` hint, with a QuickFix that renames the file where the content can stay as it is. The full list of suffixes and what each one gets is in [`docs/specs/artifacts/artifact-registry.md`](docs/specs/artifacts/artifact-registry.md).
