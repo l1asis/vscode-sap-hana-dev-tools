@@ -272,6 +272,21 @@ test('HANA-MIG-013: current suffixes, missing paths, targetPlatform xsc and migr
   assert.deepEqual(mig013('x.searchruleset', 'hdbsearchruleset', '<!-- hanasql-analyze-disable HANA-MIG-013 -->\n<a/>'), []);
 });
 
+test('.hdbmrjob family: binary JAR content gets no grammar, formatter or syntax diagnostics (#114)', () => {
+  // A JAR is a ZIP archive: local file header, NUL bytes, a stray brace, no JSON.
+  const jar = 'PK  META-INF/MANIFEST.MF {ÿ]PK';
+  assert.ok(!pkg.contributes.grammars.some((g) => g.language === 'hdbmrjob'), 'hdbmrjob must not have a grammar');
+  assert.ok(!ALL_FORMATTER_LANGUAGES.includes('hdbmrjob'), 'hdbmrjob must not be formatted');
+  assert.ok(!JSON_ARTIFACT_LANGUAGES.includes('hdbmrjob'), 'hdbmrjob must not get the JSON syntax checks');
+  for (const file of ['/repo/db/src/wordcount.hdbmrjob', '/repo/wordcount.hdbrmjob']) {
+    assert.deepEqual(analyzeDocument({ languageId: 'hdbmrjob', text: jar, filePath: file }), [], file);
+  }
+  const legacy = analyzeDocument({ languageId: 'hdbmrjob', text: jar, filePath: '/repo/db/src/wordcount.hdbhadoopmrjob' });
+  assert.deepEqual(legacy.map((d) => d.ruleId), ['HANA-MIG-013']);
+  // The negative case: the same bytes in a JSON artifact are still reported.
+  assert.ok(analyzeDocument({ languageId: 'hdbvirtualpackage', text: jar }).some((d) => d.ruleId === 'HANA-SYN-010'));
+});
+
 test('HANA-MIG-013: fileSuffix takes the last suffix, case-insensitively, on both path styles', () => {
   assert.equal(fileSuffix('/a/b.c/Name.SearchRuleSet'), '.searchruleset');
   assert.equal(fileSuffix('C:\\a\\x.hdbsynonymgrantor'), '.hdbsynonymgrantor');
