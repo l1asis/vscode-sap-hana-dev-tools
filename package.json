@@ -1,7 +1,7 @@
 {
   "name": "sap-hana-dev-tools",
   "displayName": "Developer Tools for SAP HANA",
-  "description": "Complete language support for SAP HANA (XS Classic, XS Advanced & HDI). Includes syntax highlighting and configurable formatting for SQLScript, CDS, and all HANA repository/design-time artifacts (.hdbtable, .hdbcds, .xsjs, .hdbgrants, and more).",
+  "description": "Offline language support for SAP HANA XS Classic, XS Advanced / HDI and SAP HANA Cloud: highlighting, safe formatting, syntax, security and performance checks, IntelliSense for SQLScript and XSJS, and XSC <-> HDI migration QuickFixes.",
   "version": "0.13.0",
   "icon": "images/icon.png",
   "publisher": "l1asis",
@@ -19,7 +19,9 @@
   },
   "categories": [
     "Programming Languages",
-    "Formatters"
+    "Formatters",
+    "Linters",
+    "Snippets"
   ],
   "contributes": {
     "languages": [
@@ -2790,7 +2792,10 @@
     "hdbtable",
     "hdbcds",
     "hdbprocedure",
-    "formatter"
+    "formatter",
+    "linter",
+    "SAP HANA Cloud",
+    "migration"
   ],
   "devDependencies": {
     "@types/node": "^20.0.0",
