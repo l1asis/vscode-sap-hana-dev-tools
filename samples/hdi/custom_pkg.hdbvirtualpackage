@@ -1,5 +1,0 @@
-{
-  "name": "custom_pkg",
-  "adapter_type": "hadoop",
-  "schema": "CUSTOM_SCHEMA"
-}
