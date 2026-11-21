@@ -211,6 +211,23 @@ const GRANTS_PRIVILEGE_ITEM_FIELDS: readonly ArtifactFieldSpec[] = [
   { name: 'roles_with_admin_option', detail: 'string[]', description: 'Roles granted `WITH ADMIN OPTION` (not with an HDI container grantor).' },
 ];
 
+/** `schema_privileges` items also take `reference` (@sap/hdi-deploy >= 3.0.0, hdi-grants-roles.md §2.3, #121). */
+const GRANTS_REFERENCE_FIELD: ArtifactFieldSpec = {
+  name: 'reference',
+  detail: 'string',
+  description: 'Schema name, read in `schema_privileges` only. `schema` wins when both are set; without either, the grantor service\'s schema is used.',
+};
+const GRANTS_SCHEMA_PRIVILEGE_FIELDS: readonly ArtifactFieldSpec[] = [...GRANTS_PRIVILEGE_ITEM_FIELDS, GRANTS_REFERENCE_FIELD];
+
+/** `global_roles` items also take `names`, the same as `roles` (backward compatibility, hdi-grants-roles.md §2.3). */
+const GRANTS_NAMES_FIELD: ArtifactFieldSpec = {
+  name: 'names',
+  detail: 'string[]',
+  description: 'Global role names; the same as `roles` (backward compatibility).',
+  deprecated: 'Use `roles`.',
+};
+const GRANTS_GLOBAL_ROLE_FIELDS: readonly ArtifactFieldSpec[] = [...GRANTS_PRIVILEGE_ITEM_FIELDS, GRANTS_NAMES_FIELD];
+
 const HDBROLE_JSON_ROOT_FIELDS: readonly ArtifactFieldSpec[] = [
   { name: 'role', detail: 'object', description: 'Root: an object with the single key `role`.' },
 ];
@@ -615,10 +632,10 @@ function resolveJsonFieldsForContext(languageId: string, ctx: JsonCursorContext)
     return HDICONFIG_ROOT_FIELDS;
   }
   if (languageId === 'hdbgrants' || languageId === 'hdbrevokes') {
+    if (ctx.parentContainerKey === 'schema_privileges') return GRANTS_SCHEMA_PRIVILEGE_FIELDS;
+    if (ctx.parentContainerKey === 'global_roles') return GRANTS_GLOBAL_ROLE_FIELDS;
     if (
       ctx.parentContainerKey === 'system_privileges' ||
-      ctx.parentContainerKey === 'global_roles' ||
-      ctx.parentContainerKey === 'schema_privileges' ||
       ctx.parentContainerKey === 'schema_roles' ||
       ctx.parentContainerKey === 'object_privileges' ||
       ctx.parentContainerKey === 'global_object_privileges'
@@ -656,7 +673,7 @@ function allJsonFieldsForLanguage(languageId: string): readonly ArtifactFieldSpe
       return [...HDICONFIG_ROOT_FIELDS, ...HDICONFIG_SUFFIX_FIELDS];
     case 'hdbgrants':
     case 'hdbrevokes':
-      return [...HDBGRANTS_ROOT_FIELDS, ...GRANTOR_OWNER_FIELDS, ...GRANTS_PRIVILEGE_ITEM_FIELDS];
+      return [...HDBGRANTS_ROOT_FIELDS, ...GRANTOR_OWNER_FIELDS, ...GRANTS_PRIVILEGE_ITEM_FIELDS, GRANTS_REFERENCE_FIELD, GRANTS_NAMES_FIELD];
     case 'hdbrole':
       return [...HDBROLE_JSON_ROOT_FIELDS, ...HDBROLE_JSON_BODY_FIELDS, ...ROLE_PRIVILEGE_ITEM_FIELDS];
     default:

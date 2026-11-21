@@ -291,7 +291,15 @@ test('#65: artifact key completion matches the property-schema specs', () => {
   assert.ok(getArtifactCompletions('hdbgrants', granteeSrc, granteeSrc.length).find((i) => i.label === 'roles')?.deprecated);
   const item = labels('hdbgrants', '{\n  "svc": {\n    "object_owner": {\n      "object_privileges": [{\n        "');
   for (const k of ['schema', 'name', 'privileges', 'privileges_with_grant_option']) assert.ok(item.includes(k), k);
-  for (const k of ['reference', 'include_filter']) assert.ok(!item.includes(k), `${k} is not an .hdbgrants key`);
+  for (const k of ['reference', 'names', 'include_filter']) assert.ok(!item.includes(k), `${k} is not an object_privileges key`);
+  // #121: @sap/hdi-deploy reads `reference` in schema_privileges only, and accepts `names` in global_roles
+  const schemaItem = labels('hdbgrants', '{\n  "svc": {\n    "application_user": {\n      "schema_privileges": [{\n        "');
+  assert.ok(schemaItem.includes('reference') && schemaItem.includes('schema'));
+  assert.ok(!schemaItem.includes('include_filter') && !schemaItem.includes('names'));
+  const roleSrc = '{\n  "svc": {\n    "object_owner": {\n      "global_roles": [{\n        "';
+  const roleItem = getArtifactCompletions('hdbgrants', roleSrc, roleSrc.length);
+  assert.ok(roleItem.find((i) => i.label === 'names')?.deprecated, 'names is offered as a superseded synonym of roles');
+  assert.ok(!roleItem.some((i) => i.label === 'reference'));
   assert.ok(labels('hdbgrants', '{\n  "svc": {\n    "object_owner": {\n      "system_privileges": [{\n        "').includes('privileges_with_admin_option'));
 
   // .hdbrole (hdi-grants-roles.md §3)

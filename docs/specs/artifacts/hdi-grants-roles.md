@@ -2,6 +2,7 @@
 
 > Source: research/refs/extracted/SAP_HANA_PLATFORM_SAP_HANA_Developer_Guide_for_SAP_HANA_XS_Advanced_Model_en/007_5_Defining_the_Data_Model_in_XS_Advanced.md (Pages 272–275, 498–503)
 > Source: research/refs/extracted/hana-cloud-database_SAP_HANA_Cloud,_SAP_HANA_Database_Deployment_Infrastructure_/009_pages_241_270.md (Pages 241–270: _Roles (.hdbrole and .hdbroleconfig)_)
+> Source: `@sap/hdi-deploy` 5.7.0 (npm, outside the corpus, #121): `README.md` § _.hdbgrants Files_; `lib/privileges/privilege_utils.js` (`validateGrants`, `handlePrivileges`); `CHANGELOG.md` 3.0.0, 5.2.3
 
 Layout rules: `json-formatting.md`. Security checks: `security-rules.md` (`HANA-SEC-030` .. `-033` for roles, `-040` .. `-042` for grants). Classic `.hdbrole` DSL and its migration to this JSON format: `hdbrole-formatting.md`, `migration-xsc-to-hdi.md` §2.4. Completion and hover: `src/sql/artifact-intellisense.ts` (§5).
 
@@ -39,9 +40,9 @@ Layout rules: `json-formatting.md`. Security checks: `security-rules.md` (`HANA-
 
 | Key | Type | Required | Item keys (§2.3) | Notes |
 | :--- | :--- | :---: | :--- | :--- |
-| `system_privileges` | `Array<Object>` | No | `privileges`, `privileges_with_admin_option` | System privileges. |
-| `global_roles` | `Array<Object>` | No | `roles`, `roles_with_admin_option` | Roles without a schema. Not supported when the grantor is an HDI container service. |
-| `schema_privileges` | `Array<Object>` | No | `schema`, `privileges`, `privileges_with_grant_option` | |
+| `system_privileges` | `Array<Object \| String>` | No | `privileges`, `privileges_with_admin_option` | System privileges. A string entry (`["CATALOG READ"]`) is granted without admin option; the README documents only the object form. |
+| `global_roles` | `Array<Object \| String>` | No | `roles`, `roles_with_admin_option`, `names` | Roles without a schema. Not supported when the grantor is an HDI container service. A string entry or `names` is the same as `roles` (backward compatibility). |
+| `schema_privileges` | `Array<Object>` | No | `schema`, `reference`, `privileges`, `privileges_with_grant_option` | Schema: `schema`, else `reference`, else the grantor service's schema. |
 | `schema_roles` | `Array<Object>` | No | `schema`, `roles`, `roles_with_admin_option` | `roles_with_admin_option` is not allowed when the grantor is an HDI container. |
 | `object_privileges` | `Array<Object>` | No | `schema`, `name`, `privileges`, `privileges_with_grant_option` | |
 | `global_object_privileges` | `Array<Object>` | No | `name`, `type`, `privileges`, `privileges_with_grant_option` | Objects without a schema (`"type": "REMOTE SOURCE"`). |
@@ -53,6 +54,7 @@ Layout rules: `json-formatting.md`. Security checks: `security-rules.md` (`HANA-
 | Key | Type | Required | Default | Allowed values / constraints |
 | :--- | :--- | :---: | :--- | :--- |
 | `schema` | `String` | No | schema of the grantor service | Fixed schema; overrides the grantor service's schema (`schema_privileges`, `schema_roles`, `object_privileges`). |
+| `reference` | `String` | No | — | Schema name, read in `schema_privileges` only (`@sap/hdi-deploy` ≥ 3.0.0). `schema` wins when both are set. Unlike the `.hdbrole` key (§3.2), it is not resolved by `.hdbroleconfig`. |
 | `name` | `String` | `object_privileges`, `global_object_privileges` | — | Object name. |
 | `type` | `String` | `global_object_privileges` | — | Object type, e.g. `REMOTE SOURCE`, `USERGROUP`. |
 | `privileges` | `Array<String>` | one privilege list | — | Privileges granted without grant / admin option. |
@@ -60,6 +62,9 @@ Layout rules: `json-formatting.md`. Security checks: `security-rules.md` (`HANA-
 | `privileges_with_admin_option` | `Array<String>` | No | — | `system_privileges` only. |
 | `roles` | `Array<String>` | one role list | — | `global_roles`, `schema_roles`. A name ending in `#` may contain grant-option privileges, and only the object owner can receive it. |
 | `roles_with_admin_option` | `Array<String>` | No | — | `global_roles`, `schema_roles` (not with an HDI container grantor). |
+| `names` | `Array<String>` | No | — | `global_roles` only: same as `roles` (backward compatibility). |
+
+The deployer rejects any other item key (`Invalid property`), for example `include_filter` (a `.hdbtabledata` key). It also accepts an undocumented `using_group` flag on role items, which this spec does not list.
 
 ### 2.4 Examples
 
@@ -83,9 +88,8 @@ Invalid:
 | Fragment | Problem |
 | :--- | :--- |
 | `{ "object_owner": { ... } }` at the root | level 1 must be the grantor service name |
-| `"object_privileges": [{ "reference": "T" }]` | `reference` is an `.hdbrole` key; `.hdbgrants` uses `schema` + `name` |
+| `"object_privileges": [{ "reference": "T" }]` | `reference` is read only in `schema_privileges`; an object needs `schema` + `name` |
 | `"schema_roles": [{ "roles": ["R"], "roles_with_admin_option": ["R2"] }]` with an HDI container grantor | admin option not supported for container roles |
-| `"system_privileges": ["CATALOG READ"]` | entries are objects: `[{ "privileges": ["CATALOG READ"] }]` |
 
 ---
 
@@ -185,6 +189,6 @@ Invalid: `{ "Ref1": { "schema": "S" } }` (missing role-name level); `{ "R": { "R
 | Table | Change |
 | :--- | :--- |
 | `GRANTOR_OWNER_FIELDS` | Added `system_privileges` and `global_roles`. Kept `roles` and added `container_roles`, both marked as superseded. |
-| `GRANTS_PRIVILEGE_ITEM_FIELDS` (new, `.hdbgrants` items) | `schema`, `name`, `type`, `privileges`, `privileges_with_grant_option`, `privileges_with_admin_option`, `roles`, `roles_with_admin_option`. Dropped the undocumented `reference` and `include_filter`, which belong to `.hdbrole` and `.hdbtabledata`. |
+| `GRANTS_PRIVILEGE_ITEM_FIELDS` (new, `.hdbgrants` items) | `schema`, `name`, `type`, `privileges`, `privileges_with_grant_option`, `privileges_with_admin_option`, `roles`, `roles_with_admin_option`. Dropped `include_filter` (a `.hdbtabledata` key). `reference` was dropped too and is back since #121, described as the `schema_privileges` schema name. Added `names` for `global_roles`. |
 | `ROLE_PRIVILEGE_ITEM_FIELDS` (new, `.hdbrole` entries) | `name`, `type`, `privileges`, `privileges_with_grant_option`, `pattern_mode`, `reference`, `schema_reference`, `names`. |
 | `HDBROLE_JSON_BODY_FIELDS` | Added `global_roles` and `pattern_escape_character`. Removed `application_privileges` (not an HDI role key). |
