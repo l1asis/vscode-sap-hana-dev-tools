@@ -1,27 +1,46 @@
 # Developer Tools for SAP HANA
 
-Rich language support for **SAP HANA XS Classic (XSC)**, **XS Advanced (XSA)**, and **SAP HANA Cloud (HDI)**. 
+Language support for **SAP HANA XS Classic (XSC)**, **XS Advanced (XSA) / HDI**, and **SAP HANA Cloud**, all in VS Code and without a database connection.
 
-Whether you are maintaining legacy XS Classic repository packages (`.hdbtable`, `.hdbdd`, `.xsjs`, `.xsodata`) or building modern HDI containers (`.hdbcds`, `.hdbprocedure`, `.hdbgrants`), this extension brings syntax highlighting and HANA-aware SQLScript formatting into a single lightweight toolkit.
+Open a `.hdbprocedure`, `.hdbtable`, `.hdbdd`, `.xsjs`, or `.hdbrole` file and you get highlighting, formatting, error checking, completion, and migration help right away. Nothing to set up and no server to run.
 
-## Highlights
+## What You Get
 
-* **Unified XS Classic & HDI Support:** Automatically distinguishes between classic key-value design-time artifacts (`table.columns = [...]`) and modern HDI SQL-DDL artifacts—even when they share the same file extension (`.hdbtable`, `.hdbview`, `.hdbsequence`).
-* **Embedded SQL Highlighting:** Highlights SQL queries embedded inside classic `.hdbview` (`query = "..."`) and `.hdbsequence` (`reset_by = "..."`) string literals, including escaped quotes (`\"`).
-* **Modern HANA SQL & SQLScript Grammar:** Covers HANA-specific syntax including Calculation Engine functions (`CE_*`), `MAP_MERGE` / `MAP_REDUCE`, `APPLY_FILTER`, built-in `SQLSCRIPT_*` libraries (`USING SQLSCRIPT_STRING AS lib; lib:split_to_table(...)`), vector data types (`REAL_VECTOR`, `HALF_VECTOR`), and system DDL (`CREATE JWT PROVIDER`, `ALTER SYSTEM ...`).
-* **XS JavaScript (`$`) Recognition:** Extends VS Code's JavaScript grammar for `.xsjs` and `.xsjslib` with first-class highlighting for HANA globals (`$.import`, `$.hdb`, `$.db`, `$.request`, `$.response`, `$.session`, `$.net.http.*`).
-* **HANA-Safe SQL Formatter:** Built specifically for HANA SQL and SQLScript so design-time artifacts and quoted identifiers are never corrupted on save.
+| Feature | What it does |
+| :--- | :--- |
+| **Highlighting** | 115 file extensions, from classic repository artifacts to HDI and HANA Cloud SQL. |
+| **Formatting** | SQLScript, CDS, `.xsodata`, classic key-value files, JSON configs, and roles. It never breaks a design-time artifact. |
+| **Error checking** | Finds syntax errors as you type, many with a QuickFix. Also flags security and performance problems in SQLScript and XSJS. |
+| **IntelliSense** | Completion, hover docs, and signature help for 564 built-in SQL functions, `SQLSCRIPT_*` libraries, and the XSJS `$` API. |
+| **Migration** | Converts classic `.hdbtable`, `.hdbview`, `.hdbsequence`, `.hdbstructure`, `.hdbrole`, and `.hdbdd` files to HDI syntax. Tables, views, and sequences also convert back. |
+| **Snippets** | Starter templates for procedures, functions, tables, CDS entities, roles, and XSJS queries. |
 
-## SQL & SQLScript Formatter
+## Highlighting
 
-Press `Shift+Alt+F` to format the active document, or use **Format Selection** to format specific lines.
+* **Classic and HDI in one place:** `.hdbtable`, `.hdbview`, and `.hdbsequence` can hold either classic key-value syntax (`table.columns = [...]`) or HDI SQL DDL. The extension detects which one you have.
+* **SQL inside strings:** The SQL in a classic `.hdbview` `query = "..."` or a `.hdbsequence` `reset_by = "..."` is highlighted as SQL.
+* **HANA-specific SQL:** `CE_*` functions, `MAP_MERGE`, `APPLY_FILTER`, `SQLSCRIPT_*` library calls (`USING SQLSCRIPT_STRING AS lib; lib:split_to_table(...)`), vector types (`REAL_VECTOR`, `HALF_VECTOR`), and system DDL such as `CREATE JWT PROVIDER`.
+* **XS JavaScript:** `.xsjs` and `.xsjslib` highlight the HANA globals (`$.import`, `$.hdb`, `$.db`, `$.request`, `$.response`, `$.session`, `$.net.http.*`).
 
-### Why It's Safe for HANA Artifacts
+## Formatting
 
-* **Design-Time Aware:** Setting `trailingSemicolon: "add"` will **never** append a trailing `;` to the root statement of HDI design-time artifacts (`PROCEDURE "..." ... END`), where a trailing semicolon causes HDI deployment errors.
-* **Classic Config Protection:** Key-value artifacts (such as classic `.hdbtable` or `.hdbview` files) are automatically detected and left untouched by the SQL formatter.
-* **Identifier & Literal Integrity:** Case rules only modify SQL keywords, built-in functions, data types, and **unquoted** identifiers. Double-quoted identifiers (`"MyColumn"`), string literals (`'text'`, `N'text'`, `X'00'`), and comments are strictly preserved.
-* **Format Ignore Directives:** Keep manual alignment intact on specific queries using pragma comments:
+Press `Shift+Alt+F` to format the file, or select some lines and run **Format Selection**.
+
+| Files | Formatted as |
+| :--- | :--- |
+| `.sql`, `.hdbprocedure`, `.hdbfunction`, and other SQL artifacts | HANA SQL & SQLScript, with configurable rules |
+| `.hdbtable`, `.hdbview`, `.hdbsequence`, `.hdbschema`, `.hdbti`, ... (classic) | Classic key-value syntax |
+| `.hdbdd`, `.hdbcds` | CDS |
+| `.xsodata` | OData service definitions |
+| `.hdbgrants`, `.hdiconfig`, `.xsaccess`, `.xsapp`, HDI `.hdbrole`, ... | JSON / JSONC, comments kept |
+| Classic `.hdbrole`, `.hdbmigrationtable` | Their own formats |
+| `.xsjs`, `.xsjslib` | VS Code's JavaScript formatter |
+
+### Safe for HANA Artifacts
+
+* **No stray semicolons:** HDI artifacts such as `.hdbprocedure` must not end in `;`. With `trailingSemicolon: "add"`, the formatter still adds none after the root statement.
+* **Your names stay as written:** Case rules change keywords, functions, data types, and unquoted names only. Quoted identifiers (`"MyColumn"`), strings (`'text'`, `N'text'`, `X'00'`), and comments keep their exact text.
+* **Opt out where you need to:** Wrap code in pragma comments to keep your own alignment:
 
 ```sql
 -- hanasql-format off
@@ -29,9 +48,9 @@ SELECT   MANDT,   BUKRS,   BELNR   FROM "BSEG";
 -- hanasql-format on
 ```
 
-### Recommended Configuration (`settings.json`)
+### Formatter Settings
 
-You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter Settings**) or directly in `settings.json`:
+Run **SAP HANA SQL: Open Formatter Settings** to see every option in the Settings UI, or add them to `settings.json`:
 
 ```jsonc
 {
@@ -46,23 +65,61 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
   "hanasql.format.identifierCase": "preserve",   // Applies to unquoted identifiers only
   "hanasql.format.maxLineLength": 100,           // 0 = disable line wrapping
   "hanasql.format.commaPosition": "leading",     // "trailing" | "leading"
-  "hanasql.format.oneItemPerLine": [
-    "select",
-    "set",
-    "groupBy",
-    "columnDefinitions",
-    "parameters"
-  ],
-  "hanasql.format.logicalOperatorPosition": "after",
-  "hanasql.format.embeddedQueryLayout": "hanging", // "hanging" | "aligned" | "newLine" (lt = SELECT ..., RETURN SELECT ...)
+  "hanasql.format.oneItemPerLine": ["select", "set", "groupBy", "columnDefinitions", "parameters"],
+  "hanasql.format.embeddedQueryLayout": "hanging", // Queries after lt = ..., := or RETURN: "hanging" | "aligned" | "newLine"
   "hanasql.format.trailingSemicolon": "add",     // "preserve" | "add" | "remove"
-  "hanasql.format.blankLinesBetweenTopLevelStatements": 2,
   "hanasql.format.identifierQuotes": "removeUnnecessary",
   "hanasql.format.notEqualOperator": "<>"        // "<>" | "!="
 }
 ```
 
-## Supported File Types (115 Extensions)
+## Error Checking & QuickFixes
+
+The checks run offline as you type. Problems appear in the editor and the **Problems** panel. Each one carries a rule ID (such as `HANA-SEC-001`) that you can look up in the specs.
+
+| Area | Examples | Setting |
+| :--- | :--- | :--- |
+| **Syntax** (`HANA-SYN-*`) | Unclosed strings, comments, and brackets. Unmatched `BEGIN`/`END` and `IF`/`END IF`. Misspelled keywords, with a typo fix. Clauses in the wrong order. Trailing commas in JSON. Broken XML tags. Covers SQL, SQLScript, CDS, classic files, JSON, XSJS, XML, and text-analysis rules. | `hanasql.analyze.syntax` |
+| **Security** (`HANA-SEC-*`) | Dynamic SQL built by string concatenation instead of `USING` bind variables. `SQL SECURITY DEFINER` combined with dynamic SQL. Risky `$.db` and `$.response.setBody` use in XSJS. Overly broad `.xsaccess`, `.hdbrole`, `.hdbgrants`, and `.hdbrevokes` settings. | `hanasql.analyze.security` |
+| **Performance** (`HANA-PERF-*`, `HANA-LINT-*`) | Legacy `CE_*` functions, cursor loops, `SELECT *`, DML inside loops, empty `EXIT HANDLER`s, and unreliable `::ROWCOUNT`. | `hanasql.analyze.performance` |
+| **Calculation views** (`HANA-LINT-1xx`) | XML schema and graph errors in `.calculationview` and `.hdbcalculationview`. | `hanasql.analyze.calculationView` |
+| **Migration** (`HANA-MIG-*`) | Classic-only code that will not deploy to HDI: `DEFAULT SCHEMA`, hardcoded `_SYS_BIC` schemas, `$.repo` calls, and file suffixes HDI renamed. | `hanasql.analyze.migration` |
+
+Set `hanasql.analyze.targetPlatform` to `xsc`, `hdi`, or `cloud` to match your system. The default is `auto`. With `cloud`, `CE_*` functions become errors, and with `xsc`, the HDI migration hints are hidden.
+
+## IntelliSense
+
+**SQL & SQLScript:** completion for keywords, data types, and built-in functions. Hover and signature help for all 564 built-in functions. Members of `USING SQLSCRIPT_*` libraries (`lib:member`). Your own `DECLARE` variables and parameters after `:`. Keys and values in JSON and classic config files.
+
+**XSJS:** completion, hover, and signature help for the `$` API, XSDS, and XSUnit (`jasmine`, Mockstar). Modules loaded with `$.import(...)` are resolved. If you want type checking too, run **SAP HANA XSJS: Configure Workspace xsjs.d.ts Type Definitions**. It copies the type definitions into your workspace.
+
+## Migrating Between XS Classic and HDI
+
+Place the cursor in a classic artifact and open the QuickFix menu (`Ctrl+.`), or run a command from the Command Palette:
+
+* **SAP HANA: Convert Artifact from XSC to HDI / XSA Syntax**
+* **SAP HANA: Convert Artifact from HDI to XSC Classic Syntax**
+
+| From | To | Direction |
+| :--- | :--- | :---: |
+| Classic `.hdbtable`, `.hdbview`, `.hdbsequence` | HDI SQL DDL | ⇄ |
+| Classic `.hdbstructure` | HDI `.hdbtabletype` | → |
+| Classic `.hdbrole` DSL | HDI JSON role | → |
+| `.hdbdd` | `.hdbcds` | → |
+| Renamed suffixes (`.calculationview`, ...) | HDI suffix (`.hdbcalculationview`, ...), when the content can stay as it is | → |
+
+Comments are kept: they move into a header block when a file becomes SQL, and come back when you convert it back.
+
+## Snippets
+
+Type a prefix and pick the snippet: `hana-proc`, `hana-tfunc`, `hana-exit-handler`, `hdi-table`, `hdi-view`, `xsc-table`, `cds-entity`, `hdi-role`, `xsodata-service`, `xsjs-hdb-query`, `xsunit-suite`, and more.
+
+## Supported File Types
+
+The extension recognizes 115 file extensions across XS Classic, HDI, and SAP HANA Cloud.
+
+<details>
+<summary><strong>Show every file type and what it gets</strong></summary>
 
 ### 1. SQL, SQLScript & Procedural Artifacts
 
@@ -113,13 +170,15 @@ You can configure all rules via the Settings UI (**SAP HANA SQL: Open Formatter 
 | `.hdiignore` | HDI Deployer ignore list opens as an ignore file |
 | `undeploy.json` | HDI Deployer undeploy allowlist, validated against a JSON schema |
 
+</details>
+
 Renamed or HDI-unsupported XS Classic suffixes (`.searchruleset`, `.hdbtablefunction`, `.attributeview`, ...) show a `HANA-MIG-013` hint, with a QuickFix that renames the file where the content can stay as it is. The full list of suffixes and what each one gets is in [`docs/specs/artifacts/artifact-registry.md`](docs/specs/artifacts/artifact-registry.md).
 
 ## Roadmap & Feedback
 
-We are actively expanding this extension with a full **Language Server (LSP)**, static performance/security analyzers, **XS Classic to XS Advanced migration quick-fixes**, and live **`_SYS_REPO` / HDI database activation**. See [ROADMAP.md](./ROADMAP.md) for details.
+Coming next: a workspace-wide schema index for table and column completion, live connections to SAP HANA, `_SYS_REPO` / HDI activation from the editor, and a standalone language server you can use in other editors and in CI. See [ROADMAP.md](./ROADMAP.md) for the full plan.
 
-Spot an edge case in a classic `.hdbrole`, `.xsodata`, or `.hdbdd` file that isn't highlighted as expected? Please open an issue with a minimal snippet!
+Found a file that isn't highlighted, formatted, or checked correctly? Please [open an issue](https://github.com/l1asis/vscode-sap-hana-dev-tools/issues) and include a short snippet that shows the problem.
 
 ## License & Legal Notice
 
