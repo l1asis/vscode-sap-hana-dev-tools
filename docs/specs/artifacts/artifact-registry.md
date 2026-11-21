@@ -44,7 +44,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | **Platform** | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` (`SPEC_RULES.md` §1.3) |
 | **Status** | `current`; `alias of <suffix>` (still accepted, same content); `renamed → <suffix>` (`HANA-MIG-013` offers a file-rename QuickFix); `replaced → <suffix>` (the content must change); `unsupported` (no HDI equivalent); `deprecated` (still works, not migrated) |
 | **HDI plug-in** | `com.sap.hana.di.*` id; `Repository` (XS Classic activation); `HDI Deployer` (read by `@sap/hdi-deploy`, no build plug-in); `—` (no plug-in in the corpus) |
-| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`; `built-in` (a VS Code language this extension only adds file names to); `—` (a language of this extension with no grammar: binary content such as `.hdbmrjob`, or a format no source documents, such as `.hdbremotesource`) |
+| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`; `built-in` (a VS Code language this extension only adds file names to); `—` (a language of this extension with no grammar: binary content such as `.hdbmrjob`, or a format no source documents, such as `.hdbremotesource` and `.hdbvirtualpackagesparksql`) |
 | **Formatter** | `sql`, `kv`, `kv / sql` (content-sniffed), `cds`, `role / json`, `xsodata`, `migration table`, `json`, `xsjs` (delegated), `—` (`src/formatter/dispatch.ts`) |
 | **Analyzer** | Checks that run (`src/analyzer/dispatch.ts`): `syntax`, `security`, `performance`, `calcview`, `xsjs`, `migration only` (`HANA-MIG-013` only), `—` (not in `ANALYZER_LANGUAGES`) |
 | **Migrator** | `HANA-MIG-*` rules that can fire (`docs/specs/diagnostics/migration-xsc-to-hdi.md`), `—` |
@@ -117,9 +117,8 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbtabledata` | `hdbtabledata` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.tabledata` | `source.hdbtabledata` | json | syntax | — | — | C1 |
 | `.hdbeshconfig` | `hdbeshconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.eshconfig` | `source.hdbeshconfig` | json | syntax | — | — | C1 |
 | `.hdbafllangprocedure` | `hdbafllangprocedure` | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` | current | `com.sap.hana.di.afllangprocedure` | `source.hdbafllangprocedure` | json | syntax | — | — | H1, M1 |
-| `.hdbvirtualpackage` | `hdbvirtualpackage` | `[XSA]` `[HDI]` | current | — | `source.hdbvirtualpackage` | json | syntax | — | — | A-VPKG |
-| `.hdbvirtualpackagehadoop` | `hdbvirtualpackagehadoop` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.hadoop` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
-| `.hdbvirtualpackagesparksql` | `hdbvirtualpackagesparksql` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.sparksql` | `source.hdbvirtualpackage` | json | syntax | — | — | H1, A-VPKG |
+| `.hdbvirtualpackagehadoop` | `hdbvirtualpackagehadoop` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.hadoop` | — | — | — | — | — | H1, E1, A-VPKG |
+| `.hdbvirtualpackagesparksql` | `hdbvirtualpackagesparksql` | `[XSA]` `[HDI]` | current | `com.sap.hana.di.virtualpackage.sparksql` | — | — | — | — | — | H1, E1, A-VPKG |
 | `.hdbmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | deprecated | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | — | — | H1, A-TARGET |
 | `.hdbhadoopmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | replaced → .hdbvirtualpackagehadoop | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | `HANA-MIG-013` | — | H1, A-TARGET |
 | `.hdbrmjob` | `hdbmrjob` | `[XSC]` | alias of .hdbmrjob | Repository | — | — | migration only | — | — | M1 |
@@ -197,6 +196,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.jar` | `[XSA]` `[HDI]` | `com.sap.hana.di.virtualfunctionpackage.hadoop` | Binary Hadoop archive (deprecated plug-in). | C1 |
 | `.hdbconfig` | — | — | Documentation typo of `.hdiconfig`: H3 introduces "the container-configuration file `.hdbconfig`" right after naming the mandatory suffix `.hdiconfig`. The HDI Deployer reads only `.hdiconfig`. | H3, E1 |
 | `.hdbnamespace` | — | — | Documentation spelling of `.hdinamespace` (same description, same naming rules). The HDI Deployer reads only `.hdinamespace`. | H3, X1, E1 |
+| `.hdbvirtualpackage` | — | — | Name of the virtual-package family in section titles and overview tables, not a file suffix: no plug-in or `.hdiconfig` key maps it, and the HDI Deployer knows only `.hdbvirtualpackagehadoop` and `.hdbvirtualpackagesparksql`. The XS Advanced zero-downtime table lists it anyway (#122). | H1, X1, E1, A-VPKG |
 | `.hdbroles` | — | — | Plural of `.hdbrole` in running text. | M1 |
 | `.hdbviewcache` | `[XSC]` `[HDI]` | — | View cache. The corpus has only the migration-table row: no syntax, no plug-in. No format found outside the corpus either. | M1, E3 |
 | `.hdbdcs` | `[XSA]` `[HDI]` | — | Must be undeployed before migrating to SAP HANA Cloud. No syntax in the corpus. | CM |
