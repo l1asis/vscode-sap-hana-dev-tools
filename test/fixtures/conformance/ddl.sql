@@ -26,11 +26,9 @@ CREATE COLUMN TABLE tickets (
 );
 
 -- @case unique column with index type
--- @todo syntax #78 false HANA-SYN-023 at "BTREE"
 CREATE COLUMN TABLE codes (code_id INT PRIMARY KEY, code_key INT UNIQUE BTREE);
 
 -- @case text column with fast preprocess
--- @todo syntax #78 false HANA-SYN-023 at "FAST", "OFF"
 CREATE COLUMN TABLE documents (doc_id INT, body TEXT FAST PREPROCESS OFF);
 
 -- @case hash partitioning
@@ -47,7 +45,6 @@ CREATE COLUMN TABLE dept_copy AS (SELECT * FROM departments) WITH NO DATA;
 CREATE COLUMN TABLE dept_shadow LIKE departments WITH DATA;
 
 -- @case alter table add, alter and drop columns
--- @todo syntax #78 false HANA-SYN-023 at "NVARCHAR"
 ALTER TABLE departments ADD (cost_center NVARCHAR(10));
 ALTER TABLE departments ALTER (cost_center NVARCHAR(20));
 ALTER TABLE departments DROP (cost_center);
