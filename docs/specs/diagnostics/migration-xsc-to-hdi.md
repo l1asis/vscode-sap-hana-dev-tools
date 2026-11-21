@@ -258,6 +258,7 @@ XS Classic attribute views become calculation views with `dataCategory="DIMENSIO
 | `.hdbtid`, `.hdbtim` | `replaced → .hdbtabledata` | — |
 | `.dqconfig` | `replaced → .hdbflowgraph` | — |
 | `.hdbhadoopmrjob` | `replaced → .hdbvirtualpackagehadoop` (deprecated plug-in) | — |
+| `.hdbremotesource` | `unsupported`: in HDI an administrator creates the remote source (`CREATE REMOTE SOURCE`), and `.hdbgrants` `global_object_privileges` with `"type": "REMOTE SOURCE"` grants the container access (#117) | — |
 | `.hdbtextbundle`, `.hdbruldec`, `.decrule`, `.hdbdecisiontable`, `.aflpmml`, `.hdbflowgraphtemplate`, `.dataflow`, `.halmscenario` | `unsupported` | — |
 
   - **Legacy Code (`Before`):** `models/Search.searchruleset`

@@ -44,7 +44,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | **Platform** | `[XSC]` `[XSA]` `[HDI]` `[CLOUD]` (`SPEC_RULES.md` §1.3) |
 | **Status** | `current`; `alias of <suffix>` (still accepted, same content); `renamed → <suffix>` (`HANA-MIG-013` offers a file-rename QuickFix); `replaced → <suffix>` (the content must change); `unsupported` (no HDI equivalent); `deprecated` (still works, not migrated) |
 | **HDI plug-in** | `com.sap.hana.di.*` id; `Repository` (XS Classic activation); `HDI Deployer` (read by `@sap/hdi-deploy`, no build plug-in); `—` (no plug-in in the corpus) |
-| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`; `built-in` (a VS Code language this extension only adds file names to); `—` (a language of this extension with no grammar, for binary content) |
+| **Grammar** | TextMate `scopeName` of `package.json` `contributes.grammars`; `built-in` (a VS Code language this extension only adds file names to); `—` (a language of this extension with no grammar: binary content such as `.hdbmrjob`, or a format no source documents, such as `.hdbremotesource`) |
 | **Formatter** | `sql`, `kv`, `kv / sql` (content-sniffed), `cds`, `role / json`, `xsodata`, `migration table`, `json`, `xsjs` (delegated), `—` (`src/formatter/dispatch.ts`) |
 | **Analyzer** | Checks that run (`src/analyzer/dispatch.ts`): `syntax`, `security`, `performance`, `calcview`, `xsjs`, `migration only` (`HANA-MIG-013` only), `—` (not in `ANALYZER_LANGUAGES`) |
 | **Migrator** | `HANA-MIG-*` rules that can fire (`docs/specs/diagnostics/migration-xsc-to-hdi.md`), `—` |
@@ -123,6 +123,7 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | deprecated | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | — | — | H1, A-TARGET |
 | `.hdbhadoopmrjob` | `hdbmrjob` | `[XSA]` `[HDI]` | replaced → .hdbvirtualpackagehadoop | `com.sap.hana.di.virtualfunctionpackage.hadoop` | — | — | migration only | `HANA-MIG-013` | — | H1, A-TARGET |
 | `.hdbrmjob` | `hdbmrjob` | `[XSC]` | alias of .hdbmrjob | Repository | — | — | migration only | — | — | M1 |
+| `.hdbremotesource` | `hdbremotesource` | `[XSC]` | unsupported | Repository | — | — | migration only | `HANA-MIG-013` | — | M1, E2, E3 |
 | `.hdiconfig` | `hdiconfig` | `[XSA]` `[HDI]` `[CLOUD]` | current | — | `source.hdiconfig` | json | syntax | — | artifact | A-HDICONFIG |
 | `.hdinamespace` | `hdinamespace` | `[XSA]` `[HDI]` `[CLOUD]` | current | — | `source.hdinamespace` | json | syntax | — | — | H1 |
 | `.xsaccess` | `xsaccess` | `[XSC]` | current | Repository | `source.xsaccess` | json | syntax, security | — | artifact | S1 |
@@ -198,7 +199,6 @@ A suffix can therefore not be added or dropped silently: change this file in the
 | `.hdbnamespace` | — | — | Documentation spelling of `.hdinamespace` (same description, same naming rules). The HDI Deployer reads only `.hdinamespace`. | H3, X1, E1 |
 | `.hdbroles` | — | — | Plural of `.hdbrole` in running text. | M1 |
 | `.hdbviewcache` | `[XSC]` `[HDI]` | — | View cache. The corpus has only the migration-table row: no syntax, no plug-in. No format found outside the corpus either. | M1, E3 |
-| `.hdbremotesource` | `[XSC]` | — | Remote source for Hadoop. No syntax in the corpus. In HDI an administrator creates remote sources. The Hadoop Integration guide creates it with `CREATE REMOTE SOURCE` only; no file format found. | M1, E2, E3 |
 | `.hdbdcs` | `[XSA]` `[HDI]` | — | Must be undeployed before migrating to SAP HANA Cloud. No syntax in the corpus. | CM |
 | `.project`, `.jsdtscope` | `[XSC]` | — | Eclipse / SAP HANA Studio project descriptors (`.project`, `.settings/.jsdtscope`; M2 spells it `*.jdtscope`). No function in VS Code (#119). | S1, M2 |
 | `.regiignore` | `[XSC]` | — | Ignore list of the SAP HANA Studio Repository Team Provider. No function in VS Code (#119). | M2 |
