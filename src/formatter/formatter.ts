@@ -128,6 +128,11 @@ interface StatementState {
   paramsSeen: boolean;
   colsSeen: boolean;
   insColsSeen: boolean;
+  /**
+   * `[CREATE] STRUCTURED FILTER` `[HDI]` `[CLOUD]` (sql-sqlscript.md §6): `header` up to `FOR SELECT`, `clauses`
+   * while `ON` / `ESCAPE` / `LIKE` / `NOT LIKE` start lines, `condition` after `WHERE` / `CONDITION PROVIDER`.
+   */
+  filter: 'header' | 'clauses' | 'condition' | null;
 }
 
 type BlockKind = 'begin' | 'if' | 'while' | 'for' | 'loop' | 'casestmt' | 'caseexpr';
@@ -325,6 +330,7 @@ class Layout {
       const st = this.stmt;
       if (st.alterSystem && (up === 'SYSTEM' || K.SYSTEM_WORDS.has(up))) cls = 'keyword';
       else if (st.count <= 6 && (STMT_VERBS.has(st.first) || st.hdiRoot) && K.STATEMENT_NOUNS.has(up)) cls = 'keyword';
+      else if (st.filter && up === 'PROVIDER' && prevT && prevT.text.toUpperCase() === 'CONDITION') cls = 'keyword';
     }
     const mode = cls === 'keyword' ? this.o.keywordCase : cls === 'function' ? this.o.functionCase : cls === 'type' ? this.o.dataTypeCase : this.o.identifierCase;
     return { t: this.caseOf(tok.text, mode), k: 'word', cls, up, srcSp: tok.wsBefore };
@@ -499,6 +505,7 @@ class Layout {
       paramsSeen: false,
       colsSeen: false,
       insColsSeen: false,
+      filter: null,
     };
     this.frames = [new Frame('stmt', this.level)];
     this.atStmtStart = false;
@@ -842,6 +849,7 @@ class Layout {
 
     if (up === 'SYSTEM' && st.first === 'ALTER' && st.count === 1) st.alterSystem = true;
     if (st.kind === 'create' && !st.createKind && OBJ_TYPES.has(up)) st.createKind = up;
+    if (up === 'FILTER' && pup === 'STRUCTURED' && st.count <= 2 && this.blocks.length === 0) st.filter = 'header';
 
     // BETWEEN a AND b: that AND is not a logical operator
     if (up === 'BETWEEN') { f.between++; return this.plain(tok, i); }
@@ -1007,6 +1015,10 @@ class Layout {
     }
 
     // ---- clause keywords -------------------------------------------------
+    if (st.filter && stmtLevel) {
+      const r = this.structuredFilterWord(tok, i, up, nup, pup, f, st);
+      if (r !== null) return r;
+    }
     if (clauseFrame) {
       const r = this.clauseWord(tok, i, up, nup, pup, f, st);
       if (r !== null) return r;
@@ -1188,6 +1200,38 @@ class Layout {
     }
     f.pad = col - f.level * this.o.indentWidth;
     line.contPad = f.pad;
+  }
+
+  /**
+   * `[CREATE] STRUCTURED FILTER <name> FOR SELECT` `[HDI]` `[CLOUD]` (sql-sqlscript.md §6): `FOR SELECT` stays on
+   * the header line, and `ON`, `ESCAPE`, `LIKE`, `NOT LIKE`, `WHERE` and `CONDITION PROVIDER` each start a line at
+   * the header's level. Inside the `WHERE` condition, `LIKE` and `NOT` are operators again. Returns null for other words.
+   */
+  structuredFilterWord(tok: Token, i: number, up: string, nup: string, pup: string, f: Frame, st: StatementState): number | null {
+    if (st.filter === 'header') {
+      if (up !== 'SELECT' || pup !== 'FOR') return null;
+      this.push(this.mkTok(tok, i));
+      st.filter = 'clauses';
+      return 0;
+    }
+    if (st.filter !== 'clauses' || !K.STRUCTURED_FILTER_CLAUSES.includes(up)) return null;
+    // two-word clauses: `NOT LIKE`, `CONDITION PROVIDER`
+    const second = up === 'NOT' ? 'LIKE' : up === 'CONDITION' ? 'PROVIDER' : null;
+    if (second && nup !== second) return null;
+    if (up === 'LIKE' && pup === 'NOT') return null;
+    this.breakLine(f.level);
+    f.clause = up === 'WHERE' ? 'where' : null;
+    f.cont = null;
+    this.push(this.mkTok(tok, i));
+    let used = 0;
+    const nx = this.t[i + 1];
+    if (second && nx && nx.type === 'word' && nx.text.toUpperCase() === second) {
+      this.emit(nx, i + 1);
+      used = 1;
+    }
+    f.lineLevel = f.level + 1;
+    if (up === 'WHERE' || up === 'CONDITION') st.filter = 'condition';
+    return used;
   }
 
   /** Clause keywords. Returns null when the word is not a clause start. */
